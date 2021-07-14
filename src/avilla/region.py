@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 _REGIONS = {}
 
+
 class Region:
     name: str
 

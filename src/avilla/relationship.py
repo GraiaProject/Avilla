@@ -13,6 +13,7 @@ T_Profile = TypeVar("T_Profile")
 T_Protocol = TypeVar("T_Protocol", "BaseProtocol", Any)
 T_GroupProfile = TypeVar("T_GroupProfile")
 
+
 @dataclass
 class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
     region: Region
@@ -22,12 +23,18 @@ class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
     @property
     def current(self) -> Union[Entity[T_Profile], Group[T_Profile, T_GroupProfile]]:
         return self.protocol.getSelf()
-    
-    async def getMembers(self) -> 'Iterable[Entity[T_Profile]]':
+
+    @property
+    def profile(self) -> Union[T_Profile, T_GroupProfile]:
+        return self.entity_or_group.profile
+
+    async def getMembers(self) -> "Iterable[Entity[T_Profile]]":
         if not isinstance(self.entity_or_group, Group):
             return [self.current, self.entity_or_group]
-        return [self.current, *[i async for i in self.protocol.getMembers(self.entity_or_group) if i.id != self.current.id]]
+        return [
+            self.current,
+            *[i async for i in self.protocol.getMembers(self.entity_or_group) if i.id != self.current.id],
+        ]
 
     async def exec(self, execution: Execution) -> Any:
         return await self.protocol.ensureExecution(self, execution)
-    
