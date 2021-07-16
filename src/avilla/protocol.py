@@ -42,7 +42,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def getMembers(self, group: Group[Entity[T_Profile, Any]]) -> "Iterable[Entity[Union[SelfProfile, BaseProfile]]]":
+    def getMembers(self, group: Group[T_Profile, Any]) -> "Iterable[Entity[Union[SelfProfile, BaseProfile]]]":
         raise NotImplementedError
 
     @abstractmethod

@@ -25,9 +25,6 @@ class MessageEvent(AvillaEvent[T_Profile, T_GroupProfile]):
 
     ## sender: see [AvillaEvent]
 
-    current_id: str  # = Field(default_factory=lambda: ctx_relationship.get().current.id)
-    time: datetime  # = Field(default_factory=datetime.now)
-
     def __init__(
         self,
         entity_or_group: Union[Entity[T_Profile], Group[T_Profile, T_GroupProfile]],
@@ -58,10 +55,11 @@ class FriendMessage(MessageEvent[FriendProfile, None]):
 class TempMessage(MessageEvent[MemberProfile, GroupProfile]):
     pass
 
+T_GroupMessageSubType = Literal["common", "anonymous", "notice"]
 
 @dataclass(init=False)
 class GroupMessage(MessageEvent[MemberProfile, GroupProfile]):
-    subtype: Literal["normal", "anonymous", "notice"]
+    subtype: T_GroupMessageSubType
 
     def __init__(
         self,
@@ -70,7 +68,7 @@ class GroupMessage(MessageEvent[MemberProfile, GroupProfile]):
         message_id: str,
         current_id: str = None,
         time: datetime = None,
-        subtype: Literal["normal", "anonymous", "notice"] = 'normal'
+        subtype: T_GroupMessageSubType = 'common'
     ) -> None:
         self.subtype = subtype
         super().__init__(entity_or_group, message, message_id, current_id=current_id, time=time)

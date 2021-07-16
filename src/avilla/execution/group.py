@@ -29,7 +29,7 @@ class MemberUnmute(Operation):
 
 
 @dataclass
-class GroupMute(Operation):
+class GroupMute(Operation): # 群组级别的禁言, MuteAll
     group: Union[Group, str]
     target_type = TargetTypes.GROUP
 

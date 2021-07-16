@@ -10,7 +10,7 @@ from typing import (
     Optional,
 )
 
-from .elements import Element
+from .element import Element
 import copy
 
 MessageIndex = Tuple[int, Optional[int]]

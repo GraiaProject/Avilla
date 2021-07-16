@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 from typing import Generic, TypeVar
 
 
-class TargetTypes(Enum):
+class TargetTypes(IntEnum):
     NONE = 0b000000
     CTX = 0b000011
     PROTOCOL = 0b000100

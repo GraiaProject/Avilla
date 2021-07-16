@@ -10,10 +10,13 @@ from avilla.group import Group, T_GroupProfile
 from avilla.message.chain import MessageChain
 from avilla.relationship import Relationship, T_Profile
 from ..context import ctx_relationship, ctx_protocol
-
+from datetime import datetime
 
 class AvillaEvent(Dispatchable, Generic[T_Profile, T_GroupProfile]):
     entity_or_group: Union[Entity[T_Profile], Group[T_Profile, T_GroupProfile]]
+
+    current_id: str  # = Field(default_factory=lambda: ctx_relationship.get().current.id)
+    time: datetime  # = Field(default_factory=datetime.now)
 
 
 _Dispatcher_Tokens: Dict[int, Token[Relationship]] = {}
