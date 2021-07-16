@@ -3,6 +3,7 @@ from typing import Literal, Optional
 
 from avilla.region import Region
 from avilla.role import Role
+
 from ..profile import BaseProfile
 
 SexTypes = Literal["male", "female", "unknown"]

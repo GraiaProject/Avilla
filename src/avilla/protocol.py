@@ -1,13 +1,14 @@
-from abc import abstractmethod, ABCMeta
+from abc import ABCMeta, abstractmethod
 from functools import singledispatchmethod
-from typing import Any, Iterable, Generic, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Iterable, Type, TypeVar, Union
+
 from avilla.builtins.profile import SelfProfile
 from avilla.entity import Entity
 from avilla.group import Group
 from avilla.message.chain import MessageChain
 from avilla.profile import BaseProfile
-
 from avilla.relationship import Relationship
+
 from .execution import Execution
 
 if TYPE_CHECKING:
@@ -25,7 +26,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         self.avilla = avilla
         self.config = config
 
-    @singledispatchmethod
+    @singledispatchmethod  # 用 gen_ensure_execution_method 方法生成一个吧.
     def ensureExecution(self, relationship: Relationship, execution: "Execution") -> Any:
         raise NotImplementedError
 

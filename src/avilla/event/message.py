@@ -1,20 +1,21 @@
-from enum import Enum
-from typing import Literal, Union
-from graia.broadcast.entities.event import Dispatchable
-from graia.broadcast.entities.dispatcher import BaseDispatcher
 from dataclasses import Field, dataclass
 from datetime import datetime
+from enum import Enum
+from typing import Literal, Union
 
+from graia.broadcast.entities.dispatcher import BaseDispatcher
+from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from avilla.entity import Entity
-from avilla.group import Group, T_GroupProfile
 
-from avilla.protocol import T_Profile
-from . import AvillaEvent, RelationshipDispatcher, MessageChainDispatcher
-from avilla.message.chain import MessageChain
-from avilla.region import Region
 from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile
 from avilla.context import ctx_relationship
+from avilla.entity import Entity
+from avilla.group import Group, T_GroupProfile
+from avilla.message.chain import MessageChain
+from avilla.protocol import T_Profile
+from avilla.region import Region
+
+from . import AvillaEvent, MessageChainDispatcher, RelationshipDispatcher
 
 
 @dataclass(init=False)
@@ -42,6 +43,7 @@ class MessageEvent(AvillaEvent[T_Profile, T_GroupProfile]):
     class Dispatcher(BaseDispatcher):
         mixin = [RelationshipDispatcher, MessageChainDispatcher]
 
+        @staticmethod
         async def catch(interface: "DispatcherInterface"):
             pass
 
@@ -55,7 +57,9 @@ class FriendMessage(MessageEvent[FriendProfile, None]):
 class TempMessage(MessageEvent[MemberProfile, GroupProfile]):
     pass
 
+
 T_GroupMessageSubType = Literal["common", "anonymous", "notice"]
+
 
 @dataclass(init=False)
 class GroupMessage(MessageEvent[MemberProfile, GroupProfile]):
@@ -68,7 +72,7 @@ class GroupMessage(MessageEvent[MemberProfile, GroupProfile]):
         message_id: str,
         current_id: str = None,
         time: datetime = None,
-        subtype: T_GroupMessageSubType = 'common'
+        subtype: T_GroupMessageSubType = "common",
     ) -> None:
         self.subtype = subtype
         super().__init__(entity_or_group, message, message_id, current_id=current_id, time=time)

@@ -16,6 +16,7 @@ singledispatch = "^3.6.2"
 
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"
+isort = "^5.9.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -25,3 +26,8 @@ build-backend = "poetry.core.masonry.api"
 line-length = 120
 target-version = ['py38']
 include = '\.pyi?$'
+
+[tool.poetry.scripts]
+black = "dev_scripts:black"
+isort = "dev_scripts:isort"
+format = "dev_scripts:format"

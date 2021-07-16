@@ -1,9 +1,10 @@
 from dataclasses import dataclass
-from typing import Any, Iterable, Generic, TYPE_CHECKING, Union, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Iterable, TypeVar, Union
 
 from avilla.entity import Entity
 from avilla.execution import Execution, Result
 from avilla.group import Group
+
 from .region import Region
 
 if TYPE_CHECKING:

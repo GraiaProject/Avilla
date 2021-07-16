@@ -1,8 +1,9 @@
 from dataclasses import dataclass
-from . import Operation, Result, TargetTypes
-from ..message.chain import MessageChain
 from typing import Optional, Union
+
+from ..message.chain import MessageChain
 from ..region import Region
+from . import Operation, Result, TargetTypes
 
 
 @dataclass

@@ -1,9 +1,10 @@
 from dataclasses import dataclass
+from typing import Union
 
 from avilla.entity import Entity
-from . import Operation, TargetTypes
-from typing import Union
+
 from ..group import Group
+from . import Operation, TargetTypes
 
 
 @dataclass
@@ -29,7 +30,7 @@ class MemberUnmute(Operation):
 
 
 @dataclass
-class GroupMute(Operation): # 群组级别的禁言, MuteAll
+class GroupMute(Operation):  # 群组级别的禁言, MuteAll
     group: Union[Group, str]
     target_type = TargetTypes.GROUP
 

@@ -1,17 +1,9 @@
 from __future__ import annotations
-from typing import (
-    Iterable,
-    List,
-    NoReturn,
-    Sequence,
-    Tuple,
-    Type,
-    Union,
-    Optional,
-)
+
+import copy
+from typing import Iterable, List, NoReturn, Optional, Sequence, Tuple, Type, Union
 
 from .element import Element
-import copy
 
 MessageIndex = Tuple[int, Optional[int]]
 

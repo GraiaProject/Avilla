@@ -1,15 +1,17 @@
+from dataclasses import dataclass
 from typing import Any, Iterable, Union
+
 from avilla.builtins.profile import (
     FriendProfile,
+    GroupProfile,
     MemberProfile,
     SelfProfile,
     StrangerProfile,
-    GroupProfile,
 )
 from avilla.group import Group
-from . import Execution, Result, TargetTypes
-from dataclasses import dataclass
+
 from ..entity import Entity
+from . import Execution, Result, TargetTypes
 
 
 @dataclass

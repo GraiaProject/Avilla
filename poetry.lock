@@ -56,6 +56,20 @@ optional = false
 python-versions = ">=3.6,<4.0"
 
 [[package]]
+name = "isort"
+version = "5.9.2"
+description = "A Python utility / library to sort Python imports."
+category = "dev"
+optional = false
+python-versions = ">=3.6.1,<4.0"
+
+[package.extras]
+pipfile_deprecated_finder = ["pipreqs", "requirementslib"]
+requirements_deprecated_finder = ["pipreqs", "pip-api"]
+colors = ["colorama (>=0.4.3,<0.5.0)"]
+plugins = ["setuptools"]
+
+[[package]]
 name = "mypy-extensions"
 version = "0.4.3"
 description = "Experimental type system extensions for programs checked with the mypy typechecker."
@@ -136,7 +150,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "4e1a5c40c9e5365b56d3cc20fc04f60dc547cfb73234163eed8ce559c3b652e5"
+content-hash = "e9230c0e981b335ce5bb7d243764b7b537d340c5247dc41cec0202d1145b1280"
 
 [metadata.files]
 appdirs = [
@@ -158,6 +172,10 @@ colorama = [
 graia-broadcast = [
     {file = "graia-broadcast-0.11.3.tar.gz", hash = "sha256:35b3fed841fb457a647bbe2708cfa203f41c9f0ee115d550f04e589b583cad0c"},
     {file = "graia_broadcast-0.11.3-py3-none-any.whl", hash = "sha256:e366257288629f8e839071caa23ec74de25ddc4f2d43432f77584fa153bad0dc"},
+]
+isort = [
+    {file = "isort-5.9.2-py3-none-any.whl", hash = "sha256:eed17b53c3e7912425579853d078a0832820f023191561fcee9d7cae424e0813"},
+    {file = "isort-5.9.2.tar.gz", hash = "sha256:f65ce5bd4cbc6abdfbe29afc2f0245538ab358c14590912df638033f157d555e"},
 ]
 mypy-extensions = [
     {file = "mypy_extensions-0.4.3-py2.py3-none-any.whl", hash = "sha256:090fedd75945a69ae91ce1303b5824f428daf5a028d2f6ab8a299250a846f15d"},

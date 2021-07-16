@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from avilla.entity import Entity
+
 from . import Operation, TargetTypes
-from typing import Optional
 
 
 @dataclass
