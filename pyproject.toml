@@ -15,6 +15,7 @@ pydantic = "^1.8.2"
 singledispatch = "^3.6.2"
 yarl = "^1.6.3"
 aiohttp = "^3.7.4"
+httpx = "^0.18.2"
 
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"

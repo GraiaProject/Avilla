@@ -3,6 +3,8 @@ clients: Avilla as a Client
 """
 
 import abc
+import random
+import string
 from typing import Any, Dict, List, Union
 from yarl import URL
 
@@ -36,6 +38,10 @@ class AbstractWebsocketClient(Client, abc.ABC):
 
     def __init__(self) -> None:
         self.connections = {}
+
+    @staticmethod
+    def gen_conn_id() -> str:
+        return random.choices(string.ascii_letters + string.digits, k=12)
 
     @abc.abstractmethod
     async def connect(self, url: URL, *args, **kwargs) -> str: ...
