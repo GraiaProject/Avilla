@@ -1,8 +1,10 @@
 import asyncio
 from typing import Dict, List, Optional, Union
+
 from aiohttp import ClientSession, ClientWebSocketResponse
 from aiohttp.http_websocket import WSMsgType
 from yarl import URL
+
 from avilla.network.client import AbstractHttpClient, AbstractWebsocketClient
 from avilla.utilles.translator import OriginProvider
 
@@ -12,7 +14,7 @@ class AiohttpHttpClient(AbstractHttpClient):
 
     def __init__(self, session: ClientSession = None):
         self.session = session or ClientSession()
-    
+
     async def request(self, method: str, url: URL, *args, **kwargs) -> OriginProvider[bytes]:
         async with self.session.request(method, url, *args, **kwargs) as response:
             response.raise_for_status()
@@ -22,23 +24,24 @@ class AiohttpHttpClient(AbstractHttpClient):
         async with self.session.get(url, *args, **kwargs) as response:
             response.raise_for_status()
             return OriginProvider(await response.read())
-    
+
     async def post(self, url: URL, data: bytes, json: Union[Dict[str], List], *args, **kwargs) -> OriginProvider[bytes]:
         async with self.session.post(url, data=data, json=json, *args, **kwargs) as response:
             response.raise_for_status()
             return OriginProvider(await response.read())
-    
+
     async def put(self, url: URL, data: bytes, *args, **kwargs) -> None:
         async with self.session.put(url, data=data, *args, **kwargs) as response:
             response.raise_for_status()
-    
+
     async def delete(self, url: URL, *args, **kwargs) -> None:
         async with self.session.delete(url, *args, **kwargs) as response:
             response.raise_for_status()
-            
+
     async def patch(self, url: URL, *args, **kwargs) -> None:
         async with self.session.patch(url, *args, **kwargs) as response:
             response.raise_for_status()
+
 
 class AiohttpWebsocketClient(AbstractWebsocketClient):
     connections: Dict[str, ClientWebSocketResponse]
@@ -88,7 +91,7 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
     async def recv_text(self, connection_id: str) -> OriginProvider[str]:
         return OriginProvider((await self.recv(connection_id)).transform().decode())
 
-    async def is_closed(self, connection_id: str) -> bool: 
+    async def is_closed(self, connection_id: str) -> bool:
         if connection_id not in self.connections:
             raise ValueError("connection id doesn't exist.")
         return self.connections[connection_id].closed

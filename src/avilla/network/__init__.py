@@ -1,7 +1,3 @@
-from .client import Client, AbstractHttpClient, AbstractWebsocketClient
+from .client import AbstractHttpClient, AbstractWebsocketClient, Client
 
-__all__ = [
-    'Client',
-    'AbstractHttpClient',
-    'AbstractWebsocketClient'
-]
+__all__ = ["Client", "AbstractHttpClient", "AbstractWebsocketClient"]
