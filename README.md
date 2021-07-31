@@ -37,14 +37,17 @@ Avilla 被定义为 `Graia Project` 的 "下一代" 框架实现,
 创造出比这之前还要更加具有潜力和创造性的作品, 借此有力促进社区的发展, 助力社区的艺术家们 (Developers & Artists) 创作出更加精彩的作品.
 
 ## 相关项目
+<div align="center">
 
 星座的光芒是由一个个星点共同组成的, 震撼人心的作品也绝不会是一个人的功绩.  
 没有这些项目, Avilla 的实现就无从谈起.  
 排名不分顺序, 可能有许遗漏, 这里仅列出部分较为重要的项目.
 
+</div>
+
  - [`Nonebot Team`](https://github.com/nonebot):
     - [`Nonebot v2`](https://github.com/nonebot/nonebot2): 优秀的框架, 众多灵感正来源于此.(例如 OneBot 实现的部分)
-    - [`aiocqhtt`p](https://github.com/nonebot/aiocqhttp): 开发 Avilla for OneBot 时的参考实现.
+    - [`aiocqhttp`](https://github.com/nonebot/aiocqhttp): 开发 Avilla for OneBot 时的参考实现.
  - [`Mamoe Technologies`](https://github.com/mamoe):
     - [`mirai`](https://github.com/mamoe/mirai): The beginning, 真正做到了 "功施至今".
     - [`mirai-api-http`](https://github.com/project-mirai/mirai-api-http): python-mirai 项目曾一直服务的对象, 个人认为尚具有极大的发展空间.
