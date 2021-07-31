@@ -24,11 +24,11 @@ class ParserException(Exception):  # 解析器错误..我希望你永远不会�
     pass
 
 
-class ExecutioException(Exception):
+class ExecutionException(Exception):
     pass
 
 
-class OperationFailed(ExecutioException):
+class OperationFailed(ExecutionException):
     pass
 
 

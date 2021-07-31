@@ -4,11 +4,12 @@ import copy
 from typing import Iterable, List, NoReturn, Optional, Sequence, Tuple, Type, Union
 
 from .element import Element
+from pydantic import BaseModel
 
 MessageIndex = Tuple[int, Optional[int]]
 
 
-class MessageChain:
+class MessageChain(BaseModel):
     """即 "消息链", 被用于承载整个消息内容的数据结构, 包含有一有序列表, 包含有继承了 Element 的各式类实例.
     Example:
         1. 你可以使用 `MessageChain.create` 方法创建一个消息链:

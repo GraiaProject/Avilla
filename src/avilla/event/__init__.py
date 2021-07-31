@@ -16,7 +16,7 @@ from ..context import ctx_protocol, ctx_relationship
 
 
 class AvillaEvent(Dispatchable, Generic[T_Profile, T_GroupProfile]):
-    entity_or_group: Union[Entity[T_Profile], Group[T_Profile, T_GroupProfile]]
+    entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]]
 
     current_id: str  # = Field(default_factory=lambda: ctx_relationship.get().current.id)
     time: datetime  # = Field(default_factory=datetime.now)

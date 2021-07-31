@@ -1,11 +1,14 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractstaticmethod
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Any, Generic, Iterable, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, Generic, Iterable, Literal, Tuple, Type, TypeVar, Union
 
 from avilla.builtins.profile import SelfProfile
 from avilla.entity import Entity
 from avilla.group import Group
 from avilla.message.chain import MessageChain
+from avilla.network.client import Client
+from avilla.network.service import Service
+from avilla.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
 from avilla.profile import BaseProfile
 from avilla.relationship import Relationship
 
@@ -21,29 +24,36 @@ T_Profile = TypeVar("T_Profile")
 class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     avilla: "Avilla"
     config: T_Config
+    using_networks: Dict[str, Union[Client, Service]]
+    using_exec_method: Union[Type[ClientCommunicationMethod], Type[ServiceCommunicationMethod]]
 
     def __init__(self, avilla: "Avilla", config: T_Config) -> None:
         self.avilla = avilla
         self.config = config
+        self.using_networks, self.using_exec_method = self.ensureNetworks()
+        self.__post_init__()
 
-    @singledispatchmethod  # 用 gen_ensure_execution_method 方法生成一个吧.
-    def ensureExecution(self, relationship: Relationship, execution: "Execution") -> Any:
+    @abstractstaticmethod
+    def ensureNetworks(
+        self, avilla: "Avilla"
+    ) -> Tuple[
+        Dict[str, Union[Client, Service]], Union[Type[ClientCommunicationMethod], Type[ServiceCommunicationMethod]]
+    ]:
         raise NotImplementedError
 
-    @staticmethod
-    def gen_ensure_execution_method():
-        @singledispatchmethod
-        def ensureExecution(self, relationship: Relationship, execution: "Execution") -> Any:
-            raise NotImplementedError
+    def __post_init__(self) -> None:
+        pass
 
-        return ensureExecution
+    @singledispatchmethod  # 用util里的那个东西生成一个吧.
+    def ensureExecution(self, relationship: Relationship, execution: "Execution") -> Any:
+        raise NotImplementedError
 
     @abstractmethod
     def getSelf(self) -> "Entity[SelfProfile]":
         raise NotImplementedError
 
     @abstractmethod
-    def getMembers(self, group: Group[T_Profile, Any]) -> "Iterable[Entity[Union[SelfProfile, BaseProfile]]]":
+    async def getMembers(self, group: Group[Any]) -> "Iterable[Entity[Union[SelfProfile, BaseProfile]]]":
         raise NotImplementedError
 
     @abstractmethod

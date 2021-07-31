@@ -1,7 +1,8 @@
 import abc
-from typing import Any, Callable, Dict, Generic, List, TypeVar
+from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
 
-from avilla.utilles.translator import OriginProvider
+from avilla.network.signatures import ServiceCommunicationMethod
+from avilla.utilles.transformer import OriginProvider
 
 T_Connection = TypeVar("T_Connection")
 
@@ -14,7 +15,7 @@ class Service(Generic[T_Connection], abc.ABC):
     cb_data_received: Dict[str, List[Callable[["Service", str, bytes], None]]]
 
     @abc.abstractmethod
-    async def launchEntry(self):
+    async def launchEntry(self, config: Optional[ServiceCommunicationMethod] = None):
         ...
 
     @abc.abstractmethod

@@ -1,10 +1,11 @@
-from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
+
+from pydantic.main import BaseModel
+
 
 P = TypeVar("P")
 
 
-@dataclass
-class Entity(Generic[P]):
+class Entity(BaseModel, Generic[P]):
     id: str
     profile: P

@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import TYPE_CHECKING, Literal, Optional
+from pydantic import BaseModel
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -11,8 +11,7 @@ from ..builtins.profile import FriendProfile, MemberProfile, StrangerProfile
 from . import AvillaEvent, RelationshipDispatcher
 
 
-@dataclass
-class FriendAddRequest(AvillaEvent[StrangerProfile, None]):
+class FriendAddRequest(BaseModel, AvillaEvent[StrangerProfile, None]):
     comment: Optional[str]
     request_id: str
 
@@ -24,8 +23,7 @@ class FriendAddRequest(AvillaEvent[StrangerProfile, None]):
             pass
 
 
-@dataclass
-class GroupJoinRequest(AvillaEvent[StrangerProfile, None]):  # 主体就是类名第一个名词.
+class GroupJoinRequest(BaseModel, AvillaEvent[StrangerProfile, None]):  # 主体就是类名第一个名词.
     request_type: Literal["common", "invite"]
     target: Entity[StrangerProfile]
     comment: Optional[str]

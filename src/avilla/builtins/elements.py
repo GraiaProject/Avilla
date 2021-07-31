@@ -1,12 +1,14 @@
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Awaitable, Callable, Coroutine, NoReturn, Optional
+
+from pydantic.main import BaseModel
+
 from pathlib import Path
-from typing import Awaitable, Callable, Coroutine, NoReturn, Optional
 
 from avilla.message.element import Element
-from avilla.region import Region
+from avilla.resource import Resource
+from avilla.provider import Provider, RawProvider
 
 
-@dataclass
 class PlainText(Element):
     text: str
 
@@ -22,7 +24,6 @@ class PlainText(Element):
         return self.text
 
 
-@dataclass
 class Notice(Element):
     """该消息元素用于承载消息中用于提醒/呼唤特定用户的部分."""
 
@@ -40,7 +41,6 @@ class Notice(Element):
         return f"[$Notice:{self.target}]"
 
 
-@dataclass
 class NoticeAll(Element):
     "该消息元素用于群组中的管理员提醒群组中的所有成员"
 
@@ -51,18 +51,9 @@ class NoticeAll(Element):
         return "[$NoticeAll]"
 
 
-@dataclass(init=False)
-class Image(Element):
-    id: Optional[str] = None  # 如果平台没有, sha256一下内容, 但用户自己实例化就不必了
-    _id_region = Region("Image")
-
-    content: Callable[["Image"], Awaitable[bytes]]
-
-    def __init__(self, content: bytes, id: str = None) -> None:
-        super().__init__(
-            id=id,
-            content=content,
-        )
+class Image(BaseModel, Resource[Provider[bytes]]):
+    def __init__(self, content: bytes):
+        self.provider = RawProvider(content)
 
     @classmethod
     def fromLocalFile(cls, path: Path):
@@ -72,7 +63,5 @@ class Image(Element):
     # py 没有方法重载, 也没有扩展方法, 真是 toy.
 
 
-@dataclass
 class Quote(Element):
     id: str
-    _id_region = Region("Message")

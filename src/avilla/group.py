@@ -1,14 +1,11 @@
-from dataclasses import dataclass
-from typing import AsyncIterable, Generic, Iterable, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from .entity import Entity
+from pydantic.main import BaseModel
 
-T_EntityProfile = TypeVar("T_EntityProfile")
+
 T_GroupProfile = TypeVar("T_GroupProfile")
 
 
-@dataclass
-class Group(Generic[T_EntityProfile, T_GroupProfile]):
+class Group(BaseModel, Generic[T_GroupProfile]):
     id: str
-    entities: AsyncIterable[Entity[T_EntityProfile]]  # 因为是懒加载.
     profile: T_GroupProfile

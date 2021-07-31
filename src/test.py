@@ -5,7 +5,6 @@ import avilla.exceptions
 import avilla.group
 import avilla.profile
 import avilla.protocol
-import avilla.region
 import avilla.relationship
 import avilla.role
 import avilla.builtins

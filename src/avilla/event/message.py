@@ -6,6 +6,7 @@ from typing import Literal, Union
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from pydantic.main import BaseModel
 
 from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile
 from avilla.context import ctx_relationship
@@ -13,7 +14,6 @@ from avilla.entity import Entity
 from avilla.group import Group, T_GroupProfile
 from avilla.message.chain import MessageChain
 from avilla.protocol import T_Profile
-from avilla.region import Region
 
 from . import AvillaEvent, MessageChainDispatcher, RelationshipDispatcher
 
@@ -22,13 +22,12 @@ from . import AvillaEvent, MessageChainDispatcher, RelationshipDispatcher
 class MessageEvent(AvillaEvent[T_Profile, T_GroupProfile]):
     message: MessageChain
     id: str
-    _id_region = Region("Message")
 
     ## sender: see [AvillaEvent]
 
     def __init__(
         self,
-        entity_or_group: Union[Entity[T_Profile], Group[T_Profile, T_GroupProfile]],
+        entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]],
         message: MessageChain,
         message_id: str,
         current_id: str = None,
@@ -48,13 +47,11 @@ class MessageEvent(AvillaEvent[T_Profile, T_GroupProfile]):
             pass
 
 
-@dataclass
-class FriendMessage(MessageEvent[FriendProfile, None]):
+class FriendMessage(BaseModel, MessageEvent[FriendProfile, None]):
     pass
 
 
-@dataclass
-class TempMessage(MessageEvent[MemberProfile, GroupProfile]):
+class TempMessage(BaseModel, MessageEvent[MemberProfile, GroupProfile]):
     pass
 
 
@@ -67,7 +64,7 @@ class GroupMessage(MessageEvent[MemberProfile, GroupProfile]):
 
     def __init__(
         self,
-        entity_or_group: Union[Entity[T_Profile], Group[T_Profile, T_GroupProfile]],
+        entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]],
         message: MessageChain,
         message_id: str,
         current_id: str = None,

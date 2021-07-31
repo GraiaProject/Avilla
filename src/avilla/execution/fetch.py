@@ -1,53 +1,37 @@
-from dataclasses import dataclass
-from typing import Any, Iterable, Union
+from typing import TYPE_CHECKING, Any, Iterable, Union
 
-from avilla.builtins.profile import (
-    FriendProfile,
-    GroupProfile,
-    MemberProfile,
-    SelfProfile,
-    StrangerProfile,
-)
+from pydantic.main import BaseModel
+
+from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile, SelfProfile, StrangerProfile
 from avilla.group import Group
 
 from ..entity import Entity
-from . import Execution, Result, TargetTypes
+from . import Execution, Result
 
 
-@dataclass
-class FetchBot(Result[SelfProfile]):
-    target_type = TargetTypes.NONE
+class FetchBot(BaseModel, Result[SelfProfile], Execution[None]):
+    pass
 
 
-@dataclass
-class FetchStranger(Result[StrangerProfile]):
-    target_type = TargetTypes.NONE
+class FetchStranger(BaseModel, Result[StrangerProfile], Execution[None]):
+    pass
 
 
-@dataclass
-class FetchFriends(Result[Iterable[Entity[FriendProfile]]]):
-    target_type = TargetTypes.NONE
+class FetchFriends(BaseModel, Result[Iterable[Entity[FriendProfile]]], Execution[None]):
+    pass
 
 
-@dataclass
-class FetchGroup(Result[Group[Any, GroupProfile]]):
-    id: str
-    target_type = TargetTypes.GROUP
+class FetchGroup(BaseModel, Result[Group[GroupProfile]], Execution[Union[Group, str]]):
+    id: str  # type: ignore
 
 
-@dataclass
-class FetchGroups(Result[Iterable[Group[Any, GroupProfile]]]):
-    target_type = TargetTypes.NONE
+class FetchGroups(BaseModel, Result[Iterable[Group[GroupProfile]]], Execution[None]):
+    pass
 
 
-@dataclass
-class FetchMember(Result[Entity[MemberProfile]]):
-    group: Union[Group, str]
-    member: Union[Entity, str]
-    target_type = TargetTypes.CTX
+class FetchMember(BaseModel, Result[Entity[MemberProfile]], Execution[str]):
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class FetchMembers(Result[Iterable[Entity[MemberProfile]]]):
-    group: Union[Group, str]
-    target_type = TargetTypes.GROUP
+class FetchMembers(BaseModel, Result[Iterable[Entity[MemberProfile]]], Execution[Union[Group, str]]):
+    pass

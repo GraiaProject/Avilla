@@ -1,43 +1,50 @@
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
+
+from pydantic.main import BaseModel
+from datetime import datetime
+
+
+from avilla.entity import Entity
 
 from ..message.chain import MessageChain
-from ..region import Region
-from . import Operation, Result, TargetTypes
+from . import Execution, Operation, Result
+
+EntityExecution = Execution[Union[Entity, str]]
 
 
 @dataclass
 class MessageId:
     id: str  # 记得加上群组或者好友的ID.
-    _id_region = Region("Message")
 
 
-@dataclass
-class MessageSend(Result[MessageId]):
-    message: MessageChain
+class MessageSend(BaseModel, Result[MessageId], EntityExecution):
+    message: MessageChain  # type: ignore
     reply: Optional[str] = None
-    target = TargetTypes.CTX
 
 
-@dataclass
-class MessageRevoke(Operation):
-    message_id: Union[MessageId, str]
-    target = TargetTypes.MSG
+class MessageRevoke(BaseModel, Operation, EntityExecution):
+    message_id: Union[MessageId, str]  # type: ignore
 
 
-@dataclass
-class MessageEdit(Operation):
-    message_id: Union[MessageId, str]
-    to: MessageChain
-    target = TargetTypes.MSG
+class MessageEdit(BaseModel, Operation, EntityExecution):
+    message_id: Union[MessageId, str]  # type: ignore
+    to: MessageChain  # type: ignore
 
 
-@dataclass
-class MessageFetch(Result[MessageChain]):
-    message_id: Union[MessageId, str]
-    target = TargetTypes.MSG
+class MessageFetch(BaseModel, Result["MessageFetchResult"], EntityExecution):
+    message_id: Union[MessageId, str]  # type: ignore
 
 
-@dataclass
-class MessageSendPrivate(MessageSend):
+class MessageFetchResult(BaseModel):
+    time: datetime
+    message_type: str
+    message_id: str
+    message: MessageChain
+
+    class Config:
+        extra = "ignore"
+
+
+class MessageSendPrivate(MessageSend, EntityExecution):
     pass

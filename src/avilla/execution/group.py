@@ -1,84 +1,65 @@
-from dataclasses import dataclass
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
+from pydantic.main import BaseModel
+
+
+from avilla.builtins.profile import MemberProfile
 from avilla.entity import Entity
 
 from ..group import Group
-from . import Operation, TargetTypes
+from . import Execution, Operation
+
+GroupExecution = Execution[Union[Group, str]]
+MemberExecution = Execution[Union[Entity[MemberProfile], str]]
 
 
-@dataclass
-class MemberRemove(Operation):
-    group: Union[Group, str]
-    target: Union[Entity, str]
-    target_type = TargetTypes.RSMEMBER | TargetTypes.ENTITY
+class MemberRemove(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class MemberMute(Operation):
-    group: Union[Group, str]
-    target: Union[Entity, str]
-    duration: int
-    target_type = TargetTypes.RSMEMBER | TargetTypes.ENTITY
+class MemberMute(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
+    duration: int  # type: ignore
 
 
-@dataclass
-class MemberUnmute(Operation):
-    group: Union[Group, str]
-    target: Union[Entity, str]
-    target_type = TargetTypes.RSMEMBER | TargetTypes.ENTITY
+class MemberUnmute(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class GroupMute(Operation):  # 群组级别的禁言, MuteAll
-    group: Union[Group, str]
-    target_type = TargetTypes.GROUP
+class GroupMute(Operation, GroupExecution):  # 群组级别的禁言, MuteAll
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class GroupUnmute(Operation):
-    group: Union[Group, str]
-    target_type = TargetTypes.GROUP
+class GroupUnmute(Operation, GroupExecution):
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class MemberPromoteToAdministrator(Operation):
-    group: Union[Group, str]
-    target: Union[Entity, str]
-    target_type = TargetTypes.RSMEMBER | TargetTypes.GROUP
+class MemberPromoteToAdministrator(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class MemberDemoteFromAdministrator(Operation):
-    group: Union[Group, str]
-    target: Union[Entity, str]
-    target_type = TargetTypes.RSMEMBER | TargetTypes.GROUP
+class MemberDemoteFromAdministrator(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class MemberNicknameSet(Operation):
-    group: Union[Group, str]
-    target: Union[Entity, str]
-    nickname: str
-    target_type = TargetTypes.RSMEMBER | TargetTypes.GROUP
+class MemberNicknameSet(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
+    nickname: str  # type: ignore
 
 
-@dataclass
-class GroupNameSet(Operation):
-    group: Union[Group, str]
-    name: str
-    target_type = TargetTypes.GROUP
+class MemberNicknameClear(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
 
 
-@dataclass
-class GroupLeave(Operation):
-    group: Union[Group, str]
-    target_type = TargetTypes.GROUP | TargetTypes.RS
+class GroupNameSet(Operation, GroupExecution):
+    group: Union[Group, str]  # type: ignore
+    name: str  # type: ignore
 
 
-@dataclass
-class MemberSpecialTitleSet(Operation):
-    group: Union[Group, str]
-    target: Union[Entity, str]
-    title: str
-    target_type = TargetTypes.GROUP
+class GroupLeave(Operation, GroupExecution):
+    group: Union[Group, str]  # type: ignore
+
+
+class MemberSpecialTitleSet(Operation, MemberExecution):
+    group: Union[Group, str]  # type: ignore
+    title: str  # type: ignore

@@ -1,33 +1,23 @@
-from dataclasses import dataclass
 from enum import IntEnum
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
+
+from pydantic.main import BaseModel
 
 
-class TargetTypes(IntEnum):
-    NONE = 0b000000
-    CTX = 0b000011
-    PROTOCOL = 0b000100
-    ENTITY = 0b000001
-    GROUP = 0b000010
-    RS = 0b001000
-    RSMEMBER = 0b010000
-    MSG = 0b100000
+T_Target = TypeVar("T_Target")
 
 
-@dataclass
-class Execution:
-    target: TargetTypes
+class Execution(Generic[T_Target]):
+    target: T_Target = None
 
 
 T_Result = TypeVar("T_Result")
 
 
-@dataclass
-class Result(Generic[T_Result], Execution):
+class Result(Generic[T_Result]):
     pass
 
 
-@dataclass
-class Operation(Result[None]):
+class Operation(Result[None], Execution[Any]):
     "操作成功返回 None, 否则应抛出错误."
     ...

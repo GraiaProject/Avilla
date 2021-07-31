@@ -1,12 +1,13 @@
 import asyncio
-from typing import Dict, List, Optional, Union
+import traceback
+from typing import Callable, Dict, List, Optional, Union
 
 from aiohttp import ClientSession, ClientWebSocketResponse
 from aiohttp.http_websocket import WSMsgType
 from yarl import URL
 
 from avilla.network.client import AbstractHttpClient, AbstractWebsocketClient
-from avilla.utilles.translator import OriginProvider
+from avilla.utilles.transformer import OriginProvider
 
 
 class AiohttpHttpClient(AbstractHttpClient):
@@ -47,25 +48,38 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
     connections: Dict[str, ClientWebSocketResponse]
     session: ClientSession
 
-    data_queues: Dict[str, asyncio.Future]
-
     def __init__(self, session: ClientSession = None):
         self.session = session or ClientSession()
-        self.data_queues = {}
         super().__init__()
 
     async def connection_handler(self, id: str, url: URL, *args, **kwargs):
         async with self.session.ws_connect(url, *args, **kwargs) as ws:
             self.connections[id] = ws
+            self.cb_connection_created.setdefault(id, [])
+            self.cb_connection_closed.setdefault(id, [])
+            self.cb_data_received.setdefault(id, [])
+
+            for i in self.cb_connection_created[id]:
+                i(self, id)
+
             async for message in ws:
                 if ws.closed:
-                    break
-                get_req: Optional[asyncio.Future] = self.data_queues.get(id)
-                if get_req and not get_req.done():
-                    get_req.set_result(message.data)
+                    try:
+                        for i in self.cb_connection_closed[id]:
+                            i(self, id)
+                    except:
+                        traceback.print_exc()
+                if message.type == WSMsgType.TEXT or message.type == WSMsgType.BINARY:
+                    try:
+                        for i in self.cb_data_received[id]:
+                            i(self, id, message.data)
+                    except:
+                        traceback.print_exc()
 
     def connect(self, url: URL, *args, **kwargs) -> None:
-        asyncio.get_running_loop().create_task(self.connection_handler(url, *args, **kwargs))
+        asyncio.get_running_loop().create_task(
+            self.connection_handler(kwargs.get("account") or self.gen_conn_id(), url, *args, **kwargs)
+        )
 
     async def close(self, connection_id: str, code: int) -> None:
         if connection_id not in self.connections:
@@ -79,17 +93,6 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
 
     async def send_text(self, connection_id: str, text: str) -> None:
         await self.send(connection_id, text.encode())
-
-    async def recv(self, connection_id: str) -> OriginProvider[bytes]:
-        if connection_id not in self.connections:
-            raise ValueError("connection id doesn't exist.")
-        self.data_queues[connection_id] = asyncio.get_running_loop().create_future()
-        data = await self.data_queues[connection_id]
-        del self.data_queues[connection_id]
-        return OriginProvider(data)
-
-    async def recv_text(self, connection_id: str) -> OriginProvider[str]:
-        return OriginProvider((await self.recv(connection_id)).transform().decode())
 
     async def is_closed(self, connection_id: str) -> bool:
         if connection_id not in self.connections:

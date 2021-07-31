@@ -1,27 +1,25 @@
-from dataclasses import dataclass
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+from pydantic.main import BaseModel
+
 
 from avilla.entity import Entity
 
-from . import Operation, TargetTypes
+from . import Operation
 
 
-@dataclass
-class RequestHandle(Operation):
-    target_type = TargetTypes.CTX | TargetTypes.RS
+class RequestHandle(BaseModel, Operation):
+    ...
 
 
-@dataclass
 class RequestApprove(RequestHandle):
     ...
 
 
-@dataclass
 class RequestDeny(RequestHandle):
     reason: Optional[str] = None
     block: bool = False
 
 
-@dataclass
 class RequestIgnore(RequestHandle):
     block: bool = False
