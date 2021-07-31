@@ -22,3 +22,4 @@ import avilla.execution.message
 import avilla.execution.request
 import avilla.message.chain
 import avilla.message.element
+import avilla.onebot.protocol

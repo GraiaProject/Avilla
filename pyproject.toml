@@ -16,7 +16,6 @@ yarl = "^1.6.3"
 aiohttp = "^3.7.4"
 aiofiles = "^0.7.0"
 immutables = "^0.15"
-isort = "^5.9.3"
 
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"
