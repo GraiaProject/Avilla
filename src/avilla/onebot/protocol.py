@@ -132,7 +132,7 @@ class OnebotProtocol(BaseProtocol):
                     {
                         "type": "image",
                         "data": {
-                            "url": f"base64://{base64.standard_b64encode(await element.provider()).decode('utf-8')}"
+                            "file": f"base64://{base64.standard_b64encode(await element.provider()).decode('utf-8')}"
                         },
                     }
                 )
