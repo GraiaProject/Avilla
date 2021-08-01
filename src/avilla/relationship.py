@@ -37,5 +37,17 @@ class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
             *[i for i in await self.protocol.get_members(self.entity_or_group) if i.id != self.current.id],
         ]
 
-    async def exec(self, execution: Execution) -> Any:
-        return await self.protocol.ensure_execution(relationship=self, execution=execution)
+    async def exec(self, *args, **kwargs) -> Any:
+        assert 0 < len(args) <= 2
+        if len(args) == 1:
+            execution = args[0]
+        else:
+            target, execution = args
+            return await self.protocol.ensure_execution(relationship=self, execution=execution.with_target(target))
+        if kwargs.get("target"):
+            target = kwargs["target"]
+            return await self.protocol.ensure_execution(relationship=self, execution=execution.with_target(target))
+        else:
+            return await self.protocol.ensure_execution(
+                relationship=self, execution=execution.with_target(self.entity_or_group)
+            )

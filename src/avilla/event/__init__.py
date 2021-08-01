@@ -1,8 +1,8 @@
-import traceback
+from types import TracebackType
 import typing
 from contextvars import Token
 from datetime import datetime
-from typing import Dict, Generic, Union
+from typing import Dict, Generic, Optional, Union
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
@@ -35,7 +35,9 @@ class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, �
         _Dispatcher_Tokens[id(interface.event)] = token
 
     @staticmethod
-    async def afterExecution(interface: "DispatcherInterface"):
+    async def afterExecution(
+        interface: "DispatcherInterface", exception: Optional[Exception], tb: Optional[TracebackType]
+    ):
         del _Dispatcher_Tokens[id(interface.event)]
 
     @staticmethod

@@ -16,28 +16,27 @@ MemberExecution = Execution[Union[Entity[MemberProfile], str]]
 class MemberRemove(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str]):
-        super().__init__(group=group, target=target)
+    def __init__(self, group: Union[Group, str]):
+        super().__init__(group=group)
 
 
 class MemberMute(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
     duration: int  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str], duration: int):
-        super().__init__(group=group, target=target, duration=duration)
+    def __init__(self, group: Union[Group, str], duration: int):
+        super().__init__(group=group, duration=duration)
 
 
 class MemberUnmute(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str]):
-        super().__init__(group=group, target=target)
+    def __init__(self, group: Union[Group, str]):
+        super().__init__(group=group)
 
 
 class GroupMute(Operation, GroupExecution):  # 群组级别的禁言, MuteAll
-    def __init__(self, group: Union[Group, str]):
-        super().__init__(target=group)
+    pass
 
 
 class GroupUnmute(Operation, GroupExecution):
@@ -48,30 +47,30 @@ class GroupUnmute(Operation, GroupExecution):
 class MemberPromoteToAdministrator(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str]):
-        super().__init__(group=group, target=target)
+    def __init__(self, group: Union[Group, str]):
+        super().__init__(group=group)
 
 
 class MemberDemoteFromAdministrator(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str]):
-        super().__init__(group=group, target=target)
+    def __init__(self, group: Union[Group, str]):
+        super().__init__(group=group)
 
 
 class MemberNicknameSet(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
     nickname: str  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str], nickname: str):
-        super().__init__(group=group, target=target, nickname=nickname)
+    def __init__(self, group: Union[Group, str], nickname: str):
+        super().__init__(group=group, nickname=nickname)
 
 
 class MemberNicknameClear(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str]):
-        super().__init__(group=group, target=target)
+    def __init__(self, group: Union[Group, str]):
+        super().__init__(group=group)
 
 
 class GroupNameSet(Operation, GroupExecution):
@@ -92,5 +91,5 @@ class MemberSpecialTitleSet(Operation, MemberExecution):
     group: Union[Group, str]  # type: ignore
     title: str  # type: ignore
 
-    def __init__(self, group: Union[Group, str], target: Union[Entity[MemberProfile], str], title: str):
-        super().__init__(group=group, target=target, title=title)
+    def __init__(self, group: Union[Group, str], title: str):
+        super().__init__(group=group, title=title)

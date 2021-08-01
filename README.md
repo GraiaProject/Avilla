@@ -11,14 +11,18 @@ _The next-gen framework for IM development._
   <a href="https://github.com/howmanybots/onebot/blob/master/README.md">
     <img src="https://img.shields.io/badge/OneBot-v11-blue?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABABAMAAABYR2ztAAAAIVBMVEUAAAAAAAADAwMHBwceHh4UFBQNDQ0ZGRkoKCgvLy8iIiLWSdWYAAAAAXRSTlMAQObYZgAAAQVJREFUSMftlM0RgjAQhV+0ATYK6i1Xb+iMd0qgBEqgBEuwBOxU2QDKsjvojQPvkJ/ZL5sXkgWrFirK4MibYUdE3OR2nEpuKz1/q8CdNxNQgthZCXYVLjyoDQftaKuniHHWRnPh2GCUetR2/9HsMAXyUT4/3UHwtQT2AggSCGKeSAsFnxBIOuAggdh3AKTL7pDuCyABcMb0aQP7aM4AnAbc/wHwA5D2wDHTTe56gIIOUA/4YYV2e1sg713PXdZJAuncdZMAGkAukU9OAn40O849+0ornPwT93rphWF0mgAbauUrEOthlX8Zu7P5A6kZyKCJy75hhw1Mgr9RAUvX7A3csGqZegEdniCx30c3agAAAABJRU5ErkJggg==" alt="onebot_v11">
   </a>
+  <img alt="PyPI" src="https://img.shields.io/pypi/v/avilla-core">
+  <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="code_style">
 </p>
 
-> "艾维莉亚(Avilla) .......希望这位楚楚可怜的少女, 能和她的血亲, 一位有着许多故事的可怜少女, 在旅途中创造故事的同时, 找到她们的新的故乡."
+> "艾维莉亚(Avilla) .......希望这位楚楚可怜的少女, 能和她的血亲, 有着许多故事的少女, 在旅途中创造故事的同时, 找到她们的新的故乡."
 
 
 Avilla 被定义为 `Graia Project` 的 "下一代" 框架实现,
 通过对 [`OneBot`](https://github.com/botuniverse/onebot), [`Telegram Bot API`](https://core.telegram.org/bots) 及其他的基于不同即时通讯软件实现的各式对接接口进行总结,
 并抽象 `Relationship` 这一最为基本的模型, 构造了一个理论上可以实现零成本切换对接平台的框架.
+
+> 项目名称取自日本轻小说 《魔女之旅》 的角色 "艾维莉亚(Avilla)".
 
 ## Roadmap
 

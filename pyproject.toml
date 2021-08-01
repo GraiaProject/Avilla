@@ -5,7 +5,8 @@ description = ""
 authors = ["GreyElaina <GreyElaina@outlook.com>"]
 license = "MiT"
 packages = [
-    { include = "avilla", from = "src" }
+    { include = "avilla", from = "src" },
+    { include = "avilla/py.typed", from = "src" },
 ]
 
 [tool.poetry.dependencies]

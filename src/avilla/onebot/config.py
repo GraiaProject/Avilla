@@ -34,7 +34,7 @@ class ReverseWebsocketCommunication(BaseModel, ServiceCommunicationMethod):
 
 
 class OnebotConfig(BaseSettings):
-    access_token: str
+    access_token: str = None
     bot_id: str
 
     # 暂时只支持 aiohttp 的 client 模式(使用 websocket 获取事件什么的..)

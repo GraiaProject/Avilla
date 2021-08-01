@@ -132,7 +132,7 @@ class OnebotProtocol(BaseProtocol):
                     {
                         "type": "image",
                         "data": {
-                            "file": f"base64://{base64.standard_b64encode(await element.provider()).decode('utf-8')}"
+                            "file": f"base64://{base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
                         },
                     }
                 )
@@ -144,7 +144,7 @@ class OnebotProtocol(BaseProtocol):
         return result
 
     async def get_relationship(
-        self, entity: "Entity[Union[MemberProfile, FriendProfile]]"
+        self, entity: "Union[Entity[Union[MemberProfile, FriendProfile]], Group[GroupProfile]]"
     ) -> "Relationship[Union[MemberProfile, FriendProfile], GroupProfile, OnebotProtocol]":
         return Relationship(entity, self)
 
@@ -654,8 +654,13 @@ class OnebotProtocol(BaseProtocol):
                 "/send_group_msg",
                 {
                     "group_id": int(
-                        (isinstance(execution.target, Group) and execution.target.id or execution.target)
-                        or relationship.entity_or_group.profile.group.id
+                        (
+                            isinstance(execution.target.profile, MemberProfile)
+                            and execution.target.profile.group.id
+                            or isinstance(execution.target, Group)
+                            and execution.target.id
+                            or execution.target
+                        )
                     ),
                     "message": await self.serialize_message(execution.message),
                 },
@@ -666,14 +671,11 @@ class OnebotProtocol(BaseProtocol):
                 {
                     "user_id": int(
                         (
-                            (
-                                isinstance(execution.target, Entity)
-                                and isinstance(execution.target.profile, FriendProfile)
-                            )
+                            isinstance(execution.target, Entity)
+                            and isinstance(execution.target.profile, FriendProfile)
                             and execution.target.id
                             or execution.target
                         )
-                        or relationship.entity_or_group.id
                     ),
                     "message": await self.serialize_message(execution.message),
                 },
@@ -688,8 +690,13 @@ class OnebotProtocol(BaseProtocol):
                 "send_group_msg",
                 {
                     "group_id": int(
-                        (isinstance(execution.target, Group) and execution.target.id or execution.target)
-                        or relationship.entity_or_group.profile.group.id
+                        (
+                            isinstance(execution.target.profile, MemberProfile)
+                            and execution.target.profile.group.id
+                            or isinstance(execution.target, Group)
+                            and execution.target.id
+                            or execution.target
+                        )
                     ),
                     "message": await self.serialize_message(execution.message),
                 },
@@ -700,14 +707,11 @@ class OnebotProtocol(BaseProtocol):
                 {
                     "user_id": int(
                         (
-                            (
-                                isinstance(execution.target, Entity)
-                                and isinstance(execution.target.profile, FriendProfile)
-                            )
+                            isinstance(execution.target, Entity)
+                            and isinstance(execution.target.profile, FriendProfile)
                             and execution.target.id
                             or execution.target
                         )
-                        or relationship.entity_or_group.id
                     ),
                     "message": await self.serialize_message(execution.message),
                 },

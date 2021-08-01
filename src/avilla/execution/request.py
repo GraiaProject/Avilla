@@ -8,7 +8,7 @@ from avilla.entity import Entity
 from . import Operation
 
 
-class RequestHandle(BaseModel, Operation[str]):
+class RequestHandle(Operation[str]):
     ...
 
 
