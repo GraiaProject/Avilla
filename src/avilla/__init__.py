@@ -2,6 +2,7 @@ import asyncio
 from typing import Dict, Generic, Type, TypeVar, Union
 
 from graia.broadcast import Broadcast
+from avilla.event import MessageChainDispatcher, RelationshipDispatcher
 
 from avilla.network.client import Client
 from avilla.network.interface import NetworkInterface
@@ -27,11 +28,13 @@ class Avilla(Generic[T_Protocol, T_Config]):
     ):
         self.broadcast = broadcast
         self.network_interface = NetworkInterface(networks)
-        self.protocol = protocol(self, configs.get(protocol.__class__))
+        self.protocol = protocol(self, configs.get(protocol))
         self.configs = configs
 
+        self.broadcast.dispatcher_interface.inject_global_raw(RelationshipDispatcher(), MessageChainDispatcher())
+
     async def launch(self):
-        return await self.protocol.launchEntry()
+        return await self.protocol.launch_entry()
 
     def launch_blocking(self):
         asyncio.get_event_loop().run_until_complete(self.launch())

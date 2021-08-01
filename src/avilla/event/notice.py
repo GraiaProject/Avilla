@@ -22,7 +22,7 @@ class FileInfo:
     size: int
 
 
-class GroupFileUploadNotice(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class GroupFileUploadNotice(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     file: FileInfo
 
@@ -34,7 +34,7 @@ class GroupFileUploadNotice(BaseModel, AvillaEvent[MemberProfile, GroupProfile])
             pass
 
 
-class MemberPromotedToAdministrator(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class MemberPromotedToAdministrator(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[MemberProfile]
 
@@ -46,7 +46,7 @@ class MemberPromotedToAdministrator(BaseModel, AvillaEvent[MemberProfile, GroupP
             pass
 
 
-class MemberDemotedFromAdministrator(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class MemberDemotedFromAdministrator(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[MemberProfile]
 
@@ -58,7 +58,7 @@ class MemberDemotedFromAdministrator(BaseModel, AvillaEvent[MemberProfile, Group
             pass
 
 
-class MemberLeave(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class MemberLeave(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
 
     class Dispatcher(BaseDispatcher):
@@ -69,7 +69,7 @@ class MemberLeave(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
             pass
 
 
-class MemberRemoved(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class MemberRemoved(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[None]
 
@@ -81,7 +81,7 @@ class MemberRemoved(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
             pass
 
 
-class MemberJoinedByApprove(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class MemberJoinedByApprove(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[MemberProfile]
 
@@ -93,7 +93,7 @@ class MemberJoinedByApprove(BaseModel, AvillaEvent[MemberProfile, GroupProfile])
             pass
 
 
-class MemberJoinedByInvite(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class MemberJoinedByInvite(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[MemberProfile]
 
@@ -105,7 +105,7 @@ class MemberJoinedByInvite(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
             pass
 
 
-class MemberMuted(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class MemberMuted(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[MemberProfile]
     duration: timedelta
@@ -118,7 +118,7 @@ class MemberMuted(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
             pass
 
 
-class GroupRevoke(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
+class GroupRevoke(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[None]
     message_id: str
@@ -131,7 +131,7 @@ class GroupRevoke(BaseModel, AvillaEvent[MemberProfile, GroupProfile]):
             pass
 
 
-class FriendAdd(BaseModel, AvillaEvent[FriendProfile, None]):  # 好友添加的 Notice.... 怪(因为已经有 Request 了)
+class FriendAdd(AvillaEvent[FriendProfile, None]):  # 好友添加的 Notice.... 怪(因为已经有 Request 了)
     class Dispatcher(BaseDispatcher):
         mixin = [RelationshipDispatcher]
 
@@ -140,7 +140,7 @@ class FriendAdd(BaseModel, AvillaEvent[FriendProfile, None]):  # 好友添加的
             pass
 
 
-class FriendRevoke(BaseModel, AvillaEvent[FriendProfile, None]):
+class FriendRevoke(AvillaEvent[FriendProfile, None]):
     message_id: str
 
     class Dispatcher(BaseDispatcher):

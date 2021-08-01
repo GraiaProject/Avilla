@@ -30,12 +30,12 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     def __init__(self, avilla: "Avilla", config: T_Config) -> None:
         self.avilla = avilla
         self.config = config
-        self.using_networks, self.using_exec_method = self.ensureNetworks()
+        self.using_networks, self.using_exec_method = self.ensure_networks()
         self.__post_init__()
 
     @abstractstaticmethod
-    def ensureNetworks(
-        self, avilla: "Avilla"
+    def ensure_networks(
+        self,
     ) -> Tuple[
         Dict[str, Union[Client, Service]], Union[Type[ClientCommunicationMethod], Type[ServiceCommunicationMethod]]
     ]:
@@ -45,29 +45,29 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         pass
 
     @singledispatchmethod  # 用util里的那个东西生成一个吧.
-    def ensureExecution(self, relationship: Relationship, execution: "Execution") -> Any:
+    def ensure_execution(self, relationship: Relationship, execution: "Execution") -> Any:
         raise NotImplementedError
 
     @abstractmethod
-    def getSelf(self) -> "Entity[SelfProfile]":
+    def get_self(self) -> "Entity[SelfProfile]":
         raise NotImplementedError
 
     @abstractmethod
-    async def getMembers(self, group: Group[Any]) -> "Iterable[Entity[Union[SelfProfile, BaseProfile]]]":
+    async def get_members(self, group: Group[Any]) -> "Iterable[Entity[Union[SelfProfile, BaseProfile]]]":
         raise NotImplementedError
 
     @abstractmethod
-    async def parseMessage(self, data: Any) -> "MessageChain":
+    async def parse_message(self, data: Any) -> "MessageChain":
         raise NotImplementedError
 
     @abstractmethod
-    async def serializeMessage(self, message: "MessageChain") -> Any:
+    async def serialize_message(self, message: "MessageChain") -> Any:
         raise NotImplementedError
 
     @abstractmethod
-    def getRelationship(self, entity: "Entity[T_Profile]") -> "Relationship[T_Profile, Any, BaseProtocol]":
+    def get_relationship(self, entity: "Entity[T_Profile]") -> "Relationship[T_Profile, Any, BaseProtocol]":
         raise NotImplementedError
 
     @abstractmethod
-    async def launchEntry(self):  # maybe need change.
+    async def launch_entry(self):  # maybe need change.
         raise NotImplementedError

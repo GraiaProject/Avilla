@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from aiohttp import ClientSession, ClientWebSocketResponse
 from aiohttp.http_websocket import WSMsgType
@@ -8,6 +8,8 @@ from yarl import URL
 
 from avilla.network.client import AbstractHttpClient, AbstractWebsocketClient
 from avilla.utilles.transformer import OriginProvider
+
+from avilla import context as ctx
 
 
 class AiohttpHttpClient(AbstractHttpClient):
@@ -26,7 +28,7 @@ class AiohttpHttpClient(AbstractHttpClient):
             response.raise_for_status()
             return OriginProvider(await response.read())
 
-    async def post(self, url: URL, data: bytes, json: Union[Dict[str], List], *args, **kwargs) -> OriginProvider[bytes]:
+    async def post(self, url: URL, data: bytes, json: Union[Dict, List], *args, **kwargs) -> OriginProvider[bytes]:
         async with self.session.post(url, data=data, json=json, *args, **kwargs) as response:
             response.raise_for_status()
             return OriginProvider(await response.read())
@@ -72,13 +74,18 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
                 if message.type == WSMsgType.TEXT or message.type == WSMsgType.BINARY:
                     try:
                         for i in self.cb_data_received[id]:
-                            i(self, id, message.data)
+                            await i(self, id, message.data)
                     except:
                         traceback.print_exc()
 
     def connect(self, url: URL, *args, **kwargs) -> None:
-        asyncio.get_running_loop().create_task(
-            self.connection_handler(kwargs.get("account") or self.gen_conn_id(), url, *args, **kwargs)
+        return asyncio.get_running_loop().create_task(
+            self.connection_handler(
+                kwargs.get("account") or self.gen_conn_id(),
+                url,
+                *args,
+                **{k: v for k, v in kwargs.items() if k != "account"},
+            )
         )
 
     async def close(self, connection_id: str, code: int) -> None:
@@ -92,7 +99,14 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
         await self.connections[connection_id].send_bytes(data)
 
     async def send_text(self, connection_id: str, text: str) -> None:
-        await self.send(connection_id, text.encode())
+        if connection_id not in self.connections:
+            raise ValueError("connection id doesn't exist.")
+        await self.connections[connection_id].send_str(text)
+
+    async def send_json(self, connection_id: str, data: Dict[str, Any]) -> None:
+        if connection_id not in self.connections:
+            raise ValueError("connection id doesn't exist.")
+        await self.connections[connection_id].send_json(data)
 
     async def is_closed(self, connection_id: str) -> bool:
         if connection_id not in self.connections:

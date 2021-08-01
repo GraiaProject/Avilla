@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Literal, Optional
 
 from pydantic.main import BaseModel
+from avilla.group import Group
 
 
 from avilla.role import Role
@@ -24,13 +25,14 @@ class FriendProfile(BaseModel, BaseProfile):
 
 
 class GroupProfile(BaseModel, BaseProfile):
-    name: str
+    name: str = None
     counts: Optional[int] = None
     limit: Optional[int] = None
 
 
 class MemberProfile(BaseModel, BaseProfile):
     name: str
-    role: Role
+    group: Optional[Group[GroupProfile]] = None
+    role: Role = None
     nickname: Optional[str] = None
     title: Optional[str] = None

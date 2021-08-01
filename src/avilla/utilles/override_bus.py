@@ -14,7 +14,7 @@ class OverrideException(Exception):
 
 
 class OverrideBus(Generic[T_Protocol]):
-    "specially for [BaseProtocol.ensureExecution]"
+    "specially for [BaseProtocol.ensure_execution]"
     param_receiver: Callable
     overrides: Dict[Map, Callable]
     pattern: Dict[str, T_SubBus]
@@ -42,7 +42,7 @@ class OverrideBus(Generic[T_Protocol]):
     def override(self, **pattern):
         def decorator(func):
             self.overrides[
-                Map(**{k: v if k in pattern else self.default_factories[k]() for k, v in self.pattern.items()})
+                Map(**{k: pattern[k] if k in pattern else self.default_factories[k]() for k in self.pattern.keys()})
             ] = func
             return func
 

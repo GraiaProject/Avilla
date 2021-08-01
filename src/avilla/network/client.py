@@ -104,5 +104,9 @@ class AbstractWebsocketClient(Client, abc.ABC):
         ...
 
     @abc.abstractmethod
+    async def send_json(self, connection_id: str, data: Dict[str, Any]) -> None:
+        ...
+
+    @abc.abstractmethod
     async def is_closed(self, connection_id: str) -> bool:
         ...

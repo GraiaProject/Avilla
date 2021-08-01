@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Awaitable, Callable, Coroutine, NoReturn, Optional
+from typing import Callable, NoReturn
 
 from pydantic.main import BaseModel
 
@@ -51,16 +51,19 @@ class NoticeAll(Element):
         return "[$NoticeAll]"
 
 
-class Image(BaseModel, Resource[Provider[bytes]]):
-    def __init__(self, content: bytes):
-        self.provider = RawProvider(content)
+class Image(Element, Resource[Provider[bytes]]):
+    provider: Callable[[], bytes]
+
+    def __init__(self, provider: Provider):
+        super().__init__(provider=provider)
 
     @classmethod
     def fromLocalFile(cls, path: Path):
         data = path.read_bytes()
-        return cls(data)
+        return cls(RawProvider(data))
 
-    # py 没有方法重载, 也没有扩展方法, 真是 toy.
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class Quote(Element):

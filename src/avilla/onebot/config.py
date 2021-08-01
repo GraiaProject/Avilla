@@ -9,6 +9,9 @@ from avilla.network.signatures import ClientCommunicationMethod, ServiceCommunic
 class HttpCommunication(BaseModel, ClientCommunicationMethod):
     api_root: URL
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class ReverseHttpCommunication(BaseModel, ServiceCommunicationMethod):
     listening_host: str = "0.0.0.0"
@@ -20,6 +23,9 @@ class ReverseHttpCommunication(BaseModel, ServiceCommunicationMethod):
 
 class WebsocketCommunication(BaseModel, ClientCommunicationMethod):
     api_root: URL
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class ReverseWebsocketCommunication(BaseModel, ServiceCommunicationMethod):

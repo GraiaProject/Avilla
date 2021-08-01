@@ -18,6 +18,6 @@ class Result(Generic[T_Result]):
     pass
 
 
-class Operation(Result[None], Execution[Any]):
+class Operation(Result[None], Execution[T_Target]):
     "操作成功返回 None, 否则应抛出错误."
     ...
