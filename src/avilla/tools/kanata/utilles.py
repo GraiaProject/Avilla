@@ -1,6 +1,17 @@
 from enum import IntEnum
 from types import TracebackType
-from typing import Any, AsyncGenerator, Callable, Iterable, List, Literal, NamedTuple, Optional, Tuple, Union
+from typing import (
+    Any,
+    AsyncGenerator,
+    Callable,
+    Iterable,
+    List,
+    Literal,
+    NamedTuple,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -83,7 +94,9 @@ class AsyncDispatcherContextManager(BaseDispatcher):
             if not tb:
                 await self.generator.asend((StatusCodeEnum.DISPATCH_COMPLETED, None))
             else:
-                await self.generator.asend((StatusCodeEnum.DISPATCH_EXCEPTION, ExcInfo(exception, tb)))
+                await self.generator.asend(
+                    (StatusCodeEnum.DISPATCH_EXCEPTION, ExcInfo(exception, tb))
+                )
         except StopIteration:
             pass
 
@@ -97,6 +110,8 @@ class AsyncDispatcherContextManager(BaseDispatcher):
             if not tb:
                 await self.generator.asend((StatusCodeEnum.EXECUTION_COMPLETED, None))
             else:
-                await self.generator.asend((StatusCodeEnum.EXECUTION_EXCEPTION, ExcInfo(exception, tb)))
+                await self.generator.asend(
+                    (StatusCodeEnum.EXECUTION_EXCEPTION, ExcInfo(exception, tb))
+                )
         except StopIteration:
             pass

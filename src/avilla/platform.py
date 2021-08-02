@@ -9,7 +9,7 @@ class Platform:
     name: str
 
     "协议实现的名称"  # miraijvm, miraigo etc., use ',' or 'universal'
-    protocol_provider_name: Union[str, Literal['universal']]
+    protocol_provider_name: Union[str, Literal["universal"]]
 
     "对接平台使用的协议, 或者API的名称"  # OneBot
     implementation: str

@@ -27,7 +27,12 @@ class AbstractHttpClient(Client, abc.ABC):
 
     @abc.abstractmethod
     async def post(
-        self, url: URL, data: bytes = None, json: Union[Dict[str, Any], List] = None, *args, **kwargs
+        self,
+        url: URL,
+        data: bytes = None,
+        json: Union[Dict[str, Any], List] = None,
+        *args,
+        **kwargs,
     ) -> OriginProvider[bytes]:
         ...
 

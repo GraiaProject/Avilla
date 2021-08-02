@@ -36,13 +36,18 @@ class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, �
 
     @staticmethod
     async def afterExecution(
-        interface: "DispatcherInterface", exception: Optional[Exception], tb: Optional[TracebackType]
+        interface: "DispatcherInterface",
+        exception: Optional[Exception],
+        tb: Optional[TracebackType],
     ):
         del _Dispatcher_Tokens[id(interface.event)]
 
     @staticmethod
     async def catch(interface: "DispatcherInterface"):
-        if typing.get_origin(interface.annotation) is Relationship or interface.annotation is Relationship:
+        if (
+            typing.get_origin(interface.annotation) is Relationship
+            or interface.annotation is Relationship
+        ):
             return ctx_relationship.get()
 
 

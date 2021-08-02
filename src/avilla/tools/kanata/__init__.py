@@ -14,7 +14,12 @@ from avilla.message.chain import MessageChain
 from .exceptions import ConflictItem
 from .pack import Arguments, merge_signature_chain
 from .signature import NormalMatch, OptionalParam, PatternReceiver, RequireParam
-from .utilles import AsyncDispatcherContextManager, InsertGenerator, ResponseCodeEnum, StatusCodeEnum
+from .utilles import (
+    AsyncDispatcherContextManager,
+    InsertGenerator,
+    ResponseCodeEnum,
+    StatusCodeEnum,
+)
 
 BLOCKING_ELEMENTS = ()
 
@@ -149,7 +154,9 @@ class Kanata(AsyncDispatcherContextManager):
                         if isinstance(element, PlainText):
                             current_text: str = element.text
                             # 完成贪婪判断
-                            text_find_result_list = list(re.finditer(signature.operator(), current_text))
+                            text_find_result_list = list(
+                                re.finditer(signature.operator(), current_text)
+                            )
                             if not text_find_result_list:
                                 continue
                             text_find_result = text_find_result_list[-int(greed)]
@@ -171,11 +178,16 @@ class Kanata(AsyncDispatcherContextManager):
                             matching_recevier = None
 
                             pattern_length = text_find_result.end() - text_find_result.start()
-                            if current_text == text_find_result.string[slice(*text_find_result.span())]:
+                            if (
+                                current_text
+                                == text_find_result.string[slice(*text_find_result.span())]
+                            ):
                                 # 此处是如果推进 text_index 就会被爆破....
                                 # 推进 element_index 而不是 text_index
                                 reached_message_index = (
-                                    reached_message_index[0] + element_index + int(element_index != 0),
+                                    reached_message_index[0]
+                                    + element_index
+                                    + int(element_index != 0),
                                     None,
                                 )
                             else:
@@ -218,7 +230,10 @@ class Kanata(AsyncDispatcherContextManager):
                 k: message_chain[
                     v[0] : (
                         v[1][0],
-                        (v[1][1] - (origin_or_zero(v[0][1]) if (v[1][0] <= v[0][0] <= v[1][0]) else 0))
+                        (
+                            v[1][1]
+                            - (origin_or_zero(v[0][1]) if (v[1][0] <= v[0][0] <= v[1][0]) else 0)
+                        )
                         if v[1][1] is not None
                         else None,
                     )

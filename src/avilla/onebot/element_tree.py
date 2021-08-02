@@ -127,4 +127,6 @@ async def forward(x: Dict):
 
 @register("node")
 async def node(x: Dict):
-    return MergedForwardCustomNode(x["user_id"], x["nickname"], await ctx_protocol.get().parse_message(x["content"]))
+    return MergedForwardCustomNode(
+        x["user_id"], x["nickname"], await ctx_protocol.get().parse_message(x["content"])
+    )

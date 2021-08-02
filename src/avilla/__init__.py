@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any, Dict, Generic, Type, Union
+from logging import Logger, getLogger
 
 from graia.broadcast import Broadcast
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -20,6 +21,7 @@ class Avilla(Generic[T_Protocol, T_Config]):
     protocol: T_Protocol
     network_interface: NetworkInterface
     configs: Dict[Type[T_Protocol], T_Config]
+    logger: Logger
 
     MemberRelationship = Relationship[MemberProfile, Any, T_Protocol]
     GroupRelationship = Relationship[Any, GroupProfile, T_Protocol]
@@ -30,11 +32,13 @@ class Avilla(Generic[T_Protocol, T_Config]):
         protocol: Type[T_Protocol],
         networks: Dict[str, Union[Client, Service]],
         configs: Dict,
+        logger: Logger = None,
     ):
         self.broadcast = broadcast
         self.network_interface = NetworkInterface(networks)
         self.protocol = protocol(self, configs.get(protocol))
         self.configs = configs
+        self.logger = logger or getLogger(__name__)
 
         self.broadcast.dispatcher_interface.inject_global_raw(
             RelationshipDispatcher(), MessageChainDispatcher()  # type: ignore
@@ -50,6 +54,7 @@ class Avilla(Generic[T_Protocol, T_Config]):
                 return self.network_interface
 
     async def launch(self):
+        self.logger.info("hello, world!")
         return await self.protocol.launch_entry()
 
     def launch_blocking(self):

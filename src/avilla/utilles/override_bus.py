@@ -40,7 +40,9 @@ class OverrideBus(Generic[T_Protocol]):
 
     def __call__(self, protocol: T_Protocol, *args: Any, **kwargs: Any) -> Any:
         params = self.param_receiver(*args, **kwargs)
-        current_sign = Map(**{name: subbus(protocol, params) for name, subbus in self.pattern.items()})
+        current_sign = Map(
+            **{name: subbus(protocol, params) for name, subbus in self.pattern.items()}
+        )
         selected = self.overrides.get(current_sign)
         if selected is None:
             raise OverrideException("No override found for {}".format(current_sign))

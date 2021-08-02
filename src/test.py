@@ -1,4 +1,5 @@
 import asyncio
+import logging
 from aiohttp.client import ClientSession
 from graia.broadcast import Broadcast
 from yarl import URL
@@ -29,6 +30,11 @@ avilla = Avilla(
             communications={"ws": WebsocketCommunication(api_root=URL("ws://127.0.0.1:6700/"))},
         )
     },
+)
+
+logging.basicConfig(
+    format="[%(asctime)s][%(levelname)s]: %(message)s",
+    level=logging.INFO,
 )
 
 

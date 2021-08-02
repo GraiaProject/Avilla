@@ -1,6 +1,12 @@
 from typing import Iterable, Union
 
-from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile, SelfProfile, StrangerProfile
+from avilla.builtins.profile import (
+    FriendProfile,
+    GroupProfile,
+    MemberProfile,
+    SelfProfile,
+    StrangerProfile,
+)
 from avilla.group import Group
 
 from ..entity import Entity
@@ -13,6 +19,11 @@ class FetchBot(Result[SelfProfile], Execution[None]):
 
 
 class FetchStranger(Result[StrangerProfile], Execution[str]):
+    def __init__(self, target: str) -> None:
+        super().__init__(target=target)
+
+
+class FetchFriend(Result[Entity[FriendProfile]], Execution[str]):
     def __init__(self, target: str) -> None:
         super().__init__(target=target)
 

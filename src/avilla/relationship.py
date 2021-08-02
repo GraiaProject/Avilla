@@ -29,7 +29,11 @@ class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
             raise ValueError("target is not a Group.")
         return [
             self.current,
-            *[i for i in await self.protocol.get_members(self.entity_or_group) if i.id != self.current.id],
+            *[
+                i
+                for i in await self.protocol.get_members(self.entity_or_group)
+                if i.id != self.current.id
+            ],
         ]
 
     async def exec(self, *args, **kwargs) -> Any:

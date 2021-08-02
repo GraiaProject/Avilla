@@ -158,7 +158,12 @@ class CustomMusicShare(Element):
     image: Optional[str] = None
 
     def __init__(
-        self, url: str, audio: str, title: str, content: Optional[str] = None, image: Optional[str] = None
+        self,
+        url: str,
+        audio: str,
+        title: str,
+        content: Optional[str] = None,
+        image: Optional[str] = None,
     ) -> None:
         super().__init__(url=url, audio=audio, title=title, content=content, image=image)
 

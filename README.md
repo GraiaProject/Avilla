@@ -22,6 +22,8 @@ Avilla 被定义为 `Graia Project` 的 "下一代" 框架实现,
 通过对 [`OneBot`](https://github.com/botuniverse/onebot), [`Telegram Bot API`](https://core.telegram.org/bots) 及其他的基于不同即时通讯软件实现的各式对接接口进行总结,
 并抽象 `Relationship` 这一最为基本的模型, 构造了一个理论上可以实现零成本切换对接平台的框架.
 
+**该框架目前处于快速迭代状态, API 可能会发生剧烈变化, 可能还不适合进行生产性的开发与运维**
+
 > 项目名称取自日本轻小说 《魔女之旅》 的角色 "艾维莉亚(Avilla)".
 
 ## Roadmap

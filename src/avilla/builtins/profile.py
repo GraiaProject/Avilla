@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Literal, Optional, Union
 
 from pydantic import BaseModel  # pylint: ignore
 
@@ -30,7 +30,7 @@ class GroupProfile(BaseModel, BaseProfile):
 
 
 class MemberProfile(BaseModel, BaseProfile):
-    name: str
+    name: Optional[str] = None
     group: Optional[Group[GroupProfile]] = None
     role: Optional[Role] = None
     nickname: Optional[str] = None

@@ -33,7 +33,6 @@ class GroupFileUploadNotice(AvillaEvent[MemberProfile, GroupProfile]):
 
 class MemberPromotedToAdministrator(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
-    operator: Entity[MemberProfile]
 
     class Dispatcher(BaseDispatcher):
         mixin = [RelationshipDispatcher]
@@ -45,7 +44,6 @@ class MemberPromotedToAdministrator(AvillaEvent[MemberProfile, GroupProfile]):
 
 class MemberDemotedFromAdministrator(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
-    operator: Entity[MemberProfile]
 
     class Dispatcher(BaseDispatcher):
         mixin = [RelationshipDispatcher]
@@ -106,6 +104,18 @@ class MemberMuted(AvillaEvent[MemberProfile, GroupProfile]):
     group: Group[GroupProfile]
     operator: Entity[MemberProfile]
     duration: timedelta
+
+    class Dispatcher(BaseDispatcher):
+        mixin = [RelationshipDispatcher]
+
+        @staticmethod
+        async def catch(interface: "DispatcherInterface"):
+            pass
+
+
+class MemberUnmuted(AvillaEvent[MemberProfile, GroupProfile]):
+    group: Group[GroupProfile]
+    operator: Entity[MemberProfile]
 
     class Dispatcher(BaseDispatcher):
         mixin = [RelationshipDispatcher]
