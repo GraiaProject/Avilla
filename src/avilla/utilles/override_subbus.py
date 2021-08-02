@@ -1,7 +1,8 @@
 from typing import Any, Dict, Type
 
 from avilla.execution import Execution
-from .override_bus import T_Protocol, T_SubBus
+
+from .override_bus import T_Protocol
 
 
 def proto_ensure_exec_params(relationship, execution):

@@ -1,10 +1,12 @@
 from typing import Type, Union
+
 from graia.broadcast.builtin.decorators import Depend
-from avilla.group import Group
-from avilla.entity import Entity
-from avilla.relationship import Relationship
 from graia.broadcast.exceptions import ExecutionStop
+
+from avilla.entity import Entity
+from avilla.group import Group
 from avilla.profile import BaseProfile
+from avilla.relationship import Relationship
 
 
 def useCtx(*ctxs: Union[Type[Group], Type[Entity]]):

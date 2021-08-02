@@ -1,4 +1,5 @@
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
+
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
@@ -8,7 +9,7 @@ from ..builtins.profile import StrangerProfile
 from . import AvillaEvent, RelationshipDispatcher
 
 
-class FriendAddRequest(AvillaEvent[StrangerProfile, None]):
+class FriendAddRequest(AvillaEvent[StrangerProfile, Any]):
     comment: Optional[str]
     request_id: str
 
@@ -20,7 +21,7 @@ class FriendAddRequest(AvillaEvent[StrangerProfile, None]):
             pass
 
 
-class GroupJoinRequest(AvillaEvent[StrangerProfile, None]):  # 主体就是类名第一个名词.
+class GroupJoinRequest(AvillaEvent[StrangerProfile, Any]):  # 主体就是类名第一个名词.
     request_type: Literal["common", "invite"]
     target: Entity[StrangerProfile]
     comment: Optional[str]

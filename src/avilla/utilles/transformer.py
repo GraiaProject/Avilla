@@ -1,10 +1,7 @@
 import abc
+import json
 from typing import Any, Generic, Type, TypeVar
-
-T_Receive = TypeVar("T_Receive")
-T_Value = TypeVar("T_Value")
-
-T_Children = TypeVar("T_Children")
+from avilla.typing import T_Receive, T_Value, T_Children, T_Receive, T_Origin
 
 
 class Transformer(Generic[T_Receive, T_Value], abc.ABC):
@@ -32,9 +29,6 @@ class Transformer(Generic[T_Receive, T_Value], abc.ABC):
         return transformer.create(self, *args, **kwargs)
 
 
-T_Origin = TypeVar("T_Origin")
-
-
 class OriginProvider(Transformer[Any, T_Origin]):
     raw: T_Origin
 
@@ -42,14 +36,11 @@ class OriginProvider(Transformer[Any, T_Origin]):
         self.raw = raw
 
     @classmethod
-    def create(cls, parent: "Transformer[Any, T_Receive]") -> "Transformer[Any, T_Origin]":
+    def create(cls, parent):
         raise NotImplementedError()
 
     def transform(self) -> T_Origin:
         return self.raw
-
-
-import json
 
 
 class Utf8StringTransformer(Transformer[bytes, str]):

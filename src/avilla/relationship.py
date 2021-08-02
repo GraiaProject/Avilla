@@ -1,16 +1,8 @@
-from typing import TYPE_CHECKING, Any, Generic, Iterable, TypeVar, Union
-
+from typing import Any, Generic, Iterable, Union
 
 from avilla.entity import Entity
-from avilla.execution import Execution, Result
 from avilla.group import Group
-
-if TYPE_CHECKING:
-    from .protocol import BaseProtocol
-
-T_Profile = TypeVar("T_Profile")
-T_Protocol = TypeVar("T_Protocol", "BaseProtocol", Any)
-T_GroupProfile = TypeVar("T_GroupProfile")
+from avilla.typing import T_Profile, T_GroupProfile, T_Protocol
 
 
 class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
@@ -32,7 +24,7 @@ class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
         return self.entity_or_group.profile
 
     async def get_members(self) -> "Iterable[Entity[T_Profile]]":
-        if not isinstance(self.entity_or_group, Group):
+        if isinstance(self.entity_or_group, Entity):
             return [self.current, self.entity_or_group]
         return [
             self.current,

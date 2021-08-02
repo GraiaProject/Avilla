@@ -8,5 +8,6 @@
         "--max-line-length=120"
     ],
     "python.linting.maxNumberOfProblems": 1000,
-    "python.analysis.diagnosticMode": "workspace"
+    "python.analysis.diagnosticMode": "workspace",
+    "python.analysis.completeFunctionParens": true
 }

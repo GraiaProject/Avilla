@@ -1,7 +1,7 @@
-from types import TracebackType
 import typing
 from contextvars import Token
 from datetime import datetime
+from types import TracebackType
 from typing import Dict, Generic, Optional, Union
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher

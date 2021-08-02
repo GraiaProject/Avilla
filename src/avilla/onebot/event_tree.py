@@ -1,4 +1,4 @@
-from typing import Any, Awaitable, Callable, Dict, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Tuple
 
 from graia.broadcast.entities.event import Dispatchable
 
@@ -7,10 +7,11 @@ from avilla.event.message import *
 from avilla.event.notice import *
 from avilla.event.request import *
 """
-from avilla.event.message import MessageEvent
+from datetime import datetime
+
+from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile
 from avilla.entity import Entity
-from avilla.builtins.profile import FriendProfile, MemberProfile, GroupProfile
-import datetime
+from avilla.event.message import MessageEvent
 from avilla.group import Group
 from avilla.onebot.profile import AnonymousProfile
 from avilla.role import Role
@@ -47,7 +48,7 @@ def register(post, sub=None, msg=None, notice_type=None, request_type=None, meta
 
 
 @register("message", "private", "friend")
-async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
+async def message_private_friend(proto: "OnebotProtocol", x: Dict[str, Any]):
     return MessageEvent(
         entity_or_group=Entity(
             x["user_id"], FriendProfile(name=x["sender"]["nickname"], remark=x["sender"]["nickname"])
@@ -60,7 +61,7 @@ async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
 
 
 @register("message", "private", "group")
-async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
+async def message_private_group(proto: "OnebotProtocol", x: Dict[str, Any]):
     return MessageEvent(
         entity_or_group=Entity(
             x["user_id"],
@@ -76,7 +77,7 @@ async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
 
 
 @register("message", "group", "normal")
-async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
+async def message_group_normal(proto: "OnebotProtocol", x: Dict[str, Any]):
     return MessageEvent(
         entity_or_group=Entity(
             x["user_id"],
@@ -96,7 +97,7 @@ async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
 
 
 @register("message", "group", "anonymous")
-async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
+async def message_group_anonymous(proto: "OnebotProtocol", x: Dict[str, Any]):
     return MessageEvent(
         entity_or_group=Entity(
             x["user_id"],

@@ -85,7 +85,7 @@ class AbstractWebsocketClient(Client, abc.ABC):
 
     @staticmethod
     def gen_conn_id() -> str:
-        return random.choices(string.ascii_letters + string.digits, k=12)
+        return "".join(random.choices(string.ascii_letters + string.digits, k=12))
 
     @abc.abstractmethod
     async def connect(self, url: URL, *args, **kwargs) -> str:

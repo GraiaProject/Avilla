@@ -1,6 +1,6 @@
-from typing import Dict, Union
+from typing import Dict, Optional, Union
 
-from pydantic import BaseSettings, BaseModel
+from pydantic import BaseModel, BaseSettings
 from yarl import URL
 
 from avilla.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
@@ -17,7 +17,7 @@ class ReverseHttpCommunication(BaseModel, ServiceCommunicationMethod):
     listening_host: str = "0.0.0.0"
     listening_port: int
 
-    secret: str = None
+    secret: Optional[str] = None
     timeout: int = -1
 
 
@@ -34,7 +34,7 @@ class ReverseWebsocketCommunication(BaseModel, ServiceCommunicationMethod):
 
 
 class OnebotConfig(BaseSettings):
-    access_token: str = None
+    access_token: Optional[str] = None
     bot_id: str
 
     # 暂时只支持 aiohttp 的 client 模式(使用 websocket 获取事件什么的..)

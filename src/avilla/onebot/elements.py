@@ -1,10 +1,10 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import Field
+
 from avilla.builtins.elements import Image
 from avilla.message.chain import MessageChain
 from avilla.message.element import Element
-
 
 __all__ = (
     "FlashImage",
@@ -62,9 +62,9 @@ class Shake(Element):
 class Poke(Element):
     type: str
     id: str
-    name: str = None
+    name: Optional[str] = None
 
-    def __init__(self, type: str, id: str, name: str = None) -> None:
+    def __init__(self, type: str, id: str, name: Optional[str] = None) -> None:
         super().__init__(type=type, id=id, name=name)
 
     def asDisplay(self) -> str:
@@ -84,10 +84,12 @@ class Anonymous(Element):
 class Share(Element):
     url: str
     title: str
-    content: str = None
-    image: str = None
+    content: Optional[str] = None
+    image: Optional[str] = None
 
-    def __init__(self, url: str, title: str, content: str = None, image: str = None) -> None:
+    def __init__(
+        self, url: str, title: str, content: Optional[str] = None, image: Optional[str] = None
+    ) -> None:
         super().__init__(url=url, title=title, content=content, image=image)
 
     def asDisplay(self) -> str:
@@ -121,10 +123,12 @@ class GroupRecommend(Element):
 class Location(Element):
     lat: float
     lon: float
-    title: str = None
-    content: str = None
+    title: Optional[str] = None
+    content: Optional[str] = None
 
-    def __init__(self, lat: float, lon: float, title: str = None, content: str = None) -> None:
+    def __init__(
+        self, lat: float, lon: float, title: Optional[str] = None, content: Optional[str] = None
+    ) -> None:
         super().__init__(lat=lat, lon=lon, title=title, content=content)
 
     def asDisplay(self) -> str:
@@ -150,10 +154,12 @@ class CustomMusicShare(Element):
     url: str
     audio: str
     title: str
-    content: str = None
-    image: str = None
+    content: Optional[str] = None
+    image: Optional[str] = None
 
-    def __init__(self, url: str, audio: str, title: str, content: str = None, image: str = None) -> None:
+    def __init__(
+        self, url: str, audio: str, title: str, content: Optional[str] = None, image: Optional[str] = None
+    ) -> None:
         super().__init__(url=url, audio=audio, title=title, content=content, image=image)
 
     def asDisplay(self) -> str:

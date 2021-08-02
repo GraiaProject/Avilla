@@ -1,16 +1,15 @@
-from typing import Callable, NoReturn
-
 from pathlib import Path
+from typing import Awaitable, Callable
 
 from avilla.message.element import Element
-from avilla.resource import Resource
 from avilla.provider import Provider, RawProvider
+from avilla.resource import Resource
 
 
 class PlainText(Element):
     text: str
 
-    def __init__(self, text: str) -> NoReturn:
+    def __init__(self, text: str) -> None:
         """实例化一个 Plain 消息元素, 用于承载消息中的文字.
 
         Args:
@@ -50,7 +49,7 @@ class NoticeAll(Element):
 
 
 class Image(Element, Resource[Provider[bytes]]):
-    provider: Callable[[], bytes]
+    provider: Callable[[], Awaitable[bytes]]
 
     def __init__(self, provider: Provider):
         super().__init__(provider=provider)
@@ -75,7 +74,7 @@ class Quote(Element):
 
 
 class Voice(Element, Resource[Provider[bytes]]):
-    provider: Callable[[], bytes]
+    provider: Callable[[], Awaitable[bytes]]
 
     def __init__(self, provider: Provider):
         super().__init__(provider=provider)
@@ -93,7 +92,7 @@ class Voice(Element, Resource[Provider[bytes]]):
 
 
 class Video(Element, Resource[Provider[bytes]]):
-    provider: Callable[[], bytes]
+    provider: Callable[[], Awaitable[bytes]]
 
     def __init__(self, provider: Provider):
         super().__init__(provider=provider)

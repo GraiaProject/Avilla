@@ -1,9 +1,9 @@
-from pydantic import Field
 from datetime import datetime
 from typing import Literal, Union
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from pydantic import Field
 
 from avilla.context import ctx_relationship
 from avilla.entity import Entity

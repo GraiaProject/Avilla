@@ -1,24 +1,20 @@
+import copy
+import random
+import re
 from functools import lru_cache
 from typing import Dict, List, Optional, Tuple, TypeVar, Union
+
 from graia.broadcast.entities.signatures import Force
 from graia.broadcast.exceptions import ExecutionStop
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from .exceptions import ConflictItem
-
+from avilla.builtins.elements import PlainText
 from avilla.message.chain import MessageChain
-from avilla.builtins.elements import (
-    Notice,
-    Image,
-    texts,
-    Quote,
-)
-from .signature import NormalMatch, PatternReceiver, RequireParam, OptionalParam
+
+from .exceptions import ConflictItem
 from .pack import Arguments, merge_signature_chain
-from .utilles import InsertGenerator, AsyncDispatcherContextManager, ResponseCodeEnum, StatusCodeEnum
-import re
-import random
-import copy
+from .signature import NormalMatch, OptionalParam, PatternReceiver, RequireParam
+from .utilles import AsyncDispatcherContextManager, InsertGenerator, ResponseCodeEnum, StatusCodeEnum
 
 BLOCKING_ELEMENTS = ()
 
@@ -81,7 +77,7 @@ class Kanata(AsyncDispatcherContextManager):
         end_index: MessageIndex = (
             element_num - 1,
             len(message_chain.__root__[-1].text)
-            if element_num != 0 and message_chain.__root__[-1].__class__ is texts
+            if element_num != 0 and message_chain.__root__[-1].__class__ is PlainText
             else None,
         )
 
@@ -123,7 +119,7 @@ class Kanata(AsyncDispatcherContextManager):
                     current_chain = message_chain.subchain(slice(reached_message_index, None, None))
                     if not current_chain.__root__:  # index 越界
                         return
-                    if not isinstance(current_chain.__root__[0], texts):
+                    if not isinstance(current_chain.__root__[0], PlainText):
                         # 切片后第一个 **不是** Plain.
                         return
                     re_match_result = re.match(signature.operator(), current_chain.__root__[0].text)
@@ -150,7 +146,7 @@ class Kanata(AsyncDispatcherContextManager):
                     for element_index, element in enumerate(
                         message_chain.subchain(slice(reached_message_index, None, None)).__root__
                     ):
-                        if isinstance(element, texts):
+                        if isinstance(element, PlainText):
                             current_text: str = element.text
                             # 完成贪婪判断
                             text_find_result_list = list(re.finditer(signature.operator(), current_text))
@@ -200,7 +196,7 @@ class Kanata(AsyncDispatcherContextManager):
                 text_index = None
 
                 latest_element = message_chain.__root__[-1]
-                if isinstance(latest_element, texts):
+                if isinstance(latest_element, PlainText):
                     text_index = len(latest_element.text)
 
                 stop_index = (len(message_chain.__root__), text_index)
@@ -236,8 +232,7 @@ class Kanata(AsyncDispatcherContextManager):
             return None
         result = {}
         for arguemnt_set, message_chain in mapping.items():
-            length = len(arguemnt_set.content)
-            for index, receiver in enumerate(arguemnt_set.content):
+            for _, receiver in enumerate(arguemnt_set.content):
                 if receiver.name in result:
                     raise ConflictItem("{0} is defined repeatedly".format(receiver))
                 if isinstance(receiver, RequireParam):

@@ -1,8 +1,9 @@
-from dataclasses import dataclass
 import abc
-from typing import Generic, TypeVar
-import aiofiles
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Generic, TypeVar
+
+import aiofiles
 
 T = TypeVar("T")
 

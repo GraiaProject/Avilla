@@ -1,19 +1,9 @@
-from typing import Any, Iterable, List
-
+from enum import IntEnum
 from types import TracebackType
-from typing import (
-    Any,
-    AsyncGenerator,
-    Callable,
-    NamedTuple,
-    Optional,
-    Tuple,
-    Literal,
-    Union,
-)
+from typing import Any, AsyncGenerator, Callable, Iterable, List, Literal, NamedTuple, Optional, Tuple, Union
+
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from enum import IntEnum
 
 
 class InsertGenerator:

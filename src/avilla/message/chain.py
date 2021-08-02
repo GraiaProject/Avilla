@@ -3,8 +3,9 @@ from __future__ import annotations
 import copy
 from typing import Iterable, List, NoReturn, Optional, Sequence, Tuple, Type, Union
 
-from .element import Element
 from pydantic import BaseModel  # pylint: ignore
+
+from .element import Element
 
 MessageIndex = Tuple[int, Optional[int]]
 

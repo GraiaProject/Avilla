@@ -1,9 +1,8 @@
 from typing import Optional
 
 from pydantic import BaseModel  # pylint: ignore
+
 from avilla.group import Group
-
-
 from avilla.role import Role
 
 from ..profile import BaseProfile
@@ -16,7 +15,7 @@ class SelfProfile(BaseModel, BaseProfile):
 
 class StrangerProfile(BaseModel, BaseProfile):
     name: str
-    age: int = None
+    age: Optional[int] = None
 
 
 class FriendProfile(BaseModel, BaseProfile):
@@ -25,7 +24,7 @@ class FriendProfile(BaseModel, BaseProfile):
 
 
 class GroupProfile(BaseModel, BaseProfile):
-    name: str = None
+    name: Optional[str] = None
     counts: Optional[int] = None
     limit: Optional[int] = None
 
@@ -33,6 +32,6 @@ class GroupProfile(BaseModel, BaseProfile):
 class MemberProfile(BaseModel, BaseProfile):
     name: str
     group: Optional[Group[GroupProfile]] = None
-    role: Role = None
+    role: Optional[Role] = None
     nickname: Optional[str] = None
     title: Optional[str] = None

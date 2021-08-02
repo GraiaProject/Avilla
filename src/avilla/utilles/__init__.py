@@ -1,6 +1,5 @@
 import random
 import string
-from typing import Type
 
 
 def random_string(k=12):

@@ -1,10 +1,14 @@
-from typing import Any, Callable, Dict, Generic, Optional, TYPE_CHECKING, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Optional,
+)
+
 from immutables import Map
-
-if TYPE_CHECKING:
-    from avilla.protocol import BaseProtocol
-
-T_Protocol = TypeVar("T_Protocol", bound="BaseProtocol")
+from avilla.typing import T_Protocol
 
 T_SubBus = Callable[[T_Protocol, Dict[str, Any]], Any]
 

@@ -1,9 +1,7 @@
-from typing import Generic, TypeVar
+from typing import Any, Generic
 
 from pydantic import BaseModel  # pylint: ignore
-
-
-T_Target = TypeVar("T_Target")
+from avilla.typing import T_Target, T_Result
 
 
 class Execution(BaseModel, Generic[T_Target]):
@@ -17,13 +15,10 @@ class Execution(BaseModel, Generic[T_Target]):
         allow_mutation = True
 
 
-T_Result = TypeVar("T_Result")
-
-
 class Result(Generic[T_Result]):
     pass
 
 
-class Operation(Result[None], Execution[T_Target]):
+class Operation(Result[Any], Execution[T_Target]):
     "操作成功返回 None, 否则应抛出错误."
     ...

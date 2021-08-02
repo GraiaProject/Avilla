@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Union
+from typing import Dict, Union
 
 from avilla.network.client import Client
 from avilla.network.service import Service

@@ -1,9 +1,6 @@
 from dataclasses import dataclass
-
-from pydantic import BaseModel  # pylint: ignore
-
-
 from datetime import timedelta
+from typing import Any
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -131,7 +128,7 @@ class GroupRevoke(AvillaEvent[MemberProfile, GroupProfile]):
             pass
 
 
-class FriendAdd(AvillaEvent[FriendProfile, None]):  # 好友添加的 Notice.... 怪(因为已经有 Request 了)
+class FriendAdd(AvillaEvent[FriendProfile, Any]):  # 好友添加的 Notice.... 怪(因为已经有 Request 了)
     class Dispatcher(BaseDispatcher):
         mixin = [RelationshipDispatcher]
 
@@ -140,7 +137,7 @@ class FriendAdd(AvillaEvent[FriendProfile, None]):  # 好友添加的 Notice....
             pass
 
 
-class FriendRevoke(AvillaEvent[FriendProfile, None]):
+class FriendRevoke(AvillaEvent[FriendProfile, Any]):
     message_id: str
 
     class Dispatcher(BaseDispatcher):

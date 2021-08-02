@@ -1,10 +1,9 @@
 import abc
-from typing import Any, Callable, Dict, Generic, List, Optional, TypeVar
+from typing import Any, Callable, Dict, Generic, List, Optional
 
 from avilla.network.signatures import ServiceCommunicationMethod
 from avilla.utilles.transformer import OriginProvider
-
-T_Connection = TypeVar("T_Connection")
+from avilla.typing import T_Connection
 
 
 class Service(Generic[T_Connection], abc.ABC):

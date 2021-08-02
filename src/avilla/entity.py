@@ -1,7 +1,6 @@
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel  # pylint: ignore
-
 
 P = TypeVar("P")
 

@@ -1,21 +1,18 @@
 import asyncio
-from typing import Dict, Generic, Type, TypeVar, Union
+from typing import Any, Dict, Generic, Type, Union
 
 from graia.broadcast import Broadcast
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
 from avilla.builtins.profile import GroupProfile, MemberProfile
 from avilla.event import MessageChainDispatcher, RelationshipDispatcher
-
 from avilla.network.client import Client
 from avilla.network.interface import NetworkInterface
 from avilla.network.service import Service
-from avilla.protocol import BaseProtocol
 from avilla.relationship import Relationship
+from avilla.typing import T_Protocol, T_Config
 
-T_Protocol = TypeVar("T_Protocol", bound=BaseProtocol)
-T_Config = TypeVar("T_Config")
-
-MemberRelationship = Relationship[MemberProfile, None, T_Protocol]
+MemberRelationship = Relationship[MemberProfile, Any, T_Protocol]
 
 
 class Avilla(Generic[T_Protocol, T_Config]):
@@ -24,8 +21,8 @@ class Avilla(Generic[T_Protocol, T_Config]):
     network_interface: NetworkInterface
     configs: Dict[Type[T_Protocol], T_Config]
 
-    MemberRelationship = Relationship[MemberProfile, None, T_Protocol]
-    GroupRelationship = Relationship[None, GroupProfile, T_Protocol]
+    MemberRelationship = Relationship[MemberProfile, Any, T_Protocol]
+    GroupRelationship = Relationship[Any, GroupProfile, T_Protocol]
 
     def __init__(
         self,

@@ -1,4 +1,5 @@
 from typing import List, Sequence, Union
+
 from .signature import FullMatch, PatternReceiver
 
 

@@ -1,7 +1,7 @@
 from typing import Generic, TypeVar
-from .provider import Provider
 
-T_Provider = TypeVar("T_Provider", bound=Provider)
+from .provider import Provider
+from avilla.typing import T_Provider
 
 
 class Resource(Generic[T_Provider]):

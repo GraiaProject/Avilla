@@ -1,24 +1,19 @@
-import re
-import shlex
 import getopt
 import itertools
+import re
+import shlex
 from typing import Dict, List, Tuple
+
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.signatures import Force
 from graia.broadcast.exceptions import ExecutionStop
-
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
+from avilla.builtins.elements import PlainText
 from avilla.message.chain import MessageChain
 from avilla.message.element import Element
-from avilla.builtins.elements import (
-    texts,
-)
 
-from .pattern import (
-    BoxParameter,
-    ParamPattern,
-    SwitchParameter,
-)
+from .pattern import BoxParameter, ParamPattern, SwitchParameter
 
 BLOCKING_ELEMENTS = ()
 
@@ -52,7 +47,7 @@ class Literature(BaseDispatcher):
         id_elem_map: Dict[int, Element] = {}
 
         for elem in message_chain.__root__:
-            if isinstance(elem, texts):
+            if isinstance(elem, PlainText):
                 string_result.append(
                     re.sub(
                         r"\$(?P<id>\d+)",
@@ -113,7 +108,7 @@ class Literature(BaseDispatcher):
             map_with_bar[k]: (
                 MessageChain.create(
                     [
-                        texts(i) if not re.match("^\$\d+$", i) else id_elem_map[int(i[1:])]
+                        PlainText(i) if not re.match(r"^\$\d+$", i) else id_elem_map[int(i[1:])]
                         for i in re.split(r"((?<!\\)\$[0-9]+)", v)
                         if i
                     ]
@@ -131,7 +126,7 @@ class Literature(BaseDispatcher):
         variables = [
             MessageChain.create(
                 [
-                    texts(i) if not re.match("^\$\d+$", i) else id_elem_map[int(i[1:])]
+                    PlainText(i) if not re.match(r"^\$\d+$", i) else id_elem_map[int(i[1:])]
                     for i in re.split(r"((?<!\\)\$[0-9]+)", v)
                     if i
                 ]
@@ -160,14 +155,14 @@ class Literature(BaseDispatcher):
             return
         for index, current_prefix in enumerate(self.prefixs):
             current_frame = chain_frames[index]
-            if not current_frame.__root__ or type(current_frame.__root__[0]) is not texts:
+            if not current_frame.__root__ or type(current_frame.__root__[0]) is not PlainText:
                 return
             if current_frame.__root__[0].text != current_prefix:
                 return
 
         chain_frames = chain_frames[len(self.prefixs) :]
         return MessageChain.create(
-            list(itertools.chain(*[i.__root__ + [texts(" ")] for i in chain_frames]))[:-1]
+            list(itertools.chain(*[i.__root__ + [PlainText(" ")] for i in chain_frames]))[:-1]
         ).asMerged()
 
     async def beforeDispatch(self, interface: DispatcherInterface):
@@ -188,13 +183,13 @@ class Literature(BaseDispatcher):
         if noprefix is None:
             raise ExecutionStop()
 
-        interface.execution_contexts[-1].literature_detect_result = self.parse_message(noprefix)
+        interface.execution_conPlainText[-1].literature_detect_result = self.parse_message(noprefix)
 
     async def catch(self, interface: DispatcherInterface):
         if interface.name == "__literature_messagechain__":
             return
 
-        result = interface.execution_contexts[-1].literature_detect_result
+        result = interface.execution_conPlainText[-1].literature_detect_result
         if result:
             match_result, variargs = result
             if interface.default == "__literature_variables__":

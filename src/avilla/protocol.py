@@ -10,14 +10,12 @@ from avilla.network.service import Service
 from avilla.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
 from avilla.profile import BaseProfile
 from avilla.relationship import Relationship
+from avilla.typing import T_Config, T_Profile
 
 from .execution import Execution
 
 if TYPE_CHECKING:
     from . import Avilla
-
-T_Config = TypeVar("T_Config")
-T_Profile = TypeVar("T_Profile")
 
 
 class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
@@ -64,7 +62,9 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_relationship(self, entity: "Entity[T_Profile]") -> "Relationship[T_Profile, Any, BaseProtocol]":
+    async def get_relationship(
+        self, entity: "Entity[T_Profile]"
+    ) -> "Relationship[T_Profile, Any, BaseProtocol]":
         raise NotImplementedError
 
     @abstractmethod

@@ -1,6 +1,6 @@
 import asyncio
 import traceback
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Dict, List, Union
 
 from aiohttp import ClientSession, ClientWebSocketResponse
 from aiohttp.http_websocket import WSMsgType
@@ -8,8 +8,6 @@ from yarl import URL
 
 from avilla.network.client import AbstractHttpClient, AbstractWebsocketClient
 from avilla.utilles.transformer import OriginProvider
-
-from avilla import context as ctx
 
 
 class AiohttpHttpClient(AbstractHttpClient):
@@ -71,13 +69,13 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
                     try:
                         for i in self.cb_connection_closed[id]:
                             i(self, id)
-                    except:
+                    except Exception:
                         traceback.print_exc()
                 if message.type == WSMsgType.TEXT or message.type == WSMsgType.BINARY:
                     try:
                         for i in self.cb_data_received[id]:
                             await i(self, id, message.data)
-                    except:
+                    except Exception:
                         traceback.print_exc()
 
     def connect(self, url: URL, *args, **kwargs) -> None:

@@ -1,9 +1,7 @@
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel  # pylint: ignore
-
-
-T_GroupProfile = TypeVar("T_GroupProfile")
+from avilla.typing import T_GroupProfile
 
 
 class Group(BaseModel, Generic[T_GroupProfile]):
