@@ -82,3 +82,17 @@ class Voice(Element, Resource[Provider[bytes]]):
 
     class Config:
         arbitrary_types_allowed = True
+
+class Video(Element, Resource[Provider[bytes]]):
+    provider: Callable[[], bytes]
+
+    def __init__(self, provider: Provider):
+        super().__init__(provider=provider)
+
+    @classmethod
+    def fromLocalFile(cls, path: Path):
+        data = path.read_bytes()
+        return cls(RawProvider(data))
+
+    class Config:
+        arbitrary_types_allowed = True

@@ -3,10 +3,8 @@ import base64
 import json
 from typing import AsyncIterable, Dict, List, Tuple, Type, Union
 
-from graia.broadcast.utilles import printer
-
 from avilla import context
-from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Quote, Voice
+from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Quote, Video, Voice
 from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile, SelfProfile
 from avilla.entity import Entity
 from avilla.exceptions import ExecutionException
@@ -36,7 +34,8 @@ ELEMENT_TYPE_MAP = {
     "image": lambda x: Image(HttpGetProvider(x["url"])),
     "at": lambda x: x["qq"] == "all" and NoticeAll() or Notice(str(x["qq"])),
     "reply": lambda x: Quote(id=x["id"]),
-    "record": lambda x: Voice(HttpGetProvider(x["url"]))
+    "record": lambda x: Voice(HttpGetProvider(x["url"])),
+    "video": lambda x: Video(HttpGetProvider(x["url"]))
 }
 
 
@@ -145,6 +144,15 @@ class OnebotProtocol(BaseProtocol):
                 result.append(
                     {
                         "type": "record",
+                        "data": {
+                            "file": f"base64://{base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
+                        },
+                    }
+                )
+            elif isinstance(element, Video):
+                result.append(
+                    {
+                        "type": "video",
                         "data": {
                             "file": f"base64://{base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
                         },
