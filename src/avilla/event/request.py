@@ -1,13 +1,10 @@
-from typing import TYPE_CHECKING, Literal, Optional
-from pydantic import BaseModel
-
+from typing import Literal, Optional
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 from avilla.entity import Entity
-from avilla.group import Group
 
-from ..builtins.profile import FriendProfile, MemberProfile, StrangerProfile
+from ..builtins.profile import StrangerProfile
 from . import AvillaEvent, RelationshipDispatcher
 
 

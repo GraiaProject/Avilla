@@ -11,7 +11,7 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from avilla.message.chain import MessageChain
 from avilla.message.element import Element
 from avilla.builtins.elements import (
-    PlainText,
+    texts,
 )
 
 from .pattern import (
@@ -52,7 +52,7 @@ class Literature(BaseDispatcher):
         id_elem_map: Dict[int, Element] = {}
 
         for elem in message_chain.__root__:
-            if isinstance(elem, PlainText):
+            if isinstance(elem, texts):
                 string_result.append(
                     re.sub(
                         r"\$(?P<id>\d+)",
@@ -113,14 +113,16 @@ class Literature(BaseDispatcher):
             map_with_bar[k]: (
                 MessageChain.create(
                     [
-                        PlainText(i) if not re.match("^\$\d+$", i) else id_elem_map[int(i[1:])]
+                        texts(i) if not re.match("^\$\d+$", i) else id_elem_map[int(i[1:])]
                         for i in re.split(r"((?<!\\)\$[0-9]+)", v)
                         if i
                     ]
                 ).asMerged()
                 if isinstance(self.arguments[map_with_bar[k]], BoxParameter)
                 else (
-                    self.arguments[map_with_bar[k]].auto_reverse and not self.arguments[map_with_bar[k]].default or True
+                    self.arguments[map_with_bar[k]].auto_reverse
+                    and not self.arguments[map_with_bar[k]].default
+                    or True
                 ),
                 self.arguments[map_with_bar[k]],
             )
@@ -129,7 +131,7 @@ class Literature(BaseDispatcher):
         variables = [
             MessageChain.create(
                 [
-                    PlainText(i) if not re.match("^\$\d+$", i) else id_elem_map[int(i[1:])]
+                    texts(i) if not re.match("^\$\d+$", i) else id_elem_map[int(i[1:])]
                     for i in re.split(r"((?<!\\)\$[0-9]+)", v)
                     if i
                 ]
@@ -158,18 +160,20 @@ class Literature(BaseDispatcher):
             return
         for index, current_prefix in enumerate(self.prefixs):
             current_frame = chain_frames[index]
-            if not current_frame.__root__ or type(current_frame.__root__[0]) is not PlainText:
+            if not current_frame.__root__ or type(current_frame.__root__[0]) is not texts:
                 return
             if current_frame.__root__[0].text != current_prefix:
                 return
 
         chain_frames = chain_frames[len(self.prefixs) :]
         return MessageChain.create(
-            list(itertools.chain(*[i.__root__ + [PlainText(" ")] for i in chain_frames]))[:-1]
+            list(itertools.chain(*[i.__root__ + [texts(" ")] for i in chain_frames]))[:-1]
         ).asMerged()
 
     async def beforeDispatch(self, interface: DispatcherInterface):
-        message_chain: MessageChain = await interface.lookup_param("__literature_messagechain__", MessageChain, None)
+        message_chain: MessageChain = await interface.lookup_param(
+            "__literature_messagechain__", MessageChain, None
+        )
         if set([i.__class__ for i in message_chain.__root__]).intersection(BLOCKING_ELEMENTS):
             raise ExecutionStop()
         """ # Avilla Migrate: 这个功能不需要在 Kanata 内实现, 成熟的实现应该在 parse_message 中就处理完毕了

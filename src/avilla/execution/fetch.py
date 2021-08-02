@@ -1,6 +1,4 @@
-from typing import TYPE_CHECKING, Any, Iterable, Union
-
-from pydantic.main import BaseModel
+from typing import Iterable, Union
 
 from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile, SelfProfile, StrangerProfile
 from avilla.group import Group

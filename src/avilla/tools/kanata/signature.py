@@ -1,11 +1,11 @@
 import abc
-from typing import Any, Callable, Optional as O
+from typing import Any, Callable, Optional
 from pydantic import BaseModel, validator
 from avilla.message.chain import MessageChain
 
 try:
     import regex as re
-except:
+except ModuleNotFoundError:
     import re
 
 
@@ -53,10 +53,10 @@ class RegexMatch(NormalMatch):
 
 
 class RequireParam(PatternReceiver):
-    checker: O[Callable[[MessageChain], bool]] = None
-    translator: O[Callable[[MessageChain], Any]] = None
+    checker: Optional[Callable[[MessageChain], bool]] = None
+    translator: Optional[Callable[[MessageChain], Any]] = None
 
 
 class OptionalParam(PatternReceiver):
-    checker: O[Callable[[MessageChain], bool]] = None
-    translator: O[Callable[[MessageChain], Any]] = None
+    checker: Optional[Callable[[MessageChain], bool]] = None
+    translator: Optional[Callable[[MessageChain], Any]] = None

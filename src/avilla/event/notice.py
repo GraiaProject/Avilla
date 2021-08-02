@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from pydantic.main import BaseModel
+from pydantic import BaseModel  # pylint: ignore
 
 
 from datetime import timedelta

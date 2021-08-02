@@ -1,9 +1,17 @@
-from typing import Any, Awaitable, Callable, Dict, Tuple, Type
+from typing import Any, Awaitable, Callable, Dict, Tuple, TYPE_CHECKING
 
 from graia.broadcast.entities.event import Dispatchable
+
+"""
 from avilla.event.message import *
 from avilla.event.notice import *
 from avilla.event.request import *
+"""
+from avilla.event.message import MessageEvent
+from avilla.entity import Entity
+from avilla.builtins.profile import FriendProfile, MemberProfile, GroupProfile
+import datetime
+from avilla.group import Group
 from avilla.onebot.profile import AnonymousProfile
 from avilla.role import Role
 
@@ -12,7 +20,8 @@ if TYPE_CHECKING:
 
 ROLE_MAP = {"owner": Role.Owner, "admin": Role.Admin, "member": Role.Member}
 
-# (post_type, sub_type=None, msg_type=None, notice_type=None, request_type=None, meta_event_type=None) => Type[Dispatchable]
+# (post_type, sub_type=None, msg_type=None, notice_type=None, request_type=None, meta_event_type=None)\
+#  => Type[Dispatchable]
 EVENT_PARSING_TREE: Dict[
     Tuple[str, str, str, str, str, str], Callable[["OnebotProtocol", Dict[str, Any]], Awaitable[Dispatchable]]
 ] = {}
@@ -43,7 +52,7 @@ async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
         entity_or_group=Entity(
             x["user_id"], FriendProfile(name=x["sender"]["nickname"], remark=x["sender"]["nickname"])
         ),
-        message=await proto.parse_message(x["message"]),
+        message=proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),
@@ -59,7 +68,7 @@ async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
                 name=x["sender"]["nickname"],
             ),
         ),
-        message=await proto.parse_message(x["message"]),
+        message=proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),
@@ -79,7 +88,7 @@ async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
                 title=x["sender"]["title"],
             ),
         ),
-        message=await proto.parse_message(x["message"]),
+        message=proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),
@@ -98,7 +107,7 @@ async def _(proto: "OnebotProtocol", x: Dict[str, Any]):
                 _internal_id=x["anonymous"]["flag"],
             ),
         ),
-        message=await proto.parse_message(x["message"]),
+        message=proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),

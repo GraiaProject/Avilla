@@ -36,7 +36,8 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     def ensure_networks(
         self,
     ) -> Tuple[
-        Dict[str, Union[Client, Service]], Union[Type[ClientCommunicationMethod], Type[ServiceCommunicationMethod]]
+        Dict[str, Union[Client, Service]],
+        Union[Type[ClientCommunicationMethod], Type[ServiceCommunicationMethod]],
     ]:
         raise NotImplementedError
 

@@ -17,7 +17,9 @@ class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
     entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]]
     protocol: T_Protocol
 
-    def __init__(self, entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]], protocol: T_Protocol) -> None:
+    def __init__(
+        self, entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]], protocol: T_Protocol
+    ) -> None:
         self.entity_or_group = entity_or_group
         self.protocol = protocol
 
@@ -43,10 +45,14 @@ class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
             execution = args[0]
         else:
             target, execution = args
-            return await self.protocol.ensure_execution(relationship=self, execution=execution.with_target(target))
+            return await self.protocol.ensure_execution(
+                relationship=self, execution=execution.with_target(target)
+            )
         if kwargs.get("target"):
             target = kwargs["target"]
-            return await self.protocol.ensure_execution(relationship=self, execution=execution.with_target(target))
+            return await self.protocol.ensure_execution(
+                relationship=self, execution=execution.with_target(target)
+            )
         else:
             return await self.protocol.ensure_execution(
                 relationship=self, execution=execution.with_target(self.entity_or_group)

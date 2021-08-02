@@ -1,6 +1,6 @@
-from typing import Dict, List, Union
+from typing import Dict, Union
 
-from pydantic import BaseModel, BaseSettings
+from pydantic import BaseSettings, BaseModel
 from yarl import URL
 
 from avilla.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod

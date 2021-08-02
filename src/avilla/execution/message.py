@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, Union
 
-from pydantic.main import BaseModel
+from pydantic import BaseModel  # pylint: ignore
 from datetime import datetime
 
 

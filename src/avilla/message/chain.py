@@ -4,7 +4,7 @@ import copy
 from typing import Iterable, List, NoReturn, Optional, Sequence, Tuple, Type, Union
 
 from .element import Element
-from pydantic import BaseModel
+from pydantic import BaseModel  # pylint: ignore
 
 MessageIndex = Tuple[int, Optional[int]]
 
@@ -193,7 +193,9 @@ class MessageChain(BaseModel):
             if item.start[1] is not None and first_slice:  # text slice
                 if not isinstance(first_slice[0], PlainText):
                     if not ignore_text_index:
-                        raise TypeError("the sliced chain does not starts with a PlainText: {}".format(first_slice[0]))
+                        raise TypeError(
+                            "the sliced chain does not starts with a PlainText: {}".format(first_slice[0])
+                        )
                     else:
                         result = first_slice
                 else:
@@ -208,7 +210,9 @@ class MessageChain(BaseModel):
             first_slice = result[: item.stop[0]]
             if item.stop[1] is not None and first_slice:  # text slice
                 if not isinstance(first_slice[-1], PlainText):
-                    raise TypeError("the sliced chain does not ends with a PlainText: {}".format(first_slice[-1]))
+                    raise TypeError(
+                        "the sliced chain does not ends with a PlainText: {}".format(first_slice[-1])
+                    )
                 final_text = first_slice[-1].text[: item.stop[1]]
                 result = [
                     *first_slice[:-1],
@@ -227,19 +231,19 @@ class MessageChain(BaseModel):
 
         result = []
 
-        PlainText = []
+        texts = []
         for i in self.__root__:
             if not isinstance(i, PlainText):
-                if PlainText:
-                    result.append(PlainText("".join(PlainText)))
-                    PlainText.clear()  # 清空缓存
+                if texts:
+                    result.append(PlainText("".join(texts)))
+                    texts.clear()  # 清空缓存
                 result.append(i)
             else:
-                PlainText.append(i.text)
+                texts.append(i.text)
         else:
-            if PlainText:
-                result.append(PlainText("".join(PlainText)))
-                PlainText.clear()  # 清空缓存
+            if texts:
+                result.append(PlainText("".join(texts)))
+                texts.clear()  # 清空缓存
         return MessageChain.create(type(self.__root__)(result))  # 维持 Mutable
 
     def exclude(self, *types: Type[Element]) -> MessageChain:

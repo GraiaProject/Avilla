@@ -42,7 +42,12 @@ class OverrideBus(Generic[T_Protocol]):
     def override(self, **pattern):
         def decorator(func):
             self.overrides[
-                Map(**{k: pattern[k] if k in pattern else self.default_factories[k]() for k in self.pattern.keys()})
+                Map(
+                    **{
+                        k: pattern[k] if k in pattern else self.default_factories[k]()
+                        for k in self.pattern.keys()
+                    }
+                )
             ] = func
             return func
 

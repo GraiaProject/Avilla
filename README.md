@@ -32,7 +32,7 @@ Avilla 被定义为 `Graia Project` 的 "下一代" 框架实现,
     - [x] `Resource API`: 对含多媒体内容的消息的抽象.
     - [ ] `Platform API`: 通过与 `Protocol` 协作, 扩展 Avilla Protocol, 使其能用于平台的特有特性.
     - [ ] `Completed Design`: 设计并不完善, 还需要后续提供修改.
- - [ ] `Avilla for OneBot`: 对  [`OneBot`](https://github.com/botuniverse/onebot) 的协议实现.
+ - [x] `Avilla for OneBot`: 对  [`OneBot`](https://github.com/botuniverse/onebot) 的协议实现.
     - [ ] `Avilla for go-cqhttp`: 对 [`go-cqhttp`](https://github.com/Mrs4s/go-cqhttp) 的扩展 API 的支持.
  - [ ] `Avilla for Telegram`: 对 [`Telegram Bot API`](https://core.telegram.org/bots) 的协议实现.
  - [ ] `Avilla for mirai-api-http`: 对 [`mirai-api-http`](https://github.com/project-mirai/mirai-api-http) 的支持.

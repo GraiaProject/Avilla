@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+from pydantic import BaseModel  # pylint: ignore
 
 
 class Element(BaseModel):
-    pass
+    def asDisplay(self) -> str:
+        return ""

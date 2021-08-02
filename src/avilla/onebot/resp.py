@@ -1,8 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, Field
-
-from avilla.role import Role
+from pydantic import BaseModel, Field  # pylint: ignore, Field
 
 
 class _GetStranger_Resp(BaseModel):

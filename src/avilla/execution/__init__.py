@@ -1,7 +1,6 @@
-from enum import IntEnum
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import Generic, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel  # pylint: ignore
 
 
 T_Target = TypeVar("T_Target")

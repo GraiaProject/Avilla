@@ -1,7 +1,4 @@
-from typing import TYPE_CHECKING, Union
-
-from pydantic.main import BaseModel
-
+from typing import Union
 
 from avilla.builtins.profile import MemberProfile
 from avilla.entity import Entity

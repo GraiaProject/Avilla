@@ -1,7 +1,5 @@
 from typing import Callable, NoReturn
 
-from pydantic.main import BaseModel
-
 from pathlib import Path
 
 from avilla.message.element import Element
@@ -38,13 +36,13 @@ class Notice(Element):
         super().__init__(target=target, **kwargs)
 
     def asDisplay(self) -> str:
-        return f"[$Notice:{self.target}]"
+        return f"[$Notice:target={self.target}]"
 
 
 class NoticeAll(Element):
     "该消息元素用于群组中的管理员提醒群组中的所有成员"
 
-    def __init__(_) -> None:
+    def __init__(self) -> None:
         super().__init__()
 
     def asDisplay(self) -> str:
@@ -62,12 +60,19 @@ class Image(Element, Resource[Provider[bytes]]):
         data = path.read_bytes()
         return cls(RawProvider(data))
 
+    def asDisplay(self) -> str:
+        return "[$Image]"
+
     class Config:
         arbitrary_types_allowed = True
 
 
 class Quote(Element):
     id: str
+
+    def asDisplay(self) -> str:
+        return f"[$Quote:id={self.id}]"
+
 
 class Voice(Element, Resource[Provider[bytes]]):
     provider: Callable[[], bytes]
@@ -83,6 +88,10 @@ class Voice(Element, Resource[Provider[bytes]]):
     class Config:
         arbitrary_types_allowed = True
 
+    def asDisplay(self) -> str:
+        return "[$Voice]"
+
+
 class Video(Element, Resource[Provider[bytes]]):
     provider: Callable[[], bytes]
 
@@ -93,6 +102,9 @@ class Video(Element, Resource[Provider[bytes]]):
     def fromLocalFile(cls, path: Path):
         data = path.read_bytes()
         return cls(RawProvider(data))
+
+    def asDisplay(self) -> str:
+        return "[$Video]"
 
     class Config:
         arbitrary_types_allowed = True

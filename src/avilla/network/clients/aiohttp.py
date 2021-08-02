@@ -28,7 +28,9 @@ class AiohttpHttpClient(AbstractHttpClient):
             response.raise_for_status()
             return OriginProvider(await response.read())
 
-    async def post(self, url: URL, data: bytes, json: Union[Dict, List], *args, **kwargs) -> OriginProvider[bytes]:
+    async def post(
+        self, url: URL, data: bytes, json: Union[Dict, List], *args, **kwargs
+    ) -> OriginProvider[bytes]:
         async with self.session.post(url, data=data, json=json, *args, **kwargs) as response:
             response.raise_for_status()
             return OriginProvider(await response.read())

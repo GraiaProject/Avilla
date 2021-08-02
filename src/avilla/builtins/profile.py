@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import Optional
 
-from pydantic.main import BaseModel
+from pydantic import BaseModel  # pylint: ignore
 from avilla.group import Group
 
 

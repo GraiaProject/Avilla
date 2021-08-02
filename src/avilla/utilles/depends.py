@@ -5,7 +5,6 @@ from avilla.entity import Entity
 from avilla.relationship import Relationship
 from graia.broadcast.exceptions import ExecutionStop
 from avilla.profile import BaseProfile
-from .rs import *
 
 
 def useCtx(*ctxs: Union[Type[Group], Type[Entity]]):

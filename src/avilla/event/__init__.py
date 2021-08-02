@@ -7,7 +7,7 @@ from typing import Dict, Generic, Optional, Union
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from pydantic.main import BaseModel
+from pydantic import BaseModel  # pylint: ignore
 
 from avilla.entity import Entity
 from avilla.group import Group, T_GroupProfile
@@ -24,7 +24,7 @@ class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile, T_GroupProfile]):
     time: datetime  # = Field(default_factory=datetime.now)
 
 
-_Dispatcher_Tokens: Dict[int, Token[Relationship]] = {}
+_Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}
 
 
 class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, 看起来没这个必要.

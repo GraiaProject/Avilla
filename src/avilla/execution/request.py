@@ -1,9 +1,5 @@
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
-from pydantic.main import BaseModel
-
-
-from avilla.entity import Entity
 
 from . import Operation
 

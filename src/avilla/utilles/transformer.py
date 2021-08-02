@@ -11,7 +11,9 @@ class Transformer(Generic[T_Receive, T_Value], abc.ABC):
     received: "Transformer[Any, T_Receive]"
 
     @classmethod
-    def create(cls, received: "Transformer[Any, T_Receive]", *args, **kwargs) -> "Transformer[T_Receive, T_Value]":
+    def create(
+        cls, received: "Transformer[Any, T_Receive]", *args, **kwargs
+    ) -> "Transformer[T_Receive, T_Value]":
         instance = cls()
         instance.received = received
         instance.__post_init__(*args, **kwargs)
