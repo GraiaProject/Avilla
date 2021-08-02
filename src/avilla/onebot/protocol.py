@@ -6,7 +6,7 @@ from typing import AsyncIterable, Dict, List, Tuple, Type, Union
 from graia.broadcast.utilles import printer
 
 from avilla import context
-from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Quote
+from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Quote, Voice
 from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile, SelfProfile
 from avilla.entity import Entity
 from avilla.exceptions import ExecutionException
@@ -36,6 +36,7 @@ ELEMENT_TYPE_MAP = {
     "image": lambda x: Image(HttpGetProvider(x["url"])),
     "at": lambda x: x["qq"] == "all" and NoticeAll() or Notice(str(x["qq"])),
     "reply": lambda x: Quote(id=x["id"]),
+    "record": lambda x: Voice(HttpGetProvider(x["url"]))
 }
 
 
@@ -140,6 +141,15 @@ class OnebotProtocol(BaseProtocol):
                 result.append({"type": "at", "data": {"qq": int(element.target)}})
             elif isinstance(element, NoticeAll):
                 result.append({"type": "at", "data": {"qq": "all"}})
+            elif isinstance(element, Voice):
+                result.append(
+                    {
+                        "type": "record",
+                        "data": {
+                            "file": f"base64://{base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
+                        },
+                    }
+                )
 
         return result
 
