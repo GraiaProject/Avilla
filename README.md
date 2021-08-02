@@ -30,6 +30,7 @@ Avilla 被定义为 `Graia Project` 的 "下一代" 框架实现,
     - [x] `Network API`: 统一的网络通信兼容层, 全面支持 `Client`(客户端) 与 `Service`(服务端) 的通信方式.
     - [x] `Transformer API`: 模仿 `dart::io` 中的设计, 用于处理获得的二进制信息.
     - [x] `Resource API`: 对含多媒体内容的消息的抽象.
+    - [ ] `Platform API`: 通过与 `Protocol` 协作, 扩展 Avilla Protocol, 使其能用于平台的特有特性.
     - [ ] `Completed Design`: 设计并不完善, 还需要后续提供修改.
  - [ ] `Avilla for OneBot`: 对  [`OneBot`](https://github.com/botuniverse/onebot) 的协议实现.
     - [ ] `Avilla for go-cqhttp`: 对 [`go-cqhttp`](https://github.com/Mrs4s/go-cqhttp) 的扩展 API 的支持.
