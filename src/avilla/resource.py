@@ -1,6 +1,5 @@
-from typing import Generic, TypeVar
+from typing import Generic
 
-from .provider import Provider
 from avilla.typing import T_Provider
 
 

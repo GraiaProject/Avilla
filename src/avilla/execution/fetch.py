@@ -33,7 +33,7 @@ class FetchGroups(Execution[None], Result[Iterable[Group[GroupProfile]]]):
 
 
 class FetchMember(Result[Entity[MemberProfile]], Execution[str]):
-    group: Union[Group, str]  # type: ignore
+    group: Union[Group, str]
 
     def __init__(self, group: Union[Group, str], target: str) -> None:
         super().__init__(target=target, group=group)

@@ -37,10 +37,10 @@ class Avilla(Generic[T_Protocol, T_Config]):
         self.configs = configs
 
         self.broadcast.dispatcher_interface.inject_global_raw(
-            RelationshipDispatcher(), MessageChainDispatcher()
+            RelationshipDispatcher(), MessageChainDispatcher()  # type: ignore
         )
 
-        @self.broadcast.dispatcher_interface.inject_global_raw
+        @self.broadcast.dispatcher_interface.inject_global_raw  # type: ignore
         async def _(interface: DispatcherInterface):
             if interface.annotation is Avilla:
                 return self

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Tuple
+from typing import Optional, TYPE_CHECKING, Any, Awaitable, Callable, Dict, Tuple
 
 from graia.broadcast.entities.event import Dispatchable
 
@@ -24,11 +24,12 @@ ROLE_MAP = {"owner": Role.Owner, "admin": Role.Admin, "member": Role.Member}
 # (post_type, sub_type=None, msg_type=None, notice_type=None, request_type=None, meta_event_type=None)\
 #  => Type[Dispatchable]
 EVENT_PARSING_TREE: Dict[
-    Tuple[str, str, str, str, str, str], Callable[["OnebotProtocol", Dict[str, Any]], Awaitable[Dispatchable]]
+    Tuple[Optional[str], Optional[str], Optional[str], Optional[str], Optional[str], Optional[str]],
+    Callable[["OnebotProtocol", Dict[str, Any]], Awaitable[Dispatchable]],
 ] = {}
 
 
-def gen_parsing_key(x: Dict):
+def gen_parsing_key(x: Dict[str, str]):
     return (
         x.get("post_type"),
         x.get("message_type"),
@@ -53,7 +54,7 @@ async def message_private_friend(proto: "OnebotProtocol", x: Dict[str, Any]):
         entity_or_group=Entity(
             x["user_id"], FriendProfile(name=x["sender"]["nickname"], remark=x["sender"]["nickname"])
         ),
-        message=proto.parse_message(x["message"]),
+        message=await proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),
@@ -69,7 +70,7 @@ async def message_private_group(proto: "OnebotProtocol", x: Dict[str, Any]):
                 name=x["sender"]["nickname"],
             ),
         ),
-        message=proto.parse_message(x["message"]),
+        message=await proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),
@@ -89,7 +90,7 @@ async def message_group_normal(proto: "OnebotProtocol", x: Dict[str, Any]):
                 title=x["sender"]["title"],
             ),
         ),
-        message=proto.parse_message(x["message"]),
+        message=await proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),
@@ -108,7 +109,7 @@ async def message_group_anonymous(proto: "OnebotProtocol", x: Dict[str, Any]):
                 _internal_id=x["anonymous"]["flag"],
             ),
         ),
-        message=proto.parse_message(x["message"]),
+        message=await proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
         current_id=str(x["self_id"]),
         time=datetime.fromtimestamp(x["time"]),

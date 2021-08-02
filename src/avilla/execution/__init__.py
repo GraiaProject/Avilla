@@ -1,11 +1,11 @@
 from typing import Any, Generic
 
-from pydantic import BaseModel  # pylint: ignore
+from pydantic import BaseModel
 from avilla.typing import T_Target, T_Result
 
 
 class Execution(BaseModel, Generic[T_Target]):
-    target: T_Target = None
+    target: T_Target = None  # type: ignore
 
     def with_target(self, target: T_Target) -> "Execution[T_Target]":
         self.target = target

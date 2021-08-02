@@ -30,7 +30,7 @@ _Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}
 class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, 看起来没这个必要.
     @staticmethod
     async def beforeExecution(interface: "DispatcherInterface"):
-        rs = await ctx_protocol.get().get_relationship(interface.event.entity_or_group)
+        rs = await ctx_protocol.get().get_relationship(interface.event.entity_or_group)  # type: ignore
         token = ctx_relationship.set(rs)
         _Dispatcher_Tokens[id(interface.event)] = token
 

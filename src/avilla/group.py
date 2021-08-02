@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar
+from typing import Generic
 
 from pydantic import BaseModel  # pylint: ignore
 from avilla.typing import T_GroupProfile

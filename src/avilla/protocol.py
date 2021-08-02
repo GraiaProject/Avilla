@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractstaticmethod
-from typing import TYPE_CHECKING, Any, Dict, Generic, Iterable, Tuple, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, Generic, Iterable, Tuple, Type, Union
 
 from avilla.builtins.profile import SelfProfile
 from avilla.entity import Entity

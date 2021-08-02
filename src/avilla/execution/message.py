@@ -25,7 +25,7 @@ MessageExecution = Execution[Union[MessageId, str]]
 
 
 class MessageSend(Result[MessageId], EntityExecution):
-    message: MessageChain  # type: ignore
+    message: MessageChain
     reply: Optional[str] = None
 
     def __init__(self, message: MessageChain, reply: Optional[str] = None):
@@ -37,7 +37,7 @@ class MessageRevoke(MessageExecution):
 
 
 class MessageEdit(MessageExecution):
-    to: MessageChain  # type: ignore
+    to: MessageChain
 
     def __init__(self, to: MessageChain):
         super().__init__(to=to)

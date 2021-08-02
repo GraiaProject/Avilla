@@ -10,7 +10,10 @@ from typing import (
 from immutables import Map
 from avilla.typing import T_Protocol
 
-T_SubBus = Callable[[T_Protocol, Dict[str, Any]], Any]
+if TYPE_CHECKING:
+    from avilla.protocol import BaseProtocol
+
+T_SubBus = Callable[["BaseProtocol", Dict[str, Any]], Any]
 
 
 class OverrideException(Exception):

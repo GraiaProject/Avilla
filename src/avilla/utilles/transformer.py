@@ -1,7 +1,7 @@
 import abc
 import json
-from typing import Any, Generic, Type, TypeVar
-from avilla.typing import T_Receive, T_Value, T_Children, T_Receive, T_Origin
+from typing import Any, Generic, Type
+from avilla.typing import T_Receive, T_Value, T_Origin
 
 
 class Transformer(Generic[T_Receive, T_Value], abc.ABC):
@@ -24,8 +24,8 @@ class Transformer(Generic[T_Receive, T_Value], abc.ABC):
         raise NotImplementedError()
 
     def passby(
-        self, transformer: "Type[Transformer[T_Value, T_Children]]", *args, **kwargs
-    ) -> "Transformer[T_Value, T_Children]":
+        self, transformer: "Type[Transformer]", *args, **kwargs
+    ) -> "Transformer[T_Value, Any]":
         return transformer.create(self, *args, **kwargs)
 
 

@@ -11,6 +11,7 @@ from avilla.message.chain import MessageChain
 from avilla.network.clients.aiohttp import AiohttpWebsocketClient
 from avilla.onebot.config import OnebotConfig, WebsocketCommunication
 from avilla.onebot.protocol import OnebotProtocol
+from avilla.relationship import Relationship
 from avilla.utilles.depends import useCtx, useCtxId, useCtxProfile
 from avilla.builtins.elements import PlainText
 
@@ -35,7 +36,7 @@ avilla = Avilla(
     MessageEvent,
     headless_decorators=[useCtx(Entity), useCtxProfile(Entity, MemberProfile), useCtxId(Entity, "1846913566")],
 )
-async def event_receiver(rs: avilla.MemberRelationship, message: MessageEvent):
+async def event_receiver(rs: Relationship, message: MessageEvent):
     await rs.exec(MessageSend(MessageChain.create([PlainText("不知不觉中所隐藏的\n真实的心声 让我听见它放声回响吧\n就算你熟视无睹\n可它的确就在那里")])))
 
 

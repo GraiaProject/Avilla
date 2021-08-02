@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import copy
-from typing import Iterable, List, NoReturn, Optional, Sequence, Tuple, Type, Union
+from typing import Iterable, List, Optional, Tuple, Type, Union
 
 from pydantic import BaseModel  # pylint: ignore
 
@@ -62,25 +62,17 @@ class MessageChain(BaseModel):
             ```
     """
 
-    __root__: Sequence[Element]
+    __root__: List[Element]
 
     @classmethod
-    def create(cls, elements: Sequence[Element]) -> "MessageChain":
+    def create(cls, elements: List[Element]) -> "MessageChain":
         """从传入的序列(可以是元组 tuple, 也可以是列表 list) 创建消息链.
         Args:
-            elements (Sequence[T]): 包含且仅包含消息元素的序列
+            elements (List[T]): 包含且仅包含消息元素的序列
         Returns:
             MessageChain: 以传入的序列作为所承载消息的消息链
         """
         return cls(__root__=elements)
-
-    @property
-    def isImmutable(self) -> bool:
-        """判断消息链是否不可变
-        Returns:
-            bool: 判断结果, `True` 为不可变, `False` 为可变
-        """
-        return isinstance(self.__root__, tuple)
 
     def asMutable(self) -> "MessageChain":
         """将消息链转换为可变形态的消息链
@@ -88,13 +80,6 @@ class MessageChain(BaseModel):
             MessageChain: 内部消息结构可变的消息链
         """
         return MessageChain(__root__=list(self.__root__))
-
-    def asImmutable(self) -> "MessageChain":
-        """将消息链转换为不可变形态的消息链
-        Returns:
-            MessageChain: 内部消息结构不可变的消息链
-        """
-        return MessageChain(__root__=tuple(self.__root__))
 
     def has(self, element_class: Element) -> bool:
         """判断消息链中是否含有特定类型的消息元素
@@ -105,7 +90,7 @@ class MessageChain(BaseModel):
         """
         return element_class in [type(i) for i in self.__root__]
 
-    def get(self, element_class: Element) -> List[Element]:
+    def get(self, element_class: Type[Element]) -> List[Element]:
         """获取消息链中所有特定类型的消息元素
         Args:
             element_class (T): 指定的消息元素的类型, 例如 "PlainText", "At", "Image" 等.
@@ -114,7 +99,7 @@ class MessageChain(BaseModel):
         """
         return [i for i in self.__root__ if type(i) is element_class]
 
-    def getOne(self, element_class: Element, index: int) -> Element:
+    def getOne(self, element_class: Type[Element], index: int) -> Element:
         """获取消息链中第 index + 1 个特定类型的消息元素
         Args:
             element_class (Type[Element]): 指定的消息元素的类型, 例如 "PlainText", "At", "Image" 等.
@@ -124,7 +109,7 @@ class MessageChain(BaseModel):
         """
         return self.get(element_class)[index]
 
-    def getFirst(self, element_class: Element) -> Element:
+    def getFirst(self, element_class: Type[Element]) -> Element:
         """获取消息链中第 1 个特定类型的消息元素
         Args:
             element_class (Type[Element]): 指定的消息元素的类型, 例如 "PlainText", "At", "Image" 等.
@@ -155,15 +140,13 @@ class MessageChain(BaseModel):
         """
         return self.create(sum([list(i.__root__) for i in chains], self.__root__))
 
-    def plus(self, *chains: "MessageChain") -> NoReturn:
+    def plus(self, *chains: "MessageChain") -> None:
         """在现有的基础上将另一消息链拼接到原来实例的尾部
         Raises:
             ValueError: 原有的消息链不可变, 需要转为可变形态.
         Returns:
             NoReturn: 本方法无返回.
         """
-        if self.isImmutable:
-            raise ValueError("this chain is not mutable")
         for i in chains:
             self.__root__.extend(list(i.__root__))
 
@@ -214,7 +197,7 @@ class MessageChain(BaseModel):
                     raise TypeError(
                         "the sliced chain does not ends with a PlainText: {}".format(first_slice[-1])
                     )
-                final_text = first_slice[-1].text[: item.stop[1]]
+                final_text = first_slice[-1].text[: item.stop[1]]  # type: ignore
                 result = [
                     *first_slice[:-1],
                     *([PlainText(final_text)] if final_text else []),
@@ -309,4 +292,4 @@ class MessageChain(BaseModel):
 
         if not self.__root__ or type(self.__root__[-1]) is not PlainText:
             return False
-        return self.__root__[-1].text.endswith(string)
+        return self.__root__[-1].text.endswith(string)  # type: ignore

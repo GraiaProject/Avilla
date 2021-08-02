@@ -1,4 +1,5 @@
 import asyncio
+from asyncio.tasks import Task
 import traceback
 from typing import Any, Dict, List, Union
 
@@ -78,7 +79,7 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
                     except Exception:
                         traceback.print_exc()
 
-    def connect(self, url: URL, *args, **kwargs) -> None:
+    def connect(self, url: URL, *args, **kwargs) -> Task:
         return asyncio.get_running_loop().create_task(
             self.connection_handler(
                 kwargs.get("account") or self.gen_conn_id(),

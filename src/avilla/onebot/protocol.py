@@ -4,7 +4,7 @@ import json
 from typing import Any, AsyncIterable, Dict, Iterable, List, Tuple, Type, Union
 
 from avilla import context
-from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Quote, Video, Voice
+from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Video, Voice
 from avilla.builtins.profile import FriendProfile, GroupProfile, MemberProfile, SelfProfile, StrangerProfile
 from avilla.context import ctx_protocol
 from avilla.entity import Entity
@@ -20,6 +20,7 @@ from avilla.execution.fetch import (
     FetchStranger,
 )
 from avilla.execution.group import (
+    GroupExecution,
     GroupLeave,
     GroupMute,
     GroupNameSet,
@@ -52,6 +53,7 @@ from avilla.onebot.config import (
     ReverseWebsocketCommunication,
     WebsocketCommunication,
 )
+from avilla.onebot.element_tree import ELEMENT_TYPE_MAP
 from avilla.onebot.elements import (
     Anonymous,
     CustomMusicShare,
@@ -62,8 +64,6 @@ from avilla.onebot.elements import (
     GroupRecommend,
     JsonMessage,
     Location,
-    MergedForward,
-    MergedForwardCustomNode,
     MusicShare,
     Poke,
     Rps,
@@ -72,7 +72,6 @@ from avilla.onebot.elements import (
     XmlMessage,
 )
 from avilla.protocol import BaseProtocol
-from avilla.provider import HttpGetProvider
 from avilla.relationship import Relationship
 from avilla.role import Role
 from avilla.utilles import random_string
@@ -90,40 +89,6 @@ from .resp import (
     _GetStranger_Resp,
 )
 
-ELEMENT_TYPE_MAP = {
-    "text": lambda x: PlainText(x["text"]),
-    "image": lambda x: Image(HttpGetProvider(x["url"])),
-    "at": lambda x: x["qq"] == "all" and NoticeAll() or Notice(str(x["qq"])),
-    "reply": lambda x: Quote(id=x["id"]),
-    "record": lambda x: Voice(HttpGetProvider(x["url"])),
-    "video": lambda x: Video(HttpGetProvider(x["url"])),
-    "face": lambda x: Face(x["id"]),
-    "rps": lambda x: Rps(),
-    "dice": lambda x: Dice(),
-    "shake": lambda x: Shake(),
-    "poke": lambda x: Poke(type=x["type"], id=x["id"], name=x["name"]),
-    "anonymous": lambda x: Anonymous(),
-    "share": lambda x: Share(
-        url=x["url"],
-        title=x["title"],
-        content=x["content"],
-        image=x["image"],
-    ),
-    "contact": lambda x: x["type"] == "qq" and FriendRecommend(x["id"]) or GroupRecommend(x["id"]),
-    "location": lambda x: Location(
-        x["lat"],
-        x["lon"],
-        x["title"],
-        x["content"],
-    ),
-    "forward": lambda x: MergedForward(
-        x["id"],
-    ),
-    "node": lambda x: MergedForwardCustomNode(
-        x["user_id"], x["nickname"], ctx_protocol.get().parse_message(x["content"])
-    ),
-}
-
 
 class OnebotProtocol(BaseProtocol):
     config: OnebotConfig
@@ -134,7 +99,7 @@ class OnebotProtocol(BaseProtocol):
         self._pending_futures = {}
 
         if self.using_exec_method is WebsocketCommunication:
-            ws_client: AbstractWebsocketClient = self.avilla.network_interface.get_network("ws")
+            ws_client: AbstractWebsocketClient = self.avilla.network_interface.get_network("ws")  # type: ignore
 
             @ws_client.on_received_data(self.config.bot_id)
             async def onebot_ws_data_received(client, connid, raw_data: Union[str, bytes]):
@@ -174,7 +139,7 @@ class OnebotProtocol(BaseProtocol):
             result["ws"] = self.avilla.network_interface.get_network("ws")
             comm_method = WebsocketCommunication
         if result:
-            return result, comm_method
+            return result, comm_method  # type: ignore
 
         if "http-service" in self.config.communications:
             result["http-service"] = self.avilla.network_interface.get_network("http-service")
@@ -183,7 +148,7 @@ class OnebotProtocol(BaseProtocol):
             comm_method = ReverseWebsocketCommunication
 
         if result and comm_method:
-            return result, comm_method
+            return result, comm_method  # type: ignore
         else:
             raise TypeError("invaild config for network")
 
@@ -193,9 +158,9 @@ class OnebotProtocol(BaseProtocol):
     async def get_members(
         self, group: Group[GroupProfile]
     ) -> "AsyncIterable[Entity[Union[SelfProfile, MemberProfile]]]":
-        pass  # TODO
+        return await self.ensure_execution(None, FetchMembers(group))  # type: ignore
 
-    def parse_message(self, data: List[Dict]) -> "MessageChain":
+    async def parse_message(self, data: List[Dict]) -> "MessageChain":
         result = []
 
         with ctx_protocol.use(self):
@@ -203,7 +168,7 @@ class OnebotProtocol(BaseProtocol):
                 elem_type = x["type"]
                 elem_parser = ELEMENT_TYPE_MAP.get(elem_type)
                 if elem_parser:
-                    result.append(elem_parser(x["data"]))
+                    result.append(await elem_parser(x["data"]))
                 else:
                     print("cannot parse elem:", elem_type)
 
@@ -336,8 +301,8 @@ class OnebotProtocol(BaseProtocol):
     async def launch_entry(self):
         comms = self.config.communications
         if self.using_exec_method is WebsocketCommunication:
-            ws_client: AbstractWebsocketClient = self.using_networks["ws"]
-            ws_config: WebsocketCommunication = comms["ws"]
+            ws_client: AbstractWebsocketClient = self.using_networks["ws"]  # type: ignore
+            ws_config: WebsocketCommunication = comms["ws"]  # type: ignore
             await ws_client.connect(
                 ws_config.api_root, account=self.config.bot_id, headers=self._get_http_headers()
             )
@@ -349,11 +314,13 @@ class OnebotProtocol(BaseProtocol):
         }
 
     async def _http_get(self, path: str, params: Dict[str, str] = None) -> Any:
-        http_client: AbstractHttpClient = self.using_networks["http"]
+        http_client: AbstractHttpClient = self.using_networks["http"]  # type: ignore
         return (
             (
                 await http_client.get(
-                    self.config.communications["http"].api_root.with_path(path).with_query(params or {}),
+                    self.config.communications["http"]
+                    .api_root.with_path(path)  # type: ignore
+                    .with_query(params or {}),  # type:ignore
                     headers=self._get_http_headers(),
                 )
             )
@@ -363,11 +330,11 @@ class OnebotProtocol(BaseProtocol):
         )
 
     async def _http_post(self, path: str, data: Union[Dict, Any]) -> Any:
-        http_client: AbstractHttpClient = self.using_networks["http"]
+        http_client: AbstractHttpClient = self.using_networks["http"]  # type: ignore
         return (
             (
                 await http_client.post(
-                    self.config.communications["http"].api_root.with_path(path),
+                    self.config.communications["http"].api_root.with_path(path),  # type: ignore
                     json=data,
                     headers=self._get_http_headers(),
                 )
@@ -378,7 +345,7 @@ class OnebotProtocol(BaseProtocol):
         )
 
     async def _ws_client_send_packet(self, action: str, data: Any) -> Any:
-        ws_client: AbstractWebsocketClient = self.using_networks["ws"]
+        ws_client: AbstractWebsocketClient = self.using_networks["ws"]  # type: ignore
 
         response_id: str = random_string()
 
@@ -401,6 +368,10 @@ class OnebotProtocol(BaseProtocol):
         {"execution": execution_subbus, "network": network_method_subbus},
         {"network": lambda: "http"},
     )
+
+    def _extract_and_check_as_groupid(self, execution: GroupExecution):
+        group_id = self._extract_and_check_as_groupid(execution)
+        return group_id
 
     @_ensure_execution.override(execution=FetchBot, network="http")
     @_ensure_execution.override(execution=FetchBot, network="http-service")
@@ -461,15 +432,13 @@ class OnebotProtocol(BaseProtocol):
     async def get_group_http(
         self, relationship: Relationship, execution: FetchGroup
     ) -> "Group[GroupProfile]":
+        group_id = self._extract_and_check_as_groupid(execution)
+
         data = _GetGroups_Resp_GroupItem.parse_obj(
             self._check_execution(
                 await self._http_post(
                     "/get_group_info",
-                    {
-                        "group_id": int(
-                            execution.target.id if isinstance(execution, Group) else execution.target
-                        )
-                    },
+                    {"group_id": group_id},
                 )
             )
         )
@@ -481,15 +450,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=FetchGroup, network="ws")
     async def get_group_ws(self, relationship: Relationship, execution: FetchGroup) -> "Group[GroupProfile]":
+        group_id = self._extract_and_check_as_groupid(execution)
+
         data = _GetGroups_Resp_GroupItem.parse_obj(
             self._check_execution(
                 await self._ws_client_send_packet(
                     "get_group_info",
-                    {
-                        "group_id": int(
-                            execution.target.id if isinstance(execution, Group) else execution.target
-                        )
-                    },
+                    {"group_id": group_id},
                 )
             )
         )
@@ -527,15 +494,13 @@ class OnebotProtocol(BaseProtocol):
     async def get_members_http(
         self, relationship: Relationship, execution: FetchMembers
     ) -> "Iterable[Entity[MemberProfile]]":
+        group_id = self._extract_and_check_as_groupid(execution)
+
         data = _GetMembers_Resp.parse_obj(
             self._check_execution(
                 await self._http_get(
                     "/get_group_member_list",
-                    {
-                        "group_id": int(
-                            isinstance(execution.target, Group) and execution.target.id or execution.target
-                        )
-                    },
+                    {"group_id": str(group_id)},
                 )
             )
         )
@@ -552,6 +517,7 @@ class OnebotProtocol(BaseProtocol):
                     }[i.role],
                     nickname=i.nickname,
                     title=i.title,
+                    group=Group(str(group_id), GroupProfile()),
                 ),
             )
             for i in data.__root__
@@ -561,15 +527,13 @@ class OnebotProtocol(BaseProtocol):
     async def get_members_ws(
         self, relationship: Relationship, execution: FetchMembers
     ) -> "Iterable[Entity[MemberProfile]]":
+        group_id = self._extract_and_check_as_groupid(execution)
+
         data = _GetMembers_Resp.parse_obj(
             self._check_execution(
                 await self._ws_client_send_packet(
                     "get_group_member_list",
-                    {
-                        "group_id": int(
-                            isinstance(execution.target, Group) and execution.target.id or execution.target
-                        )
-                    },
+                    {"group_id": group_id},
                 )
             )
         )
@@ -578,14 +542,15 @@ class OnebotProtocol(BaseProtocol):
             Entity(
                 i.user_id,
                 MemberProfile(
-                    i.name,
-                    {
+                    name=i.name,
+                    group=Group(str(group_id), GroupProfile()),
+                    role={
                         "owner": Role.Owner,
                         "admin": Role.Admin,
                         "member": Role.Member,
                     }[i.role],
-                    i.nickname,
-                    i.title,
+                    nickname=i.nickname,
+                    title=i.title,
                 ),
             )
             for i in data.__root__
@@ -595,31 +560,39 @@ class OnebotProtocol(BaseProtocol):
     async def get_member_http(
         self, relationship: Relationship, execution: FetchMember
     ) -> "Entity[MemberProfile]":
+        group_id = execution.target
+
         data = _GetMembers_Resp_MemberItem.parse_obj(
             self._check_execution(
                 await self._http_post(
                     "/get_group_member_info",
                     {
-                        "group_id": int(
-                            isinstance(execution.group, Group) and execution.group.id or execution.group
-                        ),
+                        "group_id": group_id,
                         "user_id": int(execution.target),
                     },
                 )
             )
         )
 
-        return Entity(data.user_id, MemberProfile(data.name, data.role, data.nickname, data.title))
+        return Entity(
+            data.user_id,
+            MemberProfile(
+                name=data.name,
+                group=Group(str(group_id), GroupProfile()),
+                role=data.role,
+                nickname=data.nickname,
+                title=data.title,
+            ),
+        )
 
     @_ensure_execution.override(execution=MemberRemove, network="http")
     async def remove_member_http(self, relationship: Relationship, execution: MemberRemove) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._http_post(
                 "/set_group_kick",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                 },
             )
@@ -627,13 +600,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberRemove, network="ws")
     async def remove_member_ws(self, relationship: Relationship, execution: MemberRemove) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_kick",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                 },
             )
@@ -641,13 +614,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberMute, network="http")
     async def mute_http(self, relationship: Relationship, execution: MemberMute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._http_post(
                 "/set_group_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "duration": execution.duration,
                 },
@@ -656,13 +629,12 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberMute, network="ws")
     async def mute_ws(self, relationship: Relationship, execution: MemberMute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "duration": execution.duration,
                 },
@@ -671,13 +643,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberUnmute, network="http")
     async def unmute_http(self, relationship: Relationship, execution: MemberUnmute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._http_post(
                 "/set_group_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "duration": 0,
                 },
@@ -686,13 +658,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberUnmute, network="ws")
     async def unmute_ws(self, relationship: Relationship, execution: MemberUnmute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "duration": 0,
                 },
@@ -701,13 +673,12 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=GroupMute, network="http")
     async def group_mute_http(self, relationship: Relationship, execution: GroupMute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._http_post(
                 "/set_group_whole_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
                     "enable": True,
                 },
             )
@@ -715,13 +686,12 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=GroupMute, network="ws")
     async def group_mute_ws(self, relationship: Relationship, execution: GroupUnmute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_whole_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
                     "enable": True,
                 },
             )
@@ -729,13 +699,12 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=GroupUnmute, network="http")
     async def group_unmute_http(self, relationship: Relationship, execution: GroupUnmute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._http_post(
                 "/set_group_whole_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
                     "enable": False,
                 },
             )
@@ -743,13 +712,12 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=GroupUnmute, network="ws")
     async def group_unmute_ws(self, relationship: Relationship, execution: GroupUnmute) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_whole_ban",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
                     "enable": False,
                 },
             )
@@ -784,13 +752,12 @@ class OnebotProtocol(BaseProtocol):
     async def demote_from_admin_http(
         self, relationship: Relationship, execution: MemberDemoteFromAdministrator
     ) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._http_post(
                 "/set_group_admin",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "enable": False,
                 },
@@ -801,13 +768,12 @@ class OnebotProtocol(BaseProtocol):
     async def demote_from_admin_ws(
         self, relationship: Relationship, execution: MemberDemoteFromAdministrator
     ) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_admin",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "enable": False,
                 },
@@ -816,13 +782,12 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberNicknameSet, network="http")
     async def set_nickname_http(self, relationship: Relationship, execution: MemberNicknameSet) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._http_post(
                 "/set_group_card",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "card": execution.nickname,
                 },
@@ -831,13 +796,12 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberNicknameSet, network="ws")
     async def set_nickname_ws(self, relationship: Relationship, execution: MemberNicknameSet) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_card",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "card": execution.nickname,
                 },
@@ -846,13 +810,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberNicknameClear, network="http")
     async def clear_nickname_http(self, relationship: Relationship, execution: MemberNicknameClear) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._http_post(
                 "/set_group_card",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "card": "",
                 },
@@ -861,13 +825,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=MemberNicknameClear, network="ws")
     async def clear_nickname_ws(self, relationship: Relationship, execution: MemberNicknameClear) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_card",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
+                    "group_id": group_id,
                     "user_id": int(execution.target),
                     "card": "",
                 },
@@ -876,13 +840,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=GroupNameSet, network="http")
     async def set_group_name_http(self, relationship: Relationship, execution: GroupNameSet) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._http_post(
                 "/set_group_name",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
                     "name": execution.name,
                 },
             )
@@ -890,13 +854,13 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=GroupNameSet, network="ws")
     async def set_group_name_ws(self, relationship: Relationship, execution: GroupNameSet) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_name",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
                     "name": execution.name,
                 },
             )
@@ -904,26 +868,24 @@ class OnebotProtocol(BaseProtocol):
 
     @_ensure_execution.override(execution=GroupLeave, network="http")
     async def leave_group_http(self, relationship: Relationship, execution: GroupLeave) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._http_post(
                 "/set_group_leave",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
                 },
             )
         )
 
     @_ensure_execution.override(execution=GroupLeave, network="ws")
     async def leave_group_ws(self, relationship: Relationship, execution: GroupLeave) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_leave",
                 {
-                    "group_id": int(
-                        isinstance(execution.target, Group) and execution.target.id or execution.target
-                    )
+                    "group_id": group_id,
                 },
             )
         )
@@ -932,16 +894,20 @@ class OnebotProtocol(BaseProtocol):
     async def set_special_title_http(
         self, relationship: Relationship, execution: MemberSpecialTitleSet
     ) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
+        if isinstance(execution.target, Group):
+            target_id = int(execution.target.id)
+        elif isinstance(execution.target, str) and execution.target.isdigit():
+            target_id = int(execution.target)
+        else:
+            raise ValueError("target as a target_id, must be digit")
         self._check_execution(
             await self._http_post(
                 "/set_group_special_title",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
-                    "user_id": int(
-                        isinstance(execution.target, Entity) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
+                    "user_id": target_id,
                     "title": execution.title,
                 },
             )
@@ -951,16 +917,20 @@ class OnebotProtocol(BaseProtocol):
     async def set_special_title_ws(
         self, relationship: Relationship, execution: MemberSpecialTitleSet
     ) -> None:
+        group_id = self._extract_and_check_as_groupid(execution)
+
+        if isinstance(execution.target, Group):
+            target_id = int(execution.target.id)
+        elif isinstance(execution.target, str) and execution.target.isdigit():
+            target_id = int(execution.target)
+        else:
+            raise ValueError("target as a target_id, must be digit")
         self._check_execution(
             await self._ws_client_send_packet(
                 "set_group_special_title",
                 {
-                    "group_id": int(
-                        isinstance(execution.group, Group) and execution.group.id or execution.group
-                    ),
-                    "user_id": int(
-                        isinstance(execution.target, Entity) and execution.target.id or execution.target
-                    ),
+                    "group_id": group_id,
+                    "user_id": target_id,
                     "title": execution.title,
                 },
             )
@@ -969,18 +939,28 @@ class OnebotProtocol(BaseProtocol):
     @_ensure_execution.override(execution=MessageSend, network="http")
     async def send_message_http(self, relationship: Relationship, execution: MessageSend) -> MessageId:
         if isinstance(relationship.entity_or_group.profile, MemberProfile):
+            if isinstance(execution.target, str):
+                if execution.target.isdigit():
+                    group_id = int(execution.target)
+                else:
+                    raise ValueError("target as a str, must be digit")
+            else:
+                if hasattr(execution.target, "profile"):
+                    if isinstance(execution.target.profile, MemberProfile):
+                        if getattr(execution.target.profile, "group", None) is None:
+                            raise ValueError("target.profile.group is null")
+                        group_id = int(execution.target.profile.group.id)  # type: ignore
+                    elif isinstance(execution.target, Group):
+                        group_id = int(execution.target.id)
+                    else:
+                        raise ValueError("unsupported entity/group with profile")
+                else:
+                    raise ValueError("unsupported target without profile and not a str")
+
             data = await self._http_post(
                 "/send_group_msg",
                 {
-                    "group_id": int(
-                        (
-                            isinstance(execution.target.profile, MemberProfile)
-                            and execution.target.profile.group.id
-                            or isinstance(execution.target, Group)
-                            and execution.target.id
-                            or execution.target
-                        )
-                    ),
+                    "group_id": group_id,
                     "message": [
                         *(await self.serialize_message(execution.message)),
                         *(
@@ -1001,17 +981,26 @@ class OnebotProtocol(BaseProtocol):
                 },
             )
         else:
+            if isinstance(execution.target, str):
+                if execution.target.isdigit():
+                    target_id = int(execution.target)
+                else:
+                    raise ValueError("target as a str, must be digit")
+            else:
+                if hasattr(execution.target, "profile"):
+                    if isinstance(execution.target, Entity) and isinstance(
+                        execution.target.profile, FriendProfile
+                    ):
+                        target_id = int(execution.target.id)
+                    else:
+                        raise ValueError("unsupported entity with profile, it need to be a `friend`.")
+                else:
+                    raise ValueError("unsupported target without profile and not a str")
+
             data = await self._http_post(
                 "/send_private_msg",
                 {
-                    "user_id": int(
-                        (
-                            isinstance(execution.target, Entity)
-                            and isinstance(execution.target.profile, FriendProfile)
-                            and execution.target.id
-                            or execution.target
-                        )
-                    ),
+                    "user_id": target_id,
                     "message": [
                         *(await self.serialize_message(execution.message)),
                         *(
@@ -1037,18 +1026,28 @@ class OnebotProtocol(BaseProtocol):
     @_ensure_execution.override(execution=MessageSend, network="ws")
     async def send_message_ws(self, relationship: Relationship, execution: MessageSend) -> MessageId:
         if isinstance(relationship.entity_or_group.profile, MemberProfile):
+            if isinstance(execution.target, str):
+                if execution.target.isdigit():
+                    group_id = int(execution.target)
+                else:
+                    raise ValueError("target as a str, must be digit")
+            else:
+                if hasattr(execution.target, "profile"):
+                    if isinstance(execution.target.profile, MemberProfile):
+                        if getattr(execution.target.profile, "group", None) is None:
+                            raise ValueError("target.profile.group is null")
+                        group_id = int(execution.target.profile.group.id)  # type: ignore
+                    elif isinstance(execution.target, Group):
+                        group_id = int(execution.target.id)
+                    else:
+                        raise ValueError("unsupported entity/group with profile")
+                else:
+                    raise ValueError("unsupported target without profile and not a str")
+
             data = await self._ws_client_send_packet(
                 "send_group_msg",
                 {
-                    "group_id": int(
-                        (
-                            isinstance(execution.target.profile, MemberProfile)
-                            and execution.target.profile.group.id
-                            or isinstance(execution.target, Group)
-                            and execution.target.id
-                            or execution.target
-                        )
-                    ),
+                    "group_id": group_id,
                     "message": [
                         *(await self.serialize_message(execution.message)),
                         *(
@@ -1069,17 +1068,26 @@ class OnebotProtocol(BaseProtocol):
                 },
             )
         else:
+            if isinstance(execution.target, str):
+                if execution.target.isdigit():
+                    target_id = int(execution.target)
+                else:
+                    raise ValueError("target as a str, must be digit")
+            else:
+                if hasattr(execution.target, "profile"):
+                    if isinstance(execution.target, Entity) and isinstance(
+                        execution.target.profile, FriendProfile
+                    ):
+                        target_id = int(execution.target.id)
+                    else:
+                        raise ValueError("unsupported entity with profile, it need to be a `friend`.")
+                else:
+                    raise ValueError("unsupported target without profile and not a str")
+
             data = await self._ws_client_send_packet(
                 "send_private_msg",
                 {
-                    "user_id": int(
-                        (
-                            isinstance(execution.target, Entity)
-                            and isinstance(execution.target.profile, FriendProfile)
-                            and execution.target.id
-                            or execution.target
-                        )
-                    ),
+                    "user_id": target_id,
                     "message": [
                         *(await self.serialize_message(execution.message)),
                         *(
@@ -1167,18 +1175,26 @@ class OnebotProtocol(BaseProtocol):
     @_ensure_execution.override(execution=MessageSendPrivate, network="ws")
     async def send_private_message_ws(
         self, relationship: Relationship, execution: MessageSendPrivate
-    ) -> None:
+    ) -> MessageId:
+        if isinstance(execution.target, str):
+            if execution.target.isdigit():
+                target_id = int(execution.target)
+            else:
+                raise ValueError("target as a str, must be digit")
+        else:
+            if hasattr(execution.target, "profile"):
+                if isinstance(execution.target, Entity) and isinstance(
+                    execution.target.profile, FriendProfile
+                ):
+                    target_id = int(execution.target.id)
+                else:
+                    raise ValueError("unsupported entity with profile, it need to be a `friend`.")
+            else:
+                raise ValueError("unsupported target without profile and not a str")
         data = await self._ws_client_send_packet(
             "send_private_msg",
             {
-                "user_id": int(
-                    execution.target.id
-                    if (
-                        isinstance(execution.target, Entity)
-                        and isinstance(execution.target.profile, FriendProfile)
-                    )
-                    else execution.target
-                ),
+                "user_id": target_id,
                 "message": [
                     *(await self.serialize_message(execution.message)),
                     *(
@@ -1204,18 +1220,26 @@ class OnebotProtocol(BaseProtocol):
     @_ensure_execution.override(execution=MessageSendPrivate, network="http")
     async def send_private_message_http(
         self, relationship: Relationship, execution: MessageSendPrivate
-    ) -> None:
+    ) -> MessageId:
+        if isinstance(execution.target, str):
+            if execution.target.isdigit():
+                target_id = int(execution.target)
+            else:
+                raise ValueError("target as a str, must be digit")
+        else:
+            if hasattr(execution.target, "profile"):
+                if isinstance(execution.target, Entity) and isinstance(
+                    execution.target.profile, FriendProfile
+                ):
+                    target_id = int(execution.target.id)
+                else:
+                    raise ValueError("unsupported entity with profile, it need to be a `friend`.")
+            else:
+                raise ValueError("unsupported target without profile and not a str")
         data = await self._http_post(
             "/send_private_msg",
             {
-                "user_id": int(
-                    execution.target.id
-                    if (
-                        isinstance(execution.target, Entity)
-                        and isinstance(execution.target.profile, FriendProfile)
-                    )
-                    else execution.target
-                ),
+                "user_id": target_id,
                 "message": [
                     *(await self.serialize_message(execution.message)),
                     *(
