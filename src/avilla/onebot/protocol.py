@@ -1,7 +1,7 @@
 import asyncio
 import base64
 import json
-from typing import Any, AsyncIterable, Dict, Iterable, List, Tuple, Type, Union
+from typing import Any, AsyncIterable, Dict, Final, Iterable, List, Tuple, Type, Union
 
 from avilla import context
 from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Video, Voice
@@ -71,6 +71,7 @@ from avilla.onebot.elements import (
     Share,
     XmlMessage,
 )
+from avilla.platform import Platform
 from avilla.protocol import BaseProtocol
 from avilla.relationship import Relationship
 from avilla.role import Role
@@ -94,6 +95,14 @@ class OnebotProtocol(BaseProtocol):
     config: OnebotConfig
 
     _pending_futures: Dict[str, asyncio.Future]
+
+    platform: Final[Platform] = Platform(
+        name="Tencent QQ",
+        protocol_provider_name="universal",
+        implementation="OneBot",
+        supported_impl_version="v11",
+        generation="11"
+    )
 
     def __post_init__(self) -> None:
         self._pending_futures = {}
