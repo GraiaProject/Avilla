@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod, abstractstaticmethod
-from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Any, AsyncIterable, Dict, Generic, Iterable, Literal, Tuple, Type, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Dict, Generic, Iterable, Tuple, Type, TypeVar, Union
 
 from avilla.builtins.profile import SelfProfile
 from avilla.entity import Entity
@@ -44,7 +43,6 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     def __post_init__(self) -> None:
         pass
 
-    @singledispatchmethod  # 用util里的那个东西生成一个吧.
     def ensure_execution(self, relationship: Relationship, execution: "Execution") -> Any:
         raise NotImplementedError
 
