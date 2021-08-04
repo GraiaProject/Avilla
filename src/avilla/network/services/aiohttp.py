@@ -34,7 +34,3 @@ class AiohttpHttpService(Service):
 
         server = loop.create_server(self.app.make_handler(), config.host, config.port)
         avilla.logger.info(f"Aiohttp service started on [{config.host}:{config.port}]")
-        await server
-
-    async def call(self, connection_id: str, endpoint: str, data: Any) -> OriginProvider[bytes]:
-        pass

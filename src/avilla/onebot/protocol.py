@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import contextlib
 import json
 from typing import Any, AsyncIterable, Dict, Final, Iterable, List, Tuple, Type, Union
 
@@ -139,11 +140,10 @@ class OnebotProtocol(BaseProtocol):
                     event_parser = EVENT_PARSING_TREE.get(gen_parsing_key(data))  # ignore: noqa
                     if event_parser:
                         event = await event_parser(self, data)
-                        with (
-                            context.ctx_avilla.use(self.avilla),
-                            context.ctx_event.use(event),
-                            context.ctx_protocol.use(self),
-                        ):
+                        with contextlib.ExitStack() as stack:
+                            stack.enter_context(context.ctx_avilla.use(self.avilla))
+                            stack.enter_context(context.ctx_event.use(event))
+                            stack.enter_context(context.ctx_protocol.use(self))
                             self.avilla.broadcast.postEvent(event)
                     else:
                         self.avilla.logger.error(
