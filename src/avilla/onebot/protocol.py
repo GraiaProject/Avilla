@@ -83,6 +83,7 @@ from avilla.protocol import BaseProtocol
 from avilla.relationship import Relationship
 from avilla.role import Role
 from avilla.utilles import random_string
+from avilla.utilles.message import MessageSerializeBus
 from avilla.utilles.override_bus import OverrideBus
 from avilla.utilles.override_subbus import (
     execution_subbus,
@@ -106,14 +107,20 @@ from .resp import (
 class OnebotProtocol(BaseProtocol):
     config: OnebotConfig
 
-    _pending_futures: Dict[str, asyncio.Future]
-
     platform: Final[Platform] = Platform(
         name="Tencent QQ",
         protocol_provider_name="universal",
         implementation="OneBot",
         supported_impl_version="v11",
         generation="11",
+    )
+
+    _pending_futures: Dict[str, asyncio.Future]
+    _message_serializer = MessageSerializeBus()
+    _ensure_execution = OverrideBus(
+        proto_ensure_exec_params,
+        {"execution": execution_subbus, "network": network_method_subbus},
+        {"network": lambda: "http"},
     )
 
     def __post_init__(self) -> None:
@@ -198,123 +205,7 @@ class OnebotProtocol(BaseProtocol):
         return MessageChain.create(result)
 
     async def serialize_message(self, message: "MessageChain") -> List:
-        result = []
-
-        for element in message.__root__:
-            if isinstance(element, PlainText):
-                result.append({"type": "text", "data": {"text": element.text}})
-            elif isinstance(element, Image):
-                result.append(
-                    {
-                        "type": "image",
-                        "data": {
-                            "file": f"base64://\
-                                {base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
-                        },
-                    }
-                )
-            elif isinstance(element, Notice):
-                result.append({"type": "at", "data": {"qq": int(element.target)}})
-            elif isinstance(element, NoticeAll):
-                result.append({"type": "at", "data": {"qq": "all"}})
-            elif isinstance(element, Voice):
-                result.append(
-                    {
-                        "type": "record",
-                        "data": {
-                            "file": f"base64://{base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
-                        },
-                    }
-                )
-            elif isinstance(element, Video):
-                result.append(
-                    {
-                        "type": "video",
-                        "data": {
-                            "file": f"base64://{base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
-                        },
-                    }
-                )
-            elif isinstance(element, FlashImage):
-                result.append(
-                    {
-                        "type": "image",
-                        "data": {
-                            "type": "flash",
-                            "file": f"base64://{base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}",
-                        },
-                    }
-                )
-            elif isinstance(element, Face):
-                result.append({"type": "face", "data": {"id": element.id}})
-            elif isinstance(element, Rps):
-                result.append({"type": "rps", "data": {}})
-            elif isinstance(element, Dice):
-                result.append({"type": "dice", "data": {}})
-            elif isinstance(element, Shake):
-                result.append({"type": "shake", "data": {}})
-            elif isinstance(element, Poke):
-                result.append(
-                    {
-                        "type": "poke",
-                        "data": {
-                            "type": element.type,
-                            "id": element.id,
-                        },
-                    }
-                )
-            elif isinstance(element, Anonymous):
-                result.append({"type": "anonymous", "data": {}})
-            elif isinstance(element, Share):
-                result.append(
-                    {
-                        "type": "share",
-                        "data": {
-                            "url": element.url,
-                            "title": element.title,
-                            "content": element.content,
-                            "image": element.image,
-                        },
-                    }
-                )
-            elif isinstance(element, FriendRecommend):
-                result.append({"type": "contact", "data": {"type": "qq", "id": element.id}})
-            elif isinstance(element, GroupRecommend):
-                result.append({"type": "contact", "data": {"type": "group", "id": element.id}})
-            elif isinstance(element, Location):
-                result.append(
-                    {
-                        "type": "location",
-                        "data": {
-                            "lat": element.lat,
-                            "lon": element.lon,
-                            "title": element.title,
-                            "content": element.content,
-                        },
-                    }
-                )
-            elif isinstance(element, MusicShare):
-                result.append({"type": "music", "data": {"type": element.type, "id": element.id}})
-            elif isinstance(element, CustomMusicShare):
-                result.append(
-                    {
-                        "type": "music",
-                        "data": {
-                            "type": "custom",
-                            "url": element.url,
-                            "audio": element.audio,
-                            "title": element.title,
-                            "content": element.content,
-                            "image": element.image,
-                        },
-                    }
-                )
-            elif isinstance(element, XmlMessage):
-                result.append({"type": "xml", "data": {"xml": element.xml}})
-            elif isinstance(element, JsonMessage):
-                result.append({"type": "json", "data": {"json": element.json}})
-
-        return result
+        return await self._message_serializer.serialize(self, message)
 
     async def get_relationship(
         self, entity: "Union[Entity[Union[MemberProfile, FriendProfile]], Group[GroupProfile]]"
@@ -330,14 +221,13 @@ class OnebotProtocol(BaseProtocol):
                 ws_config.api_root, account=self.config.bot_id, headers=self._get_http_headers()
             )
 
+    async def ensure_execution(self, relationship: Relationship, execution: Execution) -> Any:
+        return await self._ensure_execution(self, relationship=relationship, execution=execution)
+
     def _get_http_headers(self):
         return {
             "Content-Type": "application/json",
-            **(
-                {"Authorization": f"Bearer {self.config.access_token}"}
-                if self.config.access_token
-                else {}
-            ),
+            **({"Authorization": f"Bearer {self.config.access_token}"} if self.config.access_token else {}),
         }
 
     async def _http_get(self, path: str, params: Dict[str, str] = None) -> Any:
@@ -378,9 +268,7 @@ class OnebotProtocol(BaseProtocol):
 
         ftr = asyncio.get_running_loop().create_future()
         self._pending_futures[response_id] = ftr
-        await ws_client.send_json(
-            self.config.bot_id, {"action": action, "params": data, "echo": response_id}
-        )
+        await ws_client.send_json(self.config.bot_id, {"action": action, "params": data, "echo": response_id})
         return await ftr
 
     def _check_execution(self, data: Any):
@@ -389,26 +277,152 @@ class OnebotProtocol(BaseProtocol):
                 raise ExecutionException("execution failed")
             return data["data"]
 
-    async def ensure_execution(self, relationship: Relationship, execution: Execution) -> Any:
-        return await self._ensure_execution(self, relationship=relationship, execution=execution)
-
-    _ensure_execution = OverrideBus(
-        proto_ensure_exec_params,
-        {"execution": execution_subbus, "network": network_method_subbus},
-        {"network": lambda: "http"},
-    )
-
     def _extract_and_check_as_groupid(self, execution: GroupExecution):
         group_id = self._extract_and_check_as_groupid(execution)
         return group_id
+
+    @_message_serializer.register(PlainText)
+    async def _plaintext_serializer(self, element: PlainText):
+        return {"type": "text", "data": {"text": element.text}}
+
+    @_message_serializer.register(Image)
+    async def _image_serializer(self, element: Image):
+        return {
+            "type": "image",
+            "data": {
+                "file": f"base64://\
+                    {base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
+            },
+        }
+
+    @_message_serializer.register(Voice)
+    async def _voice_serializer(self, element: Voice):
+        return {
+            "type": "record",
+            "data": {
+                "file": f"base64://\
+                    {base64.urlsafe_b64encode(await element.provider()).decode('utf-8')}"
+            },
+        }
+
+    @_message_serializer.register(Notice)
+    async def _notice_serializer(self, element: Notice):
+        return {"type": "at", "data": {"qq": int(element.target)}}
+
+    @_message_serializer.register(NoticeAll)
+    async def _noticeall_serializer(self, element: NoticeAll):
+        return {"type": "at", "data": {"qq": "all"}}
+
+    @_message_serializer.register(Video)
+    async def _video_serializer(self, element: Video):
+        return {
+            "type": "video",
+            "data": {"file": f"base64://{base64.b64encode(await element.provider()).decode('utf-8')}"},
+        }
+
+    @_message_serializer.register(FlashImage)
+    async def _flashimage_serializer(self, element: FlashImage):
+        return {
+            "type": "image",
+            "data": {
+                "type": "flash",
+                "file": f"base64://{base64.b64encode(await element.provider()).decode('utf-8')}",
+            },
+        }
+
+    @_message_serializer.register(Face)
+    async def _face_serializer(self, element: Face):
+        return {"type": "face", "data": {"id": element.id}}
+
+    @_message_serializer.register(Rps)
+    async def _rps_serializer(self, element: Rps):
+        return {"type": "rps", "data": {}}
+
+    @_message_serializer.register(Dice)
+    async def _dice_serializer(self, element: Dice):
+        return {"type": "dice", "data": {}}
+
+    @_message_serializer.register(Shake)
+    async def _shake_serializer(self, element: Shake):
+        return {"type": "shake", "data": {}}
+
+    @_message_serializer.register(Poke)
+    async def _poke_serializer(self, element: Poke):
+        return {
+            "type": "poke",
+            "data": {
+                "type": element.type,
+                "id": element.id,
+            },
+        }
+
+    @_message_serializer.register(Anonymous)
+    async def _anonymous_serializer(self, element: Anonymous):
+        return {"type": "anonymous", "data": {}}
+
+    @_message_serializer.register(Share)
+    async def _share_serializer(self, element: Share):
+        return {
+            "type": "share",
+            "data": {
+                "url": element.url,
+                "title": element.title,
+                "content": element.content,
+                "image": element.image,
+            },
+        }
+
+    @_message_serializer.register(FriendRecommend)
+    async def _friendrecommend_serializer(self, element: FriendRecommend):
+        return {"type": "contact", "data": {"type": "qq", "id": element.id}}
+
+    @_message_serializer.register(GroupRecommend)
+    async def _grouprecommend_serializer(self, element: GroupRecommend):
+        return {"type": "contact", "data": {"type": "group", "id": element.id}}
+
+    @_message_serializer.register(Location)
+    async def _location_serializer(self, element: Location):
+        return {
+            "type": "location",
+            "data": {
+                "lat": element.lat,
+                "lon": element.lon,
+                "title": element.title,
+                "content": element.content,
+            },
+        }
+
+    @_message_serializer.register(MusicShare)
+    async def _musicshare_serializer(self, element: MusicShare):
+        return {"type": "music", "data": {"type": element.type, "id": element.id}}
+
+    @_message_serializer.register(CustomMusicShare)
+    async def _custommusicshare_serializer(self, element: CustomMusicShare):
+        return {
+            "type": "music",
+            "data": {
+                "type": "custom",
+                "url": element.url,
+                "audio": element.audio,
+                "title": element.title,
+                "content": element.content,
+                "image": element.image,
+            },
+        }
+
+    @_message_serializer.register(XmlMessage)
+    async def _xmlmessage_serializer(self, element: XmlMessage):
+        return {"type": "xml", "data": {"xml": element.xml}}
+
+    @_message_serializer.register(JsonMessage)
+    async def _jsonmessage_serializer(self, element: JsonMessage):
+        return {"type": "json", "data": {"json": element._json}}
 
     @_ensure_execution.override(execution=FetchBot, network="http")
     @_ensure_execution.override(execution=FetchBot, network="http-service")
     @_ensure_execution.override(execution=FetchBot, network="ws")
     @_ensure_execution.override(execution=FetchBot, network="ws-service")
-    async def get_bot(
-        self, relationship: Relationship, execution: FetchBot
-    ) -> "Entity[SelfProfile]":
+    async def get_bot(self, relationship: Relationship, execution: FetchBot) -> "Entity[SelfProfile]":
         return Entity(self.config.bot_id, SelfProfile())
 
     @_ensure_execution.override(execution=FetchStranger, network="http")
@@ -429,9 +443,7 @@ class OnebotProtocol(BaseProtocol):
     ) -> "Entity[StrangerProfile]":
         data = _GetStranger_Resp.parse_obj(
             self._check_execution(
-                await self._ws_client_send_packet(
-                    "get_stranger_info", {"user_id": int(execution.target)}
-                )
+                await self._ws_client_send_packet("get_stranger_info", {"user_id": int(execution.target)})
             )
         )
 
@@ -447,9 +459,7 @@ class OnebotProtocol(BaseProtocol):
             )
         )
 
-        return Entity(
-            id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark)
-        )
+        return Entity(id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark))
 
     @_ensure_execution.override(execution=FetchFriend, network="ws")
     async def get_friend_ws(
@@ -457,23 +467,17 @@ class OnebotProtocol(BaseProtocol):
     ) -> "Entity[FriendProfile]":
         data = _GetFriends_Resp_FriendItem.parse_obj(
             self._check_execution(
-                await self._ws_client_send_packet(
-                    "get_friend_info", {"user_id": int(execution.target)}
-                )
+                await self._ws_client_send_packet("get_friend_info", {"user_id": int(execution.target)})
             )
         )
 
-        return Entity(
-            id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark)
-        )
+        return Entity(id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark))
 
     @_ensure_execution.override(execution=FetchFriends, network="http")
     async def get_friends_http(
         self, relationship: Relationship, execution: FetchFriends
     ) -> "Iterable[Entity[FriendProfile]]":
-        data = _GetFriends_Resp.parse_obj(
-            self._check_execution(await self._http_get("/get_friends"))
-        )
+        data = _GetFriends_Resp.parse_obj(self._check_execution(await self._http_get("/get_friends")))
 
         return [
             Entity(id=i.user_id, profile=FriendProfile(name=i.nickname, remark=i.remark))
@@ -510,15 +514,11 @@ class OnebotProtocol(BaseProtocol):
 
         return Group(
             id=data.group_id,
-            profile=GroupProfile(
-                name=data.group_name, counts=data.member_count, limit=data.max_member_count
-            ),
+            profile=GroupProfile(name=data.group_name, counts=data.member_count, limit=data.max_member_count),
         )
 
     @_ensure_execution.override(execution=FetchGroup, network="ws")
-    async def get_group_ws(
-        self, relationship: Relationship, execution: FetchGroup
-    ) -> "Group[GroupProfile]":
+    async def get_group_ws(self, relationship: Relationship, execution: FetchGroup) -> "Group[GroupProfile]":
         group_id = self._extract_and_check_as_groupid(execution)
 
         data = _GetGroups_Resp_GroupItem.parse_obj(
@@ -532,25 +532,19 @@ class OnebotProtocol(BaseProtocol):
 
         return Group(
             id=data.group_id,
-            profile=GroupProfile(
-                name=data.group_name, counts=data.member_count, limit=data.max_member_count
-            ),
+            profile=GroupProfile(name=data.group_name, counts=data.member_count, limit=data.max_member_count),
         )
 
     @_ensure_execution.override(execution=FetchGroups, network="http")
     async def get_groups_http(
         self, relationship: Relationship, execution: FetchGroups
     ) -> "Iterable[Group[GroupProfile]]":
-        data = _GetGroups_Resp.parse_obj(
-            self._check_execution(await self._http_get("/get_group_list"))
-        )
+        data = _GetGroups_Resp.parse_obj(self._check_execution(await self._http_get("/get_group_list")))
 
         return [
             Group(
                 id=i.group_id,
-                profile=GroupProfile(
-                    name=i.group_name, counts=i.member_count, limit=i.max_member_count
-                ),
+                profile=GroupProfile(name=i.group_name, counts=i.member_count, limit=i.max_member_count),
             )
             for i in data.__root__
         ]
@@ -563,9 +557,7 @@ class OnebotProtocol(BaseProtocol):
             self._check_execution(await self._ws_client_send_packet("get_group_list", {}))
         )
 
-        return [
-            Group(id=i.group_id, profile=GroupProfile(name=i.group_name)) for i in data.__root__
-        ]
+        return [Group(id=i.group_id, profile=GroupProfile(name=i.group_name)) for i in data.__root__]
 
     @_ensure_execution.override(execution=FetchMembers, network="http")
     async def get_members_http(
@@ -808,9 +800,7 @@ class OnebotProtocol(BaseProtocol):
             await self._http_post(
                 "/set_group_admin",
                 {
-                    "group_id": isinstance(execution.group, Group)
-                    and execution.group.id
-                    or execution.group,
+                    "group_id": isinstance(execution.group, Group) and execution.group.id or execution.group,
                     "user_id": execution.target,
                     "enable": True,
                 },
@@ -861,9 +851,7 @@ class OnebotProtocol(BaseProtocol):
         )
 
     @_ensure_execution.override(execution=MemberNicknameSet, network="http")
-    async def set_nickname_http(
-        self, relationship: Relationship, execution: MemberNicknameSet
-    ) -> None:
+    async def set_nickname_http(self, relationship: Relationship, execution: MemberNicknameSet) -> None:
         group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._http_post(
@@ -877,9 +865,7 @@ class OnebotProtocol(BaseProtocol):
         )
 
     @_ensure_execution.override(execution=MemberNicknameSet, network="ws")
-    async def set_nickname_ws(
-        self, relationship: Relationship, execution: MemberNicknameSet
-    ) -> None:
+    async def set_nickname_ws(self, relationship: Relationship, execution: MemberNicknameSet) -> None:
         group_id = self._extract_and_check_as_groupid(execution)
         self._check_execution(
             await self._ws_client_send_packet(
@@ -893,9 +879,7 @@ class OnebotProtocol(BaseProtocol):
         )
 
     @_ensure_execution.override(execution=MemberNicknameClear, network="http")
-    async def clear_nickname_http(
-        self, relationship: Relationship, execution: MemberNicknameClear
-    ) -> None:
+    async def clear_nickname_http(self, relationship: Relationship, execution: MemberNicknameClear) -> None:
         group_id = self._extract_and_check_as_groupid(execution)
 
         self._check_execution(
@@ -910,9 +894,7 @@ class OnebotProtocol(BaseProtocol):
         )
 
     @_ensure_execution.override(execution=MemberNicknameClear, network="ws")
-    async def clear_nickname_ws(
-        self, relationship: Relationship, execution: MemberNicknameClear
-    ) -> None:
+    async def clear_nickname_ws(self, relationship: Relationship, execution: MemberNicknameClear) -> None:
         group_id = self._extract_and_check_as_groupid(execution)
 
         self._check_execution(
@@ -927,9 +909,7 @@ class OnebotProtocol(BaseProtocol):
         )
 
     @_ensure_execution.override(execution=GroupNameSet, network="http")
-    async def set_group_name_http(
-        self, relationship: Relationship, execution: GroupNameSet
-    ) -> None:
+    async def set_group_name_http(self, relationship: Relationship, execution: GroupNameSet) -> None:
         group_id = self._extract_and_check_as_groupid(execution)
 
         self._check_execution(
@@ -1027,9 +1007,7 @@ class OnebotProtocol(BaseProtocol):
         )
 
     @_ensure_execution.override(execution=MessageSend, network="http")
-    async def send_message_http(
-        self, relationship: Relationship, execution: MessageSend
-    ) -> MessageId:
+    async def send_message_http(self, relationship: Relationship, execution: MessageSend) -> MessageId:
         if isinstance(relationship.entity_or_group.profile, MemberProfile):
             if isinstance(execution.target, str):
                 if execution.target.isdigit():
@@ -1085,9 +1063,7 @@ class OnebotProtocol(BaseProtocol):
                     ):
                         target_id = int(execution.target.id)
                     else:
-                        raise ValueError(
-                            "unsupported entity with profile, it need to be a `friend`."
-                        )
+                        raise ValueError("unsupported entity with profile, it need to be a `friend`.")
                 else:
                     raise ValueError("unsupported target without profile and not a str")
 
@@ -1118,9 +1094,7 @@ class OnebotProtocol(BaseProtocol):
         return MessageId(id=str(data["data"]["message_id"]))
 
     @_ensure_execution.override(execution=MessageSend, network="ws")
-    async def send_message_ws(
-        self, relationship: Relationship, execution: MessageSend
-    ) -> MessageId:
+    async def send_message_ws(self, relationship: Relationship, execution: MessageSend) -> MessageId:
         if isinstance(relationship.entity_or_group.profile, MemberProfile):
             if isinstance(execution.target, str):
                 if execution.target.isdigit():
@@ -1176,9 +1150,7 @@ class OnebotProtocol(BaseProtocol):
                     ):
                         target_id = int(execution.target.id)
                     else:
-                        raise ValueError(
-                            "unsupported entity with profile, it need to be a `friend`."
-                        )
+                        raise ValueError("unsupported entity with profile, it need to be a `friend`.")
                 else:
                     raise ValueError("unsupported target without profile and not a str")
 
@@ -1209,17 +1181,13 @@ class OnebotProtocol(BaseProtocol):
         return MessageId(id=str(data["data"]["message_id"]))
 
     @_ensure_execution.override(execution=MessageRevoke, network="http")
-    async def revoke_message_http(
-        self, relationship: Relationship, execution: MessageRevoke
-    ) -> None:
+    async def revoke_message_http(self, relationship: Relationship, execution: MessageRevoke) -> None:
         self._check_execution(
             await self._http_post(
                 "/delete_msg",
                 {
                     "message_id": int(
-                        isinstance(execution.target, MessageId)
-                        and execution.target.id
-                        or execution.target
+                        isinstance(execution.target, MessageId) and execution.target.id or execution.target
                     ),
                 },
             )

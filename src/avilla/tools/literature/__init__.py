@@ -183,13 +183,13 @@ class Literature(BaseDispatcher):
         if noprefix is None:
             raise ExecutionStop()
 
-        interface.execution_conPlainText[-1].literature_detect_result = self.parse_message(noprefix)
+        interface.execution_contexts[-1].literature_detect_result = self.parse_message(noprefix)
 
     async def catch(self, interface: DispatcherInterface):
         if interface.name == "__literature_messagechain__":
             return
 
-        result = interface.execution_conPlainText[-1].literature_detect_result
+        result = interface.execution_contexts[-1].literature_detect_result
         if result:
             match_result, variargs = result
             if interface.default == "__literature_variables__":
