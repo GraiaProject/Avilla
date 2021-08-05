@@ -87,9 +87,7 @@ async def message_private_group(proto: "OnebotProtocol", x: Dict[str, Any]):
     return MessageEvent(
         entity_or_group=Entity(
             x["user_id"],
-            MemberProfile(
-                name=x["sender"]["nickname"],
-            ),
+            await proto.ensure_execution(None, FetchMember(x['group_id'], x['user_id'])), # type: ignore
         ),
         message=await proto.parse_message(x["message"]),
         message_id=str(x["message_id"]),
@@ -105,7 +103,7 @@ async def message_group_normal(proto: "OnebotProtocol", x: Dict[str, Any]):
             x["user_id"],
             MemberProfile(
                 name=x["sender"]["nickname"],
-                group=Group(x["group_id"], GroupProfile(name=None)),
+                group=await proto.ensure_execution(None, FetchGroup(x['group_id'])), # type: ignore
                 nickname=x["sender"]["card"],
                 role=ROLE_MAP[x["sender"]["role"]],
                 title=x["sender"]["title"],
@@ -125,7 +123,7 @@ async def message_group_anonymous(proto: "OnebotProtocol", x: Dict[str, Any]):
             x["user_id"],
             AnonymousProfile(
                 id=x["anonymous"]["id"],
-                group=Group(x["group_id"], GroupProfile(name=None)),
+                group=await proto.ensure_execution(None, FetchGroup(x['group_id'])), # type: ignore
                 name=x["anonymous"]["name"],
                 _internal_id=x["anonymous"]["flag"],
             ),
