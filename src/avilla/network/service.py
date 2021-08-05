@@ -19,7 +19,9 @@ class Service(Generic[T_Connection], abc.ABC):
     cb_data_received: Dict[str, List[Callable[["Service", str, bytes], None]]]
 
     @abc.abstractmethod
-    async def launchEntry(self, avilla: "Avilla", config: Optional[ServiceCommunicationMethod] = None):
+    async def launchEntry(
+        self, avilla: "Avilla", config: Optional[ServiceCommunicationMethod] = None
+    ):
         ...
 
     @abc.abstractmethod
