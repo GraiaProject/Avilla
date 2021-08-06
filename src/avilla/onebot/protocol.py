@@ -183,10 +183,12 @@ class OnebotProtocol(BaseProtocol):
             event_parser = EVENT_PARSING_TREE.get(gen_parsing_key(data))  # ignore: noqa
             if event_parser:
                 event = await event_parser(self, data)
-                if event.__class__.__name__ != "HeartbeatReceived":
-                    self.avilla.logger.info(
+                if event.__class__.__name__ != "HeartbeatReceived":  # Heartbeat
+                    self.avilla.logger.debug(
                         f"received event [{event.__class__.__name__}]: {repr(event)}"
                     )
+                else:
+                    self.avilla.logger.debug("received heartbeat packet")
                 with contextlib.ExitStack() as stack:
                     stack.enter_context(context.ctx_avilla.use(self.avilla))
                     stack.enter_context(context.ctx_event.use(event))
