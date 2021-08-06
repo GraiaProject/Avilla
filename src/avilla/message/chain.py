@@ -64,6 +64,9 @@ class MessageChain(BaseModel):
 
     __root__: List[Element]
 
+    class Config:
+        arbitrary_types_allowed = True
+
     @classmethod
     def create(cls, elements: List[Element]) -> "MessageChain":
         """从传入的序列(可以是元组 tuple, 也可以是列表 list) 创建消息链.
@@ -73,13 +76,6 @@ class MessageChain(BaseModel):
             MessageChain: 以传入的序列作为所承载消息的消息链
         """
         return cls(__root__=elements)
-
-    def asMutable(self) -> "MessageChain":
-        """将消息链转换为可变形态的消息链
-        Returns:
-            MessageChain: 内部消息结构可变的消息链
-        """
-        return MessageChain(__root__=list(self.__root__))
 
     def has(self, element_class: Element) -> bool:
         """判断消息链中是否含有特定类型的消息元素
@@ -99,7 +95,7 @@ class MessageChain(BaseModel):
         """
         return [i for i in self.__root__ if type(i) is element_class]
 
-    def getOne(self, element_class: Type[Element], index: int) -> Element:
+    def get_one(self, element_class: Type[Element], index: int) -> Element:
         """获取消息链中第 index + 1 个特定类型的消息元素
         Args:
             element_class (Type[Element]): 指定的消息元素的类型, 例如 "PlainText", "At", "Image" 等.
@@ -109,16 +105,16 @@ class MessageChain(BaseModel):
         """
         return self.get(element_class)[index]
 
-    def getFirst(self, element_class: Type[Element]) -> Element:
+    def get_first(self, element_class: Type[Element]) -> Element:
         """获取消息链中第 1 个特定类型的消息元素
         Args:
             element_class (Type[Element]): 指定的消息元素的类型, 例如 "PlainText", "At", "Image" 等.
         Returns:
             T: 消息链第 1 个特定类型的消息元素
         """
-        return self.getOne(element_class, 0)
+        return self.get_one(element_class, 0)
 
-    def asDisplay(self) -> str:
+    def as_display(self) -> str:
         """获取以字符串形式表示的消息链, 且趋于通常你见到的样子.
         Returns:
             str: 以字符串形式表示的消息链
@@ -133,7 +129,7 @@ class MessageChain(BaseModel):
         """
         return cls.create(sum([list(i.__root__) for i in chains], []))
 
-    def plusWith(self, *chains: "MessageChain") -> "MessageChain":
+    def plus_with(self, *chains: "MessageChain") -> "MessageChain":
         """在现有的基础上将另一消息链拼接到原来实例的尾部, 并生成, 返回新的实例.
         Returns:
             MessageChain: 拼接结果
@@ -210,7 +206,7 @@ class MessageChain(BaseModel):
                 result = first_slice
         return MessageChain.create(result)
 
-    def asMerged(self) -> "MessageChain":
+    def as_merged(self) -> "MessageChain":
         """合并相邻的 PlainText 项, 并返回一个新的消息链实例
         Returns:
             MessageChain: 得到的新的消息链实例, 里面不应存在有任何的相邻的 PlainText 元素.

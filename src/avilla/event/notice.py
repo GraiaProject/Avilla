@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -8,7 +7,7 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from avilla.entity import Entity
 from avilla.group import Group
 
-from ..builtins.profile import FriendProfile, GroupProfile, MemberProfile
+from ..builtins.profile import FriendProfile, MemberProfile
 from . import AvillaEvent, RelationshipDispatcher
 
 
@@ -19,140 +18,88 @@ class FileInfo:
     size: int
 
 
-class GroupFileUploadNotice(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class _shared_dispatcher(BaseDispatcher):
+    mixin = [RelationshipDispatcher]
+
+    @staticmethod
+    async def catch(interface: "DispatcherInterface"):
+        pass
+
+
+class GroupFileUploadNotice(AvillaEvent[MemberProfile]):
+    group: Group
     file: FileInfo
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberPromotedToAdministrator(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberPromotedToAdministrator(AvillaEvent[MemberProfile]):
+    group: Group
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberDemotedFromAdministrator(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberDemotedFromAdministrator(AvillaEvent[MemberProfile]):
+    group: Group
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberLeave(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberLeave(AvillaEvent[MemberProfile]):
+    group: Group
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberRemoved(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberRemoved(AvillaEvent[MemberProfile]):
+    group: Group
     operator: Entity[None]
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberJoinedByApprove(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberJoinedByApprove(AvillaEvent[MemberProfile]):
+    group: Group
     operator: Entity[MemberProfile]
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberJoinedByInvite(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberJoinedByInvite(AvillaEvent[MemberProfile]):
+    group: Group
     operator: Entity[MemberProfile]
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberMuted(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberMuted(AvillaEvent[MemberProfile]):
+    group: Group
     operator: Entity[MemberProfile]
     duration: timedelta
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class MemberUnmuted(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class MemberUnmuted(AvillaEvent[MemberProfile]):
+    group: Group
     operator: Entity[MemberProfile]
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class GroupRevoke(AvillaEvent[MemberProfile, GroupProfile]):
-    group: Group[GroupProfile]
+class GroupRevoke(AvillaEvent[MemberProfile]):
+    group: Group
     operator: Entity[None]
     message_id: str
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher
 
 
-class FriendAdd(AvillaEvent[FriendProfile, Any]):  # 好友添加的 Notice.... 怪(因为已经有 Request 了)
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+class FriendAdd(AvillaEvent[FriendProfile]):  # 好友添加的 Notice.... 怪(因为已经有 Request 了)
+    Dispatcher = _shared_dispatcher
 
 
-class FriendRevoke(AvillaEvent[FriendProfile, Any]):
+class FriendRevoke(AvillaEvent[FriendProfile]):
     message_id: str
 
-    class Dispatcher(BaseDispatcher):
-        mixin = [RelationshipDispatcher]
-
-        @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+    Dispatcher = _shared_dispatcher

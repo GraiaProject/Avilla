@@ -10,18 +10,21 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from pydantic import BaseModel  # pylint: ignore
 
 from avilla.entity import Entity
-from avilla.group import Group, T_GroupProfile
+from avilla.group import Group
 from avilla.message.chain import MessageChain
 from avilla.relationship import Relationship, T_Profile
 
 from ..context import ctx_protocol, ctx_relationship
 
 
-class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile, T_GroupProfile]):
-    entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]]
+class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile]):
+    ctx: Union[Entity[T_Profile], Group]
 
     current_id: str  # = Field(default_factory=lambda: ctx_relationship.get().current.id)
     time: datetime  # = Field(default_factory=datetime.now)
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__}: {' '.join([f'{k}={v.__repr__()}' for k, v in vars(self).items()])}>"
 
 
 _Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}
@@ -30,7 +33,7 @@ _Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}
 class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, 看起来没这个必要.
     @staticmethod
     async def beforeExecution(interface: "DispatcherInterface"):
-        rs = await ctx_protocol.get().get_relationship(interface.event.entity_or_group)  # type: ignore
+        rs = await ctx_protocol.get().get_relationship(interface.event.ctx)  # type: ignore
         token = ctx_relationship.set(rs)
         _Dispatcher_Tokens[id(interface.event)] = token
 

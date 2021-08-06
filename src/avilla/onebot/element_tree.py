@@ -1,22 +1,14 @@
 from typing import Awaitable, Callable, Dict
-from avilla.builtins.elements import Image, Notice, NoticeAll, PlainText, Quote, Video, Voice
-from avilla.message.element import Element
-from avilla.onebot.elements import (
-    Anonymous,
-    Dice,
-    Face,
-    FriendRecommend,
-    GroupRecommend,
-    Location,
-    MergedForward,
-    MergedForwardCustomNode,
-    Poke,
-    Rps,
-    Shake,
-    Share,
-)
-from avilla.provider import HttpGetProvider
+
+from avilla.builtins.elements import (Image, Notice, NoticeAll, PlainText,
+                                      Quote, Video, Voice)
 from avilla.context import ctx_protocol
+from avilla.message.element import Element
+from avilla.onebot.elements import (Anonymous, Dice, Face, FriendRecommend,
+                                    GroupRecommend, JsonMessage, Location,
+                                    MergedForward, MergedForwardCustomNode,
+                                    Poke, Rps, Shake, Share, XmlMessage)
+from avilla.provider import HttpGetProvider
 
 ELEMENT_TYPE_MAP: Dict[str, Callable[[Dict], Awaitable[Element]]] = {}
 
@@ -30,103 +22,113 @@ def register(element_type: str):
 
 
 @register("text")
-async def text(x: Dict):
-    return PlainText(x["text"])
+async def text(data: Dict):
+    return PlainText(data["text"])
 
 
 @register("image")
-async def image(x: Dict):
-    return Image(HttpGetProvider(x["url"]))
+async def image(data: Dict):
+    return Image(HttpGetProvider(data["url"]))
 
 
 @register("at")
-async def at(x: Dict):
-    if x["qq"] == "all":
+async def at(data: Dict):
+    if data["qq"] == "all":
         return NoticeAll()
-    return Notice(str(x["qq"]))
+    return Notice(str(data["qq"]))
 
 
 @register("reply")
-async def reply(x: Dict):
-    return Quote(id=x["id"])
+async def reply(data: Dict):
+    return Quote(id=data["id"])
 
 
 @register("record")
-async def record(x: Dict):
-    return Voice(HttpGetProvider(x["url"]))
+async def record(data: Dict):
+    return Voice(HttpGetProvider(data["url"]))
 
 
 @register("video")
-async def video(x: Dict):
-    return Video(HttpGetProvider(x["url"]))
+async def video(data: Dict):
+    return Video(HttpGetProvider(data["url"]))
 
 
 @register("face")
-async def face(x: Dict):
-    return Face(x["id"])
+async def face(data: Dict):
+    return Face(data["id"])
 
 
 @register("rps")
-async def rps(x: Dict):
+async def rps(data: Dict):
     return Rps()
 
 
 @register("dice")
-async def dice(x: Dict):
+async def dice(data: Dict):
     return Dice()
 
 
 @register("shake")
-async def shake(x: Dict):
+async def shake(data: Dict):
     return Shake()
 
 
 @register("poke")
-async def poke(x: Dict):
-    return Poke(type=x["type"], id=x["id"], name=x["name"])
+async def poke(data: Dict):
+    return Poke(type=data["type"], id=data["id"], name=data["name"])
 
 
 @register("anonymous")
-async def anonymous(x: Dict):
+async def anonymous(data: Dict):
     return Anonymous()
 
 
 @register("share")
-async def share(x: Dict):
+async def share(data: Dict):
     return Share(
-        url=x["url"],
-        title=x["title"],
-        content=x["content"],
-        image=x["image"],
+        url=data["url"],
+        title=data["title"],
+        content=data["content"],
+        image=data["image"],
     )
 
 
 @register("contact")
-async def contact(x: Dict):
-    if x["type"] == "qq":
-        return FriendRecommend(x["id"])
-    return GroupRecommend(x["id"])
+async def contact(data: Dict):
+    if data["type"] == "qq":
+        return FriendRecommend(data["id"])
+    return GroupRecommend(data["id"])
 
 
 @register("location")
-async def location(x: Dict):
+async def location(data: Dict):
     return Location(
-        x["lat"],
-        x["lon"],
-        x["title"],
-        x["content"],
+        data["lat"],
+        data["lon"],
+        data["title"],
+        data["content"],
     )
 
 
 @register("forward")
-async def forward(x: Dict):
+async def forward(data: Dict):
     return MergedForward(
-        x["id"],
+        data["id"],
     )
 
 
 @register("node")
-async def node(x: Dict):
+async def node(data: Dict):
     return MergedForwardCustomNode(
-        x["user_id"], x["nickname"], await ctx_protocol.get().parse_message(x["content"])
+        data["user_id"], data["nickname"], await ctx_protocol.get().parse_message(data["content"])
     )
+
+
+@register("xml")
+async def xml(data: Dict):
+    return XmlMessage(data["data"])
+
+
+@register("json")
+async def json(data: Dict):
+    return JsonMessage(data["data"])

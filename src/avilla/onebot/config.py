@@ -3,7 +3,8 @@ from typing import Dict, Optional, Union
 from pydantic import BaseModel, BaseSettings
 from yarl import URL
 
-from avilla.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
+from avilla.network.signatures import (ClientCommunicationMethod,
+                                       ServiceCommunicationMethod)
 
 
 class HttpCommunication(BaseModel, ClientCommunicationMethod):

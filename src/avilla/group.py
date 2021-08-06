@@ -1,12 +1,18 @@
-from typing import Generic
+from dataclasses import dataclass
 
-from pydantic import BaseModel  # pylint: ignore
-from avilla.typing import T_GroupProfile
+from pydantic import BaseModel
+
+from avilla.builtins.profile import GroupProfile
 
 
-class Group(BaseModel, Generic[T_GroupProfile]):
-    def __init__(self, id: str, profile: T_GroupProfile):
+class Group(BaseModel):
+    def __init__(self, id: str, profile: GroupProfile):
         super().__init__(id=id, profile=profile)
 
     id: str
-    profile: T_GroupProfile
+    profile: GroupProfile
+
+
+@dataclass
+class GroupPtr:
+    id: str

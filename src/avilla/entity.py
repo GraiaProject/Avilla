@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import Generic, TypeVar
 
 from pydantic import BaseModel  # pylint: ignore
@@ -11,3 +12,8 @@ class Entity(BaseModel, Generic[P]):
 
     id: str
     profile: P
+
+
+@dataclass
+class EntityPtr:
+    id: str

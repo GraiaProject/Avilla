@@ -1,13 +1,7 @@
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Dict,
-    Generic,
-    Optional,
-)
+from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Optional
 
 from immutables import Map
+
 from avilla.typing import T_Protocol
 
 if TYPE_CHECKING:

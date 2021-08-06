@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 from aiohttp.client import ClientSession
 from graia.broadcast import Broadcast
 from yarl import URL
@@ -12,9 +13,10 @@ from avilla.message.chain import MessageChain
 from avilla.network.clients.aiohttp import AiohttpWebsocketClient
 from avilla.onebot.config import OnebotConfig, WebsocketCommunication
 from avilla.onebot.protocol import OnebotProtocol
+from avilla.provider import FileProvider
 from avilla.relationship import Relationship
-from avilla.utilles.depends import useCtx, useCtxId, useCtxProfile
-from avilla.builtins.elements import PlainText
+from avilla.utilles.depends import useCtx, useCtxId, useCtxProfile, useGroupInMemberProfile
+from avilla.builtins.elements import Image, PlainText
 
 loop = asyncio.get_event_loop()
 broadcast = Broadcast(loop=loop)
@@ -40,11 +42,21 @@ logging.basicConfig(
 
 @broadcast.receiver(
     MessageEvent,
-    headless_decorators=[useCtx(Entity), useCtxProfile(Entity, MemberProfile), useCtxId(Entity, "1846913566")],
-)
-async def event_receiver(rs: Relationship, message: MessageEvent):
-    await rs.exec(MessageSend(MessageChain.create([PlainText("不知不觉中所隐藏的\n真实的心声 让我听见它放声回响吧\n就算你熟视无睹\n可它的确就在那里")])))
+    headless_decorators=[
+        useCtx(Entity),
+        useCtxProfile(Entity, MemberProfile),
 
+        useCtxId(Entity, "1846913566"),
+        useGroupInMemberProfile("1137320960", "941310484")
+    ]
+)
+async def event_receiver(rs: Relationship, message: MessageChain):
+    print(message.as_display())
+    if not message.startswith("/test"):
+        return
+    await rs.exec(MessageSend(MessageChain.create([
+        Image(FileProvider(Path(r"D:\pixiv\69417507_p0.png")))
+    ])))
 
 loop.run_until_complete(avilla.launch())
 loop.run_forever()

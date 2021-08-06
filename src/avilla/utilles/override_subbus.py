@@ -4,8 +4,8 @@ from avilla.execution import Execution
 from avilla.protocol import BaseProtocol
 
 
-def proto_ensure_exec_params(relationship, execution):
-    return {"relationship": relationship, "execution": execution}
+def proto_ensure_exec_params(execution):
+    return {"execution": execution}
 
 
 def network_method_subbus(proto: BaseProtocol, params: Dict[str, Any]) -> str:

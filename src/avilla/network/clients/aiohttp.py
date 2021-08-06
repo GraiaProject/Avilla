@@ -1,5 +1,4 @@
 import asyncio
-from asyncio.tasks import Task
 import traceback
 from typing import Any, Dict, List, Union
 
@@ -56,6 +55,7 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
         super().__init__()
 
     async def connection_handler(self, id: str, url: URL, *args, **kwargs):
+        loop = asyncio.get_running_loop()
         async with self.session.ws_connect(url, *args, **kwargs) as ws:
             self.connections[id] = ws
             self.cb_connection_created.setdefault(id, [])
@@ -65,21 +65,28 @@ class AiohttpWebsocketClient(AbstractWebsocketClient):
             for i in self.cb_connection_created[id]:
                 i(self, id)
 
-            async for message in ws:
+            while True:
                 if ws.closed:
                     try:
                         for i in self.cb_connection_closed[id]:
                             i(self, id)
                     except Exception:
                         traceback.print_exc()
-                if message.type == WSMsgType.TEXT or message.type == WSMsgType.BINARY:
+                try:
+                    ws_message = await asyncio.wait_for(ws.receive(), timeout=6)
+                except asyncio.TimeoutError:
+                    continue
+                if ws_message.type == WSMsgType.TEXT or ws_message.type == WSMsgType.BINARY:
                     try:
-                        for i in self.cb_data_received[id]:
-                            await i(self, id, message.data)
+                        loop.create_task(
+                            asyncio.wait(
+                                [i(self, id, ws_message.data) for i in self.cb_data_received[id]]
+                            )
+                        )
                     except Exception:
                         traceback.print_exc()
 
-    def connect(self, url: URL, *args, **kwargs) -> Task:
+    def connect(self, url: URL, *args, **kwargs):
         return asyncio.get_running_loop().create_task(
             self.connection_handler(
                 kwargs.get("account") or self.gen_conn_id(),

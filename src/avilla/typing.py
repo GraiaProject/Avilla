@@ -1,9 +1,9 @@
-from typing import TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
-    from avilla.protocol import BaseProtocol
-    from avilla.profile import BaseProfile
     from avilla.builtins.profile import GroupProfile
+    from avilla.profile import BaseProfile
+    from avilla.protocol import BaseProtocol
     from avilla.provider import Provider
 
 T_Protocol = TypeVar("T_Protocol", bound="BaseProtocol")

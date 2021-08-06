@@ -1,10 +1,10 @@
 import asyncio
-from typing import Any, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Optional
+
+from aiohttp import web
 
 from avilla.network.service import Service
 from avilla.network.signatures import ServiceCommunicationMethod
-from aiohttp import web
-
 from avilla.utilles.transformer import OriginProvider
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ class AiohttpHttpService(Service):
     def __init__(self, loop: asyncio.AbstractEventLoop, app: web.Application = None):
         self.app = app or web.Application(loop=loop)
 
-    async def launchEntry(self, avilla: "Avilla", config: AiohttpHttpServiceConfig):
+    async def launch_entry(self, avilla: "Avilla", config: AiohttpHttpServiceConfig):
         loop = asyncio.get_running_loop()
         self.app.router
 

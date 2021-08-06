@@ -3,16 +3,14 @@ from typing import Any, Generic, Iterable, Union, overload
 from avilla.entity import Entity
 from avilla.execution import Execution, Result
 from avilla.group import Group
-from avilla.typing import T_Protocol, T_GroupProfile, T_Profile, T_Result
+from avilla.typing import T_Profile, T_Protocol, T_Result
 
-class Relationship(Generic[T_Profile, T_GroupProfile, T_Protocol]):
-    entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]]
+class Relationship(Generic[T_Profile, T_Protocol]):
+    ctx: Union[Entity[T_Profile], Group]
     protocol: T_Protocol
-    def __init__(
-        self, entity_or_group: Union[Entity[T_Profile], Group[T_GroupProfile]], protocol: T_Protocol
-    ) -> None: ...
+    def __init__(self, ctx: Union[Entity[T_Profile], Group], protocol: T_Protocol) -> None: ...
     @property
-    def current(self) -> Union[Entity[T_Profile], Group[T_GroupProfile]]: ...
+    def current(self) -> Union[Entity[T_Profile], Group]: ...
     async def get_members(self) -> "Iterable[Entity[T_Profile]]": ...
     @overload
     async def exec(self, execution: Execution) -> Any: ...

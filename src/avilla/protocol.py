@@ -1,14 +1,13 @@
 from abc import ABCMeta, abstractmethod, abstractstaticmethod
-from typing import TYPE_CHECKING, Any, Dict, Generic, Iterable, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, Generic, Tuple, Type, Union
 
 from avilla.builtins.profile import SelfProfile
 from avilla.entity import Entity
-from avilla.group import Group
 from avilla.message.chain import MessageChain
 from avilla.network.client import Client
 from avilla.network.service import Service
-from avilla.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
-from avilla.profile import BaseProfile
+from avilla.network.signatures import (ClientCommunicationMethod,
+                                       ServiceCommunicationMethod)
 from avilla.relationship import Relationship
 from avilla.typing import T_Config, T_Profile
 
@@ -42,17 +41,11 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     def __post_init__(self) -> None:
         pass
 
-    def ensure_execution(self, relationship: Relationship, execution: "Execution") -> Any:
+    def ensure_execution(self, execution: "Execution") -> Any:
         raise NotImplementedError
 
     @abstractmethod
     def get_self(self) -> "Entity[SelfProfile]":
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_members(
-        self, group: Group[Any]
-    ) -> "Iterable[Entity[Union[SelfProfile, BaseProfile]]]":
         raise NotImplementedError
 
     @abstractmethod
@@ -66,7 +59,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     @abstractmethod
     async def get_relationship(
         self, entity: "Entity[T_Profile]"
-    ) -> "Relationship[T_Profile, Any, BaseProtocol]":
+    ) -> "Relationship[T_Profile, BaseProtocol]":
         raise NotImplementedError
 
     @abstractmethod

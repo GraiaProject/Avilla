@@ -1,7 +1,8 @@
 import abc
 import json
 from typing import Any, Generic, Type
-from avilla.typing import T_Receive, T_Value, T_Origin
+
+from avilla.typing import T_Origin, T_Receive, T_Value
 
 
 class Transformer(Generic[T_Receive, T_Value], abc.ABC):
