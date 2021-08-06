@@ -13,6 +13,8 @@ _The next-gen framework for IM development._
   </a>
   <img alt="PyPI" src="https://img.shields.io/pypi/v/avilla-core">
   <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="code_style">
+  <img src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336">
+
 </p>
 
 > "艾维莉亚(Avilla) .......希望这位楚楚可怜的少女, 能和她的血亲, 有着许多故事的少女, 在旅途中创造故事的同时, 找到她们的新的故乡."
@@ -22,7 +24,7 @@ Avilla 被定义为 `Graia Project` 的 "下一代" 框架实现,
 通过对 [`OneBot`](https://github.com/botuniverse/onebot), [`Telegram Bot API`](https://core.telegram.org/bots) 及其他的基于不同即时通讯软件实现的各式对接接口进行总结,
 并抽象 `Relationship` 这一最为基本的模型, 构造了一个理论上可以实现零成本切换对接平台的框架.
 
-**该框架目前处于快速迭代状态, API 可能会发生剧烈变化, 可能还不适合进行生产性的开发与运维**
+**该框架目前处于快速迭代状态, API 可能会发生 _剧烈_ 变化, 可能还不适合进行生产性的开发与运维**
 
 > 项目名称取自日本轻小说 《魔女之旅》 的角色 "艾维莉亚(Avilla)".
 
