@@ -279,7 +279,9 @@ async def get_members_ws(self, execution: FetchMembers) -> "Iterable[Entity[Memb
 
 @ensure_execution.override(execution=FetchMember, network="http")
 @ensure_execution.override(execution=FetchMember, network="ws")
-async def get_member_http(self: "OnebotProtocol", execution: FetchMember) -> "Entity[MemberProfile]":
+async def get_member_http(
+    self: "OnebotProtocol", execution: FetchMember
+) -> "Entity[MemberProfile]":
     group_id = execution.target
 
     data = _GetMembers_Resp_MemberItem.parse_obj(
@@ -712,7 +714,8 @@ async def send_message(self: "OnebotProtocol", execution: MessageSend) -> Messag
         raise ValueError(f"unsupported target: {type(execution.target)}")
 
     data = await self._onebot_send_packet(
-        using_method, {
+        using_method,
+        {
             **({"group_id": group_id} if group_id is not None else {}),
             **({"user_id": friend_id} if friend_id is not None else {}),
             "message": [
@@ -730,9 +733,9 @@ async def send_message(self: "OnebotProtocol", execution: MessageSend) -> Messag
                     ]
                     if execution.reply
                     else []
-                )
-            ]
-        }
+                ),
+            ],
+        },
     )
 
     _check_execution(data)

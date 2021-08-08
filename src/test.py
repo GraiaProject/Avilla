@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from pathlib import Path
 from aiohttp.client import ClientSession
 from graia.broadcast import Broadcast
 from yarl import URL
@@ -13,10 +12,10 @@ from avilla.message.chain import MessageChain
 from avilla.network.clients.aiohttp import AiohttpWebsocketClient
 from avilla.onebot.config import OnebotConfig, WebsocketCommunication
 from avilla.onebot.protocol import OnebotProtocol
-from avilla.provider import FileProvider
 from avilla.relationship import Relationship
+from avilla.tools.literature import Literature
 from avilla.utilles.depends import useCtx, useCtxId, useCtxProfile, useGroupInMemberProfile
-from avilla.builtins.elements import Image, PlainText
+from avilla.builtins.elements import PlainText
 
 loop = asyncio.get_event_loop()
 broadcast = Broadcast(loop=loop)
@@ -42,21 +41,23 @@ logging.basicConfig(
 
 @broadcast.receiver(
     MessageEvent,
-    headless_decorators=[
+    decorators=[
         useCtx(Entity),
         useCtxProfile(Entity, MemberProfile),
 
         useCtxId(Entity, "1846913566"),
         useGroupInMemberProfile("1137320960", "941310484")
+    ],
+    dispatchers=[
+        Literature("/test")
     ]
 )
 async def event_receiver(rs: Relationship, message: MessageChain):
     print(message.as_display())
-    if not message.startswith("/test"):
-        return
     await rs.exec(MessageSend(MessageChain.create([
-        Image(FileProvider(Path(r"D:\pixiv\69417507_p0.png")))
+        PlainText("Literature 测试, 如你看到这条消息, 则 Literature 移植工作仍在进行中(并已经达成一个里程碑), 预计于 Avilla v0.0.5 发布")
     ])))
+
 
 loop.run_until_complete(avilla.launch())
 loop.run_forever()
