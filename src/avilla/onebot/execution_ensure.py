@@ -701,9 +701,9 @@ async def send_message(self: "OnebotProtocol", execution: MessageSend) -> Messag
         using_method = "send_group_msg"
     elif isinstance(execution.target, Entity):
         if isinstance(execution.target.profile, MemberProfile):
-            if getattr(execution.target.profile, "group", None) is None:
+            if execution.target.profile.group is None:
                 raise ValueError("target.profile.group is null")
-            group_id = int(execution.target.profile.group.id)  # type: ignore
+            group_id = int(execution.target.profile.group.id)
             using_method = "send_group_msg"
         elif isinstance(execution.target.profile, FriendProfile):
             friend_id = int(execution.target.id)

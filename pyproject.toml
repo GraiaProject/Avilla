@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "avilla-core"
-version = "0.0.5"
+version = "0.0.6"
 description = ""
 authors = ["GreyElaina <GreyElaina@outlook.com>"]
 license = "MiT"
@@ -27,6 +27,9 @@ aiohttp = "^3.7.4"
 # Onebot Event Parsing
 immutables = "^0.15"
 
+# Tools: Template
+regex = { version = "^2021.8.3", optional = true }
+
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"
 isort = "^5.9.3"
@@ -41,3 +44,6 @@ build-backend = "poetry.core.masonry.api"
 line-length = 100
 target-version = ['py38']
 include = '\.pyi?$'
+
+[tool.poetry.extras]
+template = ['regex']

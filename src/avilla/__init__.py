@@ -10,6 +10,7 @@ from avilla.event import MessageChainDispatcher, RelationshipDispatcher
 from avilla.network.client import Client
 from avilla.network.interface import NetworkInterface
 from avilla.network.service import Service
+from avilla.protocol import BaseProtocol
 from avilla.relationship import Relationship
 from avilla.typing import T_Config, T_Protocol
 
@@ -41,10 +42,10 @@ class Avilla(Generic[T_Protocol, T_Config]):
         self.logger = logger or getLogger(__name__)
 
         self.broadcast.dispatcher_interface.inject_global_raw(
-            RelationshipDispatcher(), MessageChainDispatcher()  # type: ignore
+            RelationshipDispatcher(), MessageChainDispatcher()
         )
 
-        @self.broadcast.dispatcher_interface.inject_global_raw  # type: ignore
+        @self.broadcast.dispatcher_interface.inject_global_raw
         async def _(interface: DispatcherInterface):
             if interface.annotation is Avilla:
                 return self
@@ -55,6 +56,10 @@ class Avilla(Generic[T_Protocol, T_Config]):
 
     async def launch(self):
         self.logger.info("hello, world!")
+        if self.protocol.__class__.platform is not BaseProtocol.platform:
+            self.logger.info(
+                f"using platform: {self.protocol.__class__.platform.universal_identifier}"
+            )
         return await self.protocol.launch_entry()
 
     def launch_blocking(self):

@@ -141,7 +141,7 @@ class MessageChain(BaseModel):
         Raises:
             ValueError: 原有的消息链不可变, 需要转为可变形态.
         Returns:
-            NoReturn: 本方法无返回.
+            None: 本方法无返回.
         """
         for i in chains:
             self.__root__.extend(list(i.__root__))
@@ -237,7 +237,7 @@ class MessageChain(BaseModel):
         Returns:
             MessageChain: 返回的消息链中不包含参数中给出的消息元素类型
         """
-        return self.create(type(self.__root__)([i for i in self.__root__ if type(i) not in types]))
+        return self.create([i for i in self.__root__ if type(i) not in types])
 
     def include(self, *types: Type[Element]) -> MessageChain:
         """将只在给出的消息元素类型中符合的消息元素重新包装为一个新的消息链
@@ -246,7 +246,7 @@ class MessageChain(BaseModel):
         Returns:
             MessageChain: 返回的消息链中只包含参数中给出的消息元素类型
         """
-        return self.create(type(self.__root__)([i for i in self.__root__ if type(i) in types]))
+        return self.create([i for i in self.__root__ if type(i) in types])
 
     def split(self, pattern: str, raw_string: bool = False) -> List["MessageChain"]:
         """和 `str.split` 差不多, 提供一个字符串, 然后返回分割结果.

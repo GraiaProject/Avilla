@@ -20,7 +20,7 @@ class NetworkInterface:
             raise TypeError("network not registered")
         del self.networks[network_id]
 
-    def get_network(self, network_id: str) -> Union[Client, Service]:
+    def get_network(self, network_id: str):
         if network_id not in self.networks:
             raise TypeError("network not registered")
         return self.networks[network_id]

@@ -14,8 +14,9 @@ from avilla.onebot.config import OnebotConfig, WebsocketCommunication
 from avilla.onebot.protocol import OnebotProtocol
 from avilla.relationship import Relationship
 from avilla.tools.literature import Literature
+from avilla.tools.template import Template
 from avilla.utilles.depends import useCtx, useCtxId, useCtxProfile, useGroupInMemberProfile
-from avilla.builtins.elements import PlainText
+from avilla.builtins.elements import Notice, PlainText
 
 loop = asyncio.get_event_loop()
 broadcast = Broadcast(loop=loop)
@@ -54,9 +55,9 @@ logging.basicConfig(
 )
 async def event_receiver(rs: Relationship, message: MessageChain):
     print(message.as_display())
-    await rs.exec(MessageSend(MessageChain.create([
-        PlainText("Literature 测试, 如你看到这条消息, 则 Literature 移植工作仍在进行中(并已经达成一个里程碑), 预计于 Avilla v0.0.5 发布")
-    ])))
+    await rs.exec(MessageSend(Template("$sender, 这是 Template 测试, $sender").render(
+        sender=Notice(rs.ctx.id)
+    )))
 
 
 loop.run_until_complete(avilla.launch())

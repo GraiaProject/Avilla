@@ -8,7 +8,7 @@ from avilla.entity import Entity
 from avilla.group import Group
 
 from ..message.chain import MessageChain
-from . import Execution, Result
+from . import Execution, Result, auto_update_forward_refs
 
 EntityExecution = Execution[Union[Entity, Group, str]]
 
@@ -24,6 +24,7 @@ class MessageId:
 MessageExecution = Execution[Union[MessageId, str]]
 
 
+@auto_update_forward_refs
 class MessageSend(Result[MessageId], EntityExecution):
     message: MessageChain
     reply: Optional[str] = None
@@ -32,10 +33,12 @@ class MessageSend(Result[MessageId], EntityExecution):
         super().__init__(message=message, reply=reply)
 
 
+@auto_update_forward_refs
 class MessageRevoke(MessageExecution):
     ...
 
 
+@auto_update_forward_refs
 class MessageEdit(MessageExecution):
     to: MessageChain
 
@@ -43,6 +46,7 @@ class MessageEdit(MessageExecution):
         super().__init__(to=to)
 
 
+@auto_update_forward_refs
 class MessageFetch(Result["MessageFetchResult"], MessageExecution):
     def __init__(self, message_id: Union[MessageId, str]):
         super().__init__(target=message_id)
@@ -58,5 +62,6 @@ class MessageFetchResult(BaseModel):
         extra = "ignore"
 
 
+@auto_update_forward_refs
 class MessageSendPrivate(MessageSend):
     pass

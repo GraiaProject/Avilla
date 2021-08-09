@@ -4,12 +4,13 @@ from avilla.builtins.profile import MemberProfile
 from avilla.entity import Entity
 
 from ..group import Group
-from . import Execution, Operation
+from . import Execution, Operation, auto_update_forward_refs
 
 GroupExecution = Execution[Union[Group, str]]
 MemberExecution = Execution[Union[Entity[MemberProfile], str]]
 
 
+@auto_update_forward_refs
 class MemberRemove(Operation, MemberExecution):
     group: Union[Group, str]
 
@@ -17,6 +18,7 @@ class MemberRemove(Operation, MemberExecution):
         super().__init__(group=group)
 
 
+@auto_update_forward_refs
 class MemberMute(Operation, MemberExecution):
     group: Union[Group, str]
     duration: int
@@ -25,6 +27,7 @@ class MemberMute(Operation, MemberExecution):
         super().__init__(group=group, duration=duration)
 
 
+@auto_update_forward_refs
 class MemberUnmute(Operation, MemberExecution):
     group: Union[Group, str]
 
@@ -32,15 +35,18 @@ class MemberUnmute(Operation, MemberExecution):
         super().__init__(group=group)
 
 
+@auto_update_forward_refs
 class GroupMute(Operation, GroupExecution):  # 群组级别的禁言, MuteAll
     pass
 
 
+@auto_update_forward_refs
 class GroupUnmute(Operation, GroupExecution):
     def __init__(self, group: Union[Group, str]):
         super().__init__(target=group)
 
 
+@auto_update_forward_refs
 class MemberPromoteToAdministrator(Operation, MemberExecution):
     group: Union[Group, str]
 
@@ -48,6 +54,7 @@ class MemberPromoteToAdministrator(Operation, MemberExecution):
         super().__init__(group=group)
 
 
+@auto_update_forward_refs
 class MemberDemoteFromAdministrator(Operation, MemberExecution):
     group: Union[Group, str]
 
@@ -55,6 +62,7 @@ class MemberDemoteFromAdministrator(Operation, MemberExecution):
         super().__init__(group=group)
 
 
+@auto_update_forward_refs
 class MemberNicknameSet(Operation, MemberExecution):
     group: Union[Group, str]
     nickname: str
@@ -63,6 +71,7 @@ class MemberNicknameSet(Operation, MemberExecution):
         super().__init__(group=group, nickname=nickname)
 
 
+@auto_update_forward_refs
 class MemberNicknameClear(Operation, MemberExecution):
     group: Union[Group, str]
 
@@ -70,6 +79,7 @@ class MemberNicknameClear(Operation, MemberExecution):
         super().__init__(group=group)
 
 
+@auto_update_forward_refs
 class GroupNameSet(Operation, GroupExecution):
     name: str
 
@@ -77,6 +87,7 @@ class GroupNameSet(Operation, GroupExecution):
         super().__init__(target=group, name=name)
 
 
+@auto_update_forward_refs
 class GroupLeave(Operation, GroupExecution):
     group: Union[Group, str]
 
@@ -84,6 +95,7 @@ class GroupLeave(Operation, GroupExecution):
         super().__init__(target=group)
 
 
+@auto_update_forward_refs
 class MemberSpecialTitleSet(Operation, MemberExecution):
     group: Union[Group, str]
     title: str

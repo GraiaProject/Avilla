@@ -61,17 +61,14 @@ class OnebotProtocol(BaseProtocol):
         if "http" in self.config.communications:
             result["http"] = self.avilla.network_interface.get_network("http")
             comm_method = HttpCommunication
-        if "ws" in self.config.communications:
-            result["ws"] = self.avilla.network_interface.get_network("ws")
-            comm_method = WebsocketCommunication
-        if result:
-            return result, comm_method  # type: ignore
-
         if "http-service" in self.config.communications:
             result["http-service"] = self.avilla.network_interface.get_network("http-service")
         if "ws-service" in self.config.communications:
             result["ws-service"] = self.avilla.network_interface.get_network("ws-service")
             comm_method = ReverseWebsocketCommunication
+        if "ws" in self.config.communications:
+            result["ws"] = self.avilla.network_interface.get_network("ws")
+            comm_method = WebsocketCommunication
 
         if result and comm_method:
             return result, comm_method

@@ -25,7 +25,7 @@ class Transformer(Generic[T_Receive, T_Value], abc.ABC):
         raise NotImplementedError()
 
     def passby(
-        self, transformer: "Type[Transformer]", *args, **kwargs
+        self, transformer: "Type[Transformer[T_Value, Any]]", *args, **kwargs
     ) -> "Transformer[T_Value, Any]":
         return transformer.create(self, *args, **kwargs)
 
