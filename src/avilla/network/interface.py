@@ -1,7 +1,9 @@
-from typing import Dict, Union
+from typing import Dict, Type, TypeVar, Union
 
 from avilla.network.client import Client
 from avilla.network.service import Service
+
+T = TypeVar("T")
 
 
 class NetworkInterface:
@@ -24,3 +26,10 @@ class NetworkInterface:
         if network_id not in self.networks:
             raise TypeError("network not registered")
         return self.networks[network_id]
+
+    def get_by_class(self, network_class: Type[T]) -> T:
+        for network in self.networks.values():
+            if isinstance(network, network_class):  # type: ignore
+                return network
+        else:
+            raise TypeError("no such network")

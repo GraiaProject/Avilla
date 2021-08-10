@@ -2,6 +2,13 @@ from typing import Dict
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
+from avilla.builtins.profile import MemberProfile
+from avilla.entity import Entity
+from avilla.event import AvillaEvent
+from avilla.group import Group
+from avilla.typing import T_Profile
 
 
 class HeartbeatReceived(Dispatchable):
@@ -19,3 +26,14 @@ class HeartbeatReceived(Dispatchable):
         @staticmethod
         async def catch(interface):
             return
+
+
+class NudgeEvent(AvillaEvent[T_Profile]):
+    group: Group
+    operator: Entity[MemberProfile]
+
+    class Dispatcher(BaseDispatcher):
+        @staticmethod
+        async def catch(interface: "DispatcherInterface[NudgeEvent]"):
+            if interface.annotation is Group:
+                return interface.event.group

@@ -3,6 +3,8 @@ from typing import Iterable, Union
 from avilla.builtins.profile import (FriendProfile, MemberProfile, SelfProfile,
                                      StrangerProfile)
 from avilla.group import Group
+from avilla.provider import Provider
+from avilla.resource import Resource
 
 from ..entity import Entity
 from . import Execution, Result, auto_update_forward_refs
@@ -55,4 +57,10 @@ class FetchMember(Result[Entity[MemberProfile]], Execution[str]):
 @auto_update_forward_refs
 class FetchMembers(Result[Iterable[Entity[MemberProfile]]], Execution[Union[Group, str]]):
     def __init__(self, target: Union[Group, str]) -> None:
+        super().__init__(target=target)
+
+
+@auto_update_forward_refs
+class FetchAvatar(Execution[Union[Group, Entity, None]], Result[Resource[Provider[bytes]]]):
+    def __init__(self, target: Union[Group, Entity, None]) -> None:
         super().__init__(target=target)

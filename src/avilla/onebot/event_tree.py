@@ -15,7 +15,7 @@ from avilla.event.service import (NetworkConnected, ServiceOffline,
                                   ServiceOnline)
 from avilla.execution.fetch import (FetchFriend, FetchGroup, FetchMember,
                                     FetchStranger)
-from avilla.onebot.event import HeartbeatReceived
+from avilla.onebot.event import HeartbeatReceived, NudgeEvent
 
 """
 from avilla.event.message import *
@@ -340,3 +340,18 @@ async def meta_event_lifecycle_connect(protocol: "OnebotProtocol", data: Dict):
 @register(post="meta_event", meta_event_type="heartbeat")
 async def meta_event_heartbeat(protocol: "OnebotProtocol", data: Dict):
     return HeartbeatReceived(data["status"], data["interval"])
+
+
+@register(post="notice", notice_type="notify", sub="poke")
+async def notice_notify_poke(protocol: "OnebotProtocol", data: Dict):
+    return NudgeEvent(
+        ctx=await protocol.ensure_execution(
+            FetchMember(str(data["group_id"]), str(data["target_id"]))
+        ),
+        group=await protocol.ensure_execution(FetchGroup(str(data["group_id"]))),
+        operator=await protocol.ensure_execution(
+            FetchMember(str(data["group_id"]), data["user_id"])
+        ),
+        current_id=str(data["self_id"]),
+        time=datetime.fromtimestamp(data["time"]),
+    )

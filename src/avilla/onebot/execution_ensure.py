@@ -1,14 +1,17 @@
 from typing import TYPE_CHECKING, Any, Iterable
 
+from yarl import URL
+
 from avilla.builtins.profile import (FriendProfile, GroupProfile,
                                      MemberProfile, SelfProfile,
                                      StrangerProfile)
+from avilla.builtins.resource import AvatarResource
 from avilla.entity import Entity
 from avilla.exceptions import ExecutionException
 from avilla.execution import Execution
-from avilla.execution.fetch import (FetchBot, FetchFriend, FetchFriends,
-                                    FetchGroup, FetchGroups, FetchMember,
-                                    FetchMembers, FetchStranger)
+from avilla.execution.fetch import (FetchAvatar, FetchBot, FetchFriend,
+                                    FetchFriends, FetchGroup, FetchGroups,
+                                    FetchMember, FetchMembers, FetchStranger)
 from avilla.execution.group import (GroupLeave, GroupMute, GroupNameSet,
                                     GroupUnmute, MemberDemoteFromAdministrator,
                                     MemberMute, MemberNicknameClear,
@@ -19,6 +22,9 @@ from avilla.execution.message import (MessageFetch, MessageFetchResult,
                                       MessageId, MessageRevoke, MessageSend,
                                       MessageSendPrivate)
 from avilla.group import Group, GroupPtr
+from avilla.network.client import AbstractHttpClient
+from avilla.provider import Provider, RawProvider
+from avilla.resource import Resource
 from avilla.role import Role
 from avilla.utilles.override_bus import OverrideBus
 from avilla.utilles.override_subbus import (execution_subbus,
@@ -899,3 +905,36 @@ async def send_private_message_http(self, execution: MessageSendPrivate) -> Mess
     _check_execution(data)
 
     return MessageId(id=str(data["message_id"]))
+
+
+@ensure_execution.override(execution=FetchAvatar, network="ws")
+@ensure_execution.override(execution=FetchAvatar, network="http")
+@ensure_execution.override(execution=FetchAvatar, network="http-service")
+@ensure_execution.override(execution=FetchAvatar, network="ws-service")
+async def fetch_avatar_http(
+    self: "OnebotProtocol", execution: FetchAvatar
+) -> Resource[Provider[bytes]]:
+    if isinstance(execution.target, Group):
+        http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
+        return AvatarResource(
+            RawProvider(
+                (
+                    await http_client.get(
+                        URL(f"https://p.qlogo.cn/gh/{execution.target.id}/{execution.target.id}/0")
+                    )
+                ).transform()
+            )
+        )
+    elif isinstance(execution.target, Entity):
+        http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
+        return AvatarResource(
+            RawProvider(
+                (
+                    await http_client.get(
+                        URL(f"https://q1.qlogo.cn/g?b=qq&nk={execution.target.id}&s=640")
+                    )
+                ).transform()
+            )
+        )
+    else:
+        raise ValueError("unsupported target")
