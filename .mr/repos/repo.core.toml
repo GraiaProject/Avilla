@@ -5,8 +5,8 @@ description = ""
 authors = ["GreyElaina <GreyElaina@outlook.com>"]
 license = "MiT"
 packages = [
-    { include = "avilla", from = "avilla-core" },
-    { include = "avilla/core/py.typed", from = "avilla-core" },
+    { include = "avilla/core" },
+    { include = "avilla/core/py.typed" },
 ]
 readme = 'README.md'
 
