@@ -10,5 +10,9 @@
     "python.linting.maxNumberOfProblems": 1000,
     "python.analysis.diagnosticMode": "workspace",
     "python.analysis.completeFunctionParens": true,
-    "python.analysis.typeCheckingMode": "basic"
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.extraPaths": [
+        "./avilla-core",
+        "./avilla-onebot"
+    ]
 }

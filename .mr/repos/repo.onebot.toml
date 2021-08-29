@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "avilla-onebot"
+version = "0.0.3"
+description = ""
+authors = ["GreyElaina <GreyElaina@outlook.com>"]
+license = "MIT"
+packages = [
+    { include = "avilla", from = "avilla-onebot" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+avilla-core = "^0.0.9"
+immutables = "^0.15"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
