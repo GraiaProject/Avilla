@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "avilla-core"
-version = "0.0.9"
+version = "0.0.10"
 description = ""
 authors = ["GreyElaina <GreyElaina@outlook.com>"]
 license = "MiT"
@@ -27,6 +27,7 @@ aiohttp = "^3.7.4"
 
 # Tools: Template
 regex = { version = "^2021.8.3", optional = true }
+immutables = "^0.16"
 
 [tool.poetry.dev-dependencies]
 black = "^21.6b0"
