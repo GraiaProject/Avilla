@@ -1,6 +1,7 @@
 import asyncio
 import contextlib
 import json
+import weakref
 from typing import Any, Dict, Final, List, Tuple, Type, Union
 
 from avilla.core import context
@@ -44,10 +45,10 @@ class OnebotProtocol(BaseProtocol):
         generation="11",
     )
 
-    _pending_futures: Dict[str, asyncio.Future]
+    _pending_futures: weakref.WeakValueDictionary[str, asyncio.Future]
 
     def __post_init__(self) -> None:
-        self._pending_futures = {}
+        self._pending_futures = weakref.WeakValueDictionary()
 
         if self.using_exec_method is WebsocketCommunication:
             ws_client: AbstractWebsocketClient = self.avilla.network_interface.get_network("ws")  # type: ignore
