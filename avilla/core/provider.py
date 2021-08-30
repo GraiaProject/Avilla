@@ -1,7 +1,7 @@
 import abc
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Generic, TypeVar
+from typing import Generic, TypeVar, Union
 
 import aiofiles
 
@@ -20,7 +20,9 @@ class Provider(abc.ABC, Generic[T]):
 class FileProvider(Provider[bytes]):
     path: Path
 
-    def __init__(self, path: Path):
+    def __init__(self, path: Union[Path, str]):
+        if isinstance(path, str):
+            path = Path(path)
         self.path = path
 
     async def __call__(self) -> bytes:

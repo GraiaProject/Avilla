@@ -205,3 +205,4 @@ class OnebotProtocol(BaseProtocol):
             p_ftr = self._pending_futures.get(data["echo"])
             if p_ftr:
                 p_ftr.set_result(data)
+                del self._pending_futures[data["echo"]]
