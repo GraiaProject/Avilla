@@ -51,8 +51,7 @@ logging.basicConfig(
 async def event_receiver(rs: Relationship, message: MessageChain):
     print(message.as_display())
     await rs.exec(
-        MessageSend(Template("$sender, 这是 Template 测试, $sender").render(sender=Notice(rs.ctx.id))),
-        useTarget(GroupPtr("372286357"))
+        MessageSend(Template("$sender, 这是 Template 测试, $sender").render(sender=Notice(rs.ctx.id)))
     )
 
 
