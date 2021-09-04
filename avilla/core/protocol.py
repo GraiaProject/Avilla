@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractmethod, abstractstaticmethod
+from abc import ABCMeta, abstractmethod
 from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Dict, Generic, Tuple, Type, Union
 
@@ -39,7 +39,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         self.using_networks, self.using_exec_method = self.ensure_networks()
         self.__post_init__()
 
-    @abstractstaticmethod
+    @abstractmethod
     def ensure_networks(
         self,
     ) -> Tuple[
