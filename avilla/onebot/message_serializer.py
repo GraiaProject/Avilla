@@ -13,7 +13,7 @@ onebot_msg_serializer = MessageSerializeBus()
 
 
 @onebot_msg_serializer.register(Text)
-async def _Text_serializer(element: Text):
+async def _text_serializer(element: Text):
     return {"type": "text", "data": {"text": element.text}}
 
 
