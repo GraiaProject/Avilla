@@ -5,10 +5,11 @@ from avilla.core.builtins.elements import (Image, Notice, NoticeAll, Quote,
 from avilla.core.context import ctx_protocol
 from avilla.core.message.element import Element
 from avilla.core.provider import HttpGetProvider
-from avilla.onebot.elements import (Anonymous, Dice, Face, FriendRecommend,
-                                    GroupRecommend, JsonMessage, Location,
-                                    MergedForward, MergedForwardCustomNode,
-                                    Poke, Rps, Shake, Share, XmlMessage)
+from avilla.onebot.elements import (Anonymous, Dice, Face, FlashImage,
+                                    FriendRecommend, GroupRecommend,
+                                    JsonMessage, Location, MergedForward,
+                                    MergedForwardCustomNode, Poke, Rps, Shake,
+                                    Share, XmlMessage)
 
 ELEMENT_TYPE_MAP: Dict[str, Callable[[Dict], Awaitable[Element]]] = {}
 
@@ -28,6 +29,8 @@ async def text(data: Dict):
 
 @register("image")
 async def image(data: Dict):
+    if data.get("type") == "flash":
+        return FlashImage(HttpGetProvider(data["url"]))
     return Image(HttpGetProvider(data["url"]))
 
 
