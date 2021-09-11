@@ -1,12 +1,11 @@
+from avilla.core.contactable import Contactable
 from dataclasses import dataclass
 from datetime import timedelta
 
-from avilla.core.entity import Entity
-from avilla.core.group import Group
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from ..builtins.profile import FriendProfile, MemberProfile
+from ..builtins.profile import FriendProfile, GroupProfile, MemberProfile, StrangerProfile
 from . import AvillaEvent, RelationshipDispatcher
 
 
@@ -26,69 +25,69 @@ class _shared_dispatcher(BaseDispatcher):
 
 
 class GroupFileUploadNotice(AvillaEvent[MemberProfile]):
-    group: Group
+    group: Contactable[GroupProfile]
     file: FileInfo
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberPromotedToAdministrator(AvillaEvent[MemberProfile]):
-    group: Group
+    group: Contactable[GroupProfile]
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberDemotedFromAdministrator(AvillaEvent[MemberProfile]):
-    group: Group
+    group: Contactable[GroupProfile]
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberLeave(AvillaEvent[MemberProfile]):
-    group: Group
+    group: Contactable[GroupProfile]
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberRemoved(AvillaEvent[MemberProfile]):
-    group: Group
-    operator: Entity[None]
+    group: Contactable[GroupProfile]
+    operator: Contactable[StrangerProfile]
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberJoinedByApprove(AvillaEvent[MemberProfile]):
-    group: Group
-    operator: Entity[MemberProfile]
+    group: Contactable[GroupProfile]
+    operator: Contactable[MemberProfile]
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberJoinedByInvite(AvillaEvent[MemberProfile]):
-    group: Group
-    operator: Entity[MemberProfile]
+    group: Contactable[GroupProfile]
+    operator: Contactable[MemberProfile]
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberMuted(AvillaEvent[MemberProfile]):
-    group: Group
-    operator: Entity[MemberProfile]
+    group: Contactable[GroupProfile]
+    operator: Contactable[MemberProfile]
     duration: timedelta
 
     Dispatcher = _shared_dispatcher
 
 
 class MemberUnmuted(AvillaEvent[MemberProfile]):
-    group: Group
-    operator: Entity[MemberProfile]
+    group: Contactable[GroupProfile]
+    operator: Contactable[MemberProfile]
 
     Dispatcher = _shared_dispatcher
 
 
 class GroupRevoke(AvillaEvent[MemberProfile]):
-    group: Group
-    operator: Entity[None]
+    group: Contactable[GroupProfile]
+    operator: Contactable[MemberProfile]
     message_id: str
 
     Dispatcher = _shared_dispatcher

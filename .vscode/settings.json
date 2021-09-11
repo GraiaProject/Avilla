@@ -14,5 +14,6 @@
     "python.analysis.extraPaths": [
         "./avilla-core",
         "./avilla-onebot"
-    ]
+    ],
+    "python.sortImports.path": "isort"
 }

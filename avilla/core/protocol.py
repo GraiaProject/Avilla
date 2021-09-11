@@ -1,17 +1,16 @@
 from abc import ABCMeta, abstractmethod
+from avilla.core.contactable import Contactable
 from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Dict, Generic, Tuple, Type, Union
 
 from avilla.core.builtins.profile import SelfProfile
-from avilla.core.entity import Entity
 from avilla.core.message.chain import MessageChain
 from avilla.core.network.client import Client
 from avilla.core.network.service import Service
-from avilla.core.network.signatures import (ClientCommunicationMethod,
-                                            ServiceCommunicationMethod)
+from avilla.core.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
 from avilla.core.platform import Platform
 from avilla.core.relationship import Relationship
-from avilla.core.typing import T_Config, T_Ctx, T_ExecMW
+from avilla.core.typing import T_Config, T_ExecMW, T_Profile
 
 from .execution import Execution
 
@@ -55,7 +54,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_self(self) -> "Entity[SelfProfile]":
+    def get_self(self) -> "Contactable[SelfProfile]":
         raise NotImplementedError
 
     @abstractmethod
@@ -67,7 +66,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_relationship(self, entity: "T_Ctx") -> "Relationship[T_Ctx]":
+    async def get_relationship(self, entity: "Contactable[T_Profile]") -> "Relationship[T_Profile]":
         return Relationship(entity, self, middlewares=self.avilla.middlewares)
 
     @abstractmethod

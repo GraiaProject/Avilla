@@ -5,7 +5,7 @@ from typing import Optional, Union
 from pydantic import BaseModel  # pylint: ignore
 
 from ..message.chain import MessageChain
-from . import Execution, Result, auto_update_forward_refs
+from . import Execution, Result
 
 
 @dataclass
@@ -16,7 +16,6 @@ class MessageId:
         return int(self.id)
 
 
-@auto_update_forward_refs
 class MessageSend(Result[MessageId], Execution):
     _auto_detect_target = True
 
@@ -27,7 +26,6 @@ class MessageSend(Result[MessageId], Execution):
         super().__init__(message=message, reply=reply)
 
 
-@auto_update_forward_refs
 class MessageRevoke(Execution):
     message_id: MessageId
 
@@ -35,7 +33,6 @@ class MessageRevoke(Execution):
         super().__init__(message_id=message_id)
 
 
-@auto_update_forward_refs
 class MessageEdit(Execution):
     message_id: Union[MessageId, str]
     to: MessageChain
@@ -44,7 +41,6 @@ class MessageEdit(Execution):
         super().__init__(message_id=message_id, to=to)
 
 
-@auto_update_forward_refs
 class MessageFetch(Result["MessageFetchResult"], Execution):
     message_id: Union[MessageId, str]
 
@@ -62,6 +58,5 @@ class MessageFetchResult(BaseModel):
         extra = "ignore"
 
 
-@auto_update_forward_refs
 class MessageSendPrivate(MessageSend):
     pass

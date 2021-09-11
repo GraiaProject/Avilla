@@ -1,6 +1,7 @@
+from avilla.core.builtins.profile import GroupProfile
+from avilla.core.contactable import Contactable
 from typing import Optional
 
-from avilla.core.group import Group
 from avilla.core.profile import BaseProfile
 from pydantic import BaseModel  # pylint: ignore
 
@@ -8,6 +9,6 @@ from pydantic import BaseModel  # pylint: ignore
 class AnonymousProfile(BaseModel, BaseProfile):
     id: str
     name: str
-    group: Group
+    group: Contactable[GroupProfile]
 
     _internal_id: Optional[str] = None

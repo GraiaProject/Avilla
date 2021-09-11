@@ -1,13 +1,24 @@
 import base64
 
-from avilla.core.builtins.elements import (Image, Notice, NoticeAll, Text,
-                                           Video, Voice)
+from avilla.core.builtins.elements import Image, Notice, NoticeAll, Text, Video, Voice
 from avilla.core.utilles.message import MessageSerializeBus
-from avilla.onebot.elements import (Anonymous, CustomMusicShare, Dice, Face,
-                                    FlashImage, FriendRecommend,
-                                    GroupRecommend, JsonMessage, Location,
-                                    MusicShare, Poke, Rps, Shake, Share,
-                                    XmlMessage)
+from avilla.onebot.elements import (
+    Anonymous,
+    CustomMusicShare,
+    Dice,
+    Face,
+    FlashImage,
+    FriendRecommend,
+    GroupRecommend,
+    JsonMessage,
+    Location,
+    MusicShare,
+    Poke,
+    Rps,
+    Shake,
+    Share,
+    XmlMessage,
+)
 
 onebot_msg_serializer = MessageSerializeBus()
 

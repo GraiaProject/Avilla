@@ -1,32 +1,30 @@
 import asyncio
+from avilla.core.contactable import Contactable
 import contextlib
 import json
 import weakref
 from typing import Any, Dict, Final, List, Tuple, Type, Union
 
 from avilla.core import context
-from avilla.core.builtins.profile import (FriendProfile, MemberProfile,
-                                          SelfProfile)
+from avilla.core.builtins.profile import SelfProfile
 from avilla.core.context import ctx_protocol
-from avilla.core.entity import Entity
 from avilla.core.execution import Execution
-from avilla.core.group import Group
 from avilla.core.message.chain import MessageChain
-from avilla.core.network.client import (AbstractHttpClient,
-                                        AbstractWebsocketClient, Client)
+from avilla.core.network.client import AbstractHttpClient, AbstractWebsocketClient, Client
 from avilla.core.network.service import Service
-from avilla.core.network.signatures import (ClientCommunicationMethod,
-                                            ServiceCommunicationMethod)
+from avilla.core.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
 from avilla.core.platform import Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
 from avilla.core.utilles import random_string
-from avilla.core.utilles.transformer import (JsonTransformer,
-                                             Utf8StringTransformer)
+from avilla.core.utilles.transformer import JsonTransformer, Utf8StringTransformer
 from avilla.onebot.ability import ABILITIES
-from avilla.onebot.config import (HttpCommunication, OnebotConfig,
-                                  ReverseWebsocketCommunication,
-                                  WebsocketCommunication)
+from avilla.onebot.config import (
+    HttpCommunication,
+    OnebotConfig,
+    ReverseWebsocketCommunication,
+    WebsocketCommunication,
+)
 from avilla.onebot.element_tree import ELEMENT_TYPE_MAP
 
 from .event_tree import EVENT_PARSING_TREE, gen_parsing_key
@@ -79,8 +77,8 @@ class OnebotProtocol(BaseProtocol):
         else:
             raise TypeError("invaild config for network")
 
-    def get_self(self) -> "Entity[SelfProfile]":
-        return Entity(self.config.bot_id, SelfProfile())
+    def get_self(self) -> "Contactable[SelfProfile]":
+        return Contactable(self.config.bot_id, SelfProfile())
 
     def has_ability(self, ability: str) -> bool:
         return ability in ABILITIES
@@ -102,9 +100,7 @@ class OnebotProtocol(BaseProtocol):
     async def serialize_message(self, message: "MessageChain") -> List:
         return await onebot_msg_serializer.serialize(message)
 
-    async def get_relationship(
-        self, entity: "Union[Entity[Union[MemberProfile, FriendProfile]], Group]"
-    ) -> "Relationship[Union[Entity[Union[MemberProfile, FriendProfile]], Group]]":
+    async def get_relationship(self, entity: "Contactable") -> "Relationship":
         return await super().get_relationship(entity)
 
     async def launch_entry(self):

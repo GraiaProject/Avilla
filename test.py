@@ -7,10 +7,8 @@ from yarl import URL
 from avilla.core import Avilla
 from avilla.core.builtins.middlewares import useTarget
 from avilla.core.builtins.profile import MemberProfile
-from avilla.core.entity import Entity
 from avilla.core.event.message import MessageEvent
 from avilla.core.execution.message import MessageSend
-from avilla.core.group import GroupPtr
 from avilla.core.message.chain import MessageChain
 from avilla.core.network.clients.aiohttp import AiohttpWebsocketClient
 from avilla.onebot.ability import ABILITIES
@@ -19,7 +17,6 @@ from avilla.onebot.protocol import OnebotProtocol
 from avilla.core.relationship import Relationship
 from avilla.core.tools.literature import Literature
 from avilla.core.tools.template import Template
-from avilla.core.utilles.depends import useCtx, useCtxId, useCtxProfile, useGroupInMemberProfile
 from avilla.core.builtins.elements import Image, Notice, Text
 
 loop = asyncio.get_event_loop()

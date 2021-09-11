@@ -1,20 +1,22 @@
+from avilla.core.contactable import Contactable, ref
 from typing import Iterable, Union
 
-from avilla.core.builtins.profile import (FriendProfile, MemberProfile,
-                                          SelfProfile, StrangerProfile)
-from avilla.core.group import Group
+from avilla.core.builtins.profile import (
+    FriendProfile,
+    GroupProfile,
+    MemberProfile,
+    SelfProfile,
+    StrangerProfile,
+)
 
-from ..entity import Entity
-from . import Execution, Result, auto_update_forward_refs
+from . import Execution, Result
 
 
-@auto_update_forward_refs
 class FetchBot(Result[SelfProfile], Execution):
     def __init__(self) -> None:
         super().__init__()
 
 
-@auto_update_forward_refs
 class FetchStranger(Result[StrangerProfile], Execution):
     target: str
 
@@ -22,54 +24,47 @@ class FetchStranger(Result[StrangerProfile], Execution):
         super().__init__(target=target)
 
 
-@auto_update_forward_refs
-class FetchFriend(Result[Entity[FriendProfile]], Execution):
+class FetchFriend(Result[Contactable[FriendProfile]], Execution):
     target: str
 
     def __init__(self, target: str) -> None:
         super().__init__(target=target)
 
 
-@auto_update_forward_refs
-class FetchFriends(Result[Iterable[Entity[FriendProfile]]], Execution):
+class FetchFriends(Result[Iterable[Contactable[FriendProfile]]], Execution):
     def __init__(self) -> None:
         super().__init__()
 
 
-@auto_update_forward_refs
-class FetchGroup(Result[Group], Execution):
-    target: Union[Group, str]
+class FetchGroup(Result[Contactable[GroupProfile]], Execution):
+    target: Union[Contactable[GroupProfile], str]
 
-    def __init__(self, target: Union[Group, str]) -> None:
+    def __init__(self, target: Union[Contactable[GroupProfile], str]) -> None:
         super().__init__(target=target)
 
 
-@auto_update_forward_refs
 class FetchGroups(Execution):
     def __init__(self) -> None:
         super().__init__()
 
 
-@auto_update_forward_refs
-class FetchMember(Result[Entity[MemberProfile]], Execution):
-    group: Union[Group, str]
+class FetchMember(Result[Contactable[MemberProfile]], Execution):
+    group: Union[Contactable[GroupProfile], str]
     target: str
 
-    def __init__(self, group: Union[Group, str], target: str) -> None:
+    def __init__(self, group: Union[Contactable[GroupProfile], str], target: str) -> None:
         super().__init__(target=target, group=group)
 
 
-@auto_update_forward_refs
-class FetchMembers(Result[Iterable[Entity[MemberProfile]]], Execution):
-    group: Union[Group, str]
+class FetchMembers(Result[Iterable[Contactable[MemberProfile]]], Execution):
+    group: Union[Contactable[GroupProfile], str]
 
-    def __init__(self, group: Union[Group, str]) -> None:
+    def __init__(self, group: Union[Contactable[GroupProfile], str]) -> None:
         super().__init__(group=group)
 
 
-@auto_update_forward_refs
 class FetchAvatar(Execution):
-    target: Union[Group, Entity]
+    target: Union[Contactable, ref]
 
-    def __init__(self, target: Union[Group, Entity]) -> None:
+    def __init__(self, target: Union[Contactable, ref]) -> None:
         super().__init__(target=target)

@@ -1,10 +1,10 @@
+from avilla.core.contactable import Contactable
 from typing import Optional
 
-from avilla.core.group import Group
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from ..builtins.profile import StrangerProfile
+from ..builtins.profile import GroupProfile, StrangerProfile
 from . import AvillaEvent, RelationshipDispatcher
 
 
@@ -21,7 +21,7 @@ class FriendAddRequest(AvillaEvent[StrangerProfile]):
 
 
 class GroupJoinRequest(AvillaEvent[StrangerProfile]):  # 主体就是类名第一个名词.
-    group: Group
+    group: Contactable[GroupProfile]
     comment: Optional[str]
     is_invite: bool = False
     request_id: str

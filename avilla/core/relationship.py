@@ -1,28 +1,28 @@
+from avilla.core.contactable import Contactable
 from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Generic, List, Optional, Union
 
 from avilla.core.builtins.profile import GroupProfile, SelfProfile
-from avilla.core.entity import Entity
 from avilla.core.execution import Execution
-from avilla.core.typing import T_Ctx, T_ExecMW, T_Profile
+from avilla.core.typing import T_ExecMW, T_Profile
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 
-class Relationship(Generic[T_Ctx]):
-    ctx: T_Ctx
+class Relationship(Generic[T_Profile]):
+    ctx: Contactable[T_Profile]
     protocol: "BaseProtocol"
 
     _middlewares: List[T_ExecMW]
-    _self: Optional[Entity[SelfProfile]]
+    _self: Optional[Contactable[SelfProfile]]
 
     def __init__(
         self,
-        ctx: T_Ctx,
+        ctx: Contactable[T_Profile],
         protocol: "BaseProtocol",
         middlewares: List[T_ExecMW] = None,
-        current_self: Entity[SelfProfile] = None,
+        current_self: Contactable[SelfProfile] = None,
     ) -> None:
         self.ctx = ctx
         self.protocol = protocol
@@ -30,7 +30,7 @@ class Relationship(Generic[T_Ctx]):
         self._self = current_self
 
     @property
-    def current(self) -> Entity[SelfProfile]:
+    def current(self) -> Contactable[SelfProfile]:
         return self._self or self.protocol.get_self()
 
     @property

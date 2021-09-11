@@ -1,9 +1,8 @@
+from avilla.core.contactable import Contactable
 from datetime import datetime
 from typing import Literal, Union
 
 from avilla.core.context import ctx_relationship
-from avilla.core.entity import Entity
-from avilla.core.group import Group
 from avilla.core.message.chain import MessageChain
 from avilla.core.typing import T_Profile
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -25,7 +24,7 @@ class MessageEvent(AvillaEvent[T_Profile]):
 
     def __init__(
         self,
-        ctx: Union[Entity[T_Profile], Group],
+        ctx: Union[Contactable[T_Profile]],
         message: MessageChain,
         message_id: str,
         current_id: str = None,

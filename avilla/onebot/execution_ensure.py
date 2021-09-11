@@ -1,41 +1,69 @@
+from avilla.core.contactable import Contactable, ref
 from typing import TYPE_CHECKING, Any, Iterable
 
-from avilla.core.builtins.profile import (FriendProfile, GroupProfile,
-                                          MemberProfile, SelfProfile,
-                                          StrangerProfile)
+from avilla.core.builtins.profile import (
+    FriendProfile,
+    GroupProfile,
+    MemberProfile,
+    SelfProfile,
+    StrangerProfile,
+)
 from avilla.core.builtins.resource import AvatarResource
 from avilla.core.context import ctx_target
-from avilla.core.entity import Entity, EntityPtr
 from avilla.core.exceptions import ExecutionException
-from avilla.core.execution.fetch import (FetchAvatar, FetchBot, FetchFriend,
-                                         FetchFriends, FetchGroup, FetchGroups,
-                                         FetchMember, FetchMembers,
-                                         FetchStranger)
-from avilla.core.execution.group import (GroupLeave, GroupMute, GroupNameSet,
-                                         GroupUnmute,
-                                         MemberDemoteFromAdministrator,
-                                         MemberMute, MemberNicknameClear,
-                                         MemberNicknameSet,
-                                         MemberPromoteToAdministrator,
-                                         MemberRemove, MemberSpecialTitleSet,
-                                         MemberUnmute)
-from avilla.core.execution.message import (MessageFetch, MessageFetchResult,
-                                           MessageId, MessageRevoke,
-                                           MessageSend, MessageSendPrivate)
-from avilla.core.group import Group, GroupPtr
+from avilla.core.execution.fetch import (
+    FetchAvatar,
+    FetchBot,
+    FetchFriend,
+    FetchFriends,
+    FetchGroup,
+    FetchGroups,
+    FetchMember,
+    FetchMembers,
+    FetchStranger,
+)
+from avilla.core.execution.group import (
+    GroupLeave,
+    GroupMute,
+    GroupNameSet,
+    GroupUnmute,
+    MemberDemoteFromAdministrator,
+    MemberMute,
+    MemberNicknameClear,
+    MemberNicknameSet,
+    MemberPromoteToAdministrator,
+    MemberRemove,
+    MemberSpecialTitleSet,
+    MemberUnmute,
+)
+from avilla.core.execution.message import (
+    MessageFetch,
+    MessageFetchResult,
+    MessageId,
+    MessageRevoke,
+    MessageSend,
+    MessageSendPrivate,
+)
 from avilla.core.network.client import AbstractHttpClient
 from avilla.core.provider import RawProvider
 from avilla.core.role import Role
 from avilla.core.utilles.override_bus import OverrideBus
-from avilla.core.utilles.override_subbus import (execution_subbus,
-                                                 network_method_subbus,
-                                                 proto_ensure_exec_params)
+from avilla.core.utilles.override_subbus import (
+    execution_subbus,
+    network_method_subbus,
+    proto_ensure_exec_params,
+)
 from yarl import URL
 
-from .resp import (_GetFriends_Resp, _GetFriends_Resp_FriendItem,
-                   _GetGroups_Resp, _GetGroups_Resp_GroupItem,
-                   _GetMembers_Resp, _GetMembers_Resp_MemberItem,
-                   _GetStranger_Resp)
+from .resp import (
+    _GetFriends_Resp,
+    _GetFriends_Resp_FriendItem,
+    _GetGroups_Resp,
+    _GetGroups_Resp_GroupItem,
+    _GetMembers_Resp,
+    _GetMembers_Resp_MemberItem,
+    _GetStranger_Resp,
+)
 
 if TYPE_CHECKING:
     from .protocol import OnebotProtocol
@@ -55,16 +83,23 @@ def _extract_and_check_as_groupid(target) -> int:
         return int(target)
     elif isinstance(target, int):
         return target
-    elif isinstance(target, Entity) and isinstance(target.profile, MemberProfile):
-        if target.profile.group is None:
+    elif isinstance(target, Contactable):
+        if isinstance(target.profile, GroupProfile):
+            if not target.id.isdigit():
+                raise ValueError(f"invalid group id: {target.__repr__()}")
+            return int(target.id)
+        elif isinstance(target.profile, MemberProfile):
+            if target.profile.group is None:
+                raise ValueError(f"invalid input, maybe you can issue the problem: {target}")
+            if not target.profile.group.id.isdigit():
+                raise ValueError(f"invalid group id: {target.profile.group.id}")
+            return int(target.profile.group.id)
+        else:
             raise ValueError(f"invalid input, maybe you can issue the problem: {target}")
-        if not target.profile.group.id.isdigit():
-            raise ValueError(f"invalid group id: {target.profile.group.id}")
-        return int(target.profile.group.id)
-    elif isinstance(target, Group):
-        if not target.id.isdigit():
-            raise ValueError(f"invalid group id: {target.__repr__()}")
-        return int(target.id)
+    elif isinstance(target, ref) and ref.type == "group":
+        if not ref.id.isdigit():
+            raise ValueError(f"invalid group id: {target.id}")
+        return int(ref.id)
     else:
         raise ValueError(f"invalid target: {target}")
 
@@ -76,7 +111,7 @@ def _extract_and_check_as_memberid(target) -> int:
         return int(target)
     elif isinstance(target, int):
         return target
-    elif isinstance(target, (Entity, EntityPtr)):
+    elif isinstance(target, Contactable):
         return int(target.id)
     else:
         raise ValueError(f"invalid target: {target}")
@@ -93,23 +128,23 @@ def _check_execution(data: Any):
 @ensure_execution.override(execution=FetchBot, network="http-service")
 @ensure_execution.override(execution=FetchBot, network="ws")
 @ensure_execution.override(execution=FetchBot, network="ws-service")
-async def get_bot(self: "OnebotProtocol", execution: FetchBot) -> "Entity[SelfProfile]":
-    return Entity(self.config.bot_id, SelfProfile())
+async def get_bot(self: "OnebotProtocol", execution: FetchBot) -> "Contactable[SelfProfile]":
+    return Contactable(self.config.bot_id, SelfProfile())
 
 
 @ensure_execution.override(execution=FetchStranger, network="http")
-async def get_stranger_http(self, execution: FetchStranger) -> "Entity[StrangerProfile]":
+async def get_stranger_http(self, execution: FetchStranger) -> "Contactable[StrangerProfile]":
     data = _GetStranger_Resp.parse_obj(
         _check_execution(
             await self._http_post("/get_stranger_info", {"user_id": int(execution.target)})
         )
     )
 
-    return Entity(id=data.user_id, profile=StrangerProfile(name=data.nickname, age=data.age))
+    return Contactable(id=data.user_id, profile=StrangerProfile(name=data.nickname, age=data.age))
 
 
 @ensure_execution.override(execution=FetchStranger, network="ws")
-async def get_stranger_ws(self, execution: FetchStranger) -> "Entity[StrangerProfile]":
+async def get_stranger_ws(self, execution: FetchStranger) -> "Contactable[StrangerProfile]":
     data = _GetStranger_Resp.parse_obj(
         _check_execution(
             await self._ws_client_send_packet(
@@ -118,55 +153,63 @@ async def get_stranger_ws(self, execution: FetchStranger) -> "Entity[StrangerPro
         )
     )
 
-    return Entity(id=data.user_id, profile=StrangerProfile(name=data.nickname, age=data.age))
+    return Contactable(id=data.user_id, profile=StrangerProfile(name=data.nickname, age=data.age))
 
 
 @ensure_execution.override(execution=FetchFriend, network="http")
-async def get_friend_http(self, execution: FetchFriend) -> "Entity[FriendProfile]":
+async def get_friend_http(self, execution: FetchFriend) -> "Contactable[FriendProfile]":
     data = _GetFriends_Resp_FriendItem.parse_obj(
         _check_execution(
             await self._http_post("/get_friend_info", {"user_id": int(execution.target)})
         )
     )
 
-    return Entity(id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark))
+    return Contactable(
+        id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark)
+    )
 
 
 @ensure_execution.override(execution=FetchFriend, network="ws")
-async def get_friend_ws(self: "OnebotProtocol", execution: FetchFriend) -> "Entity[FriendProfile]":
+async def get_friend_ws(
+    self: "OnebotProtocol", execution: FetchFriend
+) -> "Contactable[FriendProfile]":
     data = _GetFriends_Resp_FriendItem.parse_obj(
         _check_execution(
             await self._ws_client_send_packet("get_friend_info", {"user_id": int(execution.target)})
         )
     )
 
-    return Entity(id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark))
+    return Contactable(
+        id=data.user_id, profile=FriendProfile(name=data.nickname, remark=data.remark)
+    )
 
 
 @ensure_execution.override(execution=FetchFriends, network="http")
-async def get_friends_http(self, execution: FetchFriends) -> "Iterable[Entity[FriendProfile]]":
+async def get_friends_http(self, execution: FetchFriends) -> "Iterable[Contactable[FriendProfile]]":
     data = _GetFriends_Resp.parse_obj(_check_execution(await self._http_get("/get_friends")))
 
     return [
-        Entity(id=i.user_id, profile=FriendProfile(name=i.nickname, remark=i.remark))
+        Contactable(id=i.user_id, profile=FriendProfile(name=i.nickname, remark=i.remark))
         for i in data.__root__
     ]
 
 
 @ensure_execution.override(execution=FetchFriends, network="ws")
-async def get_friends_ws(self, execution: FetchFriends) -> "Iterable[Entity[FriendProfile]]":
+async def get_friends_ws(self, execution: FetchFriends) -> "Iterable[Contactable[FriendProfile]]":
     data = _GetFriends_Resp.parse_obj(
         _check_execution(await self._ws_client_send_packet("get_friends", {}))
     )
 
     return [
-        Entity(id=i.user_id, profile=FriendProfile(name=i.nickname, remark=i.remark))
+        Contactable(id=i.user_id, profile=FriendProfile(name=i.nickname, remark=i.remark))
         for i in data.__root__
     ]
 
 
 @ensure_execution.override(execution=FetchGroup, netwotk="http")
-async def get_group_http(self: "OnebotProtocol", execution: FetchGroup) -> "Group":
+async def get_group_http(
+    self: "OnebotProtocol", execution: FetchGroup
+) -> Contactable[GroupProfile]:
     group_id = _extract_and_check_as_groupid(execution.target)
 
     data = _GetGroups_Resp_GroupItem.parse_obj(
@@ -178,7 +221,7 @@ async def get_group_http(self: "OnebotProtocol", execution: FetchGroup) -> "Grou
         )
     )
 
-    return Group(
+    return Contactable(
         id=data.group_id,
         profile=GroupProfile(
             name=data.group_name, counts=data.member_count, limit=data.max_member_count
@@ -187,7 +230,7 @@ async def get_group_http(self: "OnebotProtocol", execution: FetchGroup) -> "Grou
 
 
 @ensure_execution.override(execution=FetchGroup, network="ws")
-async def get_group_ws(self: "OnebotProtocol", execution: FetchGroup) -> "Group":
+async def get_group_ws(self: "OnebotProtocol", execution: FetchGroup) -> Contactable[GroupProfile]:
     group_id = _extract_and_check_as_groupid(execution.target)
 
     data = _GetGroups_Resp_GroupItem.parse_obj(
@@ -199,7 +242,7 @@ async def get_group_ws(self: "OnebotProtocol", execution: FetchGroup) -> "Group"
         )
     )
 
-    return Group(
+    return Contactable(
         id=data.group_id,
         profile=GroupProfile(
             name=data.group_name, counts=data.member_count, limit=data.max_member_count
@@ -208,11 +251,13 @@ async def get_group_ws(self: "OnebotProtocol", execution: FetchGroup) -> "Group"
 
 
 @ensure_execution.override(execution=FetchGroups, network="http")
-async def get_groups_http(self: "OnebotProtocol", execution: FetchGroups) -> "Iterable[Group]":
+async def get_groups_http(
+    self: "OnebotProtocol", execution: FetchGroups
+) -> "Iterable[Contactable]":
     data = _GetGroups_Resp.parse_obj(_check_execution(await self._http_get("/get_group_list")))
 
     return [
-        Group(
+        Contactable(
             id=i.group_id,
             profile=GroupProfile(
                 name=i.group_name, counts=i.member_count, limit=i.max_member_count
@@ -223,16 +268,18 @@ async def get_groups_http(self: "OnebotProtocol", execution: FetchGroups) -> "It
 
 
 @ensure_execution.override(execution=FetchGroups, network="ws")
-async def get_groups_ws(self: "OnebotProtocol", execution: FetchGroups) -> "Iterable[Group]":
+async def get_groups_ws(self: "OnebotProtocol", execution: FetchGroups) -> "Iterable[Contactable]":
     data = _GetGroups_Resp.parse_obj(
         _check_execution(await self._ws_client_send_packet("get_group_list", {}))
     )
 
-    return [Group(id=i.group_id, profile=GroupProfile(name=i.group_name)) for i in data.__root__]
+    return [
+        Contactable(id=i.group_id, profile=GroupProfile(name=i.group_name)) for i in data.__root__
+    ]
 
 
 @ensure_execution.override(execution=FetchMembers, network="http")
-async def get_members_http(self, execution: FetchMembers) -> "Iterable[Entity[MemberProfile]]":
+async def get_members_http(self, execution: FetchMembers) -> "Iterable[Contactable[MemberProfile]]":
     group_id = _extract_and_check_as_groupid(execution.group)
 
     data = _GetMembers_Resp.parse_obj(
@@ -245,7 +292,7 @@ async def get_members_http(self, execution: FetchMembers) -> "Iterable[Entity[Me
     )
 
     return [
-        Entity(
+        Contactable(
             id=i.user_id,
             profile=MemberProfile(
                 name=i.name,
@@ -256,7 +303,7 @@ async def get_members_http(self, execution: FetchMembers) -> "Iterable[Entity[Me
                 }[i.role],
                 nickname=i.nickname,
                 title=i.title,
-                group=Group(str(group_id), GroupProfile()),
+                group=Contactable(str(group_id), GroupProfile()),
             ),
         )
         for i in data.__root__
@@ -264,7 +311,7 @@ async def get_members_http(self, execution: FetchMembers) -> "Iterable[Entity[Me
 
 
 @ensure_execution.override(execution=FetchMembers, network="ws")
-async def get_members_ws(self, execution: FetchMembers) -> "Iterable[Entity[MemberProfile]]":
+async def get_members_ws(self, execution: FetchMembers) -> "Iterable[Contactable[MemberProfile]]":
     group_id = _extract_and_check_as_groupid(execution.group)
 
     data = _GetMembers_Resp.parse_obj(
@@ -277,11 +324,11 @@ async def get_members_ws(self, execution: FetchMembers) -> "Iterable[Entity[Memb
     )
 
     return [
-        Entity(
+        Contactable(
             i.user_id,
             MemberProfile(
                 name=i.name,
-                group=Group(str(group_id), GroupProfile()),
+                group=Contactable(str(group_id), GroupProfile()),
                 role={
                     "owner": Role.Owner,
                     "admin": Role.Admin,
@@ -299,7 +346,7 @@ async def get_members_ws(self, execution: FetchMembers) -> "Iterable[Entity[Memb
 @ensure_execution.override(execution=FetchMember, network="ws")
 async def get_member_http(
     self: "OnebotProtocol", execution: FetchMember
-) -> "Entity[MemberProfile]":
+) -> "Contactable[MemberProfile]":
     group_id = _extract_and_check_as_groupid(execution.group)
 
     data = _GetMembers_Resp_MemberItem.parse_obj(
@@ -314,11 +361,11 @@ async def get_member_http(
         )
     )
 
-    return Entity(
+    return Contactable(
         data.user_id,
         MemberProfile(
             name=data.name,
-            group=Group(str(group_id), GroupProfile()),
+            group=Contactable(str(group_id), GroupProfile()),
             role={
                 "owner": Role.Owner,
                 "admin": Role.Admin,
@@ -496,7 +543,7 @@ async def promote_to_admin_http(self, execution: MemberPromoteToAdministrator) -
         await self._http_post(
             "/set_group_admin",
             {
-                "group_id": isinstance(execution.group, Group)
+                "group_id": isinstance(execution.group, Contactable)
                 and execution.group.id
                 or execution.group,
                 "user_id": _extract_and_check_as_memberid(execution.target),
@@ -724,12 +771,18 @@ async def send_message(self: "OnebotProtocol", execution: MessageSend) -> Messag
     target = ctx_target.get()
 
     if isinstance(target, str):
-        raise ValueError("target as a target_id, must be a Group/GroupPtr or Entity/EntityPtr")
+        raise ValueError("target as a target_id, must be a Contactable/ref")
 
-    if isinstance(target, (Group, GroupPtr)):
-        group_id = int(target.id)
-        using_method = "send_group_msg"
-    elif isinstance(target, Entity):
+    if isinstance(target, ref):
+        if ref.type == "group":
+            group_id = int(ref.id)
+            using_method = "send_group_msg"
+        elif ref.type == "friend":
+            friend_id = int(ref.id)
+            using_method = "send_private_msg"
+        else:
+            raise ValueError(f"unsupported ref type: {ref.type}")
+    elif isinstance(target, Contactable):
         if isinstance(target.profile, MemberProfile):
             if target.profile.group is None:
                 raise ValueError("target.profile.group is null")
@@ -849,10 +902,10 @@ async def send_private_message_ws(self, execution: MessageSendPrivate) -> Messag
 
     else:
         if hasattr(target, "profile"):
-            if isinstance(target, Entity) and isinstance(target.profile, FriendProfile):
+            if isinstance(target, Contactable) and isinstance(target.profile, FriendProfile):
                 target_id = int(target.id)
             else:
-                raise ValueError("unsupported entity with profile, it need to be a `friend`.")
+                raise ValueError("unsupported Contactable with profile, it need to be a `friend`.")
         else:
             raise ValueError("unsupported target without profile and not a str")
 
@@ -889,30 +942,60 @@ async def send_private_message_ws(self, execution: MessageSendPrivate) -> Messag
 @ensure_execution.override(execution=FetchAvatar, network="http")
 @ensure_execution.override(execution=FetchAvatar, network="http-service")
 @ensure_execution.override(execution=FetchAvatar, network="ws-service")
-async def fetch_avatar_http(
-    self: "OnebotProtocol", execution: FetchAvatar
-) -> AvatarResource:
-    if isinstance(execution.target, Group):
-        http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
-        return AvatarResource(
-            RawProvider(
-                (
-                    await http_client.get(
-                        URL(f"https://p.qlogo.cn/gh/{execution.target.id}/{execution.target.id}/0")
-                    )
-                ).transform()
+async def fetch_avatar_http(self: "OnebotProtocol", execution: FetchAvatar) -> AvatarResource:
+    if isinstance(execution.target, Contactable):
+        if isinstance(execution.target.profile, GroupProfile):
+            http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
+            return AvatarResource(
+                RawProvider(
+                    (
+                        await http_client.get(
+                            URL(
+                                f"https://p.qlogo.cn/gh/{execution.target.id}/{execution.target.id}/0"
+                            )
+                        )
+                    ).transform()
+                )
             )
-        )
-    elif isinstance(execution.target, Entity):
-        http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
-        return AvatarResource(
-            RawProvider(
-                (
-                    await http_client.get(
-                        URL(f"https://q1.qlogo.cn/g?b=qq&nk={execution.target.id}&s=640")
-                    )
-                ).transform()
+        elif isinstance(execution.target.profile, (FriendProfile, StrangerProfile)):
+            http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
+            return AvatarResource(
+                RawProvider(
+                    (
+                        await http_client.get(
+                            URL(f"https://q1.qlogo.cn/g?b=qq&nk={execution.target.id}&s=640")
+                        )
+                    ).transform()
+                )
             )
-        )
+        else:
+            raise ValueError("unsupported profile")
+    elif isinstance(execution.target, ref):
+        if execution.target.type == "group":
+            http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
+            return AvatarResource(
+                RawProvider(
+                    (
+                        await http_client.get(
+                            URL(
+                                f"https://p.qlogo.cn/gh/{execution.target.id}/{execution.target.id}/0"
+                            )
+                        )
+                    ).transform()
+                )
+            )
+        elif execution.target.type in {"friend", "stranger"}:
+            http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
+            return AvatarResource(
+                RawProvider(
+                    (
+                        await http_client.get(
+                            URL(f"https://q1.qlogo.cn/g?b=qq&nk={execution.target.id}&s=640")
+                        )
+                    ).transform()
+                )
+            )
+        else:
+            raise ValueError("unsupported ref type")
     else:
         raise ValueError("unsupported target")

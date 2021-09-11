@@ -1,19 +1,24 @@
-from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional,
-                    Tuple)
+from avilla.core.contactable import Contactable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Tuple
 
-from avilla.core.event.notice import (FileInfo, FriendAdd, FriendRevoke,
-                                      GroupFileUploadNotice, GroupRevoke,
-                                      MemberDemotedFromAdministrator,
-                                      MemberJoinedByApprove,
-                                      MemberJoinedByInvite, MemberLeave,
-                                      MemberMuted,
-                                      MemberPromotedToAdministrator,
-                                      MemberRemoved, MemberUnmuted)
+from avilla.core.event.notice import (
+    FileInfo,
+    FriendAdd,
+    FriendRevoke,
+    GroupFileUploadNotice,
+    GroupRevoke,
+    MemberDemotedFromAdministrator,
+    MemberJoinedByApprove,
+    MemberJoinedByInvite,
+    MemberLeave,
+    MemberMuted,
+    MemberPromotedToAdministrator,
+    MemberRemoved,
+    MemberUnmuted,
+)
 from avilla.core.event.request import FriendAddRequest, GroupJoinRequest
-from avilla.core.event.service import (NetworkConnected, ServiceOffline,
-                                       ServiceOnline)
-from avilla.core.execution.fetch import (FetchFriend, FetchGroup, FetchMember,
-                                         FetchStranger)
+from avilla.core.event.service import NetworkConnected, ServiceOffline, ServiceOnline
+from avilla.core.execution.fetch import FetchFriend, FetchGroup, FetchMember, FetchStranger
 from avilla.onebot.event import HeartbeatReceived, NudgeEvent
 from graia.broadcast.entities.event import Dispatchable
 
@@ -24,11 +29,8 @@ from avilla.event.request import *
 """
 from datetime import datetime, timedelta
 
-from avilla.core.builtins.profile import (FriendProfile, GroupProfile,
-                                          MemberProfile)
-from avilla.core.entity import Entity
+from avilla.core.builtins.profile import FriendProfile, GroupProfile, MemberProfile
 from avilla.core.event.message import MessageEvent
-from avilla.core.group import Group
 from avilla.core.role import Role
 from avilla.onebot.profile import AnonymousProfile
 
@@ -67,7 +69,7 @@ def register(post, msg=None, sub=None, notice_type=None, request_type=None, meta
 @register("message", "private", "friend")
 async def message_private_friend(proto: "OnebotProtocol", data: Dict[str, Any]):
     return MessageEvent(
-        ctx=Entity(
+        ctx=Contactable(
             data["user_id"],
             FriendProfile(name=data["sender"]["nickname"], remark=data["sender"]["nickname"]),
         ),
@@ -81,7 +83,7 @@ async def message_private_friend(proto: "OnebotProtocol", data: Dict[str, Any]):
 @register("message", "private", "group")
 async def message_private_group(proto: "OnebotProtocol", data: Dict[str, Any]):
     return MessageEvent(
-        ctx=Entity(
+        ctx=Contactable(
             data["user_id"],
             await proto.ensure_execution(FetchMember(data["group_id"], data["user_id"])),
         ),
@@ -95,7 +97,7 @@ async def message_private_group(proto: "OnebotProtocol", data: Dict[str, Any]):
 @register("message", "group", "normal")
 async def message_group_normal(proto: "OnebotProtocol", data: Dict[str, Any]):
     return MessageEvent(
-        ctx=Entity(
+        ctx=Contactable(
             data["user_id"],
             MemberProfile(
                 name=data["sender"]["nickname"],
@@ -115,7 +117,7 @@ async def message_group_normal(proto: "OnebotProtocol", data: Dict[str, Any]):
 @register("message", "group", "anonymous")
 async def message_group_anonymous(proto: "OnebotProtocol", data: Dict[str, Any]):
     return MessageEvent(
-        ctx=Entity(
+        ctx=Contactable(
             data["user_id"],
             AnonymousProfile(
                 id=data["anonymous"]["id"],
@@ -164,7 +166,7 @@ async def notice_group_admin_unset(protocol: "OnebotProtocol", data: Dict):
 @register(post="notice", notice_type="group_decrease", sub="leave")
 async def notice_group_decrease_leave(protocol: "OnebotProtocol", data: Dict):
     return MemberLeave(
-        ctx=Entity(
+        ctx=Contactable(
             id=str(data["user_id"]),
             profile=await protocol.ensure_execution(FetchGroup(str(data["group_id"]))),
         ),
@@ -177,7 +179,7 @@ async def notice_group_decrease_leave(protocol: "OnebotProtocol", data: Dict):
 @register(post="notice", notice_type="group_decrease", sub="kick")
 async def notice_group_decrease_kick(protocol: "OnebotProtocol", data: Dict):
     return MemberRemoved(
-        ctx=Entity(
+        ctx=Contactable(
             id=str(data["user_id"]),
             profile=await protocol.ensure_execution(FetchGroup(str(data["group_id"]))),
         ),
@@ -189,7 +191,7 @@ async def notice_group_decrease_kick(protocol: "OnebotProtocol", data: Dict):
 
 @register(post="notice", notice_type="group_decrease", sub="kick_me")
 async def notice_group_decrease_kick_me(protocol: "OnebotProtocol", data: Dict):
-    g = Group(id=data["group_id"], profile=GroupProfile())
+    g = Contactable(id=data["group_id"], profile=GroupProfile())
     return MemberRemoved(
         ctx=protocol.get_self(),
         group=g,

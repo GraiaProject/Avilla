@@ -1,5 +1,4 @@
-from avilla.core.builtins.profile import (FriendProfile, GroupProfile,
-                                          MemberProfile)
+from avilla.core.builtins.profile import FriendProfile, GroupProfile, MemberProfile
 from avilla.core.relationship import Relationship
 
 

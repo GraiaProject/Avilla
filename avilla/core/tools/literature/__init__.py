@@ -165,7 +165,7 @@ class Literature(BaseDispatcher):
             list(itertools.chain(*[[*i.__root__, Text(" ")] for i in chain_frames]))[:-1]
         ).as_merged()
 
-    async def beforeDispatch(self, interface: DispatcherInterface):
+    async def beforeExecution(self, interface: DispatcherInterface):
         message_chain: MessageChain = await interface.lookup_param(
             "__literature_messagechain__", MessageChain, None
         )
@@ -201,6 +201,6 @@ class Literature(BaseDispatcher):
                 elif match_value is not None:
                     return match_value
 
-    async def afterDispatch(self, interface: "DispatcherInterface", e, tb):
+    async def beforeTargetExec(self, interface: "DispatcherInterface", e, tb):
         if "literature_detect_result" in interface.broadcast.decorator_interface.local_storage:
             del interface.broadcast.decorator_interface.local_storage["literature_detect_result"]

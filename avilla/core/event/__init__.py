@@ -1,11 +1,10 @@
+from avilla.core.contactable import Contactable
 import typing
 from contextvars import Token
 from datetime import datetime
 from types import TracebackType
 from typing import Dict, Generic, Optional, Union
 
-from avilla.core.entity import Entity
-from avilla.core.group import Group
 from avilla.core.message.chain import MessageChain
 from avilla.core.relationship import Relationship, T_Profile
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -17,7 +16,7 @@ from ..context import ctx_protocol, ctx_relationship
 
 
 class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile]):
-    ctx: Union[Entity[T_Profile], Group]
+    ctx: Union[Contactable[T_Profile]]
 
     current_id: str  # = Field(default_factory=lambda: ctx_relationship.get().current.id)
     time: datetime = Field(default_factory=datetime.now)
