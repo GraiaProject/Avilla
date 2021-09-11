@@ -18,7 +18,6 @@ __all__ = (
     "Location",
     "MusicShare",
     "CustomMusicShare",
-    "Reply",
     "MergedForward",
     "MergedForwardNode",
     "MergedForwardCustomNode",
@@ -185,16 +184,6 @@ class CustomMusicShare(Element):
             title={self.title},\
             content={self.content or 'null'},\
             image={self.image or 'null'}]"
-
-
-class Reply(Element):
-    id: str
-
-    def __init__(self, id: str) -> None:
-        self.id = id
-
-    def asDisplay(self) -> str:
-        return f"[$onebot::Reply:id={self.id}]"
 
 
 class MergedForward(Element):
