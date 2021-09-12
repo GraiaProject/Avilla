@@ -1,3 +1,4 @@
+from avilla.core.tools.filter import Filter
 import sys
 import asyncio
 import logging
@@ -18,6 +19,9 @@ from avilla.core.relationship import Relationship
 from avilla.core.tools.literature import Literature
 from avilla.core.tools.template import Template
 from avilla.core.builtins.elements import Image, Notice, Text
+
+import inspect
+inspect.signature
 
 loop = asyncio.get_event_loop()
 broadcast = Broadcast(loop=loop)
@@ -43,7 +47,13 @@ logging.basicConfig(
 
 @broadcast.receiver(
     MessageEvent,
-    decorators=[useCtx(Entity), useCtxProfile(Entity, MemberProfile), useGroupInMemberProfile("941310484")],
+    decorators=[
+        Filter.rsctx()
+            .parallel()
+                .id("1846913566")
+                .profile(MemberProfile)
+            .end()
+    ],
 )
 async def event_receiver(rs: Relationship, message: MessageChain):
     print(message.as_display())

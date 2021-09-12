@@ -1,26 +1,23 @@
-from avilla.core.contactable import Contactable
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional, Tuple
+from typing import (TYPE_CHECKING, Any, Awaitable, Callable, Dict, Optional,
+                    Tuple)
 
-from avilla.core.event.notice import (
-    FileInfo,
-    FriendAdd,
-    FriendRevoke,
-    GroupFileUploadNotice,
-    GroupRevoke,
-    MemberDemotedFromAdministrator,
-    MemberJoinedByApprove,
-    MemberJoinedByInvite,
-    MemberLeave,
-    MemberMuted,
-    MemberPromotedToAdministrator,
-    MemberRemoved,
-    MemberUnmuted,
-)
-from avilla.core.event.request import FriendAddRequest, GroupJoinRequest
-from avilla.core.event.service import NetworkConnected, ServiceOffline, ServiceOnline
-from avilla.core.execution.fetch import FetchFriend, FetchGroup, FetchMember, FetchStranger
-from avilla.onebot.event import HeartbeatReceived, NudgeEvent
 from graia.broadcast.entities.event import Dispatchable
+
+from avilla.core.contactable import Contactable
+from avilla.core.event.notice import (FileInfo, FriendAdd, FriendRevoke,
+                                      GroupFileUploadNotice, GroupRevoke,
+                                      MemberDemotedFromAdministrator,
+                                      MemberJoinedByApprove,
+                                      MemberJoinedByInvite, MemberLeave,
+                                      MemberMuted,
+                                      MemberPromotedToAdministrator,
+                                      MemberRemoved, MemberUnmuted)
+from avilla.core.event.request import FriendAddRequest, GroupJoinRequest
+from avilla.core.event.service import (NetworkConnected, ServiceOffline,
+                                       ServiceOnline)
+from avilla.core.execution.fetch import (FetchFriend, FetchGroup, FetchMember,
+                                         FetchStranger)
+from avilla.onebot.event import HeartbeatReceived, NudgeEvent
 
 """
 from avilla.event.message import *
@@ -29,7 +26,8 @@ from avilla.event.request import *
 """
 from datetime import datetime, timedelta
 
-from avilla.core.builtins.profile import FriendProfile, GroupProfile, MemberProfile
+from avilla.core.builtins.profile import (FriendProfile, GroupProfile,
+                                          MemberProfile)
 from avilla.core.event.message import MessageEvent
 from avilla.core.role import Role
 from avilla.onebot.profile import AnonymousProfile

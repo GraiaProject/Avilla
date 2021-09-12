@@ -1,7 +1,8 @@
 from typing import Any, Generic
 
-from avilla.core.typing import T_Result
 from pydantic import BaseModel
+
+from avilla.core.typing import T_Result
 
 
 class Execution(BaseModel):

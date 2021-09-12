@@ -1,8 +1,8 @@
-from avilla.core.contactable import Contactable
 from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Generic, List, Optional, Union
 
 from avilla.core.builtins.profile import GroupProfile, SelfProfile
+from avilla.core.contactable import Contactable
 from avilla.core.execution import Execution
 from avilla.core.typing import T_ExecMW, T_Profile
 

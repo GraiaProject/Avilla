@@ -1,6 +1,7 @@
+from typing import Union
+
 from avilla.core.builtins.profile import GroupProfile, MemberProfile
 from avilla.core.contactable import Contactable, ref
-from typing import Union
 
 from . import Execution, Operation
 
@@ -134,3 +135,6 @@ class MemberSpecialTitleSet(Operation, Execution):
         title: str,
     ):
         super().__init__(group=group, target=target, title=title)
+
+    class Config:
+        arbitrary_types_allowed = True

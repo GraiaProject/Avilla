@@ -1,13 +1,14 @@
 import typing
-from avilla.core.contactable import Contactable
 from typing import Dict
 
-from avilla.core.builtins.profile import GroupProfile, MemberProfile
-from avilla.core.event import AvillaEvent
-from avilla.core.typing import T_Profile
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
+from avilla.core.builtins.profile import GroupProfile, MemberProfile
+from avilla.core.contactable import Contactable
+from avilla.core.event import AvillaEvent
+from avilla.core.typing import T_Profile
 
 
 class HeartbeatReceived(Dispatchable):

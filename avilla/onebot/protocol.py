@@ -1,5 +1,4 @@
 import asyncio
-from avilla.core.contactable import Contactable
 import contextlib
 import json
 import weakref
@@ -7,24 +6,25 @@ from typing import Any, Dict, Final, List, Tuple, Type, Union
 
 from avilla.core import context
 from avilla.core.builtins.profile import SelfProfile
+from avilla.core.contactable import Contactable
 from avilla.core.context import ctx_protocol
 from avilla.core.execution import Execution
 from avilla.core.message.chain import MessageChain
-from avilla.core.network.client import AbstractHttpClient, AbstractWebsocketClient, Client
+from avilla.core.network.client import (AbstractHttpClient,
+                                        AbstractWebsocketClient, Client)
 from avilla.core.network.service import Service
-from avilla.core.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
+from avilla.core.network.signatures import (ClientCommunicationMethod,
+                                            ServiceCommunicationMethod)
 from avilla.core.platform import Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
 from avilla.core.utilles import random_string
-from avilla.core.utilles.transformer import JsonTransformer, Utf8StringTransformer
+from avilla.core.utilles.transformer import (JsonTransformer,
+                                             Utf8StringTransformer)
 from avilla.onebot.ability import ABILITIES
-from avilla.onebot.config import (
-    HttpCommunication,
-    OnebotConfig,
-    ReverseWebsocketCommunication,
-    WebsocketCommunication,
-)
+from avilla.onebot.config import (HttpCommunication, OnebotConfig,
+                                  ReverseWebsocketCommunication,
+                                  WebsocketCommunication)
 from avilla.onebot.element_tree import ELEMENT_TYPE_MAP
 
 from .event_tree import EVENT_PARSING_TREE, gen_parsing_key

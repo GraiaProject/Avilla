@@ -1,13 +1,14 @@
 from abc import ABCMeta, abstractmethod
-from avilla.core.contactable import Contactable
 from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Dict, Generic, Tuple, Type, Union
 
 from avilla.core.builtins.profile import SelfProfile
+from avilla.core.contactable import Contactable
 from avilla.core.message.chain import MessageChain
 from avilla.core.network.client import Client
 from avilla.core.network.service import Service
-from avilla.core.network.signatures import ClientCommunicationMethod, ServiceCommunicationMethod
+from avilla.core.network.signatures import (ClientCommunicationMethod,
+                                            ServiceCommunicationMethod)
 from avilla.core.platform import Platform
 from avilla.core.relationship import Relationship
 from avilla.core.typing import T_Config, T_ExecMW, T_Profile

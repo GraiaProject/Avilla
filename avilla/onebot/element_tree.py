@@ -1,26 +1,15 @@
 from typing import Awaitable, Callable, Dict
 
-from avilla.core.builtins.elements import Image, Notice, NoticeAll, Quote, Text, Video, Voice
+from avilla.core.builtins.elements import (Image, Notice, NoticeAll, Quote,
+                                           Text, Video, Voice)
 from avilla.core.context import ctx_protocol
 from avilla.core.message.element import Element
 from avilla.core.provider import HttpGetProvider
-from avilla.onebot.elements import (
-    Anonymous,
-    Dice,
-    Face,
-    FlashImage,
-    FriendRecommend,
-    GroupRecommend,
-    JsonMessage,
-    Location,
-    MergedForward,
-    MergedForwardCustomNode,
-    Poke,
-    Rps,
-    Shake,
-    Share,
-    XmlMessage,
-)
+from avilla.onebot.elements import (Anonymous, Dice, Face, FlashImage,
+                                    FriendRecommend, GroupRecommend,
+                                    JsonMessage, Location, MergedForward,
+                                    MergedForwardCustomNode, Poke, Rps, Shake,
+                                    Share, XmlMessage)
 
 ELEMENT_TYPE_MAP: Dict[str, Callable[[Dict], Awaitable[Element]]] = {}
 

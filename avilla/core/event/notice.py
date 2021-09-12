@@ -1,11 +1,13 @@
-from avilla.core.contactable import Contactable
 from dataclasses import dataclass
 from datetime import timedelta
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from ..builtins.profile import FriendProfile, GroupProfile, MemberProfile, StrangerProfile
+from avilla.core.contactable import Contactable
+
+from ..builtins.profile import (FriendProfile, GroupProfile, MemberProfile,
+                                StrangerProfile)
 from . import AvillaEvent, RelationshipDispatcher
 
 

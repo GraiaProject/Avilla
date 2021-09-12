@@ -1,6 +1,7 @@
 from typing import List, Sequence
 
 import regex
+
 from avilla.core.builtins.elements import Text
 from avilla.core.message.chain import MessageChain
 from avilla.core.message.element import Element

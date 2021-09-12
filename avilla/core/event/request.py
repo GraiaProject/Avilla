@@ -1,8 +1,9 @@
-from avilla.core.contactable import Contactable
 from typing import Optional
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
+from avilla.core.contactable import Contactable
 
 from ..builtins.profile import GroupProfile, StrangerProfile
 from . import AvillaEvent, RelationshipDispatcher

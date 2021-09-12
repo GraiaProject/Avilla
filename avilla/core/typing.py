@@ -1,5 +1,7 @@
+from typing import (TYPE_CHECKING, AsyncContextManager, Callable, Literal,
+                    TypeVar, Union)
+
 from avilla.core.contactable import Contactable
-from typing import TYPE_CHECKING, AsyncContextManager, Callable, Literal, TypeVar, Union
 
 if TYPE_CHECKING:
     from avilla.core.builtins.profile import GroupProfile

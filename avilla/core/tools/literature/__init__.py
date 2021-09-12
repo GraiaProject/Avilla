@@ -4,13 +4,14 @@ import re
 import shlex
 from typing import Dict, List, Sequence
 
-from avilla.core.builtins.elements import Text
-from avilla.core.message.chain import MessageChain
-from avilla.core.message.element import Element
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.signatures import Force
 from graia.broadcast.exceptions import ExecutionStop
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
+from avilla.core.builtins.elements import Text
+from avilla.core.message.chain import MessageChain
+from avilla.core.message.element import Element
 
 from .pattern import BoxParameter, ParamPattern, SwitchParameter
 

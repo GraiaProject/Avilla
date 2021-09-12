@@ -1,7 +1,7 @@
-from avilla.core.contactable import Contactable
 from typing import Any, Generic, Iterable, List, Optional, TypeVar, overload
 
 from avilla.core.builtins.profile import SelfProfile
+from avilla.core.contactable import Contactable
 from avilla.core.execution import Execution, Result
 from avilla.core.protocol import BaseProtocol
 from avilla.core.typing import T_ExecMW, T_Profile

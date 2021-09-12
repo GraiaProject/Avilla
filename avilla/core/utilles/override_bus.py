@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Optional
 
-from avilla.core.typing import T_Protocol
 from immutables import Map
+
+from avilla.core.typing import T_Protocol
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol

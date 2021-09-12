@@ -1,8 +1,9 @@
-from avilla.core.contactable import Contactable
 from typing import Optional
 
-from avilla.core.role import Role
 from pydantic import BaseModel
+
+from avilla.core.contactable import Contactable
+from avilla.core.role import Role
 
 from ..profile import BaseProfile
 

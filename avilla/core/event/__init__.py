@@ -1,16 +1,17 @@
-from avilla.core.contactable import Contactable
 import typing
 from contextvars import Token
 from datetime import datetime
 from types import TracebackType
 from typing import Dict, Generic, Optional, Union
 
-from avilla.core.message.chain import MessageChain
-from avilla.core.relationship import Relationship, T_Profile
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from pydantic import BaseModel, Field  # pylint: ignore
+
+from avilla.core.contactable import Contactable
+from avilla.core.message.chain import MessageChain
+from avilla.core.relationship import Relationship, T_Profile
 
 from ..context import ctx_protocol, ctx_relationship
 
@@ -27,6 +28,9 @@ class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile]):
     @classmethod
     def get_ability_id(cls) -> str:
         return f"event::{cls.__name__}"
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
 _Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}

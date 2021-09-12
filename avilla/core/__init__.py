@@ -2,6 +2,9 @@ import asyncio
 from logging import Logger, getLogger
 from typing import Dict, Generic, List, Type, Union
 
+from graia.broadcast import Broadcast
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
 from avilla.core.builtins.middlewares import target_context_injector
 from avilla.core.event import MessageChainDispatcher, RelationshipDispatcher
 from avilla.core.network.client import Client
@@ -9,8 +12,6 @@ from avilla.core.network.interface import NetworkInterface
 from avilla.core.network.service import Service
 from avilla.core.protocol import BaseProtocol
 from avilla.core.typing import T_Config, T_ExecMW, T_Protocol
-from graia.broadcast import Broadcast
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 class Avilla(Generic[T_Protocol, T_Config]):
