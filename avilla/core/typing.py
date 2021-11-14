@@ -1,7 +1,7 @@
 from typing import (TYPE_CHECKING, AsyncContextManager, Callable, Literal,
                     TypeVar, Union)
 
-from avilla.core.contactable import Contactable
+from avilla.core.contactable import Contactable, ref
 
 if TYPE_CHECKING:
     from avilla.core.builtins.profile import GroupProfile
@@ -28,4 +28,4 @@ T_Origin = TypeVar("T_Origin")
 T_Connection = TypeVar("T_Connection")
 
 T_ExecMW = Callable[["Relationship[T_Profile]", "Execution"], AsyncContextManager[None]]
-U_Target = Union[Contactable, str, Literal[None]]
+U_Target = Union[Contactable, ref, str, Literal[None]]

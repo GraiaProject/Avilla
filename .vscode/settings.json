@@ -1,6 +1,5 @@
 {
     "python.formatting.provider": "black",
-    "editor.formatOnSave": true,
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
@@ -15,5 +14,12 @@
         "./avilla-core",
         "./avilla-onebot"
     ],
-    "python.sortImports.path": "isort"
+    "python.sortImports.path": "isort",
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveMode": "modificationsIfAvailable",
+    "cSpell.words": [
+        "asyncio",
+        "AVILLA",
+        "Graia"
+    ]
 }

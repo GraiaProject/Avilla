@@ -68,10 +68,11 @@ def _extract_and_check_as_groupid(target) -> int:
             return int(target.profile.group.id)
         else:
             raise ValueError(f"invalid input, maybe you can issue the problem: {target}")
-    elif isinstance(target, ref) and ref.type == "group":
-        if not ref.id.isdigit():
-            raise ValueError(f"invalid group id: {target.id}")
-        return int(ref.id)
+    elif isinstance(target, ref) and target.mapping().get("group"):
+        pgroup: str = target.mapping()["group"]
+        if not pgroup.isdigit():
+            raise ValueError(f"invalid group id: {pgroup}")
+        return int(pgroup)
     else:
         raise ValueError(f"invalid target: {target}")
 
@@ -746,14 +747,15 @@ async def send_message(self: "OnebotProtocol", execution: MessageSend) -> Messag
         raise ValueError("target as a target_id, must be a Contactable/ref")
 
     if isinstance(target, ref):
-        if ref.type == "group":
-            group_id = int(ref.id)
+        mapping = target.mapping()
+        if "group" in mapping:
+            group_id = int(mapping["group"])
             using_method = "send_group_msg"
-        elif ref.type == "friend":
-            friend_id = int(ref.id)
+        elif "friend" in mapping:
+            friend_id = int(mapping["friend"])
             using_method = "send_private_msg"
         else:
-            raise ValueError(f"unsupported ref type: {ref.type}")
+            raise ValueError(f"unsupported ref: {ref}")
     elif isinstance(target, Contactable):
         if isinstance(target.profile, MemberProfile):
             if target.profile.group is None:
@@ -943,30 +945,25 @@ async def fetch_avatar_http(self: "OnebotProtocol", execution: FetchAvatar) -> A
         else:
             raise ValueError("unsupported profile")
     elif isinstance(execution.target, ref):
-        if execution.target.type == "group":
+        if "group" in execution.target:
             http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
             return AvatarResource(
                 RawProvider(
                     (
                         await http_client.get(
                             URL(
-                                f"https://p.qlogo.cn/gh/{execution.target.id}/{execution.target.id}/0"
+                                f"https://p.qlogo.cn/gh/{execution.target['group']}/{execution.target['group']}/0"
                             )
                         )
                     ).transform()
                 )
             )
-        elif execution.target.type in {"friend", "stranger"}:
+        elif {"friend", "stranger"}.isdisjoint(execution.target.mapping()):
             http_client = self.avilla.network_interface.get_by_class(AbstractHttpClient)
-            return AvatarResource(
-                RawProvider(
-                    (
-                        await http_client.get(
-                            URL(f"https://q1.qlogo.cn/g?b=qq&nk={execution.target.id}&s=640")
-                        )
-                    ).transform()
-                )
-            )
+            return AvatarResource(RawProvider((await http_client.get(
+                URL(f"""https://q1.qlogo.cn/g?b=qq&nk={
+                    execution.target['friend'] or execution.target['stranger']}&s=640"""))
+            ).transform()))
         else:
             raise ValueError("unsupported ref type")
     else:

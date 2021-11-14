@@ -14,10 +14,8 @@ class HttpRequestException(NetworkException):
         self.status = status
         self.reason = reason
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"<HttpRequestException status={self.status} reason={self.reason}>"
-
-    __repr__ = __str__
 
 
 class ParserException(Exception):  # 解析器错误..我希望你永远不会用到这个

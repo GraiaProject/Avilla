@@ -1,14 +1,11 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod, abstractproperty
 from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, Any, Dict, Generic, Tuple, Type, Union
+from typing import TYPE_CHECKING, Any, Generic
 
 from avilla.core.builtins.profile import SelfProfile
-from avilla.core.contactable import Contactable
+from avilla.core.contactable import Contactable, ref
+from avilla.core.launch import LaunchComponent
 from avilla.core.message.chain import MessageChain
-from avilla.core.network.client import Client
-from avilla.core.network.service import Service
-from avilla.core.network.signatures import (ClientCommunicationMethod,
-                                            ServiceCommunicationMethod)
 from avilla.core.platform import Platform
 from avilla.core.relationship import Relationship
 from avilla.core.typing import T_Config, T_ExecMW, T_Profile
@@ -22,8 +19,6 @@ if TYPE_CHECKING:
 class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     avilla: "Avilla"
     config: T_Config
-    using_networks: Dict[str, Union[Client, Service]]
-    using_exec_method: Union[Type[ClientCommunicationMethod], Type[ServiceCommunicationMethod]]
 
     platform: Platform = Platform(
         name="Avilla Universal Protocol Implementation",
@@ -40,12 +35,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         self.__post_init__()
 
     @abstractmethod
-    def ensure_networks(
-        self,
-    ) -> Tuple[
-        Dict[str, Union[Client, Service]],
-        Union[Type[ClientCommunicationMethod], Type[ServiceCommunicationMethod]],
-    ]:
+    def ensure_networks(self):
         raise NotImplementedError
 
     def __post_init__(self) -> None:
@@ -71,8 +61,18 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         return Relationship(entity, self, middlewares=self.avilla.middlewares)
 
     @abstractmethod
-    async def launch_entry(self):  # maybe need change.
-        raise NotImplementedError
+    async def launch_mainline(self):
+        """LaunchComponent.task"""
+
+    async def launch_prepare(self):
+        """LaunchComponent.prepare"""
+
+    async def launch_cleanup(self):
+        """LaunchComponent.cleanup"""
+
+    @abstractproperty
+    def launch_component(self) -> LaunchComponent:
+        ...
 
     def has_ability(self, ability: str) -> bool:
         raise NotImplementedError
@@ -82,3 +82,6 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
             for middleware in middlewares:
                 await exit_stack.enter_async_context(middleware(self, execution))  # type: ignore
             return await self.ensure_execution(execution)
+
+    def check_refpath(self, refpath: ref) -> None:
+        pass

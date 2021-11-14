@@ -11,7 +11,8 @@ from pydantic import BaseModel, Field  # pylint: ignore
 
 from avilla.core.contactable import Contactable
 from avilla.core.message.chain import MessageChain
-from avilla.core.relationship import Relationship, T_Profile
+from avilla.core.relationship import Relationship
+from avilla.core.typing import T_Profile
 
 from ..context import ctx_protocol, ctx_relationship
 
