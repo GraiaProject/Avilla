@@ -16,10 +16,10 @@
     ],
     "python.sortImports.path": "isort",
     "editor.formatOnSave": true,
-    "editor.formatOnSaveMode": "modificationsIfAvailable",
     "cSpell.words": [
         "asyncio",
         "AVILLA",
-        "Graia"
+        "Graia",
+        "rsexec"
     ]
 }

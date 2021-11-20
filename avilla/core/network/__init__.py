@@ -5,8 +5,10 @@ if TYPE_CHECKING:
     from .policy import Policy
     from .schema import Schema
     from .activity import Activity
+    from avilla.core.network.partition import PartitionSymbol
 
-M = TypeVar('M', bound="Schema")
-P = TypeVar('P', bound="Policy")
-S = TypeVar('S', bound="Service")
-A = TypeVar('A', bound="Activity")
+TMetadata = TypeVar("TMetadata", bound="Schema")
+TPolicy = TypeVar("TPolicy", bound="Policy")
+TService = TypeVar("TService", bound="Service")
+TActivity = TypeVar("TActivity", bound="Activity")
+TPartition = TypeVar("TPartition", bound="PartitionSymbol")

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from typing import Generic
-from . import M, P
+from . import TMetadata, TPolicy
 
 
 @dataclass
-class Endpoint(Generic[M, P]):
-    policy: P
-    metadata: M
+class Endpoint(Generic[TMetadata, TPolicy]):
+    policy: TPolicy
+    metadata: TMetadata

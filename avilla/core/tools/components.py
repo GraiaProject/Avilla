@@ -47,7 +47,9 @@ class Components(Decorator, Generic[T]):
     async def target(self, interface: DecoratorInterface):
         chain: MessageChain
         if interface.annotation != MessageChain:
-            chain = await interface.dispatcher_interface.lookup_param("message", MessageChain, None)
+            chain = await interface.dispatcher_interface.lookup_param(
+                "message", MessageChain, None, [[], 0]
+            )
         else:
             chain = interface.return_value
 

@@ -163,7 +163,7 @@ python-versions = ">=3.6"
 
 [[package]]
 name = "graia-broadcast"
-version = "0.14.0"
+version = "0.14.1"
 description = "a highly customizable, elegantly designed event system based on asyncio"
 category = "main"
 optional = false
@@ -439,7 +439,7 @@ template = ["regex"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "17973d488ef8b4860b74475a7147a771c75fef0c2f445ee724e4a0c8765067ee"
+content-hash = "a62e02df673e6e2708df54adbec3e81430f2a96d7bbd5e68cedd25a95a2325b0"
 
 [metadata.files]
 aiofiles = [
@@ -635,8 +635,8 @@ frozenlist = [
     {file = "frozenlist-1.2.0.tar.gz", hash = "sha256:68201be60ac56aff972dc18085800b6ee07973c49103a8aba669dee3d71079de"},
 ]
 graia-broadcast = [
-    {file = "graia-broadcast-0.14.0.tar.gz", hash = "sha256:830cdfd8351852f30dddeec3fb28c0e48bb1726df5e4f9c1dfb6225304a54f2f"},
-    {file = "graia_broadcast-0.14.0-py3-none-any.whl", hash = "sha256:7a9166e6c469841610e1ef78a0b00870df25a905a27d892e77be0f7cac8cbc4b"},
+    {file = "graia-broadcast-0.14.1.tar.gz", hash = "sha256:72b7213cd6279b13af268f592b954894019ef821f6ce6e5fb1fa724a67316990"},
+    {file = "graia_broadcast-0.14.1-py3-none-any.whl", hash = "sha256:f727397878e0eb912c205f8bfafecf9bb585895536408427f820f1be406f2f53"},
 ]
 idna = [
     {file = "idna-3.3-py3-none-any.whl", hash = "sha256:84d9dd047ffa80596e0f246e2eab0b391788b0503584e8945f2368256d2735ff"},

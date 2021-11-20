@@ -1,10 +1,12 @@
 from contextlib import AsyncExitStack, asynccontextmanager
+from datetime import timedelta
 from typing import TYPE_CHECKING, Generic, List, Optional, Union
 
 from avilla.core.builtins.profile import GroupProfile, SelfProfile
-from avilla.core.contactable import Contactable, ref
-from avilla.core.context import ctx_target
+from avilla.core.contactable import Contactable
+from avilla.core.context import ctx_rsexec_to, ctx_rsexec_period
 from avilla.core.execution import Execution
+from avilla.core.mainline import Mainline
 from avilla.core.typing import T_ExecMW, T_Profile
 
 if TYPE_CHECKING:
@@ -38,15 +40,24 @@ class ExecutorWrapper:
 
     __call__ = execute
 
-    def to(self, target: Union[Contactable, ref]):
+    def to(self, target: Union[Contactable, Mainline]):
         @asynccontextmanager
         async def target_injector(rs: "Relationship", exec: Execution):
-            if isinstance(target, ref):
-                rs.protocol.check_refpath(target)
-            with ctx_target.use(target):
+            if isinstance(target, Mainline):
+                rs.protocol.check_mainline(target)
+            with ctx_rsexec_to.use(target):
                 yield
 
         self.middlewares.append(target_injector)  # type: ignore
+        return self
+
+    def period(self, period: timedelta):
+        @asynccontextmanager
+        async def period_injector(rs: "Relationship", exec: Execution):
+            with ctx_rsexec_period.use(period):
+                yield
+
+        self.middlewares.append(period_injector)  # type: ignore
         return self
 
     def use(self, middleware: T_ExecMW):

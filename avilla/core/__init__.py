@@ -3,7 +3,7 @@ from loguru import logger
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.status import Status
-from typing import Dict, Generic, List, Type
+from typing import Any, Awaitable, Callable, Dict, Generic, List, Type, Set, Union
 
 from graia.broadcast import Broadcast
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -62,13 +62,49 @@ class Avilla(Generic[T_Protocol, T_Config]):
             elif interface.annotation is protocol:
                 return self.protocol
 
+    def new_launch_component(
+        self,
+        id: str,
+        mainline: Callable[[], Awaitable[Any]],
+        requirements: Set[str] = None,
+        prepare: Callable[[], Awaitable[Any]] = None,
+        cleanup: Callable[[], Awaitable[Any]] = None,
+    ) -> LaunchComponent:
+        component = LaunchComponent(id, requirements or set(), mainline, prepare, cleanup)
+        self.launch_components[id] = component
+        return component
+
+    def remove_launch_component(self, id: str):
+        if id not in self.launch_components:
+            raise KeyError("id doesn't exist.")
+        del self.launch_components[id]
+
+    def add_service(self, service: Service):
+        if service in self.services:
+            raise ValueError("existed service")
+        self.services.append(service)
+        launch_component = service.launch_component
+        self.launch_components[launch_component.id] = launch_component
+
+    def remove_service(self, service: Service):
+        if service not in self.services:
+            raise ValueError("service doesn't exist.")
+        self.services.remove(service)
+        del self.launch_components[service.launch_component.id]
+
+    def get_service(self, id: str) -> Union[Service, None]:
+        for service in self.services:
+            if service.id.avilla_uri == id:
+                return service
+
     async def launch(self):
         console = Console()
         logger.configure(
             handlers=[
                 {
                     "sink": RichHandler(console=console, markup=True),
-                    "format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>: <cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
+                    "format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | "
+                    "<cyan>{name}</cyan>: <cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
                 }
             ]
         )

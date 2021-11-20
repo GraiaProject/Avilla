@@ -3,8 +3,9 @@ from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Generic
 
 from avilla.core.builtins.profile import SelfProfile
-from avilla.core.contactable import Contactable, ref
+from avilla.core.contactable import Contactable
 from avilla.core.launch import LaunchComponent
+from avilla.core.mainline import Mainline
 from avilla.core.message.chain import MessageChain
 from avilla.core.platform import Platform
 from avilla.core.relationship import Relationship
@@ -83,5 +84,5 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
                 await exit_stack.enter_async_context(middleware(self, execution))  # type: ignore
             return await self.ensure_execution(execution)
 
-    def check_refpath(self, refpath: ref) -> None:
-        pass
+    def check_mainline(self, mainline: Mainline) -> bool:
+        return True
