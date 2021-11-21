@@ -14,5 +14,5 @@ class Stream(Generic[T]):
     def unwrap(self) -> T:
         return self.content
 
-    async def transform(self, transformer: Callable[[T], Awaitable[R]]) -> "Stream[R]":
-        return Stream(await transformer(self.content))
+    def transform(self, transformer: Callable[[T], R]) -> "Stream[R]":
+        return Stream(transformer(self.content))

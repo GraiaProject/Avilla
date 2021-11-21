@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Literal, Union
+from typing import Literal
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -25,7 +25,7 @@ class MessageEvent(AvillaEvent[T_Profile]):
 
     def __init__(
         self,
-        ctx: Union[Contactable[T_Profile]],
+        ctx: Contactable[T_Profile],
         message: MessageChain,
         message_id: str,
         current_id: str = None,

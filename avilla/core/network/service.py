@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import (
+    TYPE_CHECKING,
+    AsyncGenerator,
     Awaitable,
     Callable,
     ClassVar,
@@ -18,7 +20,8 @@ from avilla.core.launch import LaunchComponent
 from avilla.core.network.activity import Activity
 from .partition import PartitionSymbol
 from .endpoint import Endpoint
-from . import TMetadata, TPartition, TPolicy, TService, TActivity
+from . import TMetadata, TPolicy, TActivity
+from contextlib import asynccontextmanager
 
 
 @dataclass
@@ -38,19 +41,21 @@ class ServiceId:
 _C = TypeVar("_C")
 
 
-TPartitionHandler = Callable[[PartitionSymbol], Awaitable[None]]
+TPartitionHandler = Callable[[PartitionSymbol[_C]], Awaitable[_C]]
 TActivityHandler = Callable[[Union[Type[Activity], Activity]], Awaitable[Any]]
+
+T = TypeVar("T")
 
 
 class PolicyProtocol:
     endpoint: Endpoint
-    partition_handlers: Dict[Type[PartitionSymbol], TPartitionHandler]
+    partition_handlers: Dict
     activity_handlers: Dict[Type[Activity], TActivityHandler]
 
     def __init__(
         self,
         endpoint: Endpoint,
-        partition_handlers: Dict[Type[PartitionSymbol], TPartitionHandler],
+        partition_handlers: Dict[Type[T], Callable[[T], Awaitable]],
         activity_handlers: Dict[Type[Activity], TActivityHandler],
     ):
         self.endpoint = endpoint
@@ -63,6 +68,11 @@ class PolicyProtocol:
             if activity_class not in self.activity_handlers:
                 raise TypeError(f"No handler for {activity_class}")
             await self.activity_handlers[activity_class](activity)
+
+    async def partition(self, partition: PartitionSymbol[_C]) -> _C:
+        if partition.__class__ not in self.partition_handlers:
+            raise TypeError(f"No handler for {partition}")
+        return await self.partition_handlers[partition.__class__](partition)
 
 
 class Service(Generic[TMetadata, TPolicy], metaclass=ABCMeta):
@@ -108,6 +118,36 @@ class Service(Generic[TMetadata, TPolicy], metaclass=ABCMeta):
         Remove an endpoint, need override and super().call.
         """
         self.endpoints.pop(endpoint.metadata)
+
+    async def apply(self, connection: str, *activities: Union[Type[TActivity], TActivity]) -> None:
+        handler_tuple = self._connection_broadcasted_handlers.get(connection)
+        if handler_tuple is None:
+            raise TypeError(f"No broadcasted handlers for connection {connection}")
+        _, activity_handlers = handler_tuple
+        for activity in activities:
+            activity_class = type(activity) if isinstance(activity, Activity) else activity
+            if activity_class not in activity_handlers:
+                raise TypeError(f"No handler for {activity_class}")
+            await activity_handlers[activity_class](activity)
+
+    async def partition(self, connection: str, partition: PartitionSymbol[_C]) -> _C:
+        handler_tuple = self._connection_broadcasted_handlers.get(connection)
+        if handler_tuple is None:
+            raise TypeError(f"No broadcasted handlers for connection {connection}")
+        partition_handlers, _ = handler_tuple
+        if partition not in partition_handlers:
+            raise TypeError(f"No handler for {partition}")
+        return await partition_handlers[partition.__class__](partition)
+
+    @asynccontextmanager
+    async def postconnect(self, schema: TMetadata) -> AsyncGenerator[PolicyProtocol, None]:
+        """
+        Connect to a service, need override and super().call.
+        """
+        if TYPE_CHECKING:
+            yield None  # type: ignore
+        else:
+            raise NotImplementedError
 
     async def call_policy(
         self,
