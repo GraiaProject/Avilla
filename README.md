@@ -4,6 +4,7 @@
 
 _The next-gen framework for IM development._ 
 
+> 即刻动身, 踏上寻找第二个故乡的旅程.
 
 </div>
 
@@ -17,8 +18,6 @@ _The next-gen framework for IM development._
   <img src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336" />
 
 </p>
-
-> "艾维莉亚(Avilla) .......希望这位楚楚可怜的少女, 能和她的血亲, 有着许多故事的少女, 在旅途中创造故事的同时, 找到她们的新的故乡."
 
 
 Avilla 被定义为 `Graia Project` 的 "下一代" 框架实现,
