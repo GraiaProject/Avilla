@@ -1,20 +1,18 @@
 import asyncio
+from typing import Any, Awaitable, Callable, Dict, Generic, List, Set, Type, Union
+
+from graia.broadcast import Broadcast
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from loguru import logger
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.status import Status
-from typing import Any, Awaitable, Callable, Dict, Generic, List, Type, Set, Union
 
-from graia.broadcast import Broadcast
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-
-from avilla.core.builtins.middlewares import target_context_injector
 from avilla.core.event import MessageChainDispatcher, RelationshipDispatcher
+from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.network.service import Service
 from avilla.core.protocol import BaseProtocol
 from avilla.core.typing import T_Config, T_ExecMW, T_Protocol
-from avilla.core.launch import LaunchComponent, resolve_requirements
-
 
 AVILLA_ASCII_LOGO = r"""\
     _        _ _ _
@@ -45,7 +43,7 @@ class Avilla(Generic[T_Protocol, T_Config]):
         self.protocol = protocol(self, configs.get(protocol))
         self.configs = configs
         self.services = services
-        self.middlewares = [target_context_injector, *(middlewares or [])]
+        self.middlewares = [target_context_injector, *(middlewares or [])]  # TODO: 把那东西拿回来
         self.launch_components = {
             **({i.launch_component.id: i.launch_component for i in services}),
             self.protocol.launch_component.id: self.protocol.launch_component,
@@ -130,23 +128,17 @@ class Avilla(Generic[T_Protocol, T_Config]):
             status.update("all launch components prepared.")
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
         try:
-            await asyncio.gather(
-                *[component.mainline() for component in self.launch_components.values()]
-            )
+            await asyncio.gather(*[component.mainline() for component in self.launch_components.values()])
         finally:
             logger.info("[red bold]mainlines exited, cleanup start.")
-            for component_layer in reversed(
-                resolve_requirements(set(self.launch_components.values()))
-            ):
+            for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
                 tasks = [
                     asyncio.create_task(component.cleanup(), name=component.id)
                     for component in component_layer
                     if component.cleanup
                 ]
                 for task in tasks:
-                    task.add_done_callback(
-                        lambda t: logger.info(f"{t.get_name()} cleanup finished.")
-                    )
+                    task.add_done_callback(lambda t: logger.info(f"{t.get_name()} cleanup finished."))
                 await asyncio.wait(tasks)
             logger.info("[green bold]cleanup finished.")
             logger.warning("[red bold]exiting...")

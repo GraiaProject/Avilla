@@ -1,27 +1,28 @@
 from abc import ABCMeta, abstractmethod
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
+    Any,
     AsyncGenerator,
     Awaitable,
     Callable,
     ClassVar,
     Dict,
-    TypeVar,
     Generic,
-    Union,
-    Type,
     Tuple,
-    Any,
+    Type,
+    TypeVar,
+    Union,
     cast,
 )
-from avilla.core.launch import LaunchComponent
 
+from avilla.core.launch import LaunchComponent
 from avilla.core.network.activity import Activity
-from .partition import PartitionSymbol
+
+from . import TActivity, TMetadata, TPolicy
 from .endpoint import Endpoint
-from . import TMetadata, TPolicy, TActivity
-from contextlib import asynccontextmanager
+from .partition import PartitionSymbol
 
 
 @dataclass
@@ -33,9 +34,7 @@ class ServiceId:
 
     @property
     def avilla_uri(self):
-        return (
-            f"avilla://service/{self.publisher}/{self.namespace}/{self.protocol_name}/{self.method}"
-        )
+        return f"avilla://service/{self.publisher}/{self.namespace}/{self.protocol_name}/{self.method}"
 
 
 _C = TypeVar("_C")

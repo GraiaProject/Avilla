@@ -6,8 +6,12 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 from avilla.core.contactable import Contactable
 
-from ..builtins.profile import (FriendProfile, GroupProfile, MemberProfile,
-                                StrangerProfile)
+from ..builtins.profile import (
+    FriendProfile,
+    GroupProfile,
+    MemberProfile,
+    StrangerProfile,
+)
 from . import AvillaEvent, RelationshipDispatcher
 
 

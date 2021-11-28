@@ -19,9 +19,7 @@ class RequestDeny(RequestHandle):
     reason: Optional[str] = None
     block: bool = False
 
-    def __init__(
-        self, request_id: str, *, reason: Optional[str] = None, block: bool = False
-    ) -> None:
+    def __init__(self, request_id: str, *, reason: Optional[str] = None, block: bool = False) -> None:
         super().__init__(request_id=request_id, reason=reason, block=block)
 
 

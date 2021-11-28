@@ -1,11 +1,12 @@
 from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
-    from .service import Service
+    from avilla.core.network.partition import PartitionSymbol
+
+    from .activity import Activity
     from .policy import Policy
     from .schema import Schema
-    from .activity import Activity
-    from avilla.core.network.partition import PartitionSymbol
+    from .service import Service
 
 TMetadata = TypeVar("TMetadata", bound="Schema")
 TPolicy = TypeVar("TPolicy", bound="Policy")

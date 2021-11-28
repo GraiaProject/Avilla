@@ -174,9 +174,7 @@ class MessageChain(BaseModel):
                 if not isinstance(first_slice[0], Text):
                     if not ignore_text_index:
                         raise TypeError(
-                            "the sliced chain does not starts with a Text: {}".format(
-                                first_slice[0]
-                            )
+                            "the sliced chain does not starts with a Text: {}".format(first_slice[0])
                         )
                     else:
                         result = first_slice
@@ -192,9 +190,7 @@ class MessageChain(BaseModel):
             first_slice = result[: item.stop[0]]
             if item.stop[1] is not None and first_slice:  # text slice
                 if not isinstance(first_slice[-1], Text):
-                    raise TypeError(
-                        "the sliced chain does not ends with a Text: {}".format(first_slice[-1])
-                    )
+                    raise TypeError("the sliced chain does not ends with a Text: {}".format(first_slice[-1]))
                 final_text = first_slice[-1].text[: item.stop[1]]  # type: ignore
                 result = [
                     *first_slice[:-1],

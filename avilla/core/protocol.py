@@ -1,15 +1,14 @@
 from abc import ABCMeta, abstractmethod, abstractproperty
 from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, List, Type, Union
 
-from avilla.core.builtins.profile import SelfProfile
-from avilla.core.contactable import Contactable
 from avilla.core.launch import LaunchComponent
-from avilla.core.mainline import Mainline
 from avilla.core.message.chain import MessageChain
 from avilla.core.platform import Platform
-from avilla.core.relationship import Relationship
-from avilla.core.typing import T_Config, T_ExecMW, T_Profile
+from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import self as self_selector
+from avilla.core.typing import METADATA_VALUE, T_Config, T_ExecMW
+from avilla.core.utilles.selector import Selector
 
 from .execution import Execution
 
@@ -46,7 +45,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def get_self(self) -> "Contactable[SelfProfile]":
+    def get_self(self) -> "self_selector":
         raise NotImplementedError
 
     @abstractmethod
@@ -56,10 +55,6 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     @abstractmethod
     async def serialize_message(self, message: "MessageChain") -> Any:
         raise NotImplementedError
-
-    @abstractmethod
-    async def get_relationship(self, entity: "Contactable[T_Profile]") -> "Relationship[T_Profile]":
-        return Relationship(entity, self, middlewares=self.avilla.middlewares)
 
     @abstractmethod
     async def launch_mainline(self):
@@ -84,5 +79,20 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
                 await exit_stack.enter_async_context(middleware(self, execution))  # type: ignore
             return await self.ensure_execution(execution)
 
-    def check_mainline(self, mainline: Mainline) -> bool:
+    def check_mainline(self, mainline: mainline_selector) -> bool:
         return True
+
+    async def check_metadata_access(
+        self, metascope: Type[Selector], metakey: str, operator: str
+    ) -> Union[List[str], None]:
+        return None
+
+    @abstractmethod
+    async def lookup_metadata(self, metascope: Type[Selector]) -> List[str]:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def operate_metadata(
+        self, metascope: Type[Selector], metakey: str, operator: str, value: METADATA_VALUE
+    ) -> None:
+        ...

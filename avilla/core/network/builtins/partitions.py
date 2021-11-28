@@ -1,5 +1,6 @@
-from avilla.core.network.partition import PartitionSymbol
 from dataclasses import dataclass
+
+from avilla.core.network.partition import PartitionSymbol
 
 
 class Read(PartitionSymbol[bytes]):

@@ -1,12 +1,12 @@
 from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import timedelta
-from typing import TYPE_CHECKING, Generic, List, Optional, Union
+from typing import TYPE_CHECKING, Generic, List, Union
 
-from avilla.core.builtins.profile import GroupProfile, SelfProfile
-from avilla.core.contactable import Contactable
-from avilla.core.context import ctx_rsexec_to, ctx_rsexec_period
+from avilla.core.context import ctx_rsexec_period, ctx_rsexec_to
 from avilla.core.execution import Execution
-from avilla.core.mainline import Mainline
+from avilla.core.metadata import Metadata
+from avilla.core.selectors import mainline, rsctx
+from avilla.core.selectors import self as self_selector
 from avilla.core.typing import T_ExecMW, T_Profile
 
 if TYPE_CHECKING:
@@ -40,10 +40,10 @@ class ExecutorWrapper:
 
     __call__ = execute
 
-    def to(self, target: Union[Contactable, Mainline]):
+    def to(self, target: Union[rsctx, mainline]):
         @asynccontextmanager
         async def target_injector(rs: "Relationship", exec: Execution):
-            if isinstance(target, Mainline):
+            if isinstance(target, mainline):
                 rs.protocol.check_mainline(target)
             with ctx_rsexec_to.use(target):
                 yield
@@ -66,31 +66,30 @@ class ExecutorWrapper:
 
 
 class Relationship(Generic[T_Profile]):
-    ctx: Contactable[T_Profile]
+    ctx: rsctx
+    mainline: mainline
+    metadata: Metadata
+    self: self_selector
+
     protocol: "BaseProtocol"
 
     _middlewares: List[T_ExecMW]
-    _self: Optional[Contactable[SelfProfile]]
 
     def __init__(
         self,
-        ctx: Contactable[T_Profile],
         protocol: "BaseProtocol",
+        ctx: rsctx,
+        current_self: self_selector,
         middlewares: List[T_ExecMW] = None,
-        current_self: Contactable[SelfProfile] = None,
     ) -> None:
         self.ctx = ctx
+        self.self = current_self
         self.protocol = protocol
         self._middlewares = middlewares or []
-        self._self = current_self
 
     @property
-    def current(self) -> Contactable[SelfProfile]:
-        return self._self or self.protocol.get_self()
-
-    @property
-    def profile(self) -> Union[T_Profile, GroupProfile]:
-        return self.ctx.profile
+    def current(self) -> self_selector:
+        return self.self or self.protocol.get_self()
 
     @property
     def exec(self):

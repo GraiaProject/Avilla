@@ -1,4 +1,4 @@
-from typing import Any, Dict, Type
+from typing import Any, Dict
 
 
 class SelectorKey:
@@ -11,7 +11,7 @@ class SelectorKey:
         self.key = key
         self.past = past or {}
 
-    def __getitem__(self, value: str):
+    def __getitem__(self, value: Any):
         instance = Selector(self.selector, self.past)
         instance.path[self.key] = value
         return instance
@@ -25,11 +25,11 @@ class SelectorKey:
 
 
 class SelectorMeta(type):
-    def __getattr__(cls: Type["Selector"], key: str) -> "SelectorKey":  # type: ignore
-        return SelectorKey(cls.scope, key)
+    def __getattr__(cls, key: str) -> "SelectorKey":
+        return SelectorKey(cls.scope, key)  # type: ignore
 
 
-class Selector:
+class Selector(metaclass=SelectorMeta):
     scope: str
     path: Dict[str, Any]
 
@@ -40,12 +40,8 @@ class Selector:
     def __getattr__(self, key: str) -> "SelectorKey":
         return SelectorKey(self.scope, key)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self):
         return self.path
 
     def __repr__(self) -> str:
         return f"<{self.scope}>.{'.'.join([f'{k}[{v}]' for k, v in self.path.items()])}"
-
-
-def create_selector(selector_name: str):
-    return SelectorMeta(selector_name, (Selector,), {"scope": selector_name})

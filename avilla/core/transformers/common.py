@@ -1,5 +1,5 @@
-from typing import Callable, Any
 import json
+from typing import Any, Callable
 
 
 def u8_string(binary: bytes) -> str:

@@ -1,17 +1,17 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
-from avilla.core.contactable import Contactable
 
-from avilla.core.mainline import Mainline
 from avilla.core.message.chain import MessageChain
+from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import rsctx
 
 
 @dataclass
 class Message:
     id: str
-    mainline: Mainline
-    sender: Contactable
+    mainline: mainline_selector
+    sender: rsctx
     content: MessageChain
     time: datetime
     reply: Optional[str] = None

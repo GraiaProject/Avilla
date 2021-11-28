@@ -184,9 +184,7 @@ class Literature(BaseDispatcher):
         if interface.name == "__literature_messagechain__":
             return
 
-        result = interface.broadcast.decorator_interface.local_storage.get(
-            "literature_detect_result"
-        )
+        result = interface.broadcast.decorator_interface.local_storage.get("literature_detect_result")
         if result:
             match_result, variargs = result
             if interface.default == "__literature_variables__":

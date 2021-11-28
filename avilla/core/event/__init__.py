@@ -24,7 +24,9 @@ class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile]):
     time: datetime = Field(default_factory=datetime.now)
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}: {' '.join([f'{k}={v.__repr__()}' for k, v in vars(self).items()])}>"
+        return (
+            f"<{self.__class__.__name__}: {' '.join([f'{k}={v.__repr__()}' for k, v in vars(self).items()])}>"
+        )
 
     @classmethod
     def get_ability_id(cls) -> str:
@@ -55,10 +57,7 @@ class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, �
 
     @staticmethod
     async def catch(interface: "DispatcherInterface"):
-        if (
-            typing.get_origin(interface.annotation) is Relationship
-            or interface.annotation is Relationship
-        ):
+        if typing.get_origin(interface.annotation) is Relationship or interface.annotation is Relationship:
             return ctx_relationship.get()
 
 

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+
 from avilla.core.network.activity import Activity
 
 

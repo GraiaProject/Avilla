@@ -22,4 +22,6 @@ class Platform:
 
     @property
     def universal_identifier(self) -> str:
-        return f"{self.name}/{self.protocol_provider_name}:{self.implementation}@{self.supported_impl_version}"
+        return (
+            f"{self.name}/{self.protocol_provider_name}:{self.implementation}@{self.supported_impl_version}"
+        )

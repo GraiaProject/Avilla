@@ -1,7 +1,6 @@
 import copy
 from dataclasses import dataclass
-from typing import (Any, Callable, Dict, Generic, List, Optional, Type,
-                    TypeVar, Union)
+from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union
 
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.event import Dispatchable
@@ -67,9 +66,7 @@ class Filter(Decorator, Generic[S, L]):
         self.selected_branch = branch
         return self
 
-    def use(
-        self: "Filter[Any, L]", new_step: Callable[[L], R], branch: str = None
-    ) -> "Filter[L, R]":
+    def use(self: "Filter[Any, L]", new_step: Callable[[L], R], branch: str = None) -> "Filter[L, R]":
         self.chains[branch or self.selected_branch].append(new_step)
         return self  # type: ignore
 
@@ -151,9 +148,7 @@ class Filter(Decorator, Generic[S, L]):
     def group(
         self: "Filter[Any, Union[MemberProfile, Contactable[GroupProfile]]]", *values: str
     ) -> "Filter[Union[MemberProfile, Contactable[GroupProfile]], Any]":
-        def group_getter_alpha(
-            profile_or_contactable: Union[MemberProfile, Contactable[GroupProfile]]
-        ):
+        def group_getter_alpha(profile_or_contactable: Union[MemberProfile, Contactable[GroupProfile]]):
             if isinstance(profile_or_contactable, MemberProfile) and profile_or_contactable.group:
                 if profile_or_contactable.group.id not in values:
                     raise ExecutionStop
@@ -213,9 +208,7 @@ class Filter(Decorator, Generic[S, L]):
                 raise
             return None
         else:
-            omega_result = self.omega(
-                OmegaReport(completed=True, filter=self, result=result, stop_at=step)
-            )
+            omega_result = self.omega(OmegaReport(completed=True, filter=self, result=result, stop_at=step))
             if isinstance(omega_result, Force):
                 return omega_result.target
             return (

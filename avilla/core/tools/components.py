@@ -25,9 +25,7 @@ class Components(Decorator, Generic[T]):
         self._skip_times = skip_times
 
     @classmethod
-    def __class_getitem__(
-        cls, item: Union[Type[Element], Tuple[Type[Element], ...], slice]
-    ) -> "Components":
+    def __class_getitem__(cls, item: Union[Type[Element], Tuple[Type[Element], ...], slice]) -> "Components":
         element_type: Union[Type[Element], Tuple[Type[Element], ...]] = Element
         match_times = None
         if isinstance(item, slice):
@@ -47,9 +45,7 @@ class Components(Decorator, Generic[T]):
     async def target(self, interface: DecoratorInterface):
         chain: MessageChain
         if interface.annotation != MessageChain:
-            chain = await interface.dispatcher_interface.lookup_param(
-                "message", MessageChain, None, [[], 0]
-            )
+            chain = await interface.dispatcher_interface.lookup_param("message", MessageChain, None, [[], 0])
         else:
             chain = interface.return_value
 

@@ -1,5 +1,13 @@
-from .utilles.selector import create_selector
+from .utilles.selector import Selector
 
 
-common = create_selector("common")
-mainline = create_selector("mainline")
+class rsctx(Selector):
+    scope = "rsctx"
+
+
+class mainline(Selector):
+    scope = "mainline"
+
+
+class self(Selector):
+    scope = "self"

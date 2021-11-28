@@ -1,6 +1,8 @@
 from typing import Dict, Literal
-from avilla.core.network.schema import Schema
+
 from yarl import URL
+
+from avilla.core.network.schema import Schema
 
 
 class ClientSchema(Schema):
