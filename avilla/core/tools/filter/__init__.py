@@ -96,11 +96,11 @@ class Filter(Decorator, Generic[S, L]):
         return self
 
     @classmethod
-    def message(cls: "Type[Filter[MessageChain, Any]]") -> "Filter[MessageChain, Any]":
-        def message_getter_alpha(message: MessageChain):
-            return message
+    def message_chain(cls: "Type[Filter]") -> "Filter[MessageChain, Any]":
+        def message_chain_getter_alpha(message_chain: MessageChain):
+            return message_chain
 
-        return cls(message_getter_alpha, lambda report: report.result[-1], [])
+        return cls(message_chain_getter_alpha, lambda report: report.result[-1], [])
 
     @classmethod
     def rs(cls: "Type[Filter[Relationship, Any]]") -> "Filter[Relationship, Any]":
@@ -124,11 +124,22 @@ class Filter(Decorator, Generic[S, L]):
         return cls(mainline_getter_alpha, lambda report: report.result[-1], [])
 
     @classmethod
-    def event(cls: "Type[Filter[Any, Dispatchable]]") -> "Filter[Any, Dispatchable]":
+    def event(cls: "Type[Filter]", *event_types: Type[Dispatchable]) -> "Filter[Any, Dispatchable]":
         def event_getter_alpha(dispatcher_interface: DispatcherInterface):
+            if dispatcher_interface.event.__class__ not in event_types:
+                raise ExecutionStop
             return dispatcher_interface.event
 
         return cls(event_getter_alpha, lambda report: report.result[-1], [])
+
+    @classmethod
+    def optional_event(cls: "Type[Filter]", *event_types: Type[Dispatchable]) -> "Filter[Any, Optional[Dispatchable]]":
+        def optional_event_getter_alpha(dispatcher_interface: DispatcherInterface):
+            if dispatcher_interface.event is not None and dispatcher_interface.event.__class__ not in event_types:
+                raise ExecutionStop
+            return dispatcher_interface.event
+
+        return cls(optional_event_getter_alpha, lambda report: report.result[-1], [])
 
     @classmethod
     def constant(cls, value: L) -> "Filter[Any, L]":
