@@ -14,6 +14,7 @@ from .execution import Execution
 
 if TYPE_CHECKING:
     from . import Avilla
+    from avilla.core.relationship import Relationship
 
 
 class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
@@ -88,11 +89,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         return None
 
     @abstractmethod
-    async def lookup_metadata(self, metascope: Type[Selector]) -> List[str]:
-        raise NotImplementedError
-
-    @abstractmethod
     async def operate_metadata(
-        self, metascope: Type[Selector], metakey: str, operator: str, value: METADATA_VALUE
-    ) -> None:
+        self, relationship: "Relationship", metakey: str, operator: str, value: METADATA_VALUE
+    ) -> Any:
         ...

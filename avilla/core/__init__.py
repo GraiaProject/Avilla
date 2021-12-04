@@ -1,25 +1,60 @@
 import asyncio
-from typing import Any, Awaitable, Callable, Dict, Generic, List, Set, Type, Union
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Generic, Iterable, List, Set, Type, Union
+import importlib.metadata
 
 from graia.broadcast import Broadcast
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from loguru import logger
+from prompt_toolkit.patch_stdout import StdoutProxy
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.status import Status
+from avilla.core.console import AvillaConsole
 
 from avilla.core.event import MessageChainDispatcher, RelationshipDispatcher
+from avilla.core.execution import Execution
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.network.service import Service
 from avilla.core.protocol import BaseProtocol
 from avilla.core.typing import T_Config, T_ExecMW, T_Protocol
+from avilla.core.context import ctx_rsexec_to
+from avilla.core.utilles import as_async
 
-AVILLA_ASCII_LOGO = r"""\
-    _        _ _ _
-   / \__   _(_) | | __ _
-  / _ \ \ / / | | |/ _` |
- / ___ \ V /| | | | (_| |
-/_/   \_\_/ |_|_|_|\__,_|"""
+if TYPE_CHECKING:
+    from avilla.core.relationship import Relationship
+
+AVILLA_ASCII_LOGO_AS_LIST = [
+    "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].",
+    r"    _        _ _ _",
+    r"   / \__   _(_) | | __ _",
+    r"  / _ \ \ / / | | |/ _` |",
+    r" / ___ \ V /| | | | (_| |",
+    r"/_/   \_\_/ |_|_|_|\__,_|",
+]
+
+GRAIA_PROJECT_REPOS = ['avilla-core', 'graia-broadcast']
+
+
+class RichStdoutProxy(StdoutProxy):
+    "StdoutProxy with writelines support for Rich."
+
+    def writelines(self, data: Iterable[str]) -> None:
+        with self._lock:
+            for d in data:
+                self._write(d)
+
+
+def target_context_injector(rs: "Relationship", exec_: Execution):
+    @asynccontextmanager
+    async def wrapper():
+        if exec_.__class__._auto_detect_target:
+            with ctx_rsexec_to.use(rs.ctx):
+                yield
+        else:
+            yield
+
+    return wrapper()
 
 
 class Avilla(Generic[T_Protocol, T_Config]):
@@ -30,6 +65,8 @@ class Avilla(Generic[T_Protocol, T_Config]):
     services: List[Service]
 
     launch_components: Dict[str, LaunchComponent]
+
+    rich_console: Console
 
     def __init__(
         self,
@@ -48,6 +85,7 @@ class Avilla(Generic[T_Protocol, T_Config]):
             **({i.launch_component.id: i.launch_component for i in services}),
             self.protocol.launch_component.id: self.protocol.launch_component,
         }
+        self.rich_console = Console(file=RichStdoutProxy(raw=True))  # type: ignore
 
         self.broadcast.dispatcher_interface.inject_global_raw(
             RelationshipDispatcher(), MessageChainDispatcher()
@@ -95,27 +133,42 @@ class Avilla(Generic[T_Protocol, T_Config]):
             if service.id.avilla_uri == id:
                 return service
 
+    async def console_callback(self, command_or_str: str):
+        # TODO: Commander Trigger
+        pass
+
     async def launch(self):
-        console = Console()
+        avilla_console = AvillaConsole(self.console_callback)
+        self.launch_components['avilla.core.console'] = LaunchComponent(
+            'avilla.core.console', set(), avilla_console.start, None, as_async(avilla_console.stop)
+        )
         logger.configure(
             handlers=[
                 {
-                    "sink": RichHandler(console=console, markup=True),
+                    "sink": RichHandler(console=self.rich_console, markup=True),
                     "format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | "
                     "<cyan>{name}</cyan>: <cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>",
                 }
             ]
         )
-        logger.info(AVILLA_ASCII_LOGO)
-        logger.info(
-            "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/]."
-        )
-        for service in self.services:
-            logger.info(f"using service: {service.id.avilla_uri}")
+
+        logger.info('\n'.join(AVILLA_ASCII_LOGO_AS_LIST))
+        for telemetry in GRAIA_PROJECT_REPOS:
+            try:
+                version = importlib.metadata.version(telemetry)
+            except Exception:
+                version = 'unknown / not-installed'
+            logger.info(f'[b cornflower_blue]{telemetry}[/] version: [cyan3]{version}[/]')
+
         if self.protocol.__class__.platform is not BaseProtocol.platform:
             logger.info(f"using platform: {self.protocol.__class__.platform.universal_identifier}")
-        logger.info(f"launch components: {len(self.launch_components)}")
-        with Status("[orange bold]preparing components...", console=console) as status:
+
+        for service in self.services:
+            logger.info(f"using service: {service.id.avilla_uri}")
+
+        logger.info(f"launch components count: {len(self.launch_components)}")
+
+        with Status("[orange bold]preparing components...", console=self.rich_console) as status:
             for component_layer in resolve_requirements(set(self.launch_components.values())):
                 tasks = [
                     asyncio.create_task(component.prepare(), name=component.id)
@@ -126,7 +179,9 @@ class Avilla(Generic[T_Protocol, T_Config]):
                     task.add_done_callback(lambda t: status.update(f"{t.get_name()} prepared."))
                 await asyncio.wait(tasks)
             status.update("all launch components prepared.")
+
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
+
         try:
             await asyncio.gather(*[component.mainline() for component in self.launch_components.values()])
         finally:

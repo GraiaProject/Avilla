@@ -10,10 +10,9 @@ from graia.broadcast.exceptions import ExecutionStop
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from avilla.core.builtins.profile import GroupProfile, MemberProfile
-from avilla.core.contactable import Contactable
 from avilla.core.message.chain import MessageChain
 from avilla.core.relationship import Relationship
+from avilla.core.selectors import mainline, rsctx
 
 S = TypeVar("S")
 L = TypeVar("L")
@@ -111,11 +110,18 @@ class Filter(Decorator, Generic[S, L]):
         return cls(relationship_getter_alpha, lambda report: report.result[-1], [])
 
     @classmethod
-    def rsctx(cls: "Type[Filter[Contactable, Any]]") -> "Filter[Contactable, Any]":
+    def rsctx(cls: "Type[Filter]") -> "Filter[rsctx, Any]":
         def contactable_getter_alpha(relationship: Relationship):
             return relationship.ctx
 
         return cls(contactable_getter_alpha, lambda report: report.result[-1], [])
+
+    @classmethod
+    def mainline(cls: "Type[Filter]") -> "Filter[mainline, Any]":
+        def mainline_getter_alpha(relationship: Relationship):
+            return relationship.mainline
+
+        return cls(mainline_getter_alpha, lambda report: report.result[-1], [])
 
     @classmethod
     def event(cls: "Type[Filter[Any, Dispatchable]]") -> "Filter[Any, Dispatchable]":
@@ -128,36 +134,19 @@ class Filter(Decorator, Generic[S, L]):
     def constant(cls, value: L) -> "Filter[Any, L]":
         return cls(lambda: value, lambda report: report.result[-1], [])
 
-    def id(self: "Filter[Any, Contactable]", *values: str) -> "Filter[Contactable, Any]":
-        def id_getter_alpha(contactable: Contactable):
-            if contactable.id not in values:
+    def id(self: "Filter[Any, rsctx]", *values: str) -> "Filter[rsctx, Any]":
+        def id_getter_alpha(ctx: rsctx):
+            if ctx.last() not in values:
                 raise ExecutionStop
 
         self.use(id_getter_alpha)
         return self
 
-    def profile(self: "Filter[Any, Contactable]", profile_type: Type[P]) -> "Filter[P, Any]":
-        def profile_getter_alpha(contactable: Contactable):
-            if not isinstance(contactable.profile, profile_type):
-                raise ExecutionStop
-            return contactable
-
-        self.use(profile_getter_alpha)
-        return self
-
     def group(
-        self: "Filter[Any, Union[MemberProfile, Contactable[GroupProfile]]]", *values: str
-    ) -> "Filter[Union[MemberProfile, Contactable[GroupProfile]], Any]":
-        def group_getter_alpha(profile_or_contactable: Union[MemberProfile, Contactable[GroupProfile]]):
-            if isinstance(profile_or_contactable, MemberProfile) and profile_or_contactable.group:
-                if profile_or_contactable.group.id not in values:
-                    raise ExecutionStop
-            elif isinstance(profile_or_contactable, Contactable) and isinstance(
-                profile_or_contactable.profile, GroupProfile
-            ):
-                if profile_or_contactable.id not in values:
-                    raise ExecutionStop
-            return profile_or_contactable
+        self: "Filter[Any, Union[rsctx, mainline]]", *values: str
+    ) -> "Filter[Union[rsctx, mainline], Any]":
+        def group_getter_alpha(rsctx_or_mainline: Union[rsctx, mainline]):
+            return rsctx_or_mainline['group'] in values
 
         self.use(group_getter_alpha)
         return self
@@ -166,7 +155,7 @@ class Filter(Decorator, Generic[S, L]):
         if self.current_end_callback is None or self._end_origin_branch is None:
             raise TypeError("this context disallow end grammer.")
         if not self.selected_branch.startswith("$:"):
-            raise ValueError("invaild context")
+            raise ValueError("invalid context")
         if self.selected_branch not in self.chains:
             raise ValueError("empty branch")
         self.current_end_callback(self.chains[self.selected_branch])

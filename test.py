@@ -15,7 +15,7 @@ from avilla.core.network.clients.aiohttp import AiohttpWebsocketClient
 from avilla.onebot.ability import ABILITIES
 from avilla.onebot.config import OnebotConfig, WebsocketCommunication
 from avilla.onebot.protocol import OnebotProtocol
-from avilla.core.relationship import Relationship
+from avilla.core.relationship import CoreSupport, Relationship
 from avilla.core.tools.literature import Literature
 from avilla.core.tools.template import Template
 from avilla.core.builtins.elements import Image, Notice, Text
@@ -55,7 +55,8 @@ logging.basicConfig(
             .end()
     ],
 )
-async def event_receiver(rs: Relationship, message: MessageChain):
+async def event_receiver(rs: Relationship[CoreSupport], message: MessageChain):
+    d = await rs.meta.get("group.name")
     print(message.as_display())
     await rs.exec(
         MessageSend(Template("$sender, 这是 Template 测试, $sender").render(sender=Notice(rs.ctx.id)))

@@ -1,13 +1,12 @@
 from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import timedelta
-from typing import TYPE_CHECKING, Generic, List, Union
+from typing import TYPE_CHECKING, Any, Generic, List, TypeVar, Union, cast
 
 from avilla.core.context import ctx_rsexec_period, ctx_rsexec_to
 from avilla.core.execution import Execution
-from avilla.core.metadata import Metadata
 from avilla.core.selectors import mainline, rsctx
 from avilla.core.selectors import self as self_selector
-from avilla.core.typing import T_ExecMW, T_Profile
+from avilla.core.typing import T_ExecMW
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -65,10 +64,54 @@ class ExecutorWrapper:
         return self
 
 
-class Relationship(Generic[T_Profile]):
+class MetaWrapper:
+    relationship: "Relationship"
+
+    def __init__(self, relationship: "Relationship") -> None:
+        self.relationship = relationship
+
+    async def get(self, metakey: str) -> Any:
+        return await self.relationship.protocol.operate_metadata(
+            self.relationship, metakey, "get", None  # type: ignore
+        )
+
+    async def set(self, metakey: str, value: Any) -> None:
+        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "set", value)  # type: ignore
+
+    async def reset(self, metakey: str) -> None:
+        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "reset", None)  # type: ignore
+
+    async def prev(self, metakey: str) -> Any:
+        return await self.relationship.protocol.operate_metadata(
+            self.relationship, metakey, "prev", None  # type: ignore
+        )
+
+    async def next(self, metakey: str) -> Any:
+        return await self.relationship.protocol.operate_metadata(
+            self.relationship, metakey, "next", None  # type: ignore
+        )
+
+    async def push(self, metakey: str, value: Any) -> None:
+        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "push", value)  # type: ignore
+
+    async def pop(self, metakey: str, index: int) -> Any:
+        return await self.relationship.protocol.operate_metadata(
+            self.relationship, metakey, "pop", index  # type: ignore
+        )
+
+    async def add(self, metakey: str, value: Any) -> None:
+        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "add", value)  # type: ignore
+
+    async def remove(self, metakey: str, value: Any) -> None:
+        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "remove", value)  # type: ignore
+
+
+M = TypeVar("M", bound=MetaWrapper)
+
+
+class Relationship(Generic[M]):
     ctx: rsctx
     mainline: mainline
-    metadata: Metadata
     self: self_selector
 
     protocol: "BaseProtocol"
@@ -92,8 +135,17 @@ class Relationship(Generic[T_Profile]):
         return self.self or self.protocol.get_self()
 
     @property
+    def meta(self) -> M:
+        return cast(M, MetaWrapper(self))
+
+    @property
     def exec(self):
         return ExecutorWrapper(self)
 
     def has_ability(self, ability: str) -> bool:
         return self.protocol.has_ability(ability)
+
+
+class CoreSupport(MetaWrapper):
+    "see pyi"
+    pass
