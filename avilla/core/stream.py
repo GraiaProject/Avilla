@@ -1,9 +1,10 @@
 from inspect import iscoroutinefunction
-from typing import Any, Callable, Generic, List, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, List, TypeVar, cast, overload
 
 from graia.broadcast.utilles import run_always_await_safely
 
 T = TypeVar("T")
+V = TypeVar("V")
 
 
 class Stream(Generic[T]):
@@ -28,6 +29,18 @@ class Stream(Generic[T]):
             result = wrapper(result)
         return cast(T, result)
 
-    def transform(self, transformer: Callable[[Any], Any]):
-        self.wrappers.append(transformer)
-        return self
+    if TYPE_CHECKING:
+        @overload
+        def transform(self, wrapper: Callable[[T], V]) -> "Stream[V]":
+            ...
+
+        @overload
+        def transform(self, wrapper: Callable[[T], Awaitable[V]]) -> "Stream[V]":
+            ...
+
+        def transform(self, wrapper: Callable[[T], Any]) -> "Stream[T]":
+            ...
+    else:
+        def transform(self, transformer):
+            self.wrappers.append(transformer)
+            return self

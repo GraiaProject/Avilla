@@ -1,9 +1,9 @@
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, Any, Generic, List, Type, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, List, Set, Type, Union
 
 from avilla.core.launch import LaunchComponent
-from avilla.core.message.chain import MessageChain
+from avilla.core.message import MessageChain
 from avilla.core.platform import Platform
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import self as self_selector
@@ -29,6 +29,8 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         supported_impl_version="$any",
         generation="1",
     )
+
+    required_services: ClassVar[Set[str]]
 
     def __init__(self, avilla: "Avilla", config: T_Config) -> None:
         self.avilla = avilla
@@ -62,15 +64,25 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     async def launch_mainline(self):
         """LaunchComponent.task"""
 
-    async def launch_prepare(self):
-        """LaunchComponent.prepare"""
+    if TYPE_CHECKING:
+        async def launch_prepare(self):
+            """LaunchComponent.prepare"""
 
-    async def launch_cleanup(self):
-        """LaunchComponent.cleanup"""
+        async def launch_cleanup(self):
+            """LaunchComponent.cleanup"""
+    else:
+        launch_prepare = None
+        launch_cleanup = None
 
-    @abstractproperty
+    @property
     def launch_component(self) -> LaunchComponent:
-        ...
+        return LaunchComponent(
+            f"avilla.core.protocol:{self.platform.implementation}",
+            self.required_services,
+            self.launch_mainline,
+            self.launch_prepare,
+            self.launch_cleanup,
+        )
 
     def has_ability(self, ability: str) -> bool:
         raise NotImplementedError

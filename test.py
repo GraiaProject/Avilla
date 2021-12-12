@@ -21,6 +21,7 @@ from avilla.core.tools.template import Template
 from avilla.core.elements import Image, Notice, Text
 
 import inspect
+
 inspect.signature
 
 loop = asyncio.get_event_loop()
@@ -47,20 +48,12 @@ logging.basicConfig(
 
 @broadcast.receiver(
     MessageEvent,
-    decorators=[
-        Filter.rsctx()
-            .parallel()
-                .id("1846913566")
-                .profile(MemberProfile)
-            .end()
-    ],
+    decorators=[(Filter.rsctx().parallel().id("1846913566").profile(MemberProfile).end())],
 )
 async def event_receiver(rs: Relationship[CoreSupport], message: MessageChain):
     d = await rs.meta.get("group.name")
     print(message.as_display())
-    await rs.exec(
-        MessageSend(Template("$sender, 这是 Template 测试, $sender").render(sender=Notice(rs.ctx.id)))
-    )
+    await rs.exec(MessageSend(Template("$sender, 这是 Template 测试, $sender").render(sender=Notice(rs.ctx.id))))
 
 
 loop.run_until_complete(avilla.launch())
