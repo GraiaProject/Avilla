@@ -13,8 +13,9 @@ from avilla.core.utilles.selector import Selector
 from .execution import Execution
 
 if TYPE_CHECKING:
-    from . import Avilla
     from avilla.core.relationship import Relationship
+
+    from . import Avilla
 
 
 class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):

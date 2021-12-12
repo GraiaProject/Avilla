@@ -18,7 +18,7 @@ from avilla.onebot.protocol import OnebotProtocol
 from avilla.core.relationship import CoreSupport, Relationship
 from avilla.core.tools.literature import Literature
 from avilla.core.tools.template import Template
-from avilla.core.builtins.elements import Image, Notice, Text
+from avilla.core.elements import Image, Notice, Text
 
 import inspect
 inspect.signature

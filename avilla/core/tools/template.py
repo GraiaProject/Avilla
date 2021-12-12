@@ -1,10 +1,12 @@
 from typing import List, Sequence
 
-import regex
+try:
+    import regex as re
+except Exception:
+    import re
 
-from avilla.core.builtins.elements import Text
-from avilla.core.message.chain import MessageChain
-from avilla.core.message.element import Element
+from avilla.core.elements import Text
+from avilla.core.message import MessageChain, Element
 
 
 def list_get(seq: Sequence, index, default=None):
@@ -13,7 +15,7 @@ def list_get(seq: Sequence, index, default=None):
     return default
 
 
-_split = regex.compile(r"(?|(\$[a-zA-Z_][a-zA-Z0-9_]*)|(\$[0-9]*))")
+_split = re.compile(r"(?|(\$[a-zA-Z_][a-zA-Z0-9_]*)|(\$[0-9]*))")
 
 
 class Template:
@@ -32,8 +34,8 @@ class Template:
                 if not pattern.startswith("$"):
                     patterns.append(Text(pattern))
                 else:
-                    if regex.match(r"\$[a-zA-Z_][a-zA-Z0-9_]*", pattern):
+                    if re.match(r"\$[a-zA-Z_][a-zA-Z0-9_]*", pattern):
                         patterns.append(kwargs.get(pattern[1:], Text(pattern)))
-                    elif regex.match(r"\$[0-9]*", pattern):
+                    elif re.match(r"\$[0-9]*", pattern):
                         patterns.append(list_get(args, int(pattern[1:])))
         return MessageChain.create(patterns)

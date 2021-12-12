@@ -1,5 +1,5 @@
 from inspect import iscoroutinefunction
-from typing import Any, Callable, Generic, List, TypeVar
+from typing import Any, Callable, Generic, List, TypeVar, cast
 
 from graia.broadcast.utilles import run_always_await_safely
 
@@ -18,7 +18,7 @@ class Stream(Generic[T]):
         result = self.content
         for wrapper in self.wrappers:
             result = await run_always_await_safely(wrapper, result)
-        return result
+        return cast(T, result)
 
     def unwrap_sync(self) -> T:
         result = self.content
@@ -26,7 +26,7 @@ class Stream(Generic[T]):
             if iscoroutinefunction(wrapper):
                 raise RuntimeError("Cannot unwrap a stream with a coroutine transformer in sync")
             result = wrapper(result)
-        return result
+        return cast(T, result)
 
     def transform(self, transformer: Callable[[Any], Any]):
         self.wrappers.append(transformer)

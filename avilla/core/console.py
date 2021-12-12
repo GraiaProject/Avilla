@@ -1,4 +1,5 @@
 from typing import Any, Callable
+
 from prompt_toolkit import PromptSession
 
 

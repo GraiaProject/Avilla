@@ -1,14 +1,14 @@
 from typing import Generic, Optional, TypeVar
 
-from avilla.core.provider import Provider
+from avilla.core.stream import Stream
 
 TMetadata = TypeVar("TMetadata")
 
 
 class Resource(Generic[TMetadata]):
-    provider: Provider
+    stream: Stream
     metadata: Optional[TMetadata]
 
-    def __init__(self, provider: Provider, metadata: Optional[TMetadata] = None):
-        self.provider = provider
+    def __init__(self, stream: Stream, metadata: Optional[TMetadata] = None):
+        self.stream = stream
         self.metadata = metadata

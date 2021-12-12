@@ -1,13 +1,31 @@
-from __future__ import annotations
-
 import copy
-from typing import Iterable, List, Optional, Tuple, Type, Union
+from dataclasses import dataclass
+from datetime import datetime
+from typing import Iterable, List, Optional, Type, Union
 
 from pydantic import BaseModel  # pylint: ignore
 
-from .element import Element
+from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import rsctx
 
-MessageIndex = Tuple[int, Optional[int]]
+
+@dataclass
+class Message:
+    id: str
+    mainline: mainline_selector
+    sender: rsctx
+    content: "MessageChain"
+    time: datetime
+    reply: Optional[str] = None
+
+
+class Element:
+    def asDisplay(self) -> str:
+        return ""
+
+    @classmethod
+    def get_ability_id(cls) -> str:
+        return f"msg_element::{cls.__name__}"
 
 
 class MessageChain(BaseModel):
@@ -165,7 +183,7 @@ class MessageChain(BaseModel):
         Returns:
             MessageChain: 分片后得到的新消息链, 绝对是原消息链的子集.
         """
-        from ..builtins.elements import Text
+        from .elements import Text
 
         result = copy.copy(self.__root__)
         if item.start:
@@ -205,7 +223,7 @@ class MessageChain(BaseModel):
         Returns:
             MessageChain: 得到的新的消息链实例, 里面不应存在有任何的相邻的 Text 元素.
         """
-        from ..builtins.elements import Text
+        from .elements import Text
 
         result = []
 
@@ -224,7 +242,7 @@ class MessageChain(BaseModel):
                 texts.clear()  # 清空缓存
         return MessageChain.create(type(self.__root__)(result))  # 维持 Mutable
 
-    def exclude(self, *types: Type[Element]) -> MessageChain:
+    def exclude(self, *types: Type[Element]) -> "MessageChain":
         """将除了在给出的消息元素类型中符合的消息元素重新包装为一个新的消息链
         Args:
             *types (Type[Element]): 将排除在外的消息元素类型
@@ -233,7 +251,7 @@ class MessageChain(BaseModel):
         """
         return self.create([i for i in self.__root__ if type(i) not in types])
 
-    def include(self, *types: Type[Element]) -> MessageChain:
+    def include(self, *types: Type[Element]) -> "MessageChain":
         """将只在给出的消息元素类型中符合的消息元素重新包装为一个新的消息链
         Args:
             *types (Type[Element]): 将只包含在内的消息元素类型
@@ -247,7 +265,7 @@ class MessageChain(BaseModel):
         Returns:
             List["MessageChain"]: 分割结果, 行为和 `str.split` 差不多.
         """
-        from ..builtins.elements import Text
+        from .elements import Text
 
         result: List["MessageChain"] = []
         tmp = []
@@ -275,14 +293,14 @@ class MessageChain(BaseModel):
         yield from self.__root__
 
     def startswith(self, string: str) -> bool:
-        from ..builtins.elements import Text
+        from .elements import Text
 
         if not self.__root__ or type(self.__root__[0]) is not Text:
             return False
         return self.__root__[0].text.startswith(string)
 
     def endswith(self, string: str) -> bool:
-        from ..builtins.elements import Text
+        from .elements import Text
 
         if not self.__root__ or type(self.__root__[-1]) is not Text:
             return False

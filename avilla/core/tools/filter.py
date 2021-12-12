@@ -10,7 +10,7 @@ from graia.broadcast.exceptions import ExecutionStop
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from avilla.core.message.chain import MessageChain
+from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
 from avilla.core.selectors import mainline, rsctx
 
