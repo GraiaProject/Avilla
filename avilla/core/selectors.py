@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING
 from .utilles.selector import Selector, SelectorKey
 
 
-class rsctx(Selector):
-    scope = "rsctx"
+class entity(Selector):
+    scope = "entity"
 
 
 class mainline(Selector):

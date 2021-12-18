@@ -4,7 +4,7 @@ from typing import Any, Generic, List, Literal, TypeVar, Union, overload
 from avilla.core.execution import Execution as Execution
 from avilla.core.protocol import BaseProtocol as BaseProtocol
 from avilla.core.selectors import mainline
-from avilla.core.selectors import rsctx as rsctx
+from avilla.core.selectors import entity as entity
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import T_ExecMW as T_ExecMW
 
@@ -17,7 +17,7 @@ class ExecutorWrapper:
     def __await__(self): ...
     def execute(self, execution: Execution): ...
     __call__: Any
-    def to(self, target: Union[rsctx, mainline]): ...
+    def to(self, target: Union[entity, mainline]): ...
     def period(self, period: timedelta): ...
     def use(self, middleware: T_ExecMW): ...
 
@@ -40,7 +40,7 @@ M = TypeVar("M", bound=MetaWrapper)
 
 
 class Relationship(Generic[M]):
-    ctx: rsctx
+    ctx: entity
     mainline: mainline
     self: self_selector
     protocol: "BaseProtocol"
@@ -49,7 +49,7 @@ class Relationship(Generic[M]):
     def __init__(
         self,
         protocol: BaseProtocol,
-        ctx: rsctx,
+        ctx: entity,
         current_self: self_selector,
         middlewares: List[T_ExecMW] = ...,
     ) -> None: ...

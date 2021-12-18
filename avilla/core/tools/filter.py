@@ -12,7 +12,7 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
-from avilla.core.selectors import mainline, rsctx
+from avilla.core.selectors import mainline, entity
 
 S = TypeVar("S")
 L = TypeVar("L")
@@ -110,7 +110,7 @@ class Filter(Decorator, Generic[S, L]):
         return cls(relationship_getter_alpha, lambda report: report.result[-1], [])
 
     @classmethod
-    def rsctx(cls: "Type[Filter]") -> "Filter[rsctx, Any]":
+    def rsctx(cls: "Type[Filter]") -> "Filter[entity, Any]":
         def contactable_getter_alpha(relationship: Relationship):
             return relationship.ctx
 
@@ -145,8 +145,8 @@ class Filter(Decorator, Generic[S, L]):
     def constant(cls, value: L) -> "Filter[Any, L]":
         return cls(lambda: value, lambda report: report.result[-1], [])
 
-    def id(self: "Filter[Any, rsctx]", *values: str) -> "Filter[rsctx, Any]":
-        def id_getter_alpha(ctx: rsctx):
+    def id(self: "Filter[Any, entity]", *values: str) -> "Filter[entity, Any]":
+        def id_getter_alpha(ctx: entity):
             if ctx.last() not in values:
                 raise ExecutionStop
 
@@ -154,9 +154,9 @@ class Filter(Decorator, Generic[S, L]):
         return self
 
     def group(
-        self: "Filter[Any, Union[rsctx, mainline]]", *values: str
-    ) -> "Filter[Union[rsctx, mainline], Any]":
-        def group_getter_alpha(rsctx_or_mainline: Union[rsctx, mainline]):
+        self: "Filter[Any, Union[entity, mainline]]", *values: str
+    ) -> "Filter[Union[entity, mainline], Any]":
+        def group_getter_alpha(rsctx_or_mainline: Union[entity, mainline]):
             return rsctx_or_mainline['group'] in values
 
         self.use(group_getter_alpha)

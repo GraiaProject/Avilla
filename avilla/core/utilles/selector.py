@@ -60,3 +60,13 @@ class Selector(Generic[S], metaclass=SelectorMeta):
 
     def __getattr__(self, key: str) -> "SelectorKey":
         return SelectorKey(self.scope, key)
+
+    def __eq__(self, __o: object) -> bool:
+        if not isinstance(__o, Selector):
+            return False
+        return self.scope == __o.scope and self.path == __o.path
+
+    def __and__(self, __o: "Selector") -> bool:
+        if self.scope != __o.scope:
+            return False
+        return all([v == __o.path[k] for k, v in self.path.items() if k in __o.path])

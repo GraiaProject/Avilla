@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Union
 
 from graia.broadcast.utilles import Ctx
 
-from avilla.core.selectors import mainline, rsctx
+from avilla.core.selectors import mainline, entity
 
 if TYPE_CHECKING:
     from graia.broadcast.entities.event import Dispatchable
@@ -17,5 +17,5 @@ ctx_protocol: "Ctx[BaseProtocol]" = Ctx("protocol")
 ctx_relationship: "Ctx[Relationship]" = Ctx("relationship")
 ctx_event: "Ctx[Dispatchable]" = Ctx("event")
 
-ctx_rsexec_to: "Ctx[Union[mainline, rsctx]]" = Ctx("target")
+ctx_rsexec_to: "Ctx[Union[mainline, entity]]" = Ctx("target")
 ctx_rsexec_period: "Ctx[timedelta]" = Ctx("period")

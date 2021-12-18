@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Generic, List, TypeVar, Union, cast
 
 from avilla.core.context import ctx_rsexec_period, ctx_rsexec_to
 from avilla.core.execution import Execution
-from avilla.core.selectors import mainline, rsctx
+from avilla.core.selectors import mainline, entity
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import T_ExecMW
 
@@ -39,7 +39,7 @@ class ExecutorWrapper:
 
     __call__ = execute
 
-    def to(self, target: Union[rsctx, mainline]):
+    def to(self, target: Union[entity, mainline]):
         @asynccontextmanager
         async def target_injector(rs: "Relationship", exec: Execution):
             if isinstance(target, mainline):
@@ -110,7 +110,7 @@ M = TypeVar("M", bound=MetaWrapper)
 
 
 class Relationship(Generic[M]):
-    ctx: rsctx
+    ctx: entity
     mainline: mainline
     self: self_selector
 
@@ -121,7 +121,7 @@ class Relationship(Generic[M]):
     def __init__(
         self,
         protocol: "BaseProtocol",
-        ctx: rsctx,
+        ctx: entity,
         current_self: self_selector,
         middlewares: List[T_ExecMW] = None,
     ) -> None:

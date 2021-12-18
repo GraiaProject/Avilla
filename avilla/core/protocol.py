@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, List, Set, Type, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, List, Set, Tuple, Type, Union
 
 from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
@@ -106,3 +106,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         self, relationship: "Relationship", metakey: str, operator: str, value: METADATA_VALUE
     ) -> Any:
         ...
+
+    @property
+    def protocol_ranks(self) -> Tuple[str, ...]:
+        return ()
