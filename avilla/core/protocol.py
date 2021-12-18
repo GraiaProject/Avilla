@@ -45,7 +45,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     def __post_init__(self) -> None:
         pass
 
-    def ensure_execution(self, execution: "Execution") -> Any:
+    async def ensure_execution(self, execution: "Execution") -> Any:
         raise NotImplementedError
 
     @abstractmethod

@@ -25,5 +25,9 @@
         "klass",
         "rsctx",
         "rsexec"
+    ],
+    "python.sortImports.args": [
+        "--profile",
+        "\"black\""
     ]
 }
