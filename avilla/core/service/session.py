@@ -37,7 +37,6 @@ class BehaviourSession(Generic[TInterface]):
     expand_cb: Optional[
         Callable[[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]], None]
     ] = None
-
     prepared_signal: Optional[asyncio.Event] = None
 
     def __init__(
