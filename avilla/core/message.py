@@ -5,8 +5,8 @@ from typing import Iterable, List, Optional, Type, Union
 
 from pydantic import BaseModel  # pylint: ignore
 
-from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import entity
+from avilla.core.selectors import mainline as mainline_selector
 
 
 @dataclass

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from inspect import isclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -14,8 +15,8 @@ from typing import (
     cast,
     overload,
 )
+
 from avilla.core.selectors import entity as entity_selector
-from inspect import isclass
 
 if TYPE_CHECKING:
     from avilla.core.service import Service

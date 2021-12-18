@@ -1,9 +1,22 @@
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Set, Tuple, Type, TypeVar, Union, overload
-from avilla.core.launch import LaunchComponent
-from avilla.core.service.entity import BehaviourDescription, ExportInterface, Status
-from avilla.core.selectors import entity as entity_selector
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Dict,
+    List,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+    overload,
+)
 
+from avilla.core.launch import LaunchComponent
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.service.entity import BehaviourDescription, ExportInterface, Status
 
 TInterface = TypeVar("TInterface", bound=ExportInterface)
 TCallback = TypeVar("TCallback", bound=Callable)
@@ -31,6 +44,7 @@ class Service(metaclass=ABCMeta):
         pass
 
     if TYPE_CHECKING:
+
         @abstractmethod
         def get_status(self, entity: entity_selector = None) -> Union[Status, Dict[entity_selector, Status]]:
             pass

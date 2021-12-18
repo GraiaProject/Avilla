@@ -1,14 +1,14 @@
 from abc import ABCMeta, abstractmethod
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import timedelta
 from typing import Any, AsyncGenerator, Callable, Dict, Literal, Optional, Union
 
 from yarl import URL
 
-from avilla.core.service.entity import Activity, BehaviourDescription
 from avilla.core.service import ExportInterface
+from avilla.core.service.entity import Activity, BehaviourDescription
 from avilla.core.service.session import BehaviourSession
-from contextlib import asynccontextmanager
 from avilla.core.stream import Stream
 
 HTTP_METHODS = Union[
@@ -22,7 +22,7 @@ HTTP_METHODS = Union[
 
 @dataclass
 class ProxySetting:
-    protocol: Union[Literal['http'], Literal['https'], Literal['socks5']]
+    protocol: Union[Literal["http"], Literal["https"], Literal["socks5"]]
     host: str
     port: int
     auth_username: Optional[str] = None
@@ -116,6 +116,7 @@ class WebsocketClient(ExportInterface, metaclass=ABCMeta):
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
 
+
 # NOTE: 这里的 Websocket Client 实现需要实现自动重连(扩展行为 PostConnected, PostDisconnected, 并且要求上层, 也就是使用 Session 进行交互的一层, 更新 Status),
 # 并且更新 BehaviourSession 中的 activity handlers.
 
@@ -174,7 +175,9 @@ class PostConnected(BehaviourDescription[Callable[[ExportInterface, BehaviourSes
 
 
 @dataclass
-class DataReceived(BehaviourDescription[Callable[[ExportInterface, BehaviourSession, dict, Stream[bytes]], Any]]):
+class DataReceived(
+    BehaviourDescription[Callable[[ExportInterface, BehaviourSession, dict, Stream[bytes]], Any]]
+):
     pass
 
 

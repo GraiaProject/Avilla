@@ -2,8 +2,8 @@ from pathlib import Path
 from typing import Optional
 
 from avilla.core.message import Element
-from avilla.core.stream import Stream
 from avilla.core.resource import Resource
+from avilla.core.stream import Stream
 
 
 class Text(Element):

@@ -12,7 +12,6 @@ from typing import (
     List,
     Set,
     Type,
-    Union,
 )
 
 from graia.broadcast import Broadcast
@@ -28,8 +27,8 @@ from avilla.core.context import ctx_rsexec_to
 from avilla.core.event import MessageChainDispatcher, RelationshipDispatcher
 from avilla.core.execution import Execution
 from avilla.core.launch import LaunchComponent, resolve_requirements
-from avilla.core.network.service import Service
 from avilla.core.protocol import BaseProtocol
+from avilla.core.service import Service
 from avilla.core.typing import T_Config, T_ExecMW, T_Protocol
 from avilla.core.utilles import as_async
 
@@ -45,7 +44,7 @@ AVILLA_ASCII_LOGO_AS_LIST = [
     r"/_/   \_\_/ |_|_|_|\__,_|",
 ]
 
-GRAIA_PROJECT_REPOS = ['avilla-core', 'graia-broadcast']
+GRAIA_PROJECT_REPOS = ["avilla-core", "graia-broadcast"]
 
 
 class RichStdoutProxy(StdoutProxy):
@@ -140,19 +139,14 @@ class Avilla(Generic[T_Protocol, T_Config]):
         self.services.remove(service)
         del self.launch_components[service.launch_component.id]
 
-    def get_service(self, id: str) -> Union[Service, None]:
-        for service in self.services:
-            if service.id.avilla_uri == id:
-                return service
-
     async def console_callback(self, command_or_str: str):
         # TODO: Commander Trigger
         pass
 
     async def launch(self):
         avilla_console = AvillaConsole(self.console_callback)
-        self.launch_components['avilla.core.console'] = LaunchComponent(
-            'avilla.core.console', set(), avilla_console.start, None, as_async(avilla_console.stop)
+        self.launch_components["avilla.core.console"] = LaunchComponent(
+            "avilla.core.console", set(), avilla_console.start, None, as_async(avilla_console.stop)
         )
         logger.configure(
             handlers=[
@@ -164,19 +158,19 @@ class Avilla(Generic[T_Protocol, T_Config]):
             ]
         )
 
-        logger.info('\n'.join(AVILLA_ASCII_LOGO_AS_LIST))
+        logger.info("\n".join(AVILLA_ASCII_LOGO_AS_LIST))
         for telemetry in GRAIA_PROJECT_REPOS:
             try:
                 version = importlib.metadata.version(telemetry)
             except Exception:
-                version = 'unknown / not-installed'
-            logger.info(f'[b cornflower_blue]{telemetry}[/] version: [cyan3]{version}[/]')
+                version = "unknown / not-installed"
+            logger.info(f"[b cornflower_blue]{telemetry}[/] version: [cyan3]{version}[/]")
 
         if self.protocol.__class__.platform is not BaseProtocol.platform:
             logger.info(f"using platform: {self.protocol.__class__.platform.universal_identifier}")
 
         for service in self.services:
-            logger.info(f"using service: {service.id.avilla_uri}")
+            logger.info(f"using service: {service.__class__.__name__}")
 
         logger.info(f"launch components count: {len(self.launch_components)}")
 

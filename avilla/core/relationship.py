@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Generic, List, TypeVar, Union, cast
 
 from avilla.core.context import ctx_rsexec_period, ctx_rsexec_to
 from avilla.core.execution import Execution
-from avilla.core.selectors import mainline, entity
+from avilla.core.selectors import entity, mainline
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import T_ExecMW
 
@@ -28,7 +28,7 @@ class ExecutorWrapper:
                 yield from exit_stack.enter_async_context(
                     middleware(self.relationship, self.execution)  # type: ignore
                 ).__await__()
-            result = yield from self.relationship.protocol.ensure_execution(self.execution)
+            result = yield from self.relationship.protocol.ensure_execution(self.execution)  # type: ignore
             return result
         finally:
             yield from exit_stack.__aexit__(None, None, None).__await__()

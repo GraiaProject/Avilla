@@ -6,7 +6,7 @@ except Exception:
     import re
 
 from avilla.core.elements import Text
-from avilla.core.message import MessageChain, Element
+from avilla.core.message import Element, MessageChain
 
 
 def list_get(seq: Sequence, index, default=None):

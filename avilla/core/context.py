@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Union
 
 from graia.broadcast.utilles import Ctx
 
-from avilla.core.selectors import mainline, entity
+from avilla.core.selectors import entity, mainline
 
 if TYPE_CHECKING:
     from graia.broadcast.entities.event import Dispatchable

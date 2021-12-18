@@ -3,7 +3,7 @@ from typing import Callable, Generic, Optional, Tuple, Type, TypeVar, Union
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 
-from avilla.core.message import MessageChain, Element
+from avilla.core.message import Element, MessageChain
 
 T = TypeVar("T")
 

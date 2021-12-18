@@ -12,7 +12,7 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
-from avilla.core.selectors import mainline, entity
+from avilla.core.selectors import entity, mainline
 
 S = TypeVar("S")
 L = TypeVar("L")
@@ -133,9 +133,14 @@ class Filter(Decorator, Generic[S, L]):
         return cls(event_getter_alpha, lambda report: report.result[-1], [])
 
     @classmethod
-    def optional_event(cls: "Type[Filter]", *event_types: Type[Dispatchable]) -> "Filter[Any, Optional[Dispatchable]]":
+    def optional_event(
+        cls: "Type[Filter]", *event_types: Type[Dispatchable]
+    ) -> "Filter[Any, Optional[Dispatchable]]":
         def optional_event_getter_alpha(dispatcher_interface: DispatcherInterface):
-            if dispatcher_interface.event is not None and dispatcher_interface.event.__class__ not in event_types:
+            if (
+                dispatcher_interface.event is not None
+                and dispatcher_interface.event.__class__ not in event_types
+            ):
                 raise ExecutionStop
             return dispatcher_interface.event
 
@@ -157,7 +162,7 @@ class Filter(Decorator, Generic[S, L]):
         self: "Filter[Any, Union[entity, mainline]]", *values: str
     ) -> "Filter[Union[entity, mainline], Any]":
         def group_getter_alpha(rsctx_or_mainline: Union[entity, mainline]):
-            return rsctx_or_mainline['group'] in values
+            return rsctx_or_mainline["group"] in values
 
         self.use(group_getter_alpha)
         return self

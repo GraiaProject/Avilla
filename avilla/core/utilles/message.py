@@ -1,6 +1,6 @@
 from typing import Any, Awaitable, Callable, Dict, Generic, List, Type, TypeVar
 
-from avilla.core.message import MessageChain, Element
+from avilla.core.message import Element, MessageChain
 from avilla.core.typing import T_Protocol
 
 T = TypeVar("T", bound=Element)

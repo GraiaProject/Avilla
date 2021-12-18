@@ -19,7 +19,6 @@ from graia.broadcast.utilles import run_always_await_safely
 
 from avilla.core.service.entity import Activity, BehaviourDescription
 
-
 if TYPE_CHECKING:
     from avilla.core.service import Service
     from avilla.core.service.entity import ExportInterface
@@ -38,7 +37,7 @@ class BehaviourSession(Generic[TInterface]):
     expand_cb: Optional[
         Callable[[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]], None]
     ] = None
-    
+
     prepared_signal: Optional[asyncio.Event] = None
 
     def __init__(

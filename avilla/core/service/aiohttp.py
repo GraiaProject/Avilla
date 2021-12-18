@@ -1,35 +1,38 @@
-from abc import ABCMeta, abstractmethod
 import asyncio
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Dict, Literal, Optional, Type, Union
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator, Callable, Dict, Type, Union
+
 import aiohttp
+from aiohttp import ClientSession
 from aiohttp.client_ws import ClientWebSocketResponse
 from aiohttp.helpers import BasicAuth, ProxyInfo
 from loguru import logger
-
 from yarl import URL
 
-from avilla.core.service.common import HTTP_METHODS, HttpClient, ProxySetting, WebsocketClient
+from avilla.core.service.common import (
+    HTTP_METHODS,
+    HttpClient,
+    ProxySetting,
+    WebsocketClient,
+)
 from avilla.core.service.entity import BehaviourDescription
 from avilla.core.stream import Stream
-from . import Service, ExportInterface
+
 from .common import (
     DataReceived,
     PostConnected,
     PostDisconnected,
     content_read,
     content_write,
-    httpstatus_get,
-    httpstatus_set,
-    httpheader_get,
-    httpheader_set,
+    httpcookie_delete,
     httpcookie_get,
     httpcookie_set,
-    httpcookie_delete,
+    httpheader_get,
+    httpheader_set,
+    httpstatus_get,
+    httpstatus_set,
 )
 from .session import BehaviourSession
-from contextlib import asynccontextmanager
-from aiohttp import ClientSession
 
 
 def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:

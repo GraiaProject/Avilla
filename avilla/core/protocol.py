@@ -65,11 +65,13 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         """LaunchComponent.task"""
 
     if TYPE_CHECKING:
+
         async def launch_prepare(self):
             """LaunchComponent.prepare"""
 
         async def launch_cleanup(self):
             """LaunchComponent.cleanup"""
+
     else:
         launch_prepare = None
         launch_cleanup = None
