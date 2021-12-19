@@ -4,6 +4,8 @@ from typing import Type, Union, Dict
 from avilla.core.message import Element
 
 
+TArgument = Union[str, Type[Element]]
+
 class pattern:
     digit = r"(\d+)"
     string = r"(.+)"
@@ -13,7 +15,7 @@ class pattern:
 
 
 class Args:
-    argument: Dict[str, Type[Element]]
+    argument: Dict[str, TArgument]
     defaults: Dict[str, Union[str, Element]]
 
     def __init__(self, **kwargs):
