@@ -8,17 +8,26 @@ from avilla.core.message import Element  # 原文里是 NonTextElement, 这里�
 
 
 @dataclass
-class Option:
+class BaseCommand:
     name: str
     args: Args
     separator: str = " "
 
-    def __init__(self, name: str, args: Optional[Args] = None, **kwargs):
+    def separate(self, sep: str):
+        self.separator = sep
+        return self
+
+    
+class Option(BaseCommand):
+    alias: str
+
+    def __init__(self, name: str, args: Optional[Args] = None, alias: Optional[str] = None, **kwargs):
         if name == "":
             raise ValueError("name cannot be empty")
         if re.match(r"^[`~?/.,<>;\':\"|!@#$%^&*()_+=\[\]}{]+.*$", name):
             raise TypeError("name cannot contain special characters")
         self.name = name
+        self.alias = alias or name
         self.args = args or Args(**kwargs)
 
     def separate(self, sep: str):
@@ -26,15 +35,13 @@ class Option:
         return self
 
 
-@dataclass
-class Subcommand(Option):
-    args: Args
+class Subcommand(BaseCommand):
     options: List[Option]
-    sub_params: Dict[str, Option] = None
+    sub_params: Dict[str, Union[Args, Option]]
 
     @property
     def separator(self):
-        raise NotImplementedError("Subcommand does not support separator.")
+        return " "
 
     def separate(self, sep: str):
         raise NotImplementedError("Subcommand does not support separator.")
@@ -47,6 +54,7 @@ class Subcommand(Option):
         self.name = name
         self.args = args or Args(**kwargs)
         self.options = list(option)
+        self.sub_params = {"sub_args": self.args}
 
 
 class AlconnaMatch:
@@ -142,3 +150,7 @@ class AlconnaMatch:
             _text, _rest_text = split_once(cast(str, self.raw_texts[self.current_index][0]), separate)
 
         return _text, _rest_text
+    
+    def __repr__(self):
+        attrs = ((s, getattr(self, s)) for s in self.__slots__)
+        return " ".join([f"{a}={v}" for a, v in attrs if v is not None])
