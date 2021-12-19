@@ -62,7 +62,6 @@ class AiohttpClient(HttpClient, WebsocketClient):
         url: Union[str, URL],
         headers: Dict[str, str] = None,
         data: Union[str, bytes] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.request(
@@ -92,7 +91,6 @@ class AiohttpClient(HttpClient, WebsocketClient):
         self,
         url: Union[str, URL],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.get(
@@ -119,7 +117,6 @@ class AiohttpClient(HttpClient, WebsocketClient):
         url: Union[str, URL],
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.post(
@@ -149,7 +146,6 @@ class AiohttpClient(HttpClient, WebsocketClient):
         url: Union[str, URL],
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.put(
@@ -179,7 +175,6 @@ class AiohttpClient(HttpClient, WebsocketClient):
         url: Union[str, URL],
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.delete(
@@ -209,7 +204,6 @@ class AiohttpClient(HttpClient, WebsocketClient):
         url: Union[str, URL],
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.patch(

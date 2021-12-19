@@ -37,7 +37,6 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         headers: Dict[str, str] = None,
         data: Union[str, bytes] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
@@ -48,7 +47,6 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         self,
         url: Union[str, URL],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
@@ -60,7 +58,6 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
@@ -72,7 +69,6 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
@@ -83,7 +79,6 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         self,
         url: Union[str, URL],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
@@ -95,7 +90,6 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
-        response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
