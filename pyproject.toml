@@ -51,4 +51,4 @@ include = '\.pyi?$'
 profile = "black"
 
 [tool.poetry.extras]
-template = ['regex']
+starlette = ['starlette']

@@ -14,19 +14,7 @@ from yarl import URL
 from avilla.core.launch import LaunchComponent
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.service import Service
-from avilla.core.service.common import (
-    HTTP_METHODS,
-    HttpClient,
-    ProxySetting,
-    WebsocketClient,
-)
-from avilla.core.service.entity import BehaviourDescription
-from avilla.core.stream import Stream
-
-from .common import (  # todo: 剩下还有一大堆操作.
-    DataReceived,
-    PostConnected,
-    PostDisconnected,
+from avilla.core.service.common.activities import (  # todo: 剩下还有一大堆操作.
     content_read,
     disconnect,
     httpcookie_get,
@@ -34,7 +22,20 @@ from .common import (  # todo: 剩下还有一大堆操作.
     httpstatus_get,
     send_netmsg,
 )
-from .session import BehaviourSession
+from avilla.core.service.common.behaviours import (
+    DataReceived,
+    PostConnected,
+    PostDisconnected,
+)
+from avilla.core.service.common.http import (
+    HTTP_METHODS,
+    HttpClient,
+    ProxySetting,
+    WebsocketClient,
+)
+from avilla.core.service.entity import BehaviourDescription
+from avilla.core.service.session import BehaviourSession
+from avilla.core.stream import Stream
 
 
 def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:
