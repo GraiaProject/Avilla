@@ -1,59 +1,34 @@
 import inspect
-from typing import TypeVar, Union, Type, Dict
+from typing import Type, Union, Dict
 
-AnyIP = r"(\d+)\.(\d+)\.(\d+)\.(\d+)"
-AnyDigit = r"(\d+)"
-AnyStr = r"(.+)"
-AnyUrl = r"(http[s]?://.+)"
-Bool = r"(True|False)"
+from avilla.core.message import Element
 
-NonTextElement = TypeVar("NonTextElement")
-MessageChain = TypeVar("MessageChain")
-Argument_T = Union[str, Type[NonTextElement]]
+
+class pattern:
+    digit = r"(\d+)"
+    string = r"(.+)"
+    boolean = r"(true|false)"
+    ip = r"(\d+)\.(\d+)\.(\d+)\.(\d+)"
+    url = r"(http[s]?://.+)"
 
 
 class Args:
-    args: Dict[str, Argument_T]
-    _default: Dict[str, Union[str, NonTextElement]]
-    empty: bool = False
+    args: Dict[str, Type[Element]]
+    defaults: Dict[str, Union[str, Element]]
 
     def __init__(self, **kwargs):
-        self.args = {k: v for k, v in kwargs.items() if k not in ('name', 'type')}
-        self._default = {}
-        if not self.args:
-            self.empty = True
+        self.args = kwargs
+        self.defaults = {}
 
     def default(self, **kwargs):
-        self._default = {k: v for k, v in kwargs.items() if k not in ('name', 'type')}
+        self.defaults = {k: v for k, v in kwargs.items() if k not in ("name", "type")}
         return self
 
     def check(self, keyword: str):
-        if keyword in self._default:
-            if self._default[keyword] is None:
+        if keyword in self.defaults:
+            if self.defaults[keyword] is None:
                 return inspect.Signature.empty
-            return self._default[keyword]
-
-    def params(self, sep: str = " "):
-        argument_string = ""
-        i = 0
-        length = len(self.args)
-        for k, v in self.args.items():
-            arg = f"<{k}"
-            if not isinstance(v, str):
-                arg += f": Type_{v.__name__}"
-            if k in self._default:
-                default = self._default[k]
-                if default is None:
-                    arg += " default: Empty"
-                elif isinstance(default, str):
-                    arg += f" default: {default}"
-                else:
-                    arg += f" default: Type_{default.__name__}"
-            argument_string += arg + ">"
-            i += 1
-            if i != length:
-                argument_string += sep
-        return argument_string
+            return self.defaults[keyword]
 
     def __iter__(self):
         for k, v in self.args.items():
@@ -63,12 +38,13 @@ class Args:
         return len(self.args)
 
     def __repr__(self):
-        if self.empty:
-            return "Empty"
-        repr_string = ""
-        for k, v in self.args.items():
-            text = f"'{k}': {v}"
-            if k in self._default:
-                text += f" default={self._default[k]}"
-            repr_string += text + ",\n"
-        return "\n" + repr_string + ""
+        if not self.args:
+            return "Args()"
+        repr_string = "Args({0})"
+        repr_args = ", ".join(
+            [
+                f"{name}: {argtype}" + (f" = {name}" if name in self.defaults else "")
+                for name, argtype in self.args.items()
+            ]
+        )
+        return repr_string.format(repr_args)

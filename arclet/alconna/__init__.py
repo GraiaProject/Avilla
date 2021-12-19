@@ -1,12 +1,14 @@
 from typing import Dict, List, Optional, Union, Any, overload
 import re
+
+from avilla.core.message import Element
 from .util import split_once, split
-from .component import Option, CommandInterface, Subcommand, Arpamar, OptionInterface, Options_T
-from .types import NonTextElement, MessageChain, Argument_T, Args
-from .exceptions import ParamsUnmatched, NullName, InvalidOptionName, InvalidFormatMap, NullTextMessage
+from .component import Option, Subcommand, AlconnaMatch
+from .types import Args
+# from .exceptions import ParamsUnmatched, NullName, InvalidFormatMap, NullTextMessage
 
 
-class Alconna(CommandInterface):
+class Alconna:
     """
     亚尔康娜（Alconna），Cesloi 的妹妹
 
@@ -18,9 +20,9 @@ class Alconna(CommandInterface):
         options=[
             Subcommand("sub_name",Option("sub-opt", sub_arg=sub_arg), args=sub_main_arg),
             Option("opt", arg=arg)
-            ]
+        ]
         main_args=main_args
-        )
+    )
 
     其中
         - name: 命令名称
@@ -38,31 +40,28 @@ class Alconna(CommandInterface):
         main_args: 主参数，填入后当且仅当命令中含有该参数时才会成功解析
     """
 
-    name = "Alconna"
     headers: List[str]
     command: str
-    options: Options_T
+    options: List[Option]
     main_args: Args
 
     def __init__(
             self,
             headers: List[str] = None,
             command: Optional[str] = None,
-            options: Options_T = None,
+            options: List[Option] = None,
             main_args: Optional[Args] = None,
             exception_in_time: bool = False,
             **kwargs
 
     ):
-        # headers与command二者必须有其一
+        # headers 与 command 二者必须有其一
         if all([all([not headers, not command]), not options, not main_args]):
-            raise NullName
-        super().__init__(
-            headers=headers or [""],
-            command=command or "",
-            options=options or [],
-            main_args=main_args or Args(**kwargs),
-        )
+            raise TypeError("headers and command can not be None at the same time")
+        self.headers = headers or [""]
+        self.command = command or ""
+        self.options = options or []
+        self.main_args = main_args or Args(**kwargs)
         self.exception_in_time = exception_in_time
         self._initialise_arguments()
 
@@ -71,8 +70,8 @@ class Alconna(CommandInterface):
     def format(
             cls,
             format_string: str,
-            format_args: List[Union[Argument_T, Args, Option, List[Option]]],
-            reflect_map: Optional[Dict[str, str]] = None
+            format_args: List[Union[str, Element, Args, Option, List[Option]]],
+            reflect_map: Dict[str, str] = None
     ) -> "Alconna":
         ...
 
@@ -81,8 +80,8 @@ class Alconna(CommandInterface):
     def format(
             cls,
             format_string: str,
-            format_args: Dict[str, Union[Union[Argument_T, Args, Option, List[Option]]]],
-            reflect_map: Optional[Dict[str, str]] = None
+            format_args: Dict[str, Union[str, Element, Args, Option, List[Option]]],
+            reflect_map: Dict[str, str] = None
     ) -> "Alconna":
         ...
 
@@ -93,15 +92,16 @@ class Alconna(CommandInterface):
             format_args: ...,
             reflect_map: Optional[Dict[str, str]] = None
     ) -> "Alconna":
-        strings = split(format_string)
+        strings: List[str] = split(format_string)
         command = strings.pop(0)
         options = []
         main_args = None
 
         _string_stack: List[str] = list()
-        for i in range(len(strings)):
-            if not (arg := re.findall(r"{(.+)}", strings[i])):
-                _string_stack.append(strings[i])
+        for index, str_value in enumerate(strings):
+            arg = re.findall(r"{(.+)}", str_value)
+            if not arg:
+                _string_stack.append(str_value)
                 continue
 
             key = arg[0] if not reflect_map else (reflect_map[arg[0]] if reflect_map.get(arg[0]) else arg[0])
@@ -111,7 +111,7 @@ class Alconna(CommandInterface):
             elif isinstance(format_args, Dict):
                 value = format_args[arg[0]]
             else:
-                raise InvalidFormatMap
+                raise TypeError(f"format_args must be List or Dict, but {type(format_args)}")
 
             stack_count = len(_string_stack)
             if stack_count == 2:
@@ -134,7 +134,7 @@ class Alconna(CommandInterface):
                     options.append(Option(may_name, **{key: value}))
 
             if stack_count == 0:
-                if i == 0:
+                if index == 0:
                     if isinstance(value, Args):
                         main_args = value
                     elif not isinstance(value, Option) and not isinstance(value, List):
@@ -142,7 +142,7 @@ class Alconna(CommandInterface):
                     else:
                         if isinstance(value, Option):
                             options.append(value)
-                        elif isinstance(value, List):
+                        elif isinstance(value, list):
                             options[-1].options.extend(value)
                         elif isinstance(value, Args):
                             options[-1].args = value
@@ -152,15 +152,18 @@ class Alconna(CommandInterface):
         alc = cls(command=command, options=options, main_args=main_args)
         return alc
 
-    def add_options(self, options: List[OptionInterface]):
+    def add_options(self, options: List[Union[Option, Subcommand]]):
         self.options.extend(options)
         self._initialise_arguments()
 
     def _initialise_arguments(self):
+        # todo: GreyElaina. WTF.
         # params是除开命令头的剩下部分
         self._params: Dict[str, Union[Args, Dict[str, Any]]] = {"main_args": self.main_args}
-        for opts in self.dict()['options']:
-            if opts['type'] == "SBC":
+        for opts in self.options:
+            if isinstance(opts, Subcommand):
+                if opts.sub_params is None:
+                    opts.sub_params = {}
                 opts.setdefault('sub_params', {"sub_args": opts['args']})
                 for sub_opts in opts['options']:
                     opts['sub_params'][sub_opts['name']] = sub_opts

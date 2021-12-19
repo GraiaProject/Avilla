@@ -1,3 +1,6 @@
+from typing import List
+
+
 def split_once(text: str, separate: str):  # 相当于另类的pop, 不会改变本来的字符串
     out_text = ""
     quotation_stack = []
@@ -16,8 +19,8 @@ def split_once(text: str, separate: str):  # 相当于另类的pop, 不会改变
     return out_text, text.replace(out_text, "", 1).replace(separate, "", 1)
 
 
-def split(text: str, separate: str = " ", max_split: int = -1):
-    text_list = []
+def split(text: str, separate: str = " ", max_split: int = -1) -> List[str]:
+    text_list: List[str] = []
     quotation_stack = []
     is_split = True
     while all([text, max_split]):
