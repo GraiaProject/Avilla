@@ -66,6 +66,13 @@ class Alconna(BaseCommand):
         self.args = main_args or Args(**kwargs)
         self.exception_in_time = exception_in_time
         self._initialise_arguments()
+        
+    @property
+    def separator(self):
+        return " "
+
+    def separate(self, sep: str):
+        raise NotImplementedError("Alconna does not support separator.")
 
     @classmethod
     @overload
@@ -183,7 +190,8 @@ class Alconna(BaseCommand):
             rest_text: str
     ) -> Dict[str, Any]:
 
-        _option_dict: Dict[str, Any] = {}
+       _option_dict: Dict[str, Any] = {}
+        may_element_index = self.result.raw_texts[self.result.current_index][1] + 1
         for k, v in opt_args:
             if isinstance(v, str):
                 if sep != self.separator:
@@ -194,66 +202,63 @@ class Alconna(BaseCommand):
                     if (default := opt_args.check(k)) is not None:
                         _arg_find = [default]
                     else:
-                        raise ParamsUnmatched(f"this param {may_arg} does not right")
+                        raise MatchFailed(f"param {may_arg} is incorrect")
                 if may_arg == v:
                     _arg_find[0] = Ellipsis
                 _option_dict[k] = _arg_find[0]
                 if sep == self.separator:
                     self.result.raw_texts[self.result.current_index][0] = rest_text
             else:
-                may_element_index = self.result.raw_texts[self.result.current_index][1] + 1
                 if type(self.result.elements[may_element_index]) is v:
                     _option_dict[k] = self.result.elements.pop(may_element_index)
+                    may_element_index += 1
                 elif (default := opt_args.check(k)) is not None:
                     _option_dict[k] = default
+                    may_element_index += 1
                 else:
-                    raise ParamsUnmatched(
-                        f"this element type {type(self.result.elements[may_element_index])} does not right")
+                    raise MatchFailed(
+                        f"param type {type(self.result.elements[may_element_index])} is incorrect")
         return _option_dict
 
     def _analyse_option(
             self,
-            param: Dict[str, Union[str, Args]],
+            param: Option,
             text: str,
             rest_text: str
     ) -> Dict[str, Any]:
 
-        opt: str = param['name']
-        args: Args = param['args']
-        sep: str = param['separator']
+        opt: str = param.name
+        alias: str = param.alias
+        args: Args = param.args
+        sep: str = param.separator
         name, may_args = split_once(text, sep)
         if sep == self.separator:  # 在sep等于separator的情况下name是被提前切出来的
             name = text
-        if not re.match('^' + opt + '$', name):  # 先匹配选项名称
-            raise ParamsUnmatched(f"{name} dose not matched with {opt}")
+        if (not re.match('^' + opt + '$', name)) and (not re.match('^' + alias + '$', name)):  # 先匹配选项名称
+            raise MatchFailed(f"{name} dose not matched with {opt}")
         self.result.raw_texts[self.result.current_index][0] = rest_text
         name = name.lstrip("-")
-        if args.empty:
+        if not args.argument:
             return {name: Ellipsis}
         return {name: self._analyse_args(args, may_args, sep, rest_text)}
 
     def _analyse_subcommand(
             self,
-            param: Dict[str, Union[str, Dict, Args]],
+            param: Subcommand,
             text: str,
             rest_text: str
     ) -> Dict[str, Any]:
-        command: str = param['name']
-        sep: str = param['separator']
-        sub_params: Dict = param['sub_params']
-        name, may_text = split_once(text, sep)
-        if sep == self.separator:
-            name = text
-        if not re.match('^' + command + '$', name):
-            raise ParamsUnmatched(f"{name} dose not matched with {command}")
-
-        self.result.raw_texts[self.result.current_index][0] = may_text
-        if sep == self.separator:
-            self.result.raw_texts[self.result.current_index][0] = rest_text
-
-        name = name.lstrip("-")
-        if param['args'].empty and not param['options']:
-            return {name: Ellipsis}
+        command: str = param.name
+        sep: str = param.separator
+        sub_params: Dict = param.sub_params
+        
+        if not re.match('^' + command + '$', text):
+            raise MatchFailed(f"{text} dose not matched with {command}")
+        self.result.raw_texts[self.result.current_index][0] = rest_text
+        
+        text = text.lstrip("-")
+        if not param.args.argument and not param.options:
+            return {text: Ellipsis}
 
         subcommand = {}
         _get_args = False
@@ -266,8 +271,7 @@ class Alconna(BaseCommand):
                         if _text.startswith(sp):
                             sub_param = sub_params.get(sp)
                             break
-                if isinstance(sub_param, dict):
-                    # if sub_param.get('type'):
+                if isinstance(sub_param, Option):
                     subcommand.update(self._analyse_option(sub_param, _text, _rest_text))
                 elif not _get_args:
                     if args := self._analyse_args(sub_param, _text, sep, _rest_text):
@@ -275,14 +279,13 @@ class Alconna(BaseCommand):
                         subcommand.update(args)
             except (IndexError, KeyError):
                 continue
-            except ParamsUnmatched:
+            except MatchFailed:
                 if self.exception_in_time:
                     raise
                 break
-
-        if sep != self.separator:
-            self.result.raw_texts[self.result.current_index][0] = rest_text
+                
         return {name: subcommand}
+
 
     def _analyse_header(self) -> str:
         head_text, self.result.raw_texts[0][0] = self.result.split_by(self.separator)
@@ -293,14 +296,14 @@ class Alconna(BaseCommand):
             if _head_find[0] != ch:
                 return _head_find[0]
         if not self.result.head_matched:
-            raise ParamsUnmatched(f"{head_text} does not matched")
+            raise MatchFailed(f"{head_text} does not matched")
 
-    def analyse_message(self, message: Union[str, MessageChain]) -> Arpamar:
+    def analyse_message(self, message: Union[str, MessageChain]) -> AlconnaMatch:
         if hasattr(self, "result"):
             del self.result
-        self.result: Arpamar = Arpamar()
+        self.result: AlconnaMatch = AlconnaMatch()
 
-        if not self.main_args.empty:
+        if self.args.argument:
             self.result.need_main_args = True  # 如果need_marg那么match的元素里一定得有main_argument
 
         if isinstance(message, str):
@@ -315,13 +318,13 @@ class Alconna(BaseCommand):
 
         if not self.result.raw_texts:
             if self.exception_in_time:
-                raise NullTextMessage
+                raise ValueError("This message is null !")
             self.result.results.clear()
             return self.result
 
         try:
             self.result.results['header'] = self._analyse_header()
-        except ParamsUnmatched:
+        except MatchFailed:
             self.result.results.clear()
             return self.result
 
@@ -333,20 +336,19 @@ class Alconna(BaseCommand):
                 _param = self._params.get(_text)
                 if not _param:
                     _param = self._params['main_args']
-                    for p in self._params:
-                        if _text.startswith(p):
-                            _param = self._params.get(p)
+                    for p, v in self._params.items():
+                        if _text.startswith(p) or _text.startswith(getattr(v, 'alias', p)):
+                            _param = v
                             break
-                if isinstance(_param, dict):
-                    if _param['type'] == 'OPT':
-                        self.result.results['options'].update(self._analyse_option(_param, _text, _rest_text))
-                    elif _param['type'] == 'SBC':
-                        self.result.results['options'].update(self._analyse_subcommand(_param, _text, _rest_text))
+                if isinstance(_param, Option):
+                    self.result.results['options'].update(self._analyse_option(_param, _text, _rest_text))
+                elif isinstance(_param, Subcommand):
+                    self.result.results['options'].update(self._analyse_subcommand(_param, _text, _rest_text))
                 elif not self.result.results.get("main_args"):
                     self.result.results['main_args'] = self._analyse_args(_param, _text, self.separator, _rest_text)
             except (IndexError, KeyError):
                 pass
-            except ParamsUnmatched:
+            except MatchFailed:
                 if self.exception_in_time:
                     raise
                 break
@@ -356,11 +358,13 @@ class Alconna(BaseCommand):
             for k, v in self.main_args:
                 if type(self.result.elements[may_element_index]) is v:
                     self.result.results['main_args'][k] = self.result.elements.pop(may_element_index)
+                    may_element_index += 1
                 elif (default := self.main_args.check(k)) is not None:
                     self.result.results['main_args'][k] = default
+                    may_element_index += 1
                 else:
-                    raise ParamsUnmatched(
-                        f"this element type {type(self.result.elements[may_element_index])} does not right")
+                    raise MatchFailed(
+                        f"param element type {type(self.result.elements[may_element_index])} is incorrect")
         except (KeyError, IndexError):
             pass
         except ParamsUnmatched:
@@ -377,6 +381,6 @@ class Alconna(BaseCommand):
             self.result.encapsulate_result()
         else:
             if self.exception_in_time:
-                raise ParamsUnmatched(", ".join([t[0] for t in self.result.raw_texts]))
+                raise MatchFailed(", ".join([t[0] for t in self.result.raw_texts]))
             self.result.results.clear()
         return self.result
