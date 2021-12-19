@@ -9,9 +9,9 @@ from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from pydantic import BaseModel, Field  # pylint: ignore
 
-from avilla.core.selectors import entity as entity_selector
 from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
+from avilla.core.selectors import entity as entity_selector
 
 from ..context import ctx_protocol, ctx_relationship
 

@@ -2,7 +2,7 @@ import asyncio
 from contextlib import asynccontextmanager
 from functools import partial
 from inspect import isclass
-from typing import AsyncGenerator, Callable, ClassVar, Dict, Set, Type, Union
+from typing import AsyncGenerator, Callable, Dict, Type, Union
 
 import aiohttp
 from aiohttp import ClientSession
@@ -10,9 +10,10 @@ from aiohttp.client_ws import ClientWebSocketResponse
 from aiohttp.helpers import BasicAuth, ProxyInfo
 from loguru import logger
 from yarl import URL
-from avilla.core.launch import LaunchComponent
-from avilla.core.service import Service
 
+from avilla.core.launch import LaunchComponent
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.service import Service
 from avilla.core.service.common import (
     HTTP_METHODS,
     HttpClient,
@@ -22,24 +23,18 @@ from avilla.core.service.common import (
 from avilla.core.service.entity import BehaviourDescription
 from avilla.core.stream import Stream
 
-from .common import (
+from .common import (  # todo: 剩下还有一大堆操作.
     DataReceived,
     PostConnected,
     PostDisconnected,
     content_read,
-    content_write,
     disconnect,
-    httpcookie_delete,
     httpcookie_get,
-    httpcookie_set,
     httpheader_get,
-    httpheader_set,
     httpstatus_get,
-    httpstatus_set,
     send_netmsg,
 )
 from .session import BehaviourSession
-from avilla.core.selectors import entity as entity_selector
 
 
 def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:
@@ -261,7 +256,7 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 cbs[PostConnected].append(callback)
             elif behaviour is PostDisconnected or isinstance(behaviour, PostDisconnected):
                 cbs[PostDisconnected].append(callback)
-        
+
         def recount():
             nonlocal retries_count
             retries_count = count_setting
