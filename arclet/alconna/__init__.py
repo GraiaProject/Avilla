@@ -3,33 +3,34 @@ import re
 
 from avilla.core.message import Element
 from .util import split_once, split
-from .component import Option, Subcommand, AlconnaMatch
+from .component import Option, Subcommand, AlconnaMatch, BaseCommand
 from .types import Args
+from .exceptions import MatchFailed
 # from .exceptions import ParamsUnmatched, NullName, InvalidFormatMap, NullTextMessage
 
 
-class Alconna:
+class Alconna(BaseCommand):
     """
     亚尔康娜（Alconna），Cesloi 的妹妹
 
     用于更加精确的命令解析，支持String与MessageChain
 
-    样例: Alconna(
+    样例：Alconna(
         headers=[""],
         command="name",
         options=[
-            Subcommand("sub_name",Option("sub-opt", sub_arg=sub_arg), args=sub_main_arg),
-            Option("opt", arg=arg)
-        ]
+            Subcommand("sub_name",Option("sub_opt", args=sub_arg), args=sub_main_args),
+            Option("opt", args=arg)
+            ]
         main_args=main_args
-    )
+        )
 
     其中
         - name: 命令名称
         - sub_name: 子命令名称
-        - sub-opt: 子命令选项名称
+        - sub_opt: 子命令选项名称
         - sub_arg: 子命令选项参数
-        - sub_main_arg: 子命令主参数
+        - sub_main_args: 子命令主参数
         - opt: 命令选项名称
         - arg: 命令选项参数
 
