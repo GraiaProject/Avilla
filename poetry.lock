@@ -1,12 +1,4 @@
 [[package]]
-name = "aiofiles"
-version = "0.7.0"
-description = "File support for asyncio."
-category = "main"
-optional = false
-python-versions = ">=3.6,<4.0"
-
-[[package]]
 name = "aiohttp"
 version = "3.8.0"
 description = "Async http client/server framework (asyncio)"
@@ -36,6 +28,17 @@ python-versions = ">=3.6"
 
 [package.dependencies]
 frozenlist = ">=1.1.0"
+
+[[package]]
+name = "arclet-alconna"
+version = "0.3.1"
+description = "A Fast Command Analyser based on Dict and Pydantic "
+category = "main"
+optional = false
+python-versions = ">=3.8"
+
+[package.dependencies]
+pydantic = "*"
 
 [[package]]
 name = "astroid"
@@ -458,13 +461,9 @@ template = ["regex"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "d244964781ce5281b58e535f7aff4e788531b35e7f0f268c918043cea2970711"
+content-hash = "13199548c236cf921505dba898692cc67fa3fa828ef51606fdee60ab8ebb3f9e"
 
 [metadata.files]
-aiofiles = [
-    {file = "aiofiles-0.7.0-py3-none-any.whl", hash = "sha256:c67a6823b5f23fcab0a2595a289cec7d8c863ffcb4322fb8cd6b90400aedfdbc"},
-    {file = "aiofiles-0.7.0.tar.gz", hash = "sha256:a1c4fc9b2ff81568c83e21392a82f344ea9d23da906e4f6a52662764545e19d4"},
-]
 aiohttp = [
     {file = "aiohttp-3.8.0-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:48f218a5257b6bc16bcf26a91d97ecea0c7d29c811a90d965f3dd97c20f016d6"},
     {file = "aiohttp-3.8.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a2fee4d656a7cc9ab47771b2a9e8fad8a9a33331c1b59c3057ecf0ac858f5bfe"},
@@ -542,6 +541,9 @@ aiohttp = [
 aiosignal = [
     {file = "aiosignal-1.2.0-py3-none-any.whl", hash = "sha256:26e62109036cd181df6e6ad646f91f0dcfd05fe16d0cb924138ff2ab75d64e3a"},
     {file = "aiosignal-1.2.0.tar.gz", hash = "sha256:78ed67db6c7b7ced4f98e495e572106d5c432a93e1ddd1bf475e1dc05f5b7df2"},
+]
+arclet-alconna = [
+    {file = "arclet-alconna-0.3.1.tar.gz", hash = "sha256:b994b4b77a66688fa1292ac6aaa65f89c01d49af8a581c7022827e8ea2cb519e"},
 ]
 astroid = [
     {file = "astroid-2.8.5-py3-none-any.whl", hash = "sha256:abc423a1e85bc1553954a14f2053473d2b7f8baf32eae62a328be24f436b5107"},

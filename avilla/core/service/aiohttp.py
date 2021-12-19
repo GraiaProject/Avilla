@@ -1,6 +1,8 @@
 import asyncio
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator, Callable, Dict, Type, Union
+from functools import partial
+from inspect import isclass
+from typing import AsyncGenerator, Callable, ClassVar, Dict, Set, Type, Union
 
 import aiohttp
 from aiohttp import ClientSession
@@ -8,6 +10,8 @@ from aiohttp.client_ws import ClientWebSocketResponse
 from aiohttp.helpers import BasicAuth, ProxyInfo
 from loguru import logger
 from yarl import URL
+from avilla.core.launch import LaunchComponent
+from avilla.core.service import Service
 
 from avilla.core.service.common import (
     HTTP_METHODS,
@@ -24,6 +28,7 @@ from .common import (
     PostDisconnected,
     content_read,
     content_write,
+    disconnect,
     httpcookie_delete,
     httpcookie_get,
     httpcookie_set,
@@ -31,8 +36,10 @@ from .common import (
     httpheader_set,
     httpstatus_get,
     httpstatus_set,
+    send_netmsg,
 )
 from .session import BehaviourSession
+from avilla.core.selectors import entity as entity_selector
 
 
 def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:
@@ -47,7 +54,8 @@ def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:
 class AiohttpClient(HttpClient, WebsocketClient):
     aiohttp_session: ClientSession
 
-    def __init__(self, aiohttp_session: ClientSession) -> None:
+    def __init__(self, service: "AiohttpService", aiohttp_session: ClientSession) -> None:
+        self.service = service
         self.aiohttp_session = aiohttp_session
         super().__init__()
 
@@ -56,7 +64,7 @@ class AiohttpClient(HttpClient, WebsocketClient):
         self,
         method: "HTTP_METHODS",
         url: Union[str, URL],
-        headers: Dict[str, str],
+        headers: Dict[str, str] = None,
         data: Union[str, bytes] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
@@ -87,7 +95,7 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def get(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -113,8 +121,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def post(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
         data: Union[str, bytes],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -143,8 +151,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def put(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
         data: Union[str, bytes],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -173,8 +181,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def delete(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
         data: Union[str, bytes],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -203,8 +211,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def patch(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
         data: Union[str, bytes],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -233,10 +241,11 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def websocket_connect(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
+        headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
         retries_count: int = 3,
     ) -> "AsyncGenerator[BehaviourSession, None]":
+        count_setting = retries_count
         cbs = {
             PostConnected: [],
             DataReceived: [],
@@ -252,46 +261,74 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 cbs[PostConnected].append(callback)
             elif behaviour is PostDisconnected or isinstance(behaviour, PostDisconnected):
                 cbs[PostDisconnected].append(callback)
+        
+        def recount():
+            nonlocal retries_count
+            retries_count = count_setting
+            logger.debug(f"retries count was reset to {retries_count}.")
 
         prepared_signal = asyncio.Event()
-        behaviour_session = BehaviourSession(self.service, self, {}, cb_handler, prepared_signal)
-        # 这里的 Activity Handlers 会在连接建立成功后才会更新上去
+        behaviour_session = BehaviourSession(self.service, self, {}, prepared_signal)
+        recover_retrites_task = None
         while retries_count > 0:
             try:
                 async with self.aiohttp_session.ws_connect(url, headers=headers) as ws_session:
+
+                    async def netmsg_sender(activity: Union[send_netmsg, Type[send_netmsg]]):
+                        if isclass(activity):
+                            raise TypeError("this activity must be an instance")
+                        if isinstance(activity.data, str):
+                            await ws_session.send_str(activity.data)
+                        elif isinstance(activity.data, bytes):
+                            await ws_session.send_bytes(activity.data)
+                        else:
+                            raise ValueError(f"Unsupported data type: {type(activity.data)}")
 
                     async def handle_task(ws_session: ClientWebSocketResponse):
                         await prepared_signal.wait()
                         behaviour_session.update_activity_handlers(
                             {
-                                # todo: 主动操作
+                                send_netmsg: netmsg_sender,  # type: ignore
+                                disconnect: lambda _: ws_session.close(),
                             }
                         )
+                        behaviour_session.submit_behaviour_expansion(cb_handler)
                         current_session_stats = {}
                         await asyncio.gather(
-                            cb(self, behaviour_session, current_session_stats) for cb in cbs[PostConnected]
+                            *[cb(self, behaviour_session, current_session_stats) for cb in cbs[PostConnected]]
                         )
                         async for message in ws_session:
                             if message.type == aiohttp.WSMsgType.TEXT:
                                 await asyncio.gather(
-                                    cb(
-                                        self,
-                                        behaviour_session,
-                                        current_session_stats,
-                                        Stream(message.data.encode()),
-                                    )
-                                    for cb in cbs[DataReceived]
+                                    *[
+                                        cb(
+                                            self,
+                                            behaviour_session,
+                                            current_session_stats,
+                                            Stream(message.data.encode()),
+                                        )
+                                        for cb in cbs[DataReceived]
+                                    ]
                                 )
                             elif message.type == aiohttp.WSMsgType.BINARY:
                                 await asyncio.gather(
-                                    cb(self, behaviour_session, current_session_stats, Stream(message.data))
-                                    for cb in cbs[DataReceived]
+                                    *[
+                                        cb(
+                                            self,
+                                            behaviour_session,
+                                            current_session_stats,
+                                            Stream(message.data),
+                                        )
+                                        for cb in cbs[DataReceived]
+                                    ]
                                 )
                             elif message.type == aiohttp.WSMsgType.CLOSED:
                                 logger.warning(f"webSocket connection on {url} closed")
                                 await asyncio.gather(
-                                    cb(self, behaviour_session, current_session_stats)
-                                    for cb in cbs[PostDisconnected]
+                                    *[
+                                        cb(self, behaviour_session, current_session_stats)
+                                        for cb in cbs[PostDisconnected]
+                                    ]
                                 )
                                 break
 
@@ -299,6 +336,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
                     yield behaviour_session
                 break
             except Exception as e:
+                if recover_retrites_task is not None:
+                    recover_retrites_task.cancel()
                 retries_count -= 1
                 if retries_count == 0:
                     raise e
@@ -306,3 +345,40 @@ class AiohttpClient(HttpClient, WebsocketClient):
                     logger.exception(e)
                 logger.warning(f"retrying websocket connection to {url} after 10 seconds")
                 await asyncio.sleep(10)
+                recover_retrites_task = asyncio.get_running_loop().call_later(30.0, recount)
+
+
+class AiohttpService(Service):
+    supported_interface_types = {AiohttpClient, HttpClient, WebsocketClient}
+    supported_description_types = {DataReceived, PostConnected, PostDisconnected}
+
+    client_session: ClientSession
+
+    def __init__(self, client_session: ClientSession = None) -> None:
+        self.client_session = client_session or ClientSession()
+        super().__init__()
+
+    def get_interface(self, interface_type: Type[AiohttpClient]) -> AiohttpClient:
+        if issubclass(interface_type, (HttpClient, WebsocketClient)):
+            return AiohttpClient(self, self.client_session)
+        raise ValueError(f"unsupported interface type {interface_type}")
+
+    def get_status(self, entity: entity_selector = None):
+        if entity is None:
+            return self.status
+        if entity not in self.status:
+            raise KeyError(f"{entity} not in status")
+        return self.status[entity]
+
+    async def launch_mainline(self):
+        ...
+
+    @property
+    def launch_component(self) -> LaunchComponent:
+        return LaunchComponent(
+            "http.universal_client",
+            set(),
+            self.launch_mainline,
+            self.client_session.__aenter__,
+            partial(self.client_session.__aexit__, None, None, None),
+        )

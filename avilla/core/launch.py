@@ -1,21 +1,21 @@
-from typing import Awaitable, Callable, List, Optional, Set
+from typing import Any, Awaitable, Callable, List, Optional, Set
 
 
 class LaunchComponent:
     id: str
     required: Set[str]
 
-    prepare: Optional[Callable[[], Awaitable[None]]] = None
-    mainline: Callable[[], Awaitable[None]]
-    cleanup: Optional[Callable[[], Awaitable[None]]] = None
+    prepare: Optional[Callable[[], Awaitable[Any]]] = None
+    mainline: Callable[[], Awaitable[Any]]
+    cleanup: Optional[Callable[[], Awaitable[Any]]] = None
 
     def __init__(
         self,
         component_id: str,
         required: Set[str],
-        mainline: Callable[[], Awaitable[None]],
-        prepare: Optional[Callable[[], Awaitable[None]]] = None,
-        cleanup: Optional[Callable[[], Awaitable[None]]] = None,
+        mainline: Callable[[], Awaitable[Any]],
+        prepare: Optional[Callable[[], Awaitable[Any]]] = None,
+        cleanup: Optional[Callable[[], Awaitable[Any]]] = None,
     ):
         self.id = component_id
         self.required = required

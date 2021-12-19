@@ -38,7 +38,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         self,
         method: "HTTP_METHODS",
         url: Union[str, URL],
-        headers: Dict[str, str],
+        headers: Dict[str, str] = None,
         data: Union[str, bytes] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
@@ -50,7 +50,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def get(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -61,8 +61,8 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def post(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
         data: Union[str, bytes],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -73,8 +73,8 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def put(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
         data: Union[str, bytes],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -85,7 +85,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def delete(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -96,8 +96,8 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def patch(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
         data: Union[str, bytes],
+        headers: Dict[str, str] = None,
         response_encoding: str = "utf-8",
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -110,7 +110,7 @@ class WebsocketClient(ExportInterface, metaclass=ABCMeta):
     def websocket_connect(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str],
+        headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
         retries_count: int = 3,
     ) -> "AsyncGenerator[BehaviourSession, None]":
@@ -167,6 +167,16 @@ class httpcookie_set(Activity[None]):
 @dataclass
 class httpcookie_delete(Activity[None]):
     key: str
+
+
+@dataclass
+class send_netmsg(Activity[None]):
+    data: Union[str, bytes]
+
+
+@dataclass
+class disconnect(Activity[None]):
+    pass
 
 
 @dataclass

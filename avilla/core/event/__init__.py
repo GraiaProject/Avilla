@@ -9,16 +9,15 @@ from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from pydantic import BaseModel, Field  # pylint: ignore
 
-from avilla.core.contactable import Contactable
-from avilla.core.message.chain import MessageChain
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
-from avilla.core.typing import T_Profile
 
 from ..context import ctx_protocol, ctx_relationship
 
 
-class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile]):
-    ctx: Union[Contactable[T_Profile]]
+class AvillaEvent(Dispatchable):
+    ctx: entity_selector
 
     current_id: str  # = Field(default_factory=lambda: ctx_relationship.get().current.id)
     time: datetime = Field(default_factory=datetime.now)
@@ -31,9 +30,6 @@ class AvillaEvent(BaseModel, Dispatchable, Generic[T_Profile]):
     @classmethod
     def get_ability_id(cls) -> str:
         return f"event::{cls.__name__}"
-
-    class Config:
-        arbitrary_types_allowed = True
 
 
 _Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}

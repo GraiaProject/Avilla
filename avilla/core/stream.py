@@ -57,3 +57,8 @@ class Stream(Generic[T]):
         def transform(self, transformer):
             self.wrappers.append(transformer)
             return self
+
+    __or__ = transform
+
+    def __await__(self):
+        return self.unwrap().__await__()

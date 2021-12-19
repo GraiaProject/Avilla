@@ -29,6 +29,10 @@ class Service(metaclass=ABCMeta):
     status: Dict[entity_selector, Status]
     cb: List[Tuple[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]]]
 
+    def __init__(self) -> None:
+        self.status = {}
+        self.cb = []
+
     @abstractmethod
     def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
         pass

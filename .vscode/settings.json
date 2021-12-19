@@ -17,8 +17,10 @@
     "python.sortImports.path": "isort",
     "editor.formatOnSave": true,
     "cSpell.words": [
+        "Alconna",
         "asyncio",
         "AVILLA",
+        "Cesloi",
         "Graia",
         "isclass",
         "iscoroutinefunction",

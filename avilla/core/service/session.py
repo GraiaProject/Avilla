@@ -13,6 +13,7 @@ from typing import (
     TypeVar,
     Union,
     cast,
+    overload,
 )
 
 from graia.broadcast.utilles import run_always_await_safely
@@ -29,39 +30,50 @@ TInterface = TypeVar("TInterface", bound="ExportInterface")
 
 
 class BehaviourSession(Generic[TInterface]):
-    service: Service
+    service: "Service"
     interface: TInterface
     activity_handlers: Dict[Type[Activity], TActivityHandler]
 
     cb: List[Tuple[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]]]
-    expand_cb: Optional[
-        Callable[[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]], None]
-    ] = None
     prepared_signal: Optional[asyncio.Event] = None
 
     def __init__(
         self,
-        service: Service,
+        service: "Service",
         interface: TInterface,
         activity_handlers: Dict[Type[Activity], TActivityHandler],
-        initial_expand_cb: Callable[
-            [Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]], None
-        ] = None,
         prepared_signal: asyncio.Event = None,
     ) -> None:
         self.service = service
         self.interface = interface
         self.activity_handlers = activity_handlers
         self.cb = []
-        self.expand_cb = initial_expand_cb
         self.prepared_signal = prepared_signal
 
-    async def execute(self, activity: Union[Type[Activity], Activity]):
-        activity_class = activity if isinstance(activity, type) else type(activity)
-        handler = self.activity_handlers.get(activity_class)
-        if handler is None:
-            raise NotImplementedError(f"No handler for activity {activity_class}")
-        return await run_always_await_safely(handler, activity if not isinstance(activity, type) else None)
+    if TYPE_CHECKING:
+        R = TypeVar("R")
+
+        @overload
+        async def execute(self, activity: Type[Activity[R]]) -> R:
+            pass
+
+        @overload
+        async def execute(self, activity: Activity[R]) -> R:
+            pass
+
+        async def execute(self, activity: Union[Type[Activity[R]], Activity[R]]) -> R:
+            ...
+
+    else:
+
+        async def execute(self, activity: Union[Type[Activity], Activity]):
+            activity_class = activity if isinstance(activity, type) else type(activity)
+            handler = self.activity_handlers.get(activity_class)
+            if handler is None:
+                raise NotImplementedError(f"No handler for activity {activity_class}")
+            return await run_always_await_safely(
+                handler, activity if not isinstance(activity, type) else None
+            )
 
     def update_activity_handlers(
         self, activity_handlers: Dict[Type[Activity], TActivityHandler], clean: bool = False
@@ -86,11 +98,12 @@ class BehaviourSession(Generic[TInterface]):
     ) -> None:
         self.cb.append((behaviour, callback))
 
-    def submit_behaviour_expansion(self):
-        if not self.expand_cb:
-            raise ValueError("Unavailable expansion callback")
+    def submit_behaviour_expansion(
+        self,
+        cb: Callable[[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]], None],
+    ):
         for behaviour, callback in self.cb:
-            self.expand_cb(behaviour, callback)
+            cb(behaviour, callback)
 
     def get_behaviour_cbs(self, behaviour_type: Type[BehaviourDescription[TCallback]]) -> List[TCallback]:
         return cast(
