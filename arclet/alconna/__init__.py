@@ -4,7 +4,7 @@ import re
 from avilla.core.message import Element
 from .util import split_once, split
 from .component import Option, Subcommand, AlconnaMatch, BaseCommand
-from .types import Args
+from .types import Args, TArgument
 from .exceptions import MatchFailed
 # from .exceptions import ParamsUnmatched, NullName, InvalidFormatMap, NullTextMessage
 
@@ -72,7 +72,7 @@ class Alconna(BaseCommand):
     def format(
             cls,
             format_string: str,
-            format_args: List[Union[str, Element, Args, Option, List[Option]]],
+            format_args: List[Union[TArgument, Args, Option, List[Option]]],
             reflect_map: Dict[str, str] = None
     ) -> "Alconna":
         ...
@@ -82,7 +82,7 @@ class Alconna(BaseCommand):
     def format(
             cls,
             format_string: str,
-            format_args: Dict[str, Union[str, Element, Args, Option, List[Option]]],
+            format_args: Dict[str, Union[TArgument, Args, Option, List[Option]]],
             reflect_map: Dict[str, str] = None
     ) -> "Alconna":
         ...
@@ -141,15 +141,15 @@ class Alconna(BaseCommand):
                         main_args = value
                     elif not isinstance(value, Option) and not isinstance(value, List):
                         main_args = Args(**{key: value})
+                else:
+                    if isinstance(value, Option):
+                        options.append(value)
+                    elif isinstance(value, list):
+                        options[-1].options.extend(value)
+                    elif isinstance(value, Args):
+                        options[-1].args = value
                     else:
-                        if isinstance(value, Option):
-                            options.append(value)
-                        elif isinstance(value, list):
-                            options[-1].options.extend(value)
-                        elif isinstance(value, Args):
-                            options[-1].args = value
-                        else:
-                            options[-1].args.args.update({key: value})
+                        options[-1].args.args.update({key: value})
 
         alc = cls(command=command, options=options, main_args=main_args)
         return alc
@@ -161,15 +161,12 @@ class Alconna(BaseCommand):
     def _initialise_arguments(self):
         # todo: GreyElaina. WTF.
         # params是除开命令头的剩下部分
-        self._params: Dict[str, Union[Args, Dict[str, Any]]] = {"main_args": self.main_args}
+        self._params: Dict[str, Union[Args, Option, Subcommand]] = {"main_args": self.args}
         for opts in self.options:
             if isinstance(opts, Subcommand):
-                if opts.sub_params is None:
-                    opts.sub_params = {}
-                opts.setdefault('sub_params', {"sub_args": opts['args']})
-                for sub_opts in opts['options']:
-                    opts['sub_params'][sub_opts['name']] = sub_opts
-            self._params[opts['name']] = opts
+                for sub_opts in opts.options:
+                    opts.sub_params.setdefault(sub_opts.name, sub_opts)
+            self._params[opts.name] = opts
 
         self._command_headers: List[str] = []  # 依据headers与command生成一个列表，其中含有所有的命令头
         if self.headers != [""]:
