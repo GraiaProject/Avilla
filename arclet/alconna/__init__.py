@@ -41,10 +41,11 @@ class Alconna(BaseCommand):
         main_args: 主参数，填入后当且仅当命令中含有该参数时才会成功解析
     """
 
+    name = "Alconna"
     headers: List[str]
     command: str
-    options: List[Option]
-    main_args: Args
+    options: List[Union[Option, Subcommand]]
+    result: AlconnaMatch
 
     def __init__(
             self,
@@ -62,7 +63,7 @@ class Alconna(BaseCommand):
         self.headers = headers or [""]
         self.command = command or ""
         self.options = options or []
-        self.main_args = main_args or Args(**kwargs)
+        self.args = main_args or Args(**kwargs)
         self.exception_in_time = exception_in_time
         self._initialise_arguments()
 
