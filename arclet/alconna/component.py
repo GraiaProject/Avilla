@@ -8,7 +8,7 @@ from avilla.core.message import Element  # 原文里是 NonTextElement, 这里�
 
 
 @dataclass
-class CommandInterface:
+class BaseCommand:
     name: str
     args: Args
     separator: str = " "
