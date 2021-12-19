@@ -13,11 +13,11 @@ class pattern:
 
 
 class Args:
-    args: Dict[str, Type[Element]]
+    argument: Dict[str, Type[Element]]
     defaults: Dict[str, Union[str, Element]]
 
     def __init__(self, **kwargs):
-        self.args = kwargs
+        self.argument = kwargs
         self.defaults = {}
 
     def default(self, **kwargs):
@@ -38,13 +38,13 @@ class Args:
         return len(self.args)
 
     def __repr__(self):
-        if not self.args:
+        if not self.argument:
             return "Args()"
         repr_string = "Args({0})"
         repr_args = ", ".join(
             [
                 f"{name}: {argtype}" + (f" = {name}" if name in self.defaults else "")
-                for name, argtype in self.args.items()
+                for name, argtype in self.argument.items()
             ]
         )
         return repr_string.format(repr_args)
