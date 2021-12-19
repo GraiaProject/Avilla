@@ -18,7 +18,7 @@ class BaseCommand:
         return self
 
     
-class Option(CommandInterface):
+class Option(BaseCommand):
     alias: str
 
     def __init__(self, name: str, args: Optional[Args] = None, alias: Optional[str] = None, **kwargs):
@@ -35,7 +35,7 @@ class Option(CommandInterface):
         return self
 
 
-class Subcommand(CommandInterface):
+class Subcommand(BaseCommand):
     options: List[Option]
     sub_params: Dict[str, Union[Args, Option]]
 
