@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import AsyncGenerator, Dict, Literal, Optional, Union
+from typing import AsyncGenerator, Dict, Literal, Optional, Union, List
 
 from yarl import URL
 
@@ -104,5 +104,26 @@ class WebsocketClient(ExportInterface, metaclass=ABCMeta):
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
         retries_count: int = 3,
+    ) -> "AsyncGenerator[BehaviourSession, None]":
+        ...
+
+
+class HttpServer(ExportInterface, metaclass=ABCMeta):
+    @abstractmethod
+    @asynccontextmanager
+    def http_listen(
+        self,
+        path: str = "/",
+        methods: List[HTTP_METHODS] = None
+    ) -> "AsyncGenerator[BehaviourSession, None]":
+        ...
+
+
+class WebsocketServer(ExportInterface, metaclass=ABCMeta):
+    @abstractmethod
+    @asynccontextmanager
+    def websocket_listen(
+        self,
+        path: str = "/",
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
