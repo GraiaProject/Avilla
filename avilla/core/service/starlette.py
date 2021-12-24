@@ -1,11 +1,13 @@
 import asyncio
 from contextlib import ExitStack, asynccontextmanager
 from typing import TYPE_CHECKING, AsyncGenerator, Callable, List, Type, Union
+from loguru import logger
 
 from graia.broadcast.utilles import Ctx
+from pydantic.main import BaseModel
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import Response
+from starlette.responses import JSONResponse, Response, Res
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from avilla.core import LaunchComponent, Service
@@ -141,16 +143,26 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
                     ]
                 )
                 response = await fut
-                if isinstance(response, Response):
-                    for mod, key, value in modifies_on_cookie:
-                        if mod == "SET":
-                            response.set_cookie(key, value)
-                        elif mod == "DELETE":
-                            response.delete_cookie(key)
-                    for k, v in modifies_on_header:
-                        response.headers[k] = v
-                    if httpstatus is not None:
-                        response.status_code = httpstatus
+                if isinstance(response, (bytes, str)):
+                    response = Response(response)
+                elif isinstance(response, BaseModel):
+                    response = Response(response.json())
+                    response.media_type = "application/json"
+                elif isinstance(response, (dict, list)):
+                    response = JSONResponse(response)
+                    # TODO: 根据当前环境自动切换 JSONEncoder
+                else:
+                    logger.error(f"Unsupported response type: {type(response)}")
+
+                for mod, key, value in modifies_on_cookie:
+                    if mod == "SET":
+                        response.set_cookie(key, value)
+                    elif mod == "DELETE":
+                        response.delete_cookie(key)
+                for k, v in modifies_on_header:
+                    response.headers[k] = v
+                if httpstatus is not None:
+                    response.status_code = httpstatus
                 return response
 
         asyncio.create_task(add_route())

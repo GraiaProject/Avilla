@@ -28,9 +28,12 @@
         "isclass",
         "iscoroutinefunction",
         "klass",
+        "pypi",
         "rsctx",
         "rsexec",
+        "Rubics",
         "Starlette",
+        "testpypi",
         "uvicorn"
     ],
     "python.sortImports.args": [

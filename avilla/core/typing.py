@@ -15,8 +15,8 @@ if TYPE_CHECKING:
     from avilla.core.relationship import Relationship
 
 
-T_Protocol = TypeVar("T_Protocol", bound="BaseProtocol")
-T_Config = TypeVar("T_Config")
+TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
+TConfig = TypeVar("TConfig")
 
 TExecutionMiddleware = Callable[["Relationship", "Execution"], AsyncContextManager[None]]
 

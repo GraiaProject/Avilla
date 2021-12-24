@@ -38,6 +38,7 @@ class UvicornService(Service):
     async def launch_prepare(self, avilla: "Avilla"):
         asgi_handler = avilla.get_interface(ASGIHandlerProvider).get_asgi_handler()
         self.server = Server(Config(asgi_handler, host=self.host, port=self.port))
+        # TODO: 使用户拥有更多的对 Config 的配置能力.
 
     async def launch_mainline(self, _):
         await self.server.serve()

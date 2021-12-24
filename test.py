@@ -65,7 +65,6 @@ async def mainline_test(_):
     async with http_server.http_listen("/", ['get']) as session:
         @session.expand(DataReceived)
         async def on_data(interface, session: BehaviourSession, stat: dict, data: Stream[bytes]):
-            print("????")
             await session.execute_all(
                 respond(PlainTextResponse("OK!!!")),
                 set_header("Content-Type", "text/plain"),

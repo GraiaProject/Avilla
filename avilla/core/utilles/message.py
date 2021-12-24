@@ -1,12 +1,12 @@
 from typing import Any, Awaitable, Callable, Dict, Generic, List, Type, TypeVar
 
 from avilla.core.message import Element, MessageChain
-from avilla.core.typing import T_Protocol
+from avilla.core.typing import TProtocol
 
 T = TypeVar("T", bound=Element)
 
 
-class MessageSerializeBus(Generic[T_Protocol]):
+class MessageSerializeBus(Generic[TProtocol]):
     message_serializers: Dict[Type[Element], Callable[[Any], Awaitable[Any]]]
 
     def __init__(self) -> None:

@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Any, Callable, Dict, Generic, Optional
 
 from immutables import Map
 
-from avilla.core.typing import T_Protocol
+from avilla.core.typing import TProtocol
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -14,7 +14,7 @@ class OverrideException(Exception):
     pass
 
 
-class OverrideBus(Generic[T_Protocol]):
+class OverrideBus(Generic[TProtocol]):
     "specially for [BaseProtocol.ensure_execution]"
     param_receiver: Callable
     overrides: Dict[Map, Callable]
@@ -32,7 +32,7 @@ class OverrideBus(Generic[T_Protocol]):
         self.default_factories = default_factories or {}
         self.overrides = {}
 
-    def __call__(self, protocol: T_Protocol, *args: Any, **kwargs: Any) -> Any:
+    def __call__(self, protocol: TProtocol, *args: Any, **kwargs: Any) -> Any:
         params = self.param_receiver(*args, **kwargs)
         current_sign = Map(**{name: subbus(protocol, params) for name, subbus in self.pattern.items()})
         selected = self.overrides.get(current_sign)

@@ -2,13 +2,12 @@ import typing
 from contextvars import Token
 from datetime import datetime
 from types import TracebackType
-from typing import Dict, Generic, Optional, Union
+from typing import Dict, Optional
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
 from avilla.core.selectors import entity as entity_selector
 
@@ -18,6 +17,7 @@ from ..context import ctx_protocol, ctx_relationship
 class AvillaEvent(Dispatchable):
     ctx: entity_selector
 
+    self: entity_selector
     time: datetime
 
     def __repr__(self) -> str:
@@ -53,12 +53,3 @@ class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, �
     async def catch(interface: "DispatcherInterface"):
         if typing.get_origin(interface.annotation) is Relationship or interface.annotation is Relationship:
             return ctx_relationship.get()
-
-
-class MessageChainDispatcher(BaseDispatcher):
-    @staticmethod
-    async def catch(interface: "DispatcherInterface"):
-        from avilla.core.event.message import MessageEvent
-
-        if interface.annotation is MessageChain and isinstance(interface.event, MessageEvent):
-            return interface.event.message

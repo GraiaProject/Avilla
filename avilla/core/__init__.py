@@ -21,11 +21,11 @@ from rich.logging import RichHandler
 from rich.status import Status
 
 from avilla.core.console import AvillaConsole
-from avilla.core.event import MessageChainDispatcher, RelationshipDispatcher
+from avilla.core.event import RelationshipDispatcher
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.protocol import BaseProtocol
 from avilla.core.service import Service, TInterface
-from avilla.core.typing import T_Config, TExecutionMiddleware, T_Protocol
+from avilla.core.typing import TConfig, TExecutionMiddleware, TProtocol
 from avilla.core.utilles import as_async
 
 AVILLA_ASCII_LOGO_AS_LIST = [
@@ -49,12 +49,12 @@ class RichStdoutProxy(StdoutProxy):
                 self._write(d)
 
 
-class Avilla(Generic[T_Protocol, T_Config]):
+class Avilla(Generic[TProtocol, TConfig]):
     broadcast: Broadcast
-    configs: Dict[Type[T_Protocol], T_Config]
+    configs: Dict[Type[TProtocol], TConfig]
     launch_components: Dict[str, LaunchComponent]
     middlewares: List[TExecutionMiddleware]
-    protocol: T_Protocol
+    protocol: TProtocol
     services: List[Service]
     sigexit: asyncio.Event
 
@@ -64,7 +64,7 @@ class Avilla(Generic[T_Protocol, T_Config]):
     def __init__(
         self,
         broadcast: Broadcast,
-        protocol: Type[T_Protocol],
+        protocol: Type[TProtocol],
         services: List[Service],
         configs: Dict,
         middlewares: List[TExecutionMiddleware] = None,
@@ -88,7 +88,7 @@ class Avilla(Generic[T_Protocol, T_Config]):
             self.rich_console = Console()
 
         self.broadcast.dispatcher_interface.inject_global_raw(
-            RelationshipDispatcher(), MessageChainDispatcher()
+            RelationshipDispatcher()
         )
 
         @self.broadcast.dispatcher_interface.inject_global_raw

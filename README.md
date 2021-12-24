@@ -34,6 +34,7 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
     - [x] `Service`: 向程序中其他部分提供经过通用抽象过的资源, 并对其加以维护, 使各部分稳定性增强, 耦合度降低.
       - [x] `AiohttpClient (http & websocket client)`
       - [x] `StarletteServer (http & websocket server)`
+      - [x] `UvicornService (powerful ASGI server)`
       - [ ] `CacheManager (cache)`
       - [ ] `SqlmodelDatabase (database)`
     - [x] `Launch Component`: 统一的生命周期管理

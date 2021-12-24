@@ -7,7 +7,7 @@ from avilla.core.message import MessageChain
 from avilla.core.platform import Platform
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import self as self_selector
-from avilla.core.typing import METADATA_VALUE, T_Config, TExecutionMiddleware
+from avilla.core.typing import METADATA_VALUE, TConfig, TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
 
 from .execution import Execution
@@ -18,9 +18,9 @@ if TYPE_CHECKING:
     from . import Avilla
 
 
-class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
+class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
     avilla: "Avilla"
-    config: T_Config
+    config: TConfig
 
     platform: Platform = Platform(
         name="Avilla Universal Protocol Implementation",
@@ -32,7 +32,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
 
     required_services: ClassVar[Set[str]]
 
-    def __init__(self, avilla: "Avilla", config: T_Config) -> None:
+    def __init__(self, avilla: "Avilla", config: TConfig) -> None:
         self.avilla = avilla
         self.config = config
         self.using_networks, self.using_exec_method = self.ensure_networks()
@@ -63,6 +63,10 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     @abstractmethod
     async def launch_mainline(self, avilla: "Avilla"):
         """LaunchComponent.task"""
+
+    @abstractmethod
+    async def get_relationship(self, ctx: Selector) -> "Relationship":
+        raise NotImplementedError
 
     if TYPE_CHECKING:
 
