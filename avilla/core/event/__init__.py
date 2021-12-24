@@ -7,7 +7,6 @@ from typing import Dict, Generic, Optional, Union
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from pydantic import BaseModel, Field  # pylint: ignore
 
 from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
@@ -19,8 +18,7 @@ from ..context import ctx_protocol, ctx_relationship
 class AvillaEvent(Dispatchable):
     ctx: entity_selector
 
-    current_id: str  # = Field(default_factory=lambda: ctx_relationship.get().current.id)
-    time: datetime = Field(default_factory=datetime.now)
+    time: datetime
 
     def __repr__(self) -> str:
         return (

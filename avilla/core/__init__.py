@@ -1,8 +1,6 @@
 import asyncio
 import importlib.metadata
-from contextlib import asynccontextmanager
 from typing import (
-    TYPE_CHECKING,
     Any,
     Awaitable,
     Callable,
@@ -23,17 +21,12 @@ from rich.logging import RichHandler
 from rich.status import Status
 
 from avilla.core.console import AvillaConsole
-from avilla.core.context import ctx_rsexec_to
 from avilla.core.event import MessageChainDispatcher, RelationshipDispatcher
-from avilla.core.execution import Execution
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.protocol import BaseProtocol
-from avilla.core.service import Service
-from avilla.core.typing import T_Config, T_ExecMW, T_Protocol
+from avilla.core.service import Service, TInterface
+from avilla.core.typing import T_Config, TExecutionMiddleware, T_Protocol
 from avilla.core.utilles import as_async
-
-if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
 
 AVILLA_ASCII_LOGO_AS_LIST = [
     "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].",
@@ -56,27 +49,16 @@ class RichStdoutProxy(StdoutProxy):
                 self._write(d)
 
 
-def target_context_injector(rs: "Relationship", exec_: Execution):
-    @asynccontextmanager
-    async def wrapper():
-        if exec_.__class__._auto_detect_target:
-            with ctx_rsexec_to.use(rs.ctx):
-                yield
-        else:
-            yield
-
-    return wrapper()
-
-
 class Avilla(Generic[T_Protocol, T_Config]):
     broadcast: Broadcast
-    protocol: T_Protocol
     configs: Dict[Type[T_Protocol], T_Config]
-    middlewares: List[T_ExecMW]
-    services: List[Service]
-
     launch_components: Dict[str, LaunchComponent]
+    middlewares: List[TExecutionMiddleware]
+    protocol: T_Protocol
+    services: List[Service]
+    sigexit: asyncio.Event
 
+    enable_console: bool
     rich_console: Console
 
     def __init__(
@@ -85,18 +67,25 @@ class Avilla(Generic[T_Protocol, T_Config]):
         protocol: Type[T_Protocol],
         services: List[Service],
         configs: Dict,
-        middlewares: List[T_ExecMW] = None,
+        middlewares: List[TExecutionMiddleware] = None,
+        enable_console: bool = False
     ):
         self.broadcast = broadcast
         self.protocol = protocol(self, configs.get(protocol))
         self.configs = configs
         self.services = services
-        self.middlewares = [target_context_injector, *(middlewares or [])]  # TODO: 把那东西拿回来
+        self.middlewares = middlewares or []
         self.launch_components = {
             **({i.launch_component.id: i.launch_component for i in services}),
             self.protocol.launch_component.id: self.protocol.launch_component,
         }
-        self.rich_console = Console(file=RichStdoutProxy(raw=True))  # type: ignore
+        self.sigexit = asyncio.Event()
+        if enable_console:
+            import warnings
+            warnings.warn("emm, you should not enable console in production, it's not stable and confusing.", Warning)
+            self.rich_console = Console(file=RichStdoutProxy(raw=True))  # type: ignore
+        else:
+            self.rich_console = Console()
 
         self.broadcast.dispatcher_interface.inject_global_raw(
             RelationshipDispatcher(), MessageChainDispatcher()
@@ -112,10 +101,10 @@ class Avilla(Generic[T_Protocol, T_Config]):
     def new_launch_component(
         self,
         id: str,
-        mainline: Callable[[], Awaitable[Any]],
+        mainline: Callable[["Avilla"], Awaitable[Any]],
         requirements: Set[str] = None,
-        prepare: Callable[[], Awaitable[Any]] = None,
-        cleanup: Callable[[], Awaitable[Any]] = None,
+        prepare: Callable[["Avilla"], Awaitable[Any]] = None,
+        cleanup: Callable[["Avilla"], Awaitable[Any]] = None,
     ) -> LaunchComponent:
         component = LaunchComponent(id, requirements or set(), mainline, prepare, cleanup)
         self.launch_components[id] = component
@@ -139,15 +128,27 @@ class Avilla(Generic[T_Protocol, T_Config]):
         self.services.remove(service)
         del self.launch_components[service.launch_component.id]
 
+    def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
+        for service in self.services:
+            if interface_type in service.supported_interface_types:
+                return service.get_interface(interface_type)
+        raise ValueError(f"interface type {interface_type} not supported.")
+
     async def console_callback(self, command_or_str: str):
         # TODO: Commander Trigger
         pass
 
     async def launch(self):
-        avilla_console = AvillaConsole(self.console_callback)
-        self.launch_components["avilla.core.console"] = LaunchComponent(
-            "avilla.core.console", set(), avilla_console.start, None, as_async(avilla_console.stop)
-        )
+        if self.enable_console:
+            avilla_console = AvillaConsole(self.console_callback)
+            self.launch_components["avilla.core.console"] = LaunchComponent(
+                "avilla.core.console",
+                set(),
+                lambda _: avilla_console.start(),
+                None,
+                lambda _: as_async(avilla_console.stop)(),
+            )
+
         logger.configure(
             handlers=[
                 {
@@ -177,7 +178,7 @@ class Avilla(Generic[T_Protocol, T_Config]):
         with Status("[orange bold]preparing components...", console=self.rich_console) as status:
             for component_layer in resolve_requirements(set(self.launch_components.values())):
                 tasks = [
-                    asyncio.create_task(component.prepare(), name=component.id)
+                    asyncio.create_task(component.prepare(self), name=component.id)
                     for component in component_layer
                     if component.prepare
                 ]
@@ -189,12 +190,13 @@ class Avilla(Generic[T_Protocol, T_Config]):
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
 
         try:
-            await asyncio.gather(*[component.mainline() for component in self.launch_components.values()])
+            await asyncio.gather(*[component.mainline(self) for component in self.launch_components.values()])
         finally:
+            self.sigexit.set()
             logger.info("[red bold]mainlines exited, cleanup start.")
             for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
                 tasks = [
-                    asyncio.create_task(component.cleanup(), name=component.id)
+                    asyncio.create_task(component.cleanup(self), name=component.id)
                     for component in component_layer
                     if component.cleanup
                 ]

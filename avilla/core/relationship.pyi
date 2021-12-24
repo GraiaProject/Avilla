@@ -6,19 +6,19 @@ from avilla.core.protocol import BaseProtocol as BaseProtocol
 from avilla.core.selectors import entity as entity
 from avilla.core.selectors import mainline
 from avilla.core.selectors import self as self_selector
-from avilla.core.typing import T_ExecMW as T_ExecMW
+from avilla.core.typing import TExecutionMiddleware as TExecutionMiddleware
 
 class ExecutorWrapper:
     relationship: "Relationship"
     execution: Execution
-    middlewares: List[T_ExecMW]
+    middlewares: List[TExecutionMiddleware]
     def __init__(self, relationship: "Relationship") -> None: ...
     def __await__(self): ...
     def execute(self, execution: Execution): ...
     __call__: Any
     def to(self, target: Union[entity, mainline]): ...
     def period(self, period: timedelta): ...
-    def use(self, middleware: T_ExecMW): ...
+    def use(self, middleware: TExecutionMiddleware): ...
 
 class MetaWrapper:
     relationship: "Relationship"
@@ -40,13 +40,13 @@ class Relationship(Generic[M]):
     mainline: mainline
     self: self_selector
     protocol: "BaseProtocol"
-    _middlewares: List[T_ExecMW]
+    _middlewares: List[TExecutionMiddleware]
     def __init__(
         self,
         protocol: BaseProtocol,
         ctx: entity,
         current_self: self_selector,
-        middlewares: List[T_ExecMW] = ...,
+        middlewares: List[TExecutionMiddleware] = ...,
     ) -> None: ...
     @property
     def current(self) -> self_selector: ...

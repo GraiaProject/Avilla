@@ -1,12 +1,24 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import AsyncGenerator, Dict, Literal, Optional, Union, List
+from typing import (
+    TYPE_CHECKING,
+    AsyncGenerator,
+    Callable,
+    Dict,
+    List,
+    Literal,
+    Optional,
+    Union,
+)
 
 from yarl import URL
 
 from avilla.core.service import ExportInterface
 from avilla.core.service.session import BehaviourSession
+
+if TYPE_CHECKING:
+    from typing import Any, Awaitable, MutableMapping, Type
 
 HTTP_METHODS = Union[
     Literal["get"],
@@ -112,9 +124,7 @@ class HttpServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
     @asynccontextmanager
     def http_listen(
-        self,
-        path: str = "/",
-        methods: List[HTTP_METHODS] = None
+        self, path: str = "/", methods: List[HTTP_METHODS] = None
     ) -> "AsyncGenerator[BehaviourSession, None]":
         ...
 
@@ -126,4 +136,16 @@ class WebsocketServer(ExportInterface, metaclass=ABCMeta):
         self,
         path: str = "/",
     ) -> "AsyncGenerator[BehaviourSession, None]":
+        ...
+
+
+class ASGIHandlerProvider(ExportInterface, metaclass=ABCMeta):
+    @abstractmethod
+    def get_asgi_handler(
+        self,
+    ) -> """Callable[[
+        Type[MutableMapping[str, Any]],
+        Awaitable[MutableMapping[str, Any]],
+        Callable[[MutableMapping[str, Any]], Awaitable[None]]
+    ], None]""":
         ...

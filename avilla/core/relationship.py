@@ -1,21 +1,25 @@
-from contextlib import AsyncExitStack, asynccontextmanager
-from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Generic, List, TypeVar, Union, cast
+from contextlib import AsyncExitStack
+from typing import TYPE_CHECKING, Any, Generic, List, TypeVar, TypedDict, Union, cast
 
-from avilla.core.context import ctx_rsexec_period, ctx_rsexec_to
 from avilla.core.execution import Execution
 from avilla.core.selectors import entity, mainline
 from avilla.core.selectors import self as self_selector
-from avilla.core.typing import T_ExecMW
+from avilla.core.typing import TExecutionMiddleware
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 
+class ExecuteMeta(TypedDict):
+    to: Union[mainline, entity]
+
+
 class ExecutorWrapper:
     relationship: "Relationship"
     execution: "Execution"
-    middlewares: List[T_ExecMW]
+    middlewares: List[TExecutionMiddleware]
+
+    meta: ExecuteMeta
 
     def __init__(self, relationship: "Relationship") -> None:
         self.relationship = relationship
@@ -40,26 +44,10 @@ class ExecutorWrapper:
     __call__ = execute
 
     def to(self, target: Union[entity, mainline]):
-        @asynccontextmanager
-        async def target_injector(rs: "Relationship", exec: Execution):
-            if isinstance(target, mainline):
-                rs.protocol.check_mainline(target)
-            with ctx_rsexec_to.use(target):
-                yield
-
-        self.middlewares.append(target_injector)  # type: ignore
+        self.meta["to"] = target
         return self
 
-    def period(self, period: timedelta):
-        @asynccontextmanager
-        async def period_injector(rs: "Relationship", exec: Execution):
-            with ctx_rsexec_period.use(period):
-                yield
-
-        self.middlewares.append(period_injector)  # type: ignore
-        return self
-
-    def use(self, middleware: T_ExecMW):
+    def use(self, middleware: TExecutionMiddleware):
         self.middlewares.append(middleware)
         return self
 
@@ -110,20 +98,20 @@ M = TypeVar("M", bound=MetaWrapper)
 
 
 class Relationship(Generic[M]):
-    ctx: entity
-    mainline: mainline
+    ctx: Union[entity, mainline]
     self: self_selector
+    mainline: mainline
 
     protocol: "BaseProtocol"
 
-    _middlewares: List[T_ExecMW]
+    _middlewares: List[TExecutionMiddleware]
 
     def __init__(
         self,
         protocol: "BaseProtocol",
-        ctx: entity,
+        ctx: Union[entity, mainline],
         current_self: self_selector,
-        middlewares: List[T_ExecMW] = None,
+        middlewares: List[TExecutionMiddleware] = None,
     ) -> None:
         self.ctx = ctx
         self.self = current_self

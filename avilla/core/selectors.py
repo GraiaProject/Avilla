@@ -6,6 +6,20 @@ from .utilles.selector import Selector, SelectorKey
 class entity(Selector):
     scope = "entity"
 
+    if TYPE_CHECKING:
+        account: SelectorKey["entity", str]
+        mainline: SelectorKey["entity", "mainline"]
+        member: SelectorKey["entity", str]
+        friend: SelectorKey["entity", str]
+        channel: SelectorKey["entity", str]  # 可以发消息的 channel, 类似 tg.
+
+    def get_mainline(self) -> "mainline":
+        return self.path['mainline']
+
+    @property
+    def profile_name(self) -> str:
+        return list(self.path.keys())[-1]
+
 
 class mainline(Selector):
     scope = "mainline"

@@ -22,3 +22,8 @@ class DataReceived(
 @dataclass
 class PostDisconnected(BehaviourDescription[Callable[[ExportInterface, BehaviourSession, dict], Any]]):
     pass
+
+
+@dataclass
+class PreConnected(BehaviourDescription[Callable[[ExportInterface, BehaviourSession, dict], Any]]):
+    pass

@@ -46,9 +46,9 @@ class MessageChain(BaseModel):
         5. 使用 `MessageChain.asSendable` 方法, 将自动过滤原消息链中的无法发送的元素, 并返回一个新的, 可被发送的消息链.
         6. `MessageChain.has` 方法可用于判断特定的元素类型是否存在于消息链中:
             ``` python
-            print(message.has(At))
+            print(message.has(Notice))
             # 使用 in 运算符也可以
-            print(At in message)
+            print(Notice in message)
             ```
         7. 可以使用 `MessageChain.get` 方法获取消息链中的所有特定类型的元素:
             ``` python
@@ -59,7 +59,7 @@ class MessageChain(BaseModel):
         8. 使用 `MessageChain.asDisplay` 方法可以获取到字符串形式表示的消息, 至于字面意思, 看示例:
             ``` python
             print(MessageChain.create([
-                Text("text"), At(123, display="某人"), Image(...)
+                Text("text"), Notice(123, display="某人"), Image(...)
             ]).asDisplay()) # -> "text@某人 [图片]"
             ```
         9. 使用 `MessageChain.join` 方法可以拼接多个消息链:
@@ -74,9 +74,9 @@ class MessageChain(BaseModel):
         15. 你可以通过一个分片实例取项, 这个分片的 `start` 和 `end` 的 Type Annotation 都是 `Optional[MessageIndex]`:
             ``` python
             message = MessageChain.create([
-                Text("123456789"), At(123), Text("3423")
+                Text("123456789"), Notice(123), Text("3423")
             ])
-            message.asMerged()[(0, 12):] # => [At(123), Text("3423")]
+            message.asMerged()[(0, 12):] # => [Notice(123), Text("3423")]
             ```
     """
 
@@ -98,7 +98,7 @@ class MessageChain(BaseModel):
     def has(self, element_class: Element) -> bool:
         """判断消息链中是否含有特定类型的消息元素
         Args:
-            element_class (T): 需要判断的消息元素的类型, 例如 "Text", "At", "Image" 等.
+            element_class (T): 需要判断的消息元素的类型, 例如 "Text", "Notice", "Image" 等.
         Returns:
             bool: 判断结果
         """
@@ -107,7 +107,7 @@ class MessageChain(BaseModel):
     def get(self, element_class: Type[Element]) -> List[Element]:
         """获取消息链中所有特定类型的消息元素
         Args:
-            element_class (T): 指定的消息元素的类型, 例如 "Text", "At", "Image" 等.
+            element_class (T): 指定的消息元素的类型, 例如 "Text", "Notice", "Image" 等.
         Returns:
             List[T]: 获取到的符合要求的所有消息元素; 另: 可能是空列表([]).
         """
@@ -116,7 +116,7 @@ class MessageChain(BaseModel):
     def get_one(self, element_class: Type[Element], index: int) -> Element:
         """获取消息链中第 index + 1 个特定类型的消息元素
         Args:
-            element_class (Type[Element]): 指定的消息元素的类型, 例如 "Text", "At", "Image" 等.
+            element_class (Type[Element]): 指定的消息元素的类型, 例如 "Text", "Notice", "Image" 等.
             index (int): 索引, 从 0 开始数
         Returns:
             T: 消息链第 index + 1 个特定类型的消息元素
@@ -126,7 +126,7 @@ class MessageChain(BaseModel):
     def get_first(self, element_class: Type[Element]) -> Element:
         """获取消息链中第 1 个特定类型的消息元素
         Args:
-            element_class (Type[Element]): 指定的消息元素的类型, 例如 "Text", "At", "Image" 等.
+            element_class (Type[Element]): 指定的消息元素的类型, 例如 "Text", "Notice", "Image" 等.
         Returns:
             T: 消息链第 1 个特定类型的消息元素
         """

@@ -17,12 +17,8 @@ if TYPE_CHECKING:
 
 T_Protocol = TypeVar("T_Protocol", bound="BaseProtocol")
 T_Config = TypeVar("T_Config")
-T_Result = TypeVar("T_Result")
 
-# Service: may need to be remade
-T_Connection = TypeVar("T_Connection")
-
-T_ExecMW = Callable[["Relationship", "Execution"], AsyncContextManager[None]]
+TExecutionMiddleware = Callable[["Relationship", "Execution"], AsyncContextManager[None]]
 
 CONST_TYPES = Union[str, bool, int, float, datetime, timedelta, None]
 METADATA_VALUE = Union[CONST_TYPES, List[CONST_TYPES], Dict[str, CONST_TYPES]]

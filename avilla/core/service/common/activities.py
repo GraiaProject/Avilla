@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from avilla.core.service.entity import Activity
 
@@ -16,48 +16,58 @@ class content_write(Activity[None]):
 
 
 @dataclass
-class httpstatus_get(Activity[int]):
+class get_status(Activity[int]):
     pass
 
 
 @dataclass
-class httpstatus_set(Activity[None]):
+class set_status(Activity[None]):
     status: int
 
 
 @dataclass
-class httpheader_get(Activity[str]):
+class get_header(Activity[str]):
     key: str
 
 
 @dataclass
-class httpheader_set(Activity[None]):
+class set_header(Activity[None]):
     key: str
     value: str
 
 
 @dataclass
-class httpcookie_get(Activity[str]):
+class get_cookie(Activity[str]):
     key: str
 
 
 @dataclass
-class httpcookie_set(Activity[None]):
+class set_cookie(Activity[None]):
     key: str
     value: str
     expire: Optional[timedelta] = None
 
 
 @dataclass
-class httpcookie_delete(Activity[None]):
+class del_cookie(Activity[None]):
     key: str
 
 
 @dataclass
-class send_netmsg(Activity[None]):
-    data: Union[str, bytes]
+class send(Activity[None]):
+    data: Any
+
+
+@dataclass
+class respond(Activity[None]):
+    data: Any
 
 
 @dataclass
 class disconnect(Activity[None]):
+    pass
+
+
+@dataclass
+class accept(Activity[None]):
     pass

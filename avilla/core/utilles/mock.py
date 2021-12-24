@@ -27,10 +27,10 @@ class LaunchMock:
     def new_launch_component(
         self,
         id: str,
-        mainline: Callable[[], Awaitable[Any]],
+        mainline: Callable[["LaunchMock"], Awaitable[Any]],
         requirements: Set[str] = None,
-        prepare: Callable[[], Awaitable[Any]] = None,
-        cleanup: Callable[[], Awaitable[Any]] = None,
+        prepare: Callable[["LaunchMock"], Awaitable[Any]] = None,
+        cleanup: Callable[["LaunchMock"], Awaitable[Any]] = None,
     ) -> LaunchComponent:
         component = LaunchComponent(id, requirements or set(), mainline, prepare, cleanup)
         self.launch_components[id] = component
@@ -79,7 +79,7 @@ class LaunchMock:
         with Status("[orange bold]preparing components...", console=self.rich_console) as status:
             for component_layer in resolve_requirements(set(self.launch_components.values())):
                 tasks = [
-                    asyncio.create_task(component.prepare(), name=component.id)
+                    asyncio.create_task(component.prepare(self), name=component.id)
                     for component in component_layer
                     if component.prepare
                 ]
@@ -92,12 +92,12 @@ class LaunchMock:
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
 
         try:
-            await asyncio.gather(*[component.mainline() for component in self.launch_components.values()])
+            await asyncio.gather(*[component.mainline(self) for component in self.launch_components.values()])
         finally:
             logger.info("[red bold]mainlines exited, cleanup start.")
             for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
                 tasks = [
-                    asyncio.create_task(component.cleanup(), name=component.id)
+                    asyncio.create_task(component.cleanup(self), name=component.id)
                     for component in component_layer
                     if component.cleanup
                 ]

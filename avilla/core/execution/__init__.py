@@ -1,22 +1,16 @@
-from typing import Any, Generic
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 
-from avilla.core.typing import T_Result
-
 
 class Execution(BaseModel):
-    _auto_detect_target: bool = False  # for detect target automatically
-
-    @classmethod
-    def get_ability_id(cls) -> str:
-        return f"execution::{cls.__name__}"
-
-    class Config:
-        allow_mutation = True
+    pass
 
 
-class Result(Generic[T_Result]):
+R = TypeVar("R")
+
+
+class Result(Generic[R]):
     pass
 
 

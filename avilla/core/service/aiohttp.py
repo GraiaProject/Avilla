@@ -1,8 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
-from functools import partial
 from inspect import isclass
-from typing import AsyncGenerator, Callable, Dict, Type, Union
+from typing import TYPE_CHECKING, AsyncGenerator, Callable, Dict, Type, Union
 
 import aiohttp
 from aiohttp import ClientSession
@@ -17,10 +16,10 @@ from avilla.core.service import Service
 from avilla.core.service.common.activities import (  # todo: 剩下还有一大堆操作.
     content_read,
     disconnect,
-    httpcookie_get,
-    httpheader_get,
-    httpstatus_get,
-    send_netmsg,
+    get_cookie,
+    get_header,
+    get_status,
+    send,
 )
 from avilla.core.service.common.behaviours import (
     DataReceived,
@@ -36,6 +35,9 @@ from avilla.core.service.common.http import (
 from avilla.core.service.entity import BehaviourDescription
 from avilla.core.service.session import BehaviourSession
 from avilla.core.stream import Stream
+
+if TYPE_CHECKING:
+    from avilla.core import Avilla
 
 
 def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:
@@ -80,9 +82,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 self,
                 {
                     content_read: content_reader,
-                    httpstatus_get: lambda _: response.status,
-                    httpcookie_get: lambda _: response.cookies,
-                    httpheader_get: lambda _: response.headers,
+                    get_status: lambda _: response.status,
+                    get_cookie: lambda _: response.cookies,
+                    get_header: lambda _: response.headers,
                 },
             )
 
@@ -105,9 +107,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 self,
                 {
                     content_read: content_reader,
-                    httpstatus_get: lambda _: response.status,
-                    httpcookie_get: lambda _: response.cookies,
-                    httpheader_get: lambda _: response.headers,
+                    get_status: lambda _: response.status,
+                    get_cookie: lambda _: response.cookies,
+                    get_header: lambda _: response.headers,
                 },
             )
 
@@ -134,9 +136,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 self,
                 {
                     content_read: content_reader,
-                    httpstatus_get: lambda _: response.status,
-                    httpcookie_get: lambda _: response.cookies,
-                    httpheader_get: lambda _: response.headers,
+                    get_status: lambda _: response.status,
+                    get_cookie: lambda _: response.cookies,
+                    get_header: lambda _: response.headers,
                 },
             )
 
@@ -163,9 +165,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 self,
                 {
                     content_read: content_reader,
-                    httpstatus_get: lambda _: response.status,
-                    httpcookie_get: lambda _: response.cookies,
-                    httpheader_get: lambda _: response.headers,
+                    get_status: lambda _: response.status,
+                    get_cookie: lambda _: response.cookies,
+                    get_header: lambda _: response.headers,
                 },
             )
 
@@ -192,9 +194,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 self,
                 {
                     content_read: content_reader,
-                    httpstatus_get: lambda _: response.status,
-                    httpcookie_get: lambda _: response.cookies,
-                    httpheader_get: lambda _: response.headers,
+                    get_status: lambda _: response.status,
+                    get_cookie: lambda _: response.cookies,
+                    get_header: lambda _: response.headers,
                 },
             )
 
@@ -221,9 +223,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 self,
                 {
                     content_read: content_reader,
-                    httpstatus_get: lambda _: response.status,
-                    httpcookie_get: lambda _: response.cookies,
-                    httpheader_get: lambda _: response.headers,
+                    get_status: lambda _: response.status,
+                    get_cookie: lambda _: response.cookies,
+                    get_header: lambda _: response.headers,
                 },
             )
 
@@ -264,7 +266,7 @@ class AiohttpClient(HttpClient, WebsocketClient):
             try:
                 async with self.aiohttp_session.ws_connect(url, headers=headers) as ws_session:
 
-                    async def netmsg_sender(activity: Union[send_netmsg, Type[send_netmsg]]):
+                    async def netmsg_sender(activity: Union[send, Type[send]]):
                         if isclass(activity):
                             raise TypeError("this activity must be an instance")
                         if isinstance(activity.data, str):
@@ -278,7 +280,7 @@ class AiohttpClient(HttpClient, WebsocketClient):
                         await prepared_signal.wait()
                         behaviour_session.update_activity_handlers(
                             {
-                                send_netmsg: netmsg_sender,  # type: ignore
+                                send: netmsg_sender,  # type: ignore
                                 disconnect: lambda _: ws_session.close(),
                             }
                         )
@@ -360,7 +362,7 @@ class AiohttpService(Service):
             raise KeyError(f"{entity} not in status")
         return self.status[entity]
 
-    async def launch_mainline(self):
+    async def launch_mainline(self, avilla: "Avilla"):
         ...
 
     @property
@@ -369,6 +371,5 @@ class AiohttpService(Service):
             "http.universal_client",
             set(),
             self.launch_mainline,
-            self.client_session.__aenter__,
-            partial(self.client_session.__aexit__, None, None, None),
+            cleanup=lambda _: self.client_session.close(),
         )

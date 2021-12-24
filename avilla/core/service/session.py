@@ -75,12 +75,27 @@ class BehaviourSession(Generic[TInterface]):
                 handler, activity if not isinstance(activity, type) else None
             )
 
-    def update_activity_handlers(
-        self, activity_handlers: Dict[Type[Activity], TActivityHandler], clean: bool = False
-    ):
-        if clean:
-            self.activity_handlers.clear()
-        self.activity_handlers.update(activity_handlers)
+    async def execute_all(self, *activities: Union[Type[Activity], Activity]):
+        return await asyncio.gather(*[self.execute(activity) for activity in activities])
+
+    if not TYPE_CHECKING:
+
+        def update_activity_handlers(
+            self, activity_handlers: Dict[Type[Activity], TActivityHandler], clean: bool = False
+        ):
+            if clean:
+                self.activity_handlers.clear()
+            self.activity_handlers.update(activity_handlers)
+
+    else:
+        _T = TypeVar("_T")
+
+        def update_activity_handlers(
+            self,
+            activity_handlers: Dict[Type[_T], Callable[[Union[_T, None]], Union[Awaitable[Any], Any]]],
+            clean: bool = False,
+        ):
+            ...
 
     def expand(
         self, behaviour: Union[Type[BehaviourDescription[TCallback]], BehaviourDescription[TCallback]]

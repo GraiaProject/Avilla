@@ -19,15 +19,19 @@
     "cSpell.words": [
         "Alconna",
         "Arpamar",
+        "ASGI",
         "asyncio",
         "AVILLA",
         "Cesloi",
+        "ctxtoken",
         "Graia",
         "isclass",
         "iscoroutinefunction",
         "klass",
         "rsctx",
-        "rsexec"
+        "rsexec",
+        "Starlette",
+        "uvicorn"
     ],
     "python.sortImports.args": [
         "--profile",

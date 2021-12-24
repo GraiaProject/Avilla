@@ -7,7 +7,7 @@ from avilla.core.message import MessageChain
 from avilla.core.platform import Platform
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import self as self_selector
-from avilla.core.typing import METADATA_VALUE, T_Config, T_ExecMW
+from avilla.core.typing import METADATA_VALUE, T_Config, TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
 
 from .execution import Execution
@@ -61,15 +61,15 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def launch_mainline(self):
+    async def launch_mainline(self, avilla: "Avilla"):
         """LaunchComponent.task"""
 
     if TYPE_CHECKING:
 
-        async def launch_prepare(self):
+        async def launch_prepare(self, avilla: "Avilla"):
             """LaunchComponent.prepare"""
 
-        async def launch_cleanup(self):
+        async def launch_cleanup(self, avilla: "Avilla"):
             """LaunchComponent.cleanup"""
 
     else:
@@ -89,7 +89,7 @@ class BaseProtocol(Generic[T_Config], metaclass=ABCMeta):
     def has_ability(self, ability: str) -> bool:
         raise NotImplementedError
 
-    async def exec_directly(self, execution: Execution, *middlewares: T_ExecMW) -> Any:
+    async def exec_directly(self, execution: Execution, *middlewares: TExecutionMiddleware) -> Any:
         async with AsyncExitStack() as exit_stack:
             for middleware in middlewares:
                 await exit_stack.enter_async_context(middleware(self, execution))  # type: ignore

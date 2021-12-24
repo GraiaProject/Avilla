@@ -1,43 +1,32 @@
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Union
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from pydantic import Field
 
-from avilla.core.contactable import Contactable
 from avilla.core.context import ctx_relationship
-from avilla.core.message.chain import MessageChain
-from avilla.core.typing import T_Profile
+from avilla.core.message import Message
+from avilla.core.selectors import entity, mainline
 
 from . import AvillaEvent
 
 
-class MessageEvent(AvillaEvent[T_Profile]):
-    message: MessageChain
-    message_id: str
+class MessageEvent(AvillaEvent):
+    message: Message
 
-    current_id: str = Field(default_factory=lambda: ctx_relationship.get().current.id)
-    time: datetime = Field(default_factory=lambda: datetime.now())
-    subtype: Literal["common", "anonymous", "notice"] = Field(default="common")
-
-    # sender: see [AvillaEvent]
+    current: entity
+    time: datetime
 
     def __init__(
         self,
-        ctx: Contactable[T_Profile],
-        message: MessageChain,
-        message_id: str,
-        current_id: str = None,
+        message: Message,
+        current: entity,
         time: datetime = None,
     ) -> None:
-        super().__init__(
-            ctx=ctx,
-            message=message,
-            message_id=message_id,
-            current_id=current_id,
-            time=time,
-        )
+        self.message = message
+        self.current = current
+        self.time = time or datetime.now()
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
