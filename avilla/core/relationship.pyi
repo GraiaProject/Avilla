@@ -8,6 +8,7 @@ from avilla.core.selectors import mainline
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware as TExecutionMiddleware
 
+
 class ExecutorWrapper:
     relationship: "Relationship"
     execution: Execution
@@ -19,6 +20,7 @@ class ExecutorWrapper:
     def to(self, target: Union[entity, mainline]): ...
     def period(self, period: timedelta): ...
     def use(self, middleware: TExecutionMiddleware): ...
+
 
 class MetaWrapper:
     relationship: "Relationship"
@@ -33,7 +35,9 @@ class MetaWrapper:
     async def add(self, metakey: str, value: Any) -> None: ...
     async def remove(self, metakey: str, value: Any) -> None: ...
 
+
 M = TypeVar("M", bound=MetaWrapper)
+
 
 class Relationship(Generic[M]):
     ctx: entity
@@ -41,6 +45,7 @@ class Relationship(Generic[M]):
     self: self_selector
     protocol: "BaseProtocol"
     _middlewares: List[TExecutionMiddleware]
+
     def __init__(
         self,
         protocol: BaseProtocol,
@@ -55,6 +60,7 @@ class Relationship(Generic[M]):
     @property
     def exec(self): ...
     def has_ability(self, ability: str) -> bool: ...
+
 
 class CoreSupport(MetaWrapper):
     #

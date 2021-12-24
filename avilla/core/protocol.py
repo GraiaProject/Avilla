@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, List, Set, Tuple, Type
 from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
 from avilla.core.platform import Platform
-from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
@@ -38,12 +37,7 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
     def __init__(self, avilla: "Avilla", config: TConfig) -> None:
         self.avilla = avilla
         self.config = config
-        self.using_networks, self.using_exec_method = self.ensure_networks()
         self.__post_init__()
-
-    @abstractmethod
-    def ensure_networks(self):
-        raise NotImplementedError
 
     def __post_init__(self) -> None:
         pass
@@ -102,7 +96,7 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
                 await exit_stack.enter_async_context(middleware(self, execution))  # type: ignore
             return await self.ensure_execution(execution)
 
-    def check_mainline(self, mainline: mainline_selector) -> bool:
+    def check_selector(self, selector: Selector) -> bool:
         return True
 
     async def check_metadata_access(

@@ -73,7 +73,7 @@ class RequestEvent(AvillaEvent):
     def __init__(
         self,
         request: request_selector,
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
         acceptable: bool = True,
         rejectable: bool = True,
@@ -81,7 +81,7 @@ class RequestEvent(AvillaEvent):
         self.request = request
         self.acceptable = acceptable
         self.rejectable = rejectable
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -91,11 +91,11 @@ class RequestAccepted(AvillaEvent):
     def __init__(
         self,
         request: request_selector,
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.request = request
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -105,11 +105,11 @@ class RequestRejected(AvillaEvent):
     def __init__(
         self,
         request: request_selector,
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.request = request
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -124,13 +124,13 @@ class ResourceAvailable(AvillaEvent):
     def __init__(
         self,
         resource: resource_selector,
-        operator: Optional[entity_selector],  # 本来应该默认 None, 但是 self_ 不太行....
-        self_: entity_selector,
+        operator: Optional[entity_selector],  # 本来应该默认 None, 但是 current_self 不太行....
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.resource = resource
         self.operator = operator
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -146,12 +146,12 @@ class ResourceUnavailable(AvillaEvent):
         self,
         resource: resource_selector,
         operator: Optional[entity_selector],
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.resource = resource
         self.operator = operator
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -167,14 +167,14 @@ class MetadataChanged(AvillaEvent):
         meta: str,
         op: META_OPS,
         value: METADATA_VALUE,
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.ctx = ctx
         self.meta = meta
         self.op = op
         self.value = value
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -200,12 +200,12 @@ class EntityPermissionChanged(AvillaEvent):
         self,
         entity: entity_selector,
         modifies: List[PermissionChangeInfo],
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.entity = entity
         self.modifies = modifies
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -217,12 +217,12 @@ class RelationshipCreated(AvillaEvent):
         self,
         ctx: Union[mainline_selector, entity_selector],
         via: Union[mainline_selector, entity_selector, None],
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.ctx = ctx
         self.via = via
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
 
@@ -234,10 +234,10 @@ class RelationshipDestroyed(AvillaEvent):
         self,
         ctx: Union[mainline_selector, entity_selector],
         via: Union[mainline_selector, entity_selector, None],
-        self_: entity_selector,
+        current_self: entity_selector,
         time: datetime = None,
     ):
         self.ctx = ctx
         self.via = via
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()

@@ -15,11 +15,11 @@ class MessageReceived(AvillaEvent):
     def __init__(
         self,
         message: Message,
-        self_: entity,
+        current_self: entity,
         time: datetime = None,
     ) -> None:
         self.message = message
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
     class Dispatcher(BaseDispatcher):
@@ -43,14 +43,14 @@ class MessageEdited(AvillaEvent):
         operator: entity,
         past: MessageChain,
         current: MessageChain,
-        self_: entity,
+        current_self: entity,
         time: datetime = None,
     ) -> None:
         self.message = message
         self.operator = operator
         self.past = past
         self.current = current
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
     class Dispatcher(BaseDispatcher):
@@ -68,12 +68,12 @@ class MessageRevoked(AvillaEvent):
         self,
         message: Message,
         operator: entity,
-        self_: entity,
+        current_self: entity,
         time: datetime = None,
     ) -> None:
         self.message = message
         self.operator = operator
-        self.self = self_
+        self.self = current_self
         self.time = time or datetime.now()
 
     class Dispatcher(BaseDispatcher):

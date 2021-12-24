@@ -2,7 +2,7 @@ from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Generic, List, TypedDict, TypeVar, Union, cast
 
 from avilla.core.execution import Execution
-from avilla.core.selectors import entity, mainline
+from avilla.core.selectors import entity as entity_selector, mainline as mainline_selector
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 class ExecuteMeta(TypedDict):
-    to: Union[mainline, entity]
+    to: Union[mainline_selector, entity_selector]
 
 
 class ExecutorWrapper:
@@ -43,7 +43,7 @@ class ExecutorWrapper:
 
     __call__ = execute
 
-    def to(self, target: Union[entity, mainline]):
+    def to(self, target: Union[entity_selector, mainline_selector]):
         self.meta["to"] = target
         return self
 
@@ -98,9 +98,10 @@ M = TypeVar("M", bound=MetaWrapper)
 
 
 class Relationship(Generic[M]):
-    ctx: Union[entity, mainline]
+    ctx: Union[entity_selector, mainline_selector]
+    mainline: mainline_selector
     self: self_selector
-    mainline: mainline
+    via: Union[mainline_selector, entity_selector, None] = None
 
     protocol: "BaseProtocol"
 
@@ -109,11 +110,15 @@ class Relationship(Generic[M]):
     def __init__(
         self,
         protocol: "BaseProtocol",
-        ctx: Union[entity, mainline],
+        ctx: Union[entity_selector, mainline_selector],
+        mainline: mainline_selector,
         current_self: self_selector,
+        via: Union[mainline_selector, entity_selector, None] = None,
         middlewares: List[TExecutionMiddleware] = None,
     ) -> None:
         self.ctx = ctx
+        self.mainline = mainline
+        self.via = via
         self.self = current_self
         self.protocol = protocol
         self._middlewares = middlewares or []
