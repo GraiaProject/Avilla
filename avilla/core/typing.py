@@ -5,6 +5,7 @@ from typing import (
     Callable,
     Dict,
     List,
+    Literal,
     TypeVar,
     Union,
 )
@@ -22,3 +23,15 @@ TExecutionMiddleware = Callable[["Relationship", "Execution"], AsyncContextManag
 
 CONST_TYPES = Union[str, bool, int, float, datetime, timedelta, None]
 METADATA_VALUE = Union[CONST_TYPES, List[CONST_TYPES], Dict[str, CONST_TYPES]]
+
+META_OPS = Union[
+    Literal["get"],
+    Literal["set"],
+    Literal["reset"],
+    Literal["prev"],
+    Literal["next"],
+    Literal["push"],
+    Literal["pop"],
+    Literal["add"],
+    Literal["remove"],
+]

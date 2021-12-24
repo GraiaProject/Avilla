@@ -6,7 +6,10 @@ from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
 from avilla.core.platform import Platform
 from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import request as request_selector
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
+from avilla.core.stream import Stream
 from avilla.core.typing import METADATA_VALUE, TConfig, TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
 
@@ -61,10 +64,6 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def launch_mainline(self, avilla: "Avilla"):
-        """LaunchComponent.task"""
-
-    @abstractmethod
     async def get_relationship(self, ctx: Selector) -> "Relationship":
         raise NotImplementedError
 
@@ -76,9 +75,13 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
         async def launch_cleanup(self, avilla: "Avilla"):
             """LaunchComponent.cleanup"""
 
+        async def launch_mainline(self, avilla: "Avilla"):
+            """LaunchComponent.task"""
+
     else:
         launch_prepare = None
         launch_cleanup = None
+        launch_mainline = None
 
     @property
     def launch_component(self) -> LaunchComponent:
@@ -116,3 +119,13 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
     @property
     def protocol_ranks(self) -> Tuple[str, ...]:
         return ()
+
+    async def accept_request(self, request: request_selector):
+        raise NotImplementedError
+
+    async def reject_request(self, request: request_selector):
+        raise NotImplementedError
+
+    @abstractmethod
+    async def fetch_resource(self, resource: resource_selector) -> Stream[Any]:
+        ...

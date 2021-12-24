@@ -362,14 +362,10 @@ class AiohttpService(Service):
             raise KeyError(f"{entity} not in status")
         return self.status[entity]
 
-    async def launch_mainline(self, avilla: "Avilla"):
-        ...
-
     @property
     def launch_component(self) -> LaunchComponent:
         return LaunchComponent(
             "http.universal_client",
             set(),
-            self.launch_mainline,
             cleanup=lambda _: self.client_session.close(),
         )

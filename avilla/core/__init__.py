@@ -1,5 +1,6 @@
 import asyncio
 import importlib.metadata
+from functools import partial
 from typing import (
     Any,
     Awaitable,
@@ -8,6 +9,7 @@ from typing import (
     Generic,
     Iterable,
     List,
+    Optional,
     Set,
     Type,
 )
@@ -68,7 +70,7 @@ class Avilla(Generic[TProtocol, TConfig]):
         services: List[Service],
         configs: Dict,
         middlewares: List[TExecutionMiddleware] = None,
-        enable_console: bool = False
+        enable_console: bool = False,
     ):
         self.broadcast = broadcast
         self.protocol = protocol(self, configs.get(protocol))
@@ -82,14 +84,15 @@ class Avilla(Generic[TProtocol, TConfig]):
         self.sigexit = asyncio.Event()
         if enable_console:
             import warnings
-            warnings.warn("emm, you should not enable console in production, it's not stable and confusing.", Warning)
+
+            warnings.warn(
+                "emm, you should not enable console in production, it's not stable and confusing.", Warning
+            )
             self.rich_console = Console(file=RichStdoutProxy(raw=True))  # type: ignore
         else:
             self.rich_console = Console()
 
-        self.broadcast.dispatcher_interface.inject_global_raw(
-            RelationshipDispatcher()
-        )
+        self.broadcast.dispatcher_interface.inject_global_raw(RelationshipDispatcher())
 
         @self.broadcast.dispatcher_interface.inject_global_raw
         async def _(interface: DispatcherInterface):
@@ -101,8 +104,8 @@ class Avilla(Generic[TProtocol, TConfig]):
     def new_launch_component(
         self,
         id: str,
-        mainline: Callable[["Avilla"], Awaitable[Any]],
         requirements: Set[str] = None,
+        mainline: Optional[Callable[["Avilla"], Awaitable[Any]]] = None,
         prepare: Callable[["Avilla"], Awaitable[Any]] = None,
         cleanup: Callable[["Avilla"], Awaitable[Any]] = None,
     ) -> LaunchComponent:
@@ -189,8 +192,18 @@ class Avilla(Generic[TProtocol, TConfig]):
 
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
 
+        loop = asyncio.get_running_loop()
+        tasks = [
+            loop.create_task(component.mainline(self))
+            for component in self.launch_components.values()
+            if component.mainline
+        ]
+        for task, component_name in zip(tasks, self.launch_components.keys()):
+            task.add_done_callback(
+                partial(lambda n, t: logger.info(f"mainline {n} completed."), component_name)
+            )
         try:
-            await asyncio.gather(*[component.mainline(self) for component in self.launch_components.values()])
+            await asyncio.gather(*tasks)
         finally:
             self.sigexit.set()
             logger.info("[red bold]mainlines exited, cleanup start.")

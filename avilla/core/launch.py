@@ -9,14 +9,14 @@ class LaunchComponent:
     required: Set[str]
 
     prepare: Optional[Callable[["Avilla"], Awaitable[Any]]] = None
-    mainline: Callable[["Avilla"], Awaitable[Any]]
+    mainline: Optional[Callable[["Avilla"], Awaitable[Any]]] = None
     cleanup: Optional[Callable[["Avilla"], Awaitable[Any]]] = None
 
     def __init__(
         self,
         component_id: str,
         required: Set[str],
-        mainline: Callable[["Avilla"], Awaitable[Any]],
+        mainline: Optional[Callable[["Avilla"], Awaitable[Any]]] = None,
         prepare: Optional[Callable[["Avilla"], Awaitable[Any]]] = None,
         cleanup: Optional[Callable[["Avilla"], Awaitable[Any]]] = None,
     ):

@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 from typing import Any, Awaitable, Callable, Dict, List, Set, Type
 
 from loguru import logger
@@ -27,12 +28,12 @@ class LaunchMock:
     def new_launch_component(
         self,
         id: str,
-        mainline: Callable[["LaunchMock"], Awaitable[Any]],
         requirements: Set[str] = None,
+        mainline: Callable[["LaunchMock"], Awaitable[Any]] = None,
         prepare: Callable[["LaunchMock"], Awaitable[Any]] = None,
         cleanup: Callable[["LaunchMock"], Awaitable[Any]] = None,
     ) -> LaunchComponent:
-        component = LaunchComponent(id, requirements or set(), mainline, prepare, cleanup)
+        component = LaunchComponent(id, requirements or set(), mainline, prepare, cleanup)  # type: ignore
         self.launch_components[id] = component
         return component
 
@@ -79,7 +80,7 @@ class LaunchMock:
         with Status("[orange bold]preparing components...", console=self.rich_console) as status:
             for component_layer in resolve_requirements(set(self.launch_components.values())):
                 tasks = [
-                    asyncio.create_task(component.prepare(self), name=component.id)
+                    asyncio.create_task(component.prepare(self), name=component.id)  # type: ignore
                     for component in component_layer
                     if component.prepare
                 ]
@@ -91,13 +92,24 @@ class LaunchMock:
 
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
 
+        loop = asyncio.get_running_loop()
+        tasks = [
+            loop.create_task(component.mainline(self))  # type: ignore
+            for component in self.launch_components.values()
+            if component.mainline
+        ]
+        for task, component_name in zip(tasks, self.launch_components.keys()):
+            task.add_done_callback(
+                partial(lambda n, t: logger.info(f"mainline {n} completed."), component_name)
+            )
         try:
-            await asyncio.gather(*[component.mainline(self) for component in self.launch_components.values()])
+            logger.info(f"mainline count: {len(tasks)}")
+            await asyncio.gather(*tasks)
         finally:
             logger.info("[red bold]mainlines exited, cleanup start.")
             for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
                 tasks = [
-                    asyncio.create_task(component.cleanup(self), name=component.id)
+                    asyncio.create_task(component.cleanup(self), name=component.id)  # type: ignore
                     for component in component_layer
                     if component.cleanup
                 ]

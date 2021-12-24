@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from .utilles.selector import Selector, SelectorKey
 
@@ -55,5 +55,24 @@ class resource(Selector):
         video: SelectorKey["resource", str]
         sticker: SelectorKey["resource", str]
         animation: SelectorKey["resource", str]
+        unknown: SelectorKey["resource", str]
 
         mainline: SelectorKey["resource", "mainline"]
+
+    def get_mainline(self) -> "mainline":
+        return self.path["mainline"]
+
+
+class request(Selector):
+    scope = "request"
+
+    if TYPE_CHECKING:
+        mainline: SelectorKey["request", "mainline"]
+        via: SelectorKey["request", "entity"]
+        _: SelectorKey["request", str]
+
+    def get_mainline(self) -> "mainline":
+        return self.path["mainline"]
+
+    def get_via(self) -> Optional["entity"]:
+        return self.path.get("via")

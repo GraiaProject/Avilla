@@ -1,13 +1,13 @@
 import asyncio
 from contextlib import ExitStack, asynccontextmanager
-from typing import TYPE_CHECKING, AsyncGenerator, Callable, List, Type, Union
-from loguru import logger
+from typing import AsyncGenerator, Callable, List, Type, Union
 
 from graia.broadcast.utilles import Ctx
+from loguru import logger
 from pydantic.main import BaseModel
 from starlette.applications import Starlette
 from starlette.requests import Request
-from starlette.responses import JSONResponse, Response, Res
+from starlette.responses import JSONResponse, Response
 from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from avilla.core import LaunchComponent, Service
@@ -15,15 +15,15 @@ from avilla.core.selectors import entity as entity_selector
 from avilla.core.service import BehaviourDescription
 from avilla.core.service.common.activities import (
     accept,
-    disconnect,
     del_cookie,
+    disconnect,
     get_cookie,
-    set_cookie,
     get_header,
-    set_header,
-    set_status,
     respond,
     send,
+    set_cookie,
+    set_header,
+    set_status,
 )
 from avilla.core.service.common.behaviours import (
     DataReceived,
@@ -39,9 +39,6 @@ from avilla.core.service.common.http import (
 )
 from avilla.core.service.session import BehaviourSession
 from avilla.core.stream import Stream
-
-if TYPE_CHECKING:
-    from avilla.core import Avilla
 
 
 class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
@@ -287,13 +284,6 @@ class StarletteService(Service):
             raise KeyError(f"{entity} not in status")
         return self.status[entity]
 
-    async def launch_mainline(self, avilla: "Avilla"):
-        ...
-
     @property
     def launch_component(self) -> LaunchComponent:
-        return LaunchComponent(
-            "http.universal_server",
-            set(),
-            self.launch_mainline,
-        )
+        return LaunchComponent("http.universal_server", set())

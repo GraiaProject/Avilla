@@ -12,9 +12,6 @@ from . import AvillaEvent
 class MessageReceived(AvillaEvent):
     message: Message
 
-    self: entity
-    time: datetime
-
     def __init__(
         self,
         message: Message,
@@ -36,22 +33,23 @@ class MessageReceived(AvillaEvent):
 
 class MessageEdited(AvillaEvent):
     message: Message
-
+    operator: entity
     past: MessageChain
     current: MessageChain
-
-    operator: entity
-
-    self: entity
-    time: datetime
 
     def __init__(
         self,
         message: Message,
+        operator: entity,
+        past: MessageChain,
+        current: MessageChain,
         self_: entity,
         time: datetime = None,
     ) -> None:
         self.message = message
+        self.operator = operator
+        self.past = past
+        self.current = current
         self.self = self_
         self.time = time or datetime.now()
 
@@ -66,16 +64,15 @@ class MessageRevoked(AvillaEvent):
 
     operator: entity
 
-    self: entity
-    time: datetime
-
     def __init__(
         self,
         message: Message,
+        operator: entity,
         self_: entity,
         time: datetime = None,
     ) -> None:
         self.message = message
+        self.operator = operator
         self.self = self_
         self.time = time or datetime.now()
 

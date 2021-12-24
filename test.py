@@ -72,8 +72,8 @@ async def mainline_test(_):
             )
 
         session.prepared()
-        await asyncio.sleep(1000)
+        await asyncio.sleep(1000)  # 这个会导致 test.py 不会跟随 Ctrl-C(Uvicorn) 退出, 实际中要用 Avilla.sigexit 才行.
 
 
-mocker.new_launch_component("test.main", mainline_test)
+mocker.new_launch_component("test.main", set(), mainline_test)
 mocker.launch_blocking()
