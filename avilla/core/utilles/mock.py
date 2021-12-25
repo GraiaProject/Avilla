@@ -1,6 +1,4 @@
 import asyncio
-from functools import partial
-from signal import SIGINT
 from typing import Any, Awaitable, Callable, Dict, List, Set, Type
 
 from loguru import logger

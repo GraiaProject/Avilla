@@ -65,6 +65,7 @@ class RequestEvent(AvillaEvent):
 
     acceptable: bool = True
     rejectable: bool = True
+    ignorable: bool = False
 
     @property
     def mainline(self):
@@ -77,10 +78,12 @@ class RequestEvent(AvillaEvent):
         time: datetime = None,
         acceptable: bool = True,
         rejectable: bool = True,
+        ignorable: bool = False,
     ):
         self.request = request
         self.acceptable = acceptable
         self.rejectable = rejectable
+        self.ignorable = ignorable
         self.self = current_self
         self.time = time or datetime.now()
 
@@ -100,6 +103,20 @@ class RequestAccepted(AvillaEvent):
 
 
 class RequestRejected(AvillaEvent):
+    request: request_selector
+
+    def __init__(
+        self,
+        request: request_selector,
+        current_self: entity_selector,
+        time: datetime = None,
+    ):
+        self.request = request
+        self.self = current_self
+        self.time = time or datetime.now()
+
+
+class RequestIgnored(AvillaEvent):
     request: request_selector
 
     def __init__(

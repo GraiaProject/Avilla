@@ -4,7 +4,8 @@
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
     "python.linting.flake8Args": [
-        "--max-line-length=120"
+        "--max-line-length=120",
+        "--ignore F401"
     ],
     "python.linting.maxNumberOfProblems": 1000,
     "python.analysis.diagnosticMode": "workspace",

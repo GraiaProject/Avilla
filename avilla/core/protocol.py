@@ -120,6 +120,9 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
     async def reject_request(self, request: request_selector):
         raise NotImplementedError
 
+    async def ignore_request(self, request: request_selector):
+        raise NotImplementedError
+
     @abstractmethod
     async def fetch_resource(self, resource: resource_selector) -> Stream[Any]:
         ...
