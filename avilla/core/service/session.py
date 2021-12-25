@@ -148,8 +148,8 @@ class BehaviourSession(Generic[TInterface]):
     async def wait(
         self,
         behaviour: Union[Type[BehaviourDescription], BehaviourDescription],
-        value: Callable[..., T] = lambda *x: x[-1],
-    ) -> T:
+        value: Callable[..., "T"] = lambda *x: x[-1],
+    ) -> "T":
         behaviour_type = behaviour if isinstance(behaviour, type) else type(behaviour)
         fut = asyncio.get_running_loop().create_future()
 

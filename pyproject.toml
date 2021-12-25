@@ -16,15 +16,11 @@ repository = "https://github.com/GraiaProject/AvillaCore"
 [tool.poetry.dependencies]
 graia-broadcast = "^0.14.3"
 loguru = "^0.5.3"
-prompt-toolkit = "^3.0.23"
 pydantic = "^1.8.2"
 python = "^3.8"
 rich = "^10.13.0"
 typing-extensions = "^3.10.0"
 yarl = "^1.6.3"
-
-# Network Support
-aiohttp = "^3.7.4"
 
 # Tools: Template
 immutables = "^0.16"
@@ -32,11 +28,13 @@ regex = {version = "^2021.8.3", optional = true}
 
 starlette = {version = "^0.17.1", optional = true}
 uvicorn = {version = "^0.16.0", optional = true}
+aioredis = {version = "^2.0.0", optional = true}
+aiohttp = {version = "^3.8.1", optional = true}
 
 [tool.poetry.dev-dependencies]
-black = "^21.6b0"
-flake8 = "^3.9.2"
-isort = "^5.9.3"
+black = "^21.12b0"
+flake8 = "^4.0.1"
+isort = "^5.10.1"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
@@ -53,3 +51,5 @@ profile = "black"
 [tool.poetry.extras]
 starlette = ['starlette']
 uvicorn = ['uvicorn']
+aioredis = ['aioredis']
+aiohttp = ['aiohttp']

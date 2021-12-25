@@ -7,7 +7,6 @@ from typing import (
     Callable,
     Dict,
     Generic,
-    Iterable,
     List,
     Optional,
     Set,
@@ -17,18 +16,16 @@ from typing import (
 from graia.broadcast import Broadcast
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from loguru import logger
-from prompt_toolkit.patch_stdout import StdoutProxy
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.status import Status
 
-from avilla.core.console import AvillaConsole
+from avilla.core.context import ctx_avilla
 from avilla.core.event import RelationshipDispatcher
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.protocol import BaseProtocol
 from avilla.core.service import Service, TInterface
 from avilla.core.typing import TConfig, TExecutionMiddleware, TProtocol
-from avilla.core.utilles import as_async
 
 AVILLA_ASCII_LOGO_AS_LIST = [
     "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].",
@@ -42,15 +39,6 @@ AVILLA_ASCII_LOGO_AS_LIST = [
 GRAIA_PROJECT_REPOS = ["avilla-core", "graia-broadcast"]
 
 
-class RichStdoutProxy(StdoutProxy):
-    "StdoutProxy with writelines support for Rich."
-
-    def writelines(self, data: Iterable[str]) -> None:
-        with self._lock:
-            for d in data:
-                self._write(d)
-
-
 class Avilla(Generic[TProtocol, TConfig]):
     broadcast: Broadcast
     configs: Dict[Type[TProtocol], TConfig]
@@ -60,7 +48,6 @@ class Avilla(Generic[TProtocol, TConfig]):
     services: List[Service]
     sigexit: asyncio.Event
 
-    enable_console: bool
     rich_console: Console
 
     def __init__(
@@ -70,7 +57,6 @@ class Avilla(Generic[TProtocol, TConfig]):
         services: List[Service],
         configs: Dict,
         middlewares: List[TExecutionMiddleware] = None,
-        enable_console: bool = False,
     ):
         self.broadcast = broadcast
         self.protocol = protocol(self, configs.get(protocol))
@@ -82,15 +68,7 @@ class Avilla(Generic[TProtocol, TConfig]):
             self.protocol.launch_component.id: self.protocol.launch_component,
         }
         self.sigexit = asyncio.Event()
-        if enable_console:
-            import warnings
-
-            warnings.warn(
-                "emm, you should not enable console in production, it's not stable and confusing.", Warning
-            )
-            self.rich_console = Console(file=RichStdoutProxy(raw=True))  # type: ignore
-        else:
-            self.rich_console = Console()
+        self.rich_console = Console()
 
         self.broadcast.dispatcher_interface.inject_global_raw(RelationshipDispatcher())
 
@@ -100,6 +78,10 @@ class Avilla(Generic[TProtocol, TConfig]):
                 return self
             elif interface.annotation is protocol:
                 return self.protocol
+
+    @classmethod
+    def current(cls) -> "Avilla":
+        return ctx_avilla.get()
 
     def new_launch_component(
         self,
@@ -137,21 +119,7 @@ class Avilla(Generic[TProtocol, TConfig]):
                 return service.get_interface(interface_type)
         raise ValueError(f"interface type {interface_type} not supported.")
 
-    async def console_callback(self, command_or_str: str):
-        # TODO: Commander Trigger
-        pass
-
     async def launch(self):
-        if self.enable_console:
-            avilla_console = AvillaConsole(self.console_callback)
-            self.launch_components["avilla.core.console"] = LaunchComponent(
-                "avilla.core.console",
-                set(),
-                lambda _: avilla_console.start(),
-                None,
-                lambda _: as_async(avilla_console.stop)(),
-            )
-
         logger.configure(
             handlers=[
                 {
