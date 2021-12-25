@@ -28,7 +28,7 @@ mocker = LaunchMock(
 )
 
 
-async def mainline_test1(_):
+async def test(_):
     http_interface: HttpClient = mocker.get_interface(HttpClient)
     print(http_interface)
     async with http_interface.get("https://httpbin.org/anything") as session:
@@ -36,6 +36,7 @@ async def mainline_test1(_):
         r = await (content_stream | u8_string | json_decode())
         print(r)
 
+    """
     ws = mocker.get_interface(WebsocketClient)
     async with ws.websocket_connect("ws://ws.ifelse.io/") as session:
         @session.expand(PostConnected)
@@ -56,7 +57,7 @@ async def mainline_test1(_):
                 await asyncio.sleep(1)
 
         asyncio.create_task(task())
-        await asyncio.sleep(20)
+        await asyncio.sleep(20)"""
 
 
 async def mainline_test(_):

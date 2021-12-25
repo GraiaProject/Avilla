@@ -34,7 +34,8 @@ class BehaviourSession(Generic[TInterface]):
     interface: TInterface
     activity_handlers: Dict[Type[Activity], TActivityHandler]
 
-    cb: List[Tuple[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]]]
+    cbs: List[Tuple[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]]]
+    cb_remover: Optional[Callable[[Type[BehaviourDescription], Callable[..., Any]], None]] = None
     prepared_signal: Optional[asyncio.Event] = None
 
     def __init__(
@@ -43,12 +44,14 @@ class BehaviourSession(Generic[TInterface]):
         interface: TInterface,
         activity_handlers: Dict[Type[Activity], TActivityHandler],
         prepared_signal: asyncio.Event = None,
+        cb_remover: Optional[Callable[..., Any]] = None,
     ) -> None:
         self.service = service
         self.interface = interface
         self.activity_handlers = activity_handlers
-        self.cb = []
+        self.cbs = []
         self.prepared_signal = prepared_signal
+        self.cb_remover = cb_remover
 
     if TYPE_CHECKING:
         R = TypeVar("R")
@@ -101,7 +104,7 @@ class BehaviourSession(Generic[TInterface]):
         self, behaviour: Union[Type[BehaviourDescription[TCallback]], BehaviourDescription[TCallback]]
     ):
         def decorator(callback: TCallback):
-            self.cb.append((behaviour, callback))
+            self.cbs.append((behaviour, callback))
             return callback
 
         return decorator
@@ -111,21 +114,26 @@ class BehaviourSession(Generic[TInterface]):
         behaviour: Union[Type[BehaviourDescription[TCallback]], BehaviourDescription[TCallback]],
         callback: TCallback,
     ) -> None:
-        self.cb.append((behaviour, callback))
+        self.cbs.append((behaviour, callback))
 
     def submit_behaviour_expansion(
         self,
         cb: Callable[[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]], None],
     ):
-        for behaviour, callback in self.cb:
+        for behaviour, callback in self.cbs:
             cb(behaviour, callback)
+
+    def remove_callback(self, behaviour: Type[BehaviourDescription], cb: Callable[..., Any]) -> None:
+        if not self.cb_remover:
+            raise RuntimeError("cb_remover is not set")
+        self.cb_remover(behaviour, cb)
 
     def get_behaviour_cbs(self, behaviour_type: Type[BehaviourDescription[TCallback]]) -> List[TCallback]:
         return cast(
             List[TCallback],
             [
                 callback
-                for behaviour, callback in self.cb
+                for behaviour, callback in self.cbs
                 if behaviour is behaviour_type or isinstance(behaviour, behaviour_type)
             ],
         )
@@ -133,3 +141,23 @@ class BehaviourSession(Generic[TInterface]):
     def prepared(self):
         if self.prepared_signal is not None:
             self.prepared_signal.set()
+
+    if TYPE_CHECKING:
+        T = TypeVar("T")
+
+    async def wait(
+        self,
+        behaviour: Union[Type[BehaviourDescription], BehaviourDescription],
+        value: Callable[..., T] = lambda *x: x[-1],
+    ) -> T:
+        behaviour_type = behaviour if isinstance(behaviour, type) else type(behaviour)
+        fut = asyncio.get_running_loop().create_future()
+
+        async def value_getter(*args):
+            fut.set_result(value(*args))
+
+        self.expand_behaviour(behaviour, value_getter)
+        try:
+            return await fut
+        finally:
+            self.remove_callback(behaviour_type, value_getter)

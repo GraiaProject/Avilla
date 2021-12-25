@@ -1,7 +1,7 @@
 import asyncio
 from contextlib import asynccontextmanager
 from inspect import isclass
-from typing import TYPE_CHECKING, AsyncGenerator, Callable, Dict, Type, Union
+from typing import AsyncGenerator, Callable, Dict, Type, Union
 
 import aiohttp
 from aiohttp import ClientSession
@@ -35,9 +35,6 @@ from avilla.core.service.common.http import (
 from avilla.core.service.entity import BehaviourDescription
 from avilla.core.service.session import BehaviourSession
 from avilla.core.stream import Stream
-
-if TYPE_CHECKING:
-    from avilla.core import Avilla
 
 
 def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:

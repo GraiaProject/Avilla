@@ -2,6 +2,8 @@ from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 
 from avilla.core.message import MessageChain
 from avilla.core.selectors import message as message_selector
+from avilla.core.selectors import request as request_selector
+from avilla.core.selectors import resource as resource_selector
 
 if TYPE_CHECKING:
     from avilla.core.message import Message  # noqa: F401
@@ -48,3 +50,35 @@ class MessageFetch(Result["Message"], Execution):
 
     def __init__(self, message: message_selector):
         self.message = message
+
+
+class RequestAccept(Result["None"], Execution):
+    request: request_selector
+
+    def __init__(self, request: request_selector):
+        self.request = request
+
+
+class RequestReject(Execution):
+    request: request_selector
+
+    def __init__(self, request: request_selector):
+        self.request = request
+
+
+class ResourceRelease(Execution):
+    resource: resource_selector
+
+    def __init__(self, resource: resource_selector):
+        self.resource = resource
+
+
+class ResourceRemove(Execution):
+    resource: resource_selector
+
+    def __init__(self, resource: resource_selector):
+        self.resource = resource
+
+
+# 剩下的要用 rs.meta 操作...
+# 草死, 怎么这么少..

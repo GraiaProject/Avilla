@@ -69,6 +69,7 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
 
         prepared_signal = asyncio.Event()
         session = BehaviourSession(self.service, self, {}, prepared_signal)
+        # todo: cb_remover.
 
         async def add_route() -> None:
             await prepared_signal.wait()

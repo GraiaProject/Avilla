@@ -189,7 +189,7 @@ class RankChanged(PermissionChangeInfo):
     current: str
 
 
-# TODO: 更完备的权限变化描述方式
+# TODO: 更完备的权限变化描述方式, 属权限系统部分.
 
 
 class EntityPermissionChanged(AvillaEvent):

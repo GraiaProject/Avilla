@@ -4,12 +4,15 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, List, Set, Tuple, Type
 
 from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
+from avilla.core.permission import Rank
 from avilla.core.platform import Platform
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
 from avilla.core.stream import Stream
-from avilla.core.typing import METADATA_VALUE, TConfig, TExecutionMiddleware
+from avilla.core.typing import META_OPS, METADATA_VALUE, TConfig, TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
 
 from .execution import Execution
@@ -32,7 +35,8 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
         generation="1",
     )
 
-    required_services: ClassVar[Set[str]]
+    required_components: ClassVar[Set[str]]
+    protocol_ranks: ClassVar[Tuple[Union[Rank, str], ...]]
 
     def __init__(self, avilla: "Avilla", config: TConfig) -> None:
         self.avilla = avilla
@@ -81,7 +85,7 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
     def launch_component(self) -> LaunchComponent:
         return LaunchComponent(
             f"avilla.core.protocol:{self.platform.implementation}",
-            self.required_services,
+            self.required_components,
             self.launch_mainline,
             self.launch_prepare,
             self.launch_cleanup,
@@ -100,19 +104,15 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
         return True
 
     async def check_metadata_access(
-        self, metascope: Type[Selector], metakey: str, operator: str
+        self, metascope: Type[Selector], metakey: str, operator: META_OPS
     ) -> Union[List[str], None]:
         return None
 
     @abstractmethod
     async def operate_metadata(
-        self, relationship: "Relationship", metakey: str, operator: str, value: METADATA_VALUE
+        self, relationship: "Relationship", metakey: str, operator: META_OPS, value: METADATA_VALUE
     ) -> Any:
         ...
-
-    @property
-    def protocol_ranks(self) -> Tuple[str, ...]:
-        return ()
 
     async def accept_request(self, request: request_selector):
         raise NotImplementedError
@@ -123,3 +123,9 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
     @abstractmethod
     async def fetch_resource(self, resource: resource_selector) -> Stream[Any]:
         ...
+
+    async def permission_change_callback(
+        self, ctx: Union[entity_selector, mainline_selector], op: str, value: str
+    ) -> None:
+        ...
+        # TODO: 定一下各种, 比如说 op, 这里是权限系统的饼, 还没画完...

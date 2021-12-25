@@ -2,7 +2,9 @@ from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Generic, List, TypedDict, TypeVar, Union, cast
 
 from avilla.core.execution import Execution
-from avilla.core.selectors import entity as entity_selector, mainline as mainline_selector
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware
 
@@ -134,6 +136,9 @@ class Relationship(Generic[M]):
     @property
     def exec(self):
         return ExecutorWrapper(self)
+
+    def fetch(self, resource: resource_selector):
+        return self.protocol.fetch_resource(resource)
 
     def has_ability(self, ability: str) -> bool:
         return self.protocol.has_ability(ability)
