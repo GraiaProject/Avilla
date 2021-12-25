@@ -89,24 +89,30 @@ class LaunchMock:
                         task.add_done_callback(lambda t: status.update(f"{t.get_name()} prepared."))
                     await asyncio.wait(tasks)
             status.update("all launch components prepared.")
+            await asyncio.sleep(1)
 
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
 
         loop = asyncio.get_running_loop()
         tasks = [
-            loop.create_task(component.mainline(self))  # type: ignore
+            loop.create_task(component.mainline(self), name=component.id)  # type: ignore
             for component in self.launch_components.values()
             if component.mainline
         ]
-        for task, component_name in zip(tasks, self.launch_components.keys()):
+        for task in tasks:
             task.add_done_callback(
-                partial(lambda n, t: logger.info(f"mainline {n} completed."), component_name)
+                lambda t: logger.info(f"mainline {t.get_name()} completed.")
             )
+
+        logger.info(f"mainline count: {len(tasks)}")
+
         try:
-            logger.info(f"mainline count: {len(tasks)}")
-            await asyncio.gather(*tasks)
+            #await asyncio.gather(*tasks)
+            await asyncio.sleep(10)
+        except KeyboardInterrupt:
+            print("????")
         finally:
-            logger.info("[red bold]mainlines exited, cleanup start.")
+            logger.info("[red bold]all mainlines exited, cleanup start.")
             for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
                 tasks = [
                     asyncio.create_task(component.cleanup(self), name=component.id)  # type: ignore
@@ -116,9 +122,9 @@ class LaunchMock:
                 if tasks:
                     for task in tasks:
                         task.add_done_callback(lambda t: logger.info(f"{t.get_name()} cleanup finished."))
-                    await asyncio.wait(tasks)
+                    await asyncio.gather(*tasks)
             logger.info("[green bold]cleanup finished.")
             logger.warning("[red bold]exiting...")
 
     def launch_blocking(self):
-        asyncio.get_event_loop().run_until_complete(self.launch())
+        asyncio.get_event_loop().run_until_complete(self.launch()) # KeyboardInterrupt happens here.

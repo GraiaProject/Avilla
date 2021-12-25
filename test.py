@@ -16,14 +16,12 @@ from avilla.core.transformers import u8_string, json_decode
 import random
 from starlette.responses import PlainTextResponse
 
-session = ClientSession()
-
 mocker = LaunchMock(
     {},
     [
-        StarletteService(),
-        UvicornService("127.0.0.1", 12680),
-        AiohttpService()
+        #StarletteService(),
+        #UvicornService("127.0.0.1", 12680),
+        #AiohttpService()
     ],
 )
 
@@ -76,5 +74,8 @@ async def mainline_test(_):
         await asyncio.sleep(1000)  # 这个会导致 test.py 不会跟随 Ctrl-C(Uvicorn) 退出, 实际中要用 Avilla.sigexit 才行.
 
 
-mocker.new_launch_component("test.main", set(), mainline_test)
+async def statusbar_test(_):
+    await asyncio.sleep(1)
+
+mocker.new_launch_component("test.main", set(), prepare=statusbar_test)
 mocker.launch_blocking()

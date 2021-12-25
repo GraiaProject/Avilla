@@ -10,7 +10,9 @@ _The next-gen framework for IM development._
 
 <p align="center">
   <a href="https://github.com/howmanybots/onebot/blob/master/README.md">
+
     <img src="https://img.shields.io/badge/OneBot-v11-blue?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABABAMAAABYR2ztAAAAIVBMVEUAAAAAAAADAwMHBwceHh4UFBQNDQ0ZGRkoKCgvLy8iIiLWSdWYAAAAAXRSTlMAQObYZgAAAQVJREFUSMftlM0RgjAQhV+0ATYK6i1Xb+iMd0qgBEqgBEuwBOxU2QDKsjvojQPvkJ/ZL5sXkgWrFirK4MibYUdE3OR2nEpuKz1/q8CdNxNQgthZCXYVLjyoDQftaKuniHHWRnPh2GCUetR2/9HsMAXyUT4/3UHwtQT2AggSCGKeSAsFnxBIOuAggdh3AKTL7pDuCyABcMb0aQP7aM4AnAbc/wHwA5D2wDHTTe56gIIOUA/4YYV2e1sg713PXdZJAuncdZMAGkAukU9OAn40O849+0ornPwT93rphWF0mgAbauUrEOthlX8Zu7P5A6kZyKCJy75hhw1Mgr9RAUvX7A3csGqZegEdniCx30c3agAAAABJRU5ErkJggg==" alt="onebot_v11">
+
   </a>
   <img alt="PyPI" src="https://img.shields.io/pypi/v/avilla-core" />
   <a href="https://autumn-psi.vercel.app/"><img src="https://img.shields.io/badge/docs_click here-vercel-black" /></a>
@@ -35,7 +37,8 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
       - [x] `AiohttpClient (http & websocket client)`
       - [x] `StarletteServer (http & websocket server)`
       - [x] `UvicornService (powerful ASGI server)`
-      - [ ] `CacheManager (cache)`
+      - `CacheManager (cache)`
+        - [x] `RedisService (cache based on aioredis)`
       - [ ] `SqlmodelDatabase (database)`
     - [x] `Launch Component`: 统一的生命周期管理
     - [ ] `Commander`: 基于 `Arclet - Alconna` 的优雅指令触发系统
@@ -47,7 +50,9 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
     - [x] `Platform API`: 通过与 `Protocol` 协作, 扩展 Avilla Protocol, 使其能用于平台的特有特性.
   + 实现支持
    - [ ] `Avilla for OneBot` : 对  [ `OneBot` ](https://github.com/botuniverse/onebot) 的协议实现.
+
      - [ ] `Avilla for go-cqhttp` : 对 [ `go-cqhttp` ](https://github.com/Mrs4s/go-cqhttp) 的扩展 API 支持.
+
    - [ ] `Avilla for Telegram` : 对 [ `Telegram Bot API` ](https://core.telegram.org/bots) 的协议实现.
    - [ ] `Avilla for Discord` : 对 [ `Discord Bot` ](https://docs.botsfordiscord.com/) 的协议实现.
    - [ ] `Avilla for mirai-api-http` : 对 [ `mirai-api-http` ](https://github.com/project-mirai/mirai-api-http) 的支持.
