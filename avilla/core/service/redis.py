@@ -1,9 +1,11 @@
 from datetime import timedelta
 from typing import Any, Type, Union
+
 from aioredis import Redis
+
 from avilla.core.launch import LaunchComponent
-from avilla.core.service.common.cache import CacheInterface
 from avilla.core.service import Service
+from avilla.core.service.common.cache import CacheInterface
 
 
 class RedisCache(CacheInterface):
