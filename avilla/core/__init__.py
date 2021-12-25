@@ -1,17 +1,6 @@
 import asyncio
 import importlib.metadata
-from functools import partial
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Optional,
-    Set,
-    Type,
-)
+from typing import Any, Awaitable, Callable, Dict, Generic, List, Optional, Set, Type
 
 from graia.broadcast import Broadcast
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -157,35 +146,48 @@ class Avilla(Generic[TProtocol, TConfig]):
                     task.add_done_callback(lambda t: status.update(f"{t.get_name()} prepared."))
                 await asyncio.wait(tasks)
             status.update("all launch components prepared.")
+            await asyncio.sleep(1)
 
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
 
         loop = asyncio.get_running_loop()
         tasks = [
-            loop.create_task(component.mainline(self))
+            loop.create_task(component.mainline(self), name=component.id)
             for component in self.launch_components.values()
             if component.mainline
         ]
-        for task, component_name in zip(tasks, self.launch_components.keys()):
-            task.add_done_callback(
-                partial(lambda n, t: logger.info(f"mainline {n} completed."), component_name)
-            )
+        for task in tasks:
+            task.add_done_callback(lambda t: logger.info(f"mainline {t.get_name()} completed."))
+
+        logger.info(f"mainline count: {len(tasks)}")
         try:
             await asyncio.gather(*tasks)
+        except asyncio.CancelledError:
+            logger.info("[red bold]cancelled by user.")
+            if not self.sigexit.is_set():
+                self.sigexit.set()
         finally:
-            self.sigexit.set()
-            logger.info("[red bold]mainlines exited, cleanup start.")
+            logger.info("[red bold]all mainlines exited, cleanup start.")
             for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
                 tasks = [
                     asyncio.create_task(component.cleanup(self), name=component.id)
                     for component in component_layer
                     if component.cleanup
                 ]
-                for task in tasks:
-                    task.add_done_callback(lambda t: logger.info(f"{t.get_name()} cleanup finished."))
-                await asyncio.wait(tasks)
+                if tasks:
+                    for task in tasks:
+                        task.add_done_callback(lambda t: logger.info(f"{t.get_name()} cleanup finished."))
+                    await asyncio.gather(*tasks)
             logger.info("[green bold]cleanup finished.")
             logger.warning("[red bold]exiting...")
 
     def launch_blocking(self):
-        asyncio.get_event_loop().run_until_complete(self.launch())
+        loop = asyncio.new_event_loop()
+        self.sigexit = asyncio.Event(loop=loop)
+        launch_task = loop.create_task(self.launch(), name="avilla-launch")
+        try:
+            loop.run_until_complete(launch_task)
+        except KeyboardInterrupt:
+            self.sigexit.set()
+            launch_task.cancel()
+            loop.run_until_complete(launch_task)

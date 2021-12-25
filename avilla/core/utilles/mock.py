@@ -1,5 +1,6 @@
 import asyncio
 from functools import partial
+from signal import SIGINT
 from typing import Any, Awaitable, Callable, Dict, List, Set, Type
 
 from loguru import logger
@@ -16,6 +17,7 @@ class LaunchMock:
     services: List[Service]
 
     rich_console: Console
+    sigexit: asyncio.Event
 
     def __init__(self, launch_components: Dict[str, LaunchComponent], services: List[Service]):
         self.launch_components = {
@@ -100,17 +102,15 @@ class LaunchMock:
             if component.mainline
         ]
         for task in tasks:
-            task.add_done_callback(
-                lambda t: logger.info(f"mainline {t.get_name()} completed.")
-            )
+            task.add_done_callback(lambda t: logger.info(f"mainline {t.get_name()} completed."))
 
         logger.info(f"mainline count: {len(tasks)}")
-
         try:
-            #await asyncio.gather(*tasks)
-            await asyncio.sleep(10)
-        except KeyboardInterrupt:
-            print("????")
+            await asyncio.gather(*tasks)
+        except asyncio.CancelledError:
+            logger.info("[red bold]cancelled by user.")
+            if not self.sigexit.is_set():
+                self.sigexit.set()
         finally:
             logger.info("[red bold]all mainlines exited, cleanup start.")
             for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
@@ -127,4 +127,12 @@ class LaunchMock:
             logger.warning("[red bold]exiting...")
 
     def launch_blocking(self):
-        asyncio.get_event_loop().run_until_complete(self.launch()) # KeyboardInterrupt happens here.
+        loop = asyncio.new_event_loop()
+        self.sigexit = asyncio.Event(loop=loop)
+        launch_task = loop.create_task(self.launch(), name="avilla-launch")
+        try:
+            loop.run_until_complete(launch_task)
+        except KeyboardInterrupt:
+            self.sigexit.set()
+            launch_task.cancel()
+            loop.run_until_complete(launch_task)

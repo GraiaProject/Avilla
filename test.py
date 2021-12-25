@@ -19,9 +19,9 @@ from starlette.responses import PlainTextResponse
 mocker = LaunchMock(
     {},
     [
-        #StarletteService(),
-        #UvicornService("127.0.0.1", 12680),
-        #AiohttpService()
+        StarletteService(),
+        UvicornService("127.0.0.1", 12680),
+        AiohttpService(),
     ],
 )
 
@@ -61,7 +61,8 @@ async def test(_):
 async def mainline_test(_):
     http_server = mocker.get_interface(HttpServer)
 
-    async with http_server.http_listen("/", ['get']) as session:
+    async with http_server.http_listen("/", ["get"]) as session:
+
         @session.expand(DataReceived)
         async def on_data(interface, session: BehaviourSession, stat: dict, data: Stream[bytes]):
             await session.execute_all(
@@ -71,11 +72,24 @@ async def mainline_test(_):
             )
 
         session.prepared()
-        await asyncio.sleep(1000)  # 这个会导致 test.py 不会跟随 Ctrl-C(Uvicorn) 退出, 实际中要用 Avilla.sigexit 才行.
+        await mocker.sigexit.wait()
 
 
 async def statusbar_test(_):
     await asyncio.sleep(1)
 
-mocker.new_launch_component("test.main", set(), prepare=statusbar_test)
+
+async def mainline_test2(_):
+    await asyncio.sleep(100)
+
+
+mocker.new_launch_component(
+    "test.main",
+    set(),
+    mainline=mainline_test,
+    # mainline=mainline_test2,
+    prepare=statusbar_test,
+)
+
+
 mocker.launch_blocking()

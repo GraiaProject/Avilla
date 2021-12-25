@@ -1,3 +1,4 @@
+import asyncio
 from typing import TYPE_CHECKING
 
 from uvicorn import Server
@@ -37,11 +38,20 @@ class UvicornService(Service):
 
     async def launch_prepare(self, avilla: "Avilla"):
         asgi_handler = avilla.get_interface(ASGIHandlerProvider).get_asgi_handler()
-        self.server = Server(Config(asgi_handler, host=self.host, port=self.port))
+        self.server = Server(
+            Config(
+                asgi_handler,
+                host=self.host,
+                port=self.port,
+            )
+        )
         # TODO: 使用户拥有更多的对 Config 的配置能力.
 
     async def launch_mainline(self, _):
         await self.server.serve()
+        for task in asyncio.all_tasks():
+            if task.get_name() == "avilla-launch":
+                task.cancel()
 
     @property
     def launch_component(self) -> LaunchComponent:
