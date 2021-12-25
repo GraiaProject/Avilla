@@ -40,6 +40,7 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
     - [x] `Launch Component`: 统一的生命周期管理
     - [ ] `Commander`: 基于 `Arclet - Alconna` 的优雅指令触发系统
     - [ ] `Permission`: 对标 `Luckperm`, 以低侵入度的方式提供简洁强大的权限管理能力
+      - [ ] `Permissiver`: 权限管理指令, 基于 `Commander`
   + 杂项部分
     - [x] `Selector`: 实现了扁平化处理 "个体"(`Entity`) 与 "主线"(`Mainline`) 的能力.
     - [x] `Stream API`: 用于简化对获得的二进制信息处理.
