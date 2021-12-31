@@ -71,8 +71,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
             proxy=proxysetting_transform(proxy) if proxy is not None else None,
         ) as response:
 
-            async def content_reader(_) -> bytes:
-                return await response.read()
+            async def content_reader(_) -> Stream[bytes]:
+                return Stream(await response.read())
 
             yield BehaviourSession(
                 self.service,
@@ -96,8 +96,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
             url, headers=headers, proxy=proxysetting_transform(proxy) if proxy is not None else None
         ) as response:
 
-            async def content_reader(_) -> bytes:
-                return await response.read()
+            async def content_reader(_) -> Stream[bytes]:
+                return Stream(await response.read())
 
             yield BehaviourSession(
                 self.service,
@@ -125,8 +125,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
             proxy=proxysetting_transform(proxy) if proxy is not None else None,
         ) as response:
 
-            async def content_reader(_) -> bytes:
-                return await response.read()
+            async def content_reader(_) -> Stream[bytes]:
+                return Stream(await response.read())
 
             yield BehaviourSession(
                 self.service,
@@ -154,8 +154,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
             proxy=proxysetting_transform(proxy) if proxy is not None else None,
         ) as response:
 
-            async def content_reader(_) -> bytes:
-                return await response.read()
+            async def content_reader(_) -> Stream[bytes]:
+                return Stream(await response.read())
 
             yield BehaviourSession(
                 self.service,
@@ -183,8 +183,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
             proxy=proxysetting_transform(proxy) if proxy is not None else None,
         ) as response:
 
-            async def content_reader(_) -> bytes:
-                return await response.read()
+            async def content_reader(_) -> Stream[bytes]:
+                return Stream(await response.read())
 
             yield BehaviourSession(
                 self.service,
@@ -212,8 +212,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
             proxy=proxysetting_transform(proxy) if proxy is not None else None,
         ) as response:
 
-            async def content_reader(_) -> bytes:
-                return await response.read()
+            async def content_reader(_) -> Stream[bytes]:
+                return Stream(await response.read())
 
             yield BehaviourSession(
                 self.service,

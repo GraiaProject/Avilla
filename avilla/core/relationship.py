@@ -54,7 +54,7 @@ class ExecutorWrapper:
         return self
 
 
-class MetaWrapper:
+class _RelationshipMetaWrapper:
     relationship: "Relationship"
 
     def __init__(self, relationship: "Relationship") -> None:
@@ -96,7 +96,7 @@ class MetaWrapper:
         await self.relationship.protocol.operate_metadata(self.relationship, metakey, "remove", value)  # type: ignore
 
 
-M = TypeVar("M", bound=MetaWrapper)
+M = TypeVar("M", bound=_RelationshipMetaWrapper)
 
 
 class Relationship(Generic[M]):
@@ -131,7 +131,7 @@ class Relationship(Generic[M]):
 
     @property
     def meta(self) -> M:
-        return cast(M, MetaWrapper(self))
+        return cast(M, _RelationshipMetaWrapper(self))
 
     @property
     def exec(self):
@@ -144,6 +144,6 @@ class Relationship(Generic[M]):
         return self.protocol.has_ability(ability)
 
 
-class CoreSupport(MetaWrapper):
+class CoreSupport(_RelationshipMetaWrapper):
     "see pyi"
     pass

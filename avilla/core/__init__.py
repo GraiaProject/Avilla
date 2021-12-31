@@ -1,5 +1,6 @@
 import asyncio
 import importlib.metadata
+from contextlib import asynccontextmanager
 from typing import Any, Awaitable, Callable, Dict, Generic, List, Optional, Set, Type
 
 from graia.broadcast import Broadcast
@@ -13,6 +14,9 @@ from avilla.core.context import ctx_avilla
 from avilla.core.event import RelationshipDispatcher
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.protocol import BaseProtocol
+from avilla.core.resource import ResourceAccessor, ResourceMetaWrapper, ResourceProvider
+from avilla.core.resource.activity import read
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
 from avilla.core.typing import TConfig, TExecutionMiddleware, TProtocol
 
@@ -25,18 +29,20 @@ AVILLA_ASCII_LOGO_AS_LIST = [
     r"/_/   \_\_/ |_|_|_|\__,_|",
 ]
 
-GRAIA_PROJECT_REPOS = ["avilla-core", "graia-broadcast"]
+GRAIA_PROJECT_REPOS = ["avilla-core", "graia-broadcast", "graia-saya", "graia-scheduler"]
 
 
 class Avilla(Generic[TProtocol, TConfig]):
     broadcast: Broadcast
-    configs: Dict[Type[TProtocol], TConfig]
+    protocol: TProtocol
+
+    configs: Dict[Type[TProtocol], TConfig]  # TODO: Config.
     launch_components: Dict[str, LaunchComponent]
     middlewares: List[TExecutionMiddleware]
-    protocol: TProtocol
     services: List[Service]
-    sigexit: asyncio.Event
+    resource_providers: List[ResourceProvider]
 
+    sigexit: asyncio.Event
     rich_console: Console
 
     def __init__(
@@ -58,6 +64,10 @@ class Avilla(Generic[TProtocol, TConfig]):
         }
         self.sigexit = asyncio.Event()
         self.rich_console = Console()
+        self.resource_providers = []
+
+        if isinstance(self.protocol, ResourceProvider): # Protocol 可以作为资源提供方
+            self.resource_providers.append(self.protocol)
 
         self.broadcast.dispatcher_interface.inject_global_raw(RelationshipDispatcher())
 
@@ -107,6 +117,26 @@ class Avilla(Generic[TProtocol, TConfig]):
             if interface_type in service.supported_interface_types:
                 return service.get_interface(interface_type)
         raise ValueError(f"interface type {interface_type} not supported.")
+
+    @asynccontextmanager
+    async def access_resource(self, resource: resource_selector):
+        resource_type, resource_id = list(resource.path.items())[0]
+        schema, _, resource_id = resource_id.partition("://")
+        for provider in self.resource_providers:
+            if schema in provider.resource_schemas and resource_type in provider.supported_resource_types:
+                async with provider.access_resource(resource) as accessor:
+                    yield accessor
+
+    async def fetch_resource(self, resource: resource_selector):
+        async with self.access_resource(resource) as accessor:
+            return await accessor.execute(read)
+
+    def get_resource_meta(self, resource: resource_selector):
+        resource_type, resource_id = list(resource.path.items())[0]
+        schema, _, resource_id = resource_id.partition("://")
+        for provider in self.resource_providers:
+            if schema in provider.resource_schemas and resource_type in provider.supported_resource_types:
+                return ResourceMetaWrapper(resource, provider)
 
     async def launch(self):
         logger.configure(

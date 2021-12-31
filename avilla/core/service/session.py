@@ -64,7 +64,7 @@ class BehaviourSession(Generic[TInterface]):
         async def execute(self, activity: Activity[R]) -> R:
             pass
 
-        async def execute(self, activity: Union[Type[Activity[R]], Activity[R]]) -> R:
+        async def execute(self, activity: ...) -> Any:
             ...
 
     else:
@@ -148,16 +148,19 @@ class BehaviourSession(Generic[TInterface]):
     async def wait(
         self,
         behaviour: Union[Type[BehaviourDescription], BehaviourDescription],
-        value: Callable[..., "T"] = lambda *x: x[-1],
+        fetcher: Callable[..., "T"] = lambda *x: x[-1],
     ) -> "T":
         behaviour_type = behaviour if isinstance(behaviour, type) else type(behaviour)
         fut = asyncio.get_running_loop().create_future()
 
         async def value_getter(*args):
-            fut.set_result(value(*args))
+            fut.set_result(fetcher(*args))
 
         self.expand_behaviour(behaviour, value_getter)
         try:
             return await fut
         finally:
             self.remove_callback(behaviour_type, value_getter)
+
+    def is_allowed(self, activity_type: Type[Activity]) -> bool:
+        return activity_type in self.activity_handlers

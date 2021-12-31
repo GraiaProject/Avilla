@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Generic, Optional, TypeVar
 
 from avilla.core.message import MessageChain
-from avilla.core.selectors import message as message_selector
+from avilla.core.selectors import entity, message as message_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 
@@ -66,19 +66,12 @@ class RequestReject(Execution):
         self.request = request
 
 
-class ResourceRelease(Execution):
-    resource: resource_selector
-
-    def __init__(self, resource: resource_selector):
-        self.resource = resource
+class RelationshipDestroy(Execution):
+    pass
 
 
-class ResourceRemove(Execution):
-    resource: resource_selector
+class MemberRemove(Execution):
+    member: entity
 
-    def __init__(self, resource: resource_selector):
-        self.resource = resource
-
-
-# 剩下的要用 rs.meta 操作...
-# 草死, 怎么这么少..
+    def __init__(self, member: entity):
+        self.member = member

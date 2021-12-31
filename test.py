@@ -1,9 +1,14 @@
 import asyncio
 from inspect import unwrap
+from typing import Optional
 from aiohttp.client import ClientSession
 from loguru import logger
+from sqlalchemy import engine
+from sqlmodel import Field, SQLModel, select
+from avilla.core import Avilla
 from avilla.core.launch import LaunchComponent
 from avilla.core.service.session import BehaviourSession
+from avilla.core.service.sqlmodel import EngineProvider, SqlmodelService
 from avilla.core.stream import Stream
 from avilla.core.utilles.mock import LaunchMock
 from avilla.core.service.aiohttp import AiohttpClient, AiohttpService
@@ -15,13 +20,15 @@ from avilla.core.service.uvicorn import UvicornService
 from avilla.core.transformers import u8_string, json_decode
 import random
 from starlette.responses import PlainTextResponse
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 mocker = LaunchMock(
     {},
     [
         StarletteService(),
-        UvicornService("127.0.0.1", 12680),
+        #UvicornService("127.0.0.1", 12680),
         AiohttpService(),
+        SqlmodelService("sqlite+aiosqlite://")
     ],
 )
 
@@ -30,7 +37,7 @@ async def test(_):
     http_interface: HttpClient = mocker.get_interface(HttpClient)
     print(http_interface)
     async with http_interface.get("https://httpbin.org/anything") as session:
-        content_stream: "Stream[bytes]" = Stream(await session.execute(content_read))
+        content_stream = await session.execute(content_read)
         r = await (content_stream | u8_string | json_decode())
         print(r)
 
@@ -83,12 +90,34 @@ async def mainline_test2(_):
     await asyncio.sleep(100)
 
 
+class Hero(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    secret_name: str
+    age: Optional[int] = None
+
+
+async def sqlmodel_test(avilla: LaunchMock):
+    engine = avilla.get_interface(EngineProvider).get()
+    async with AsyncSession(engine) as session:
+        session.add(Hero(name="John", secret_name="Doe", age=20))
+        session.add(Hero(name="Jane", secret_name="Doe", age=20))
+        session.add(Hero(name="Jack", secret_name="Doe", age=20))   
+        await session.commit()
+
+    async with AsyncSession(engine) as session:
+        heroes = await session.execute(select(Hero))
+        for hero in heroes:
+            print(hero)
+    
+
 mocker.new_launch_component(
     "test.main",
     set(),
-    mainline=mainline_test,
+    #mainline=mainline_test,
     # mainline=mainline_test2,
-    prepare=statusbar_test,
+    mainline=sqlmodel_test
+    #prepare=statusbar_test,
 )
 
 

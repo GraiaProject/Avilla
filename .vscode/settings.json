@@ -18,6 +18,7 @@
     "python.sortImports.path": "isort",
     "editor.formatOnSave": true,
     "cSpell.words": [
+        "aiosqlite",
         "Alconna",
         "Arpamar",
         "ASGI",

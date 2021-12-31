@@ -1,19 +1,24 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional, Type
 
-from .utilles.selector import Selector, SelectorKey
+from .utilles.selector import DepthSelector, Selector, SelectorKey
+
+if TYPE_CHECKING:
+    from avilla.core.protocol import BaseProtocol
 
 
 class entity(Selector):
     scope = "entity"
 
     if TYPE_CHECKING:
-        account: SelectorKey["entity", str]
         mainline: SelectorKey["entity", "mainline"]
-        member: SelectorKey["entity", str]
+        account: SelectorKey["entity", str]
         friend: SelectorKey["entity", str]
+        member: SelectorKey["entity", str]
         channel: SelectorKey["entity", str]  # 可以发消息的 channel, 类似 tg.
 
     def get_mainline(self) -> "mainline":
+        if "account" in self.path:
+            return mainline._['$avilla:account']
         return self.path["mainline"]
 
     @property
@@ -21,13 +26,15 @@ class entity(Selector):
         return list(self.path.keys())[-1]
 
 
-class mainline(Selector):
+class mainline(DepthSelector):
     scope = "mainline"
 
     if TYPE_CHECKING:
         group: SelectorKey["mainline", str]
         channel: SelectorKey["mainline", str]
         guild: SelectorKey["mainline", str]
+
+        _: SelectorKey["mainline", Any]
 
 
 class self(Selector):
@@ -49,6 +56,7 @@ class resource(Selector):
     scope = "resource"
 
     if TYPE_CHECKING:
+        dir: SelectorKey["resource", str]
         file: SelectorKey["resource", str]
         image: SelectorKey["resource", str]
         audio: SelectorKey["resource", str]
@@ -58,6 +66,7 @@ class resource(Selector):
         unknown: SelectorKey["resource", str]
 
         mainline: SelectorKey["resource", "mainline"]
+        protocol: SelectorKey["resource", "Type[BaseProtocol]"]
 
     def get_mainline(self) -> "mainline":
         return self.path["mainline"]
@@ -70,6 +79,7 @@ class request(Selector):
         mainline: SelectorKey["request", "mainline"]
         via: SelectorKey["request", "entity"]
         _: SelectorKey["request", str]
+        # 示例: request.mainline[mainline.group[123]]._[""]
 
     def get_mainline(self) -> "mainline":
         return self.path["mainline"]

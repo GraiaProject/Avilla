@@ -1,9 +1,6 @@
 from typing import List, Sequence
 
-try:
-    import regex as re
-except Exception:
-    import re
+import re
 
 from avilla.core.elements import Text
 from avilla.core.message import Element, MessageChain

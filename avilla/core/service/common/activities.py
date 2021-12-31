@@ -3,10 +3,11 @@ from datetime import timedelta
 from typing import Any, Optional, Union
 
 from avilla.core.service.entity import Activity
+from avilla.core.stream import Stream
 
 
 @dataclass
-class content_read(Activity[bytes]):
+class content_read(Activity[Stream[bytes]]):
     length: Optional[int] = None
 
 

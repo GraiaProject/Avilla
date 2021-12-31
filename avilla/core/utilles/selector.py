@@ -1,4 +1,4 @@
-from typing import Any, Dict, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Dict, Generic, TypeVar, cast
 
 T = TypeVar("T")
 A = TypeVar("A")
@@ -28,8 +28,11 @@ class SelectorKey(Generic[A, T]):
 
 
 class SelectorMeta(type):
+    if TYPE_CHECKING:
+        scope: str
+
     def __getattr__(cls, key: str) -> "SelectorKey":
-        return SelectorKey(cls.scope, key)  # type: ignore
+        return SelectorKey(cls.scope, key)
 
 
 S = TypeVar("S", bound=str)
@@ -49,9 +52,6 @@ class Selector(Generic[S], metaclass=SelectorMeta):
     def last(self) -> Any:
         return list(self.path.items())[-1]
 
-    def keypath(self) -> str:
-        return ".".join([k for k in self.path.keys()])
-
     def __repr__(self) -> str:
         return f"<{self.scope}>.{'.'.join([f'{k}[{v}]' for k, v in self.path.items()])}"
 
@@ -70,3 +70,8 @@ class Selector(Generic[S], metaclass=SelectorMeta):
         if self.scope != __o.scope:
             return False
         return all([v == __o.path[k] for k, v in self.path.items() if k in __o.path])
+
+
+class DepthSelector(Selector):
+    def keypath(self) -> str:
+        return ".".join([k for k in self.path.keys()])

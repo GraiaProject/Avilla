@@ -22,7 +22,7 @@ class ExecutorWrapper:
     def use(self, middleware: TExecutionMiddleware): ...
 
 
-class MetaWrapper:
+class _RelationshipMetaWrapper:
     relationship: "Relationship"
     def __init__(self, relationship: "Relationship") -> None: ...
     async def get(self, metakey: str) -> Any: ...
@@ -36,7 +36,7 @@ class MetaWrapper:
     async def remove(self, metakey: str, value: Any) -> None: ...
 
 
-M = TypeVar("M", bound=MetaWrapper)
+M = TypeVar("M", bound=_RelationshipMetaWrapper)
 
 
 class Relationship(Generic[M]):
@@ -62,7 +62,7 @@ class Relationship(Generic[M]):
     def has_ability(self, ability: str) -> bool: ...
 
 
-class CoreSupport(MetaWrapper):
+class CoreSupport(_RelationshipMetaWrapper):
     #
     # Mainline Properties
     #
@@ -115,7 +115,7 @@ class CoreSupport(MetaWrapper):
     @overload
     async def get(self, metakey: Literal["request.answers"]) -> Dict[int, str]: ...
     @overload
-    async def get(self, metakey: Literal["request.qa_map"]) -> Dict[str, str]: ...
+    async def get(self, metakey: Literal["request.qa"]) -> Dict[str, str]: ...
     #
     # Self Properties
     #

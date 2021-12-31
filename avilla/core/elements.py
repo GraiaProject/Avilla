@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 
 from avilla.core.message import Element
-from avilla.core.resource import Resource
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.stream import Stream
 
 
@@ -50,14 +50,11 @@ class NoticeAll(Element):
         return "[$NoticeAll]"
 
 
-class Image(Element, Resource):
-    def __init__(self, stream: Stream):
-        self.stream = stream
+class Image(Element):
+    source: resource_selector
 
-    @classmethod
-    def fromLocalFile(cls, path: Path):
-        data = path.read_bytes()
-        return cls(Stream(data))
+    def __init__(self, source: resource_selector):
+        self.source = source
 
     def asDisplay(self) -> str:
         return "[$Image]"
@@ -73,27 +70,21 @@ class Quote(Element):
         return f"[$Quote:id={self.id}]"
 
 
-class Voice(Element, Resource):
-    def __init__(self, stream: Stream):
-        self.stream = stream
+class Voice(Element):
+    source: resource_selector
 
-    @classmethod
-    def fromLocalFile(cls, path: Path):
-        data = path.read_bytes()
-        return cls(Stream(data))
+    def __init__(self, source: resource_selector):
+        self.source = source
 
     def asDisplay(self) -> str:
         return "[$Voice]"
 
 
-class Video(Element, Resource):
-    def __init__(self, stream: Stream):
-        self.stream = stream
+class Video(Element):
+    source: resource_selector
 
-    @classmethod
-    def fromLocalFile(cls, path: Path):
-        data = path.read_bytes()
-        return cls(Stream(data))
+    def __init__(self, source: resource_selector):
+        self.source = source
 
     def asDisplay(self) -> str:
         return "[$Video]"
