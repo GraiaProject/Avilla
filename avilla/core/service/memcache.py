@@ -10,7 +10,7 @@ from avilla.core.service.common.cache import CacheInterface, D
 from avilla.core.utilles import as_async
 
 
-class AcheCache(CacheInterface):
+class MemCache(CacheInterface):
     cache: Dict[str, Tuple[Optional[float], D]]
     expire: List[Tuple[float, str]]
 
@@ -50,8 +50,8 @@ class AcheCache(CacheInterface):
         return key in self.cache
 
 
-class AcheService(Service):
-    supported_interface_types = {AcheCache, CacheInterface}
+class MemCacheService(Service):
+    supported_interface_types = {MemCache, CacheInterface}
     supported_description_types = set()
 
     interval: float
@@ -71,8 +71,8 @@ class AcheService(Service):
         super().__init__()
 
     def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
-        if issubclass(interface_type, (AcheCache, CacheInterface)):
-            return AcheCache(self.cache, self.expire)
+        if issubclass(interface_type, (MemCache, CacheInterface)):
+            return MemCache(self.cache, self.expire)
         raise ValueError(f"unsupported interface type {interface_type}")
 
     def get_status(self, entity: entity_selector = None):
