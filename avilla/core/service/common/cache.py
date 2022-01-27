@@ -23,3 +23,7 @@ class CacheInterface(ExportInterface, Generic[D], metaclass=ABCMeta):
     @abstractmethod
     async def clear(self) -> None:
         ...
+
+    @abstractmethod
+    async def has(self, key: str) -> bool:
+        ...
