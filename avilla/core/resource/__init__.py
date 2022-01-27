@@ -13,7 +13,6 @@ from avilla.core.typing import META_OPS, METADATA_VALUE
 
 class ResourceProvider(metaclass=ABCMeta):
     supported_resource_types: ClassVar[Set[str]]
-    resource_schemas: ClassVar[Set[str]]
 
     @abstractmethod
     @asynccontextmanager

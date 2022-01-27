@@ -16,6 +16,7 @@ from yarl import URL
 
 from avilla.core.service import ExportInterface
 from avilla.core.service.session import BehaviourSession
+from avilla.core.stream import Stream
 
 if TYPE_CHECKING:
     from typing import Any, Awaitable, MutableMapping, Type
@@ -148,4 +149,68 @@ class ASGIHandlerProvider(ExportInterface, metaclass=ABCMeta):
         Awaitable[MutableMapping[str, Any]],
         Callable[[MutableMapping[str, Any]], Awaitable[None]]
     ], None]""":
+        ...
+
+
+class HttpClientResponse(BehaviourSession, metaclass=ABCMeta):
+    url: URL
+
+    @abstractmethod
+    async def read(self) -> Stream[bytes]:
+        ...
+    
+    @abstractmethod
+    async def cookies(self) -> Dict[str, str]:
+        ...
+    
+    @abstractmethod
+    async def headers(self) -> Dict[str, str]:
+        ...
+
+    @abstractmethod
+    async def close(self):
+        ...
+
+    @property
+    @abstractmethod
+    def status(self) -> int:
+        ...
+
+    @abstractmethod
+    def raise_for_status(self):
+        ...
+
+class WebsocketConnection(BehaviourSession):
+    server_mode: bool
+
+    @abstractmethod
+    async def accept(self) -> None:
+        pass
+
+    @abstractmethod
+    async def send(self, data: bytes) -> None:
+        ...
+
+    @abstractmethod
+    async def receive(self) -> Stream[bytes]:
+        ...
+
+    @abstractmethod
+    async def ping(self) -> None:
+        ...
+
+    @abstractmethod
+    async def pong(self) -> None:
+        ...
+
+    @abstractmethod
+    async def close(self, code: int = 1000, message: bytes = b'') -> None:
+        ...
+
+    @abstractmethod
+    def status(self) -> int:
+        ...
+
+    @abstractmethod
+    def raise_for_code(self):
         ...

@@ -38,9 +38,8 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
     required_components: ClassVar[Set[str]]
     protocol_ranks: ClassVar[Tuple[Union[Rank, str], ...]]
 
-    def __init__(self, avilla: "Avilla", config: TConfig) -> None:
+    def __init__(self, avilla: "Avilla") -> None:
         self.avilla = avilla
-        self.config = config
         self.__post_init__()
 
     def __post_init__(self) -> None:

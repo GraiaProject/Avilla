@@ -195,7 +195,7 @@ python-versions = ">=3.7"
 
 [[package]]
 name = "graia-broadcast"
-version = "0.14.5"
+version = "0.15.2"
 description = "a highly customizable, elegantly designed event system based on asyncio"
 category = "main"
 optional = false
@@ -522,7 +522,7 @@ uvicorn = ["uvicorn"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "b8d86a871ce2ddcaa0eb7ee6372b08b220684b522eeec297fcdc4b311f9b983c"
+content-hash = "a1d56e9dca31a813dd9338670ab2c5cb5ae33cf133a4097f9a2e2d504b0e74f3"
 
 [metadata.files]
 aiohttp = [
@@ -713,8 +713,8 @@ frozenlist = [
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
 ]
 graia-broadcast = [
-    {file = "graia-broadcast-0.14.5.tar.gz", hash = "sha256:51b4fa0b35e215751c41ce5006a72b35497b818425ea94a3cf296149251ef6f6"},
-    {file = "graia_broadcast-0.14.5-py3-none-any.whl", hash = "sha256:d9cb6caf249b6c0e207845d5c99529145a385fabadf5f3af02af387dfe3d6b28"},
+    {file = "graia-broadcast-0.15.2.tar.gz", hash = "sha256:7b917f909d4ae7c8977d3a3208970956d6ff82b2de3f6cd5d058e3533751e7bf"},
+    {file = "graia_broadcast-0.15.2-py3-none-any.whl", hash = "sha256:8062c99cb3f6c1dd55d9b2cb0f950ce454f202994f828362f0f8408cc35150ad"},
 ]
 greenlet = [
     {file = "greenlet-1.1.2-cp27-cp27m-macosx_10_14_x86_64.whl", hash = "sha256:58df5c2a0e293bf665a51f8a100d3e9956febfbf1d9aaf8c0677cf70218910c6"},

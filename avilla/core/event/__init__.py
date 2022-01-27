@@ -43,7 +43,7 @@ class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, �
     async def beforeExecution(interface: "DispatcherInterface[AvillaEvent]"):
         rs = await ctx_protocol.get().get_relationship(interface.event.ctx)
         token = ctx_relationship.set(rs)
-        interface.execution_contexts[-1].local_storage["_ctxtoken_rs"] = token
+        interface.local_storage["_ctxtoken_rs"] = token
 
     @staticmethod
     async def afterExecution(
@@ -51,7 +51,7 @@ class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, �
         exception: Optional[Exception],
         tb: Optional[TracebackType],
     ):
-        ctx_relationship.reset(interface.execution_contexts[-1].local_storage["_ctxtoken_rs"])
+        ctx_relationship.reset(interface.local_storage["_ctxtoken_rs"])
 
     @staticmethod
     async def catch(interface: "DispatcherInterface"):

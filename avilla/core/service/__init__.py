@@ -16,7 +16,7 @@ from typing import (
 
 from avilla.core.launch import LaunchComponent
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.service.entity import BehaviourDescription, ExportInterface, Status
+from avilla.core.service.entity import ExportInterface, Status
 
 TInterface = TypeVar("TInterface", bound=ExportInterface)
 TCallback = TypeVar("TCallback", bound=Callable)
@@ -24,10 +24,8 @@ TCallback = TypeVar("TCallback", bound=Callable)
 
 class Service(metaclass=ABCMeta):
     supported_interface_types: ClassVar[Set[Type[ExportInterface]]]
-    supported_description_types: ClassVar[Set[Type[BehaviourDescription]]]
 
     status: Dict[entity_selector, Status]
-    cb: List[Tuple[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]]]
 
     def __init__(self) -> None:
         self.status = {}
@@ -65,19 +63,3 @@ class Service(metaclass=ABCMeta):
     @abstractmethod
     def launch_component(self) -> LaunchComponent:
         pass
-
-    def expand(
-        self, behaviour: Union[Type[BehaviourDescription[TCallback]], BehaviourDescription[TCallback]]
-    ):
-        def decorator(callback: TCallback):
-            self.cb.append((behaviour, callback))
-            return callback
-
-        return decorator
-
-    def expand_behaviour(
-        self,
-        behaviour: Union[Type[BehaviourDescription[TCallback]], BehaviourDescription[TCallback]],
-        callback: TCallback,
-    ) -> None:
-        self.cb.append((behaviour, callback))

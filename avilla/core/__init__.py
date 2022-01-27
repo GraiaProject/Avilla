@@ -1,7 +1,7 @@
 import asyncio
 import importlib.metadata
 from contextlib import asynccontextmanager
-from typing import Any, Awaitable, Callable, Dict, Generic, List, Optional, Set, Type
+from typing import Any, Awaitable, Callable, Dict, Generic, List, Optional, Set, Type, Union
 
 from graia.broadcast import Broadcast
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -9,6 +9,7 @@ from loguru import logger
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.status import Status
+from avilla.core.config import ConfigApplicant, ConfigProvider, TModel, TScope
 
 from avilla.core.context import ctx_avilla
 from avilla.core.event import RelationshipDispatcher
@@ -18,7 +19,11 @@ from avilla.core.resource import ResourceAccessor, ResourceMetaWrapper, Resource
 from avilla.core.resource.activity import read
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
+from avilla.core.service.entity import ExportInterface
 from avilla.core.typing import TConfig, TExecutionMiddleware, TProtocol
+from graia.broadcast.entities.dispatcher import BaseDispatcher
+
+from avilla.core.utilles import priority_strategy
 
 AVILLA_ASCII_LOGO_AS_LIST = [
     "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].",
@@ -32,15 +37,18 @@ AVILLA_ASCII_LOGO_AS_LIST = [
 GRAIA_PROJECT_REPOS = ["avilla-core", "graia-broadcast", "graia-saya", "graia-scheduler"]
 
 
-class Avilla(Generic[TProtocol, TConfig]):
+class Avilla:
     broadcast: Broadcast
-    protocol: TProtocol
+    protocols: List[BaseProtocol]
+    protocol_classes: List[Type[BaseProtocol]]
 
-    configs: Dict[Type[TProtocol], TConfig]  # TODO: Config.
     launch_components: Dict[str, LaunchComponent]
     middlewares: List[TExecutionMiddleware]
     services: List[Service]
     resource_providers: List[ResourceProvider]
+
+    _service_interfaces: Dict[Type[ExportInterface], Service]
+    _res_provider_types: Dict[str, ResourceProvider]
 
     sigexit: asyncio.Event
     rich_console: Console
@@ -48,35 +56,46 @@ class Avilla(Generic[TProtocol, TConfig]):
     def __init__(
         self,
         broadcast: Broadcast,
-        protocol: Type[TProtocol],
+        protocols: List[Type[BaseProtocol]],
         services: List[Service],
-        configs: Dict,
+        config: Dict[
+            Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]],
+            Union[TModel, Dict[TScope, Union[TModel, "ConfigProvider[TModel]"]]],
+        ],
+        default_config_provider: Type[ConfigProvider],
         middlewares: List[TExecutionMiddleware] = None,
     ):
         self.broadcast = broadcast
-        self.protocol = protocol(self, configs.get(protocol))
-        self.configs = configs
+        self.protocol_classes = protocols
+        self.protocols = [protocol(self) for protocol in protocols]
         self.services = services
+        self._service_interfaces = priority_strategy(services, lambda s: s.supported_interface_types)
         self.middlewares = middlewares or []
         self.launch_components = {
             **({i.launch_component.id: i.launch_component for i in services}),
-            self.protocol.launch_component.id: self.protocol.launch_component,
+            **({protocol.launch_component.id: protocol.launch_component for protocol in self.protocols}),
         }
         self.sigexit = asyncio.Event()
         self.rich_console = Console()
         self.resource_providers = []
 
-        if isinstance(self.protocol, ResourceProvider): # Protocol 可以作为资源提供方
-            self.resource_providers.append(self.protocol)
+        for protocol in self.protocols:
+            if isinstance(protocol, ResourceProvider):  # Protocol 可以作为资源提供方
+                self.resource_providers.append(protocol)
 
-        self.broadcast.dispatcher_interface.inject_global_raw(RelationshipDispatcher())
+        self._res_provider_types = priority_strategy(self.resource_providers, lambda p: p.supported_resource_types)
+        self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
-        @self.broadcast.dispatcher_interface.inject_global_raw
-        async def _(interface: DispatcherInterface):
-            if interface.annotation is Avilla:
-                return self
-            elif interface.annotation is protocol:
-                return self.protocol
+        @self.broadcast.finale_dispatchers.append
+        class AvillaBuiltinDispatcher(BaseDispatcher):
+            @staticmethod
+            async def catch(interface: DispatcherInterface):
+                if interface.annotation is Avilla:
+                    return self
+                elif isinstance(interface.annotation, type) and issubclass(interface.annotation, BaseProtocol):
+                    for protocol in self.protocol_classes:
+                        if interface.annotation is protocol.__class__:
+                            return protocol(self)
 
     @classmethod
     def current(cls) -> "Avilla":
@@ -103,6 +122,9 @@ class Avilla(Generic[TProtocol, TConfig]):
         if service in self.services:
             raise ValueError("existed service")
         self.services.append(service)
+        if isinstance(service, ResourceProvider):
+            self.resource_providers.append(service)
+            self._res_provider_types = priority_strategy(self.resource_providers, lambda p: p.supported_resource_types)
         launch_component = service.launch_component
         self.launch_components[launch_component.id] = launch_component
 
@@ -110,22 +132,24 @@ class Avilla(Generic[TProtocol, TConfig]):
         if service not in self.services:
             raise ValueError("service doesn't exist.")
         self.services.remove(service)
+        if isinstance(service, ResourceProvider):
+            self.resource_providers.remove(service)
+            self._res_provider_types = priority_strategy(self.resource_providers, lambda p: p.supported_resource_types)
         del self.launch_components[service.launch_component.id]
 
     def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
-        for service in self.services:
-            if interface_type in service.supported_interface_types:
-                return service.get_interface(interface_type)
-        raise ValueError(f"interface type {interface_type} not supported.")
+        if interface_type not in self._service_interfaces:
+            raise ValueError(f"interface type {interface_type} not supported.")
+        return self._service_interfaces[interface_type].get_interface(interface_type)
 
     @asynccontextmanager
     async def access_resource(self, resource: resource_selector):
         resource_type, resource_id = list(resource.path.items())[0]
-        schema, _, resource_id = resource_id.partition("://")
-        for provider in self.resource_providers:
-            if schema in provider.resource_schemas and resource_type in provider.supported_resource_types:
-                async with provider.access_resource(resource) as accessor:
-                    yield accessor
+        if resource_type not in self._res_provider_types:
+            raise ValueError(f"resource type {resource_type} not supported.")
+        provider = self._res_provider_types[resource_type]
+        async with provider.access_resource(resource) as accessor:
+            yield accessor
 
     async def fetch_resource(self, resource: resource_selector):
         async with self.access_resource(resource) as accessor:
@@ -133,10 +157,10 @@ class Avilla(Generic[TProtocol, TConfig]):
 
     def get_resource_meta(self, resource: resource_selector):
         resource_type, resource_id = list(resource.path.items())[0]
-        schema, _, resource_id = resource_id.partition("://")
-        for provider in self.resource_providers:
-            if schema in provider.resource_schemas and resource_type in provider.supported_resource_types:
-                return ResourceMetaWrapper(resource, provider)
+        if resource_type not in self._res_provider_types:
+            raise ValueError(f"resource type {resource_type} not supported.")
+        provider = self._res_provider_types[resource_type]
+        
 
     async def launch(self):
         logger.configure(
@@ -157,8 +181,9 @@ class Avilla(Generic[TProtocol, TConfig]):
                 version = "unknown / not-installed"
             logger.info(f"[b cornflower_blue]{telemetry}[/] version: [cyan3]{version}[/]")
 
-        if self.protocol.__class__.platform is not BaseProtocol.platform:
-            logger.info(f"using platform: {self.protocol.__class__.platform.universal_identifier}")
+        for protocol in self.protocols:
+            if protocol.__class__.platform is not BaseProtocol.platform:
+                logger.info(f"using platform: {protocol.__class__.platform.universal_identifier}")
 
         for service in self.services:
             logger.info(f"using service: {service.__class__.__name__}")

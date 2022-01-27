@@ -59,7 +59,7 @@ class Selector(Generic[S], metaclass=SelectorMeta):
         return self.path[value]
 
     def __getattr__(self, key: str) -> "SelectorKey":
-        return SelectorKey(self.scope, key)
+        return SelectorKey(self.scope, key, self.path)
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, Selector):

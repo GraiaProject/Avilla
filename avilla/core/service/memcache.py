@@ -6,10 +6,10 @@ from typing import Type, Any, List, Tuple, Dict, Optional
 
 from avilla.core import Avilla, Service, LaunchComponent
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.service.common.cache import CacheInterface
+from avilla.core.service.common.storage import CacheStorage
 
 
-class Memcache(CacheInterface):
+class Memcache(CacheStorage):
     cache: Dict[str, Tuple[Optional[float], Any]]
     expire: List[Tuple[float, str]]
 
@@ -52,7 +52,7 @@ class Memcache(CacheInterface):
 
 
 class MemcacheService(Service):
-    supported_interface_types = {Memcache, CacheInterface}
+    supported_interface_types = {Memcache, CacheStorage}
     supported_description_types = set()
 
     interval: float
@@ -71,7 +71,7 @@ class MemcacheService(Service):
         super().__init__()
 
     def get_interface(self, interface_type: Type[Memcache]) -> Memcache:
-        if issubclass(interface_type, (Memcache, CacheInterface)):
+        if issubclass(interface_type, (Memcache, CacheStorage)):
             return Memcache(self.cache, self.expire)
         raise ValueError(f"unsupported interface type {interface_type}")
 

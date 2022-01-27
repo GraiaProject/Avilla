@@ -198,7 +198,7 @@ class Filter(Decorator, Generic[S, L]):
     async def target(self, decorator_interface: DecoratorInterface):
         alpha_result: S = await decorator_interface.dispatcher_interface.broadcast.Executor(
             self.alpha,
-            decorator_interface.dispatcher_interface.execution_contexts[-1].dispatchers,
+            decorator_interface.dispatcher_interface.dispatchers, # cannot be original...
         )
 
         step = None

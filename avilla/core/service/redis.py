@@ -6,10 +6,10 @@ from aioredis import Redis
 from avilla.core.launch import LaunchComponent
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.service import Service, Status
-from avilla.core.service.common.cache import CacheInterface
+from avilla.core.service.common.storage import CacheStorage
 
 
-class RedisCache(CacheInterface):
+class RedisCache(CacheStorage):
     redis: Redis
 
     def __init__(self, redis: Redis):
@@ -34,7 +34,7 @@ class RedisCache(CacheInterface):
 
 
 class RedisService(Service):
-    supported_interface_types = {RedisCache, CacheInterface}
+    supported_interface_types = {RedisCache, CacheStorage}
     supported_description_types = set()
 
     redis: Redis
@@ -43,8 +43,8 @@ class RedisService(Service):
         self.redis = redis
         super().__init__()
 
-    def get_interface(self, interface_type: Union[Type[RedisCache], Type[CacheInterface]]):
-        if issubclass(interface_type, (RedisCache, CacheInterface)):
+    def get_interface(self, interface_type: Union[Type[RedisCache], Type[CacheStorage]]):
+        if issubclass(interface_type, (RedisCache, CacheStorage)):
             return RedisCache(self.redis)
         raise ValueError(f"unsupported interface type {interface_type}")
 

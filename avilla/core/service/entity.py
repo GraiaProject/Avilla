@@ -33,19 +33,9 @@ TCallback = TypeVar("TCallback", bound=Callable)
 TService = TypeVar("TService", bound="Service")
 
 
-class Activity(Generic[R]):
-    pass
-
-
-class BehaviourDescription(Generic[TCallback]):
-    pass
-
-
 class ExportInterface(Generic[TService]):
     service: TService
     current: Optional[entity_selector] = None
-
-    behaviours: List[Tuple[Union[Type[BehaviourDescription], BehaviourDescription], Callable[..., Any]]]
 
     if TYPE_CHECKING:
 
@@ -81,29 +71,3 @@ class ExportInterface(Generic[TService]):
     @property
     def supported_description_types(self):
         return self.service.supported_description_types
-
-    def get_behaviours(self, behaviour: Type[BehaviourDescription[TCallback]]) -> List[TCallback]:
-        return cast(
-            List[TCallback],
-            [
-                callback
-                for behaviour_, callback in self.behaviours
-                if isinstance(behaviour, behaviour_ if isclass(behaviour_) else behaviour_.__class__)  # type: ignore
-            ],
-        )
-
-    def expand(
-        self, behaviour: Union[Type[BehaviourDescription[TCallback]], BehaviourDescription[TCallback]]
-    ):
-        def decorator(callback: TCallback):
-            self.behaviours.append((behaviour, callback))
-            return callback
-
-        return decorator
-
-    def expand_behaviour(
-        self,
-        behaviour: Union[Type[BehaviourDescription[TCallback]], BehaviourDescription[TCallback]],
-        callback: TCallback,
-    ) -> None:
-        self.behaviours.append((behaviour, callback))
