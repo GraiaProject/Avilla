@@ -2,23 +2,22 @@ import asyncio
 from datetime import timedelta
 from heapq import heappush, heappop
 from time import time
-from typing import Type, Any, List, Tuple, Dict, Optional, NoReturn
+from typing import Type, Any, List, Tuple, Dict, Optional
 
-from avilla.core import Service, LaunchComponent, TInterface
+from avilla.core import Avilla, Service, LaunchComponent
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.service.common.cache import CacheInterface, D
-from avilla.core.utilles import as_async
+from avilla.core.service.common.cache import CacheInterface
 
 
-class MemCache(CacheInterface):
-    cache: Dict[str, Tuple[Optional[float], D]]
+class Memcache(CacheInterface):
+    cache: Dict[str, Tuple[Optional[float], Any]]
     expire: List[Tuple[float, str]]
 
-    def __init__(self, cache: Dict[str, Tuple[Optional[float], D]], expire: List[Tuple[float, str]]):
+    def __init__(self, cache: Dict[str, Tuple[Optional[float], Any]], expire: List[Tuple[float, str]]):
         self.cache = cache
         self.expire = expire
 
-    async def get(self, key: str, default: Any = None) -> D:
+    async def get(self, key: str, default: Any = None) -> Any:
         value = self.cache.get(key)
         if value:
             if value[0] is None or value[0] >= time():
@@ -37,32 +36,33 @@ class MemCache(CacheInterface):
         heappush(self.expire, (expire_time, value))
 
     async def delete(self, key: str, strict: bool = False) -> None:
-        if strict:
+        if key not in self.cache:
+            if strict:
+                raise KeyError(key)
+        else:
             del self.cache[key]
-        self.cache.pop(key, None)
+        
 
     async def clear(self) -> None:
-        for key, value in self.cache.items():
-            if value[0] <= time():
-                del self.cache[key]
+        self.cache.clear()
+        self.expire.clear()
 
     async def has(self, key: str) -> bool:
         return key in self.cache
 
 
-class MemCacheService(Service):
-    supported_interface_types = {MemCache, CacheInterface}
+class MemcacheService(Service):
+    supported_interface_types = {Memcache, CacheInterface}
     supported_description_types = set()
 
     interval: float
-    cache: Dict[str, Tuple[Optional[float], D]]
+    cache: Dict[str, Tuple[Optional[float], Any]]
     expire: List[Tuple[float, str]]
-    _expire_cycle: asyncio.Task = None
 
     def __init__(
         self,
         interval: float = 0.1,
-        cache: Dict[str, Tuple[Optional[float], D]] = None,
+        cache: Dict[str, Tuple[Optional[float], Any]] = None,
         expire: List[Tuple[float, str]] = None,
     ):
         self.interval = interval
@@ -70,9 +70,9 @@ class MemCacheService(Service):
         self.expire = expire if expire else []
         super().__init__()
 
-    def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
-        if issubclass(interface_type, (MemCache, CacheInterface)):
-            return MemCache(self.cache, self.expire)
+    def get_interface(self, interface_type: Type[Memcache]) -> Memcache:
+        if issubclass(interface_type, (Memcache, CacheInterface)):
+            return Memcache(self.cache, self.expire)
         raise ValueError(f"unsupported interface type {interface_type}")
 
     def get_status(self, entity: entity_selector = None):
@@ -87,22 +87,14 @@ class MemCacheService(Service):
         return LaunchComponent(
             "cache.client",
             set(),
-            prepare=lambda _: self.expire_cycle,
-            cleanup=lambda _: as_async(self.expire_cycle.close)(),
+            mainline=self.launch_mainline
         )
 
-    @property
-    async def expire_cycle(self) -> asyncio.Task:
-        if self._expire_cycle is None:
-
-            async def cycle() -> NoReturn:
-                while True:
-                    expire_time, key = self.expire[0]
-                    while expire_time <= time():
-                        self.cache.pop(key, None)
-                        heappop(self.expire)
-                        expire_time, key = self.expire[0]
-                    await asyncio.sleep(self.interval)
-
-            self._expire_cycle = asyncio.create_task(cycle())
-        return self._expire_cycle
+    async def launch_mainline(self, avilla: Avilla) -> None:
+        while not avilla.sigexit.is_set():
+            expire_time, key = self.expire[0]
+            while expire_time <= time():
+                self.cache.pop(key, None)
+                heappop(self.expire)
+                expire_time, key = self.expire[0]
+            await asyncio.sleep(self.interval)
