@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING, Any, Optional, Type
 
+
 from .utilles.selector import DepthSelector, Selector, SelectorKey
 
 if TYPE_CHECKING:
-    from avilla.core.protocol import BaseProtocol
+    from avilla.core.resource import ResourceProvider
 
 
 class entity(Selector):
@@ -66,7 +67,7 @@ class resource(Selector):
         unknown: SelectorKey["resource", str]
 
         mainline: SelectorKey["resource", "mainline"]
-        protocol: SelectorKey["resource", "Type[BaseProtocol]"]
+        provider: SelectorKey["resource", "Type[ResourceProvider]"]
 
     def get_mainline(self) -> "mainline":
         return self.path["mainline"]

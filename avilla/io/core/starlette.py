@@ -41,12 +41,12 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
     ):
         pass # TODO
 
-    async def websocket_listen(self, path: str = "/")
+    async def websocket_listen(self, path: str = "/"):
         pass # TODO
 
 
 class StarletteService(Service):
-    supported_interface_types = {StarletteServer, HttpServer, WebsocketServer, ASGIHandlerProvider}
+    supported_interface_types = ({StarletteServer, HttpServer, WebsocketServer, ASGIHandlerProvider}, {})
 
     starlette: Starlette
 

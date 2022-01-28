@@ -23,7 +23,13 @@ TCallback = TypeVar("TCallback", bound=Callable)
 
 
 class Service(metaclass=ABCMeta):
-    supported_interface_types: ClassVar[Set[Type[ExportInterface]]]
+    supported_interface_types: ClassVar[
+        Union[
+            Set[Type[ExportInterface]],
+            Dict[Type[ExportInterface], Union[int, float]],
+            Tuple[Union[Set[Type[ExportInterface]], Dict[Type[ExportInterface], Union[int, float]]], ...],
+        ]
+    ]
 
     status: Dict[entity_selector, Status]
 

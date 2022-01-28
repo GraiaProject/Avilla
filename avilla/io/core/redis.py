@@ -6,7 +6,7 @@ from aioredis import Redis
 from avilla.core.launch import LaunchComponent
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.service import Service, Status
-from avilla.core.service.common.storage import CacheStorage
+from avilla.io.common.storage import CacheStorage
 
 
 class RedisCache(CacheStorage):

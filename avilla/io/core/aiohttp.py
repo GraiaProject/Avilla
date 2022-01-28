@@ -80,19 +80,19 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
 
     async def accept(self) -> None:
         raise NotImplementedError
-    
+
     async def send(self, data: Union[Stream[bytes], bytes]) -> None:
         if not self.response:
             raise RuntimeError("Websocket connection not prepared")
         if isinstance(data, Stream):
             data = await data.unwrap()
         await self.response.send_bytes(data)
-    
+
     async def receive(self) -> Stream[bytes]:
         if not self.response:
             raise RuntimeError("Websocket connection not prepared")
         return Stream(await self.response.receive_bytes())
-    
+
     async def ping(self) -> None:
         if not self.response:
             raise RuntimeError("Websocket connection not prepared")
@@ -102,12 +102,12 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
         if not self.response:
             raise RuntimeError("Websocket connection not prepared")
         await self.response.pong()
-    
-    async def close(self, code: int = 1000, message: bytes = b'') -> None:
+
+    async def close(self, code: int = 1000, message: bytes = b"") -> None:
         if not self.response:
             raise RuntimeError("Websocket connection not prepared")
         await self.response.close(code=code, message=message)
-    
+
     @property
     def status(self) -> int:
         return 1
@@ -115,7 +115,9 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
     def raise_for_status(self):
         pass
 
-    def on_received(self, callback: Callable[["AiohttpWebsocketClientConnection", Stream[bytes]], Awaitable[Any]]):
+    def on_received(
+        self, callback: Callable[["AiohttpWebsocketClientConnection", Stream[bytes]], Awaitable[Any]]
+    ):
         self.received_callbacks.append(callback)
         return callback
 
@@ -250,9 +252,19 @@ class AiohttpClient(HttpClient, WebsocketClient):
                     conn.response = response
                     async for message in response:
                         if message.type == WSMsgType.TEXT:
-                            await asyncio.gather(*[callback(conn, Stream(message.data.encode())) for callback in conn.received_callbacks])
+                            await asyncio.gather(
+                                *[
+                                    callback(conn, Stream(message.data.encode()))
+                                    for callback in conn.received_callbacks
+                                ]
+                            )
                         elif message.type == WSMsgType.BINARY:
-                            await asyncio.gather(*[callback(conn, Stream(message.data)) for callback in conn.received_callbacks])
+                            await asyncio.gather(
+                                *[
+                                    callback(conn, Stream(message.data))
+                                    for callback in conn.received_callbacks
+                                ]
+                            )
                         elif message.type == WSMsgType.PING:
                             await conn.pong()
                         elif message.type == WSMsgType.PONG:
@@ -266,7 +278,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                         else:
                             logger.warning(f"Unknown websocket message type: {message.type}")
             except Exception as e:
-                logger.exception(f"Websocket connection failed: {e}, for url: {url}, retries left: {retries_count}")
+                logger.exception(
+                    f"Websocket connection failed: {e}, for url: {url}, retries left: {retries_count}"
+                )
                 # try to retry
                 await asyncio.gather(*[callback(conn, e) for callback in conn.error_callbacks])
                 if retries_count > 0:

@@ -19,6 +19,7 @@
     "editor.formatOnSave": true,
     "cSpell.words": [
         "Aiohttp",
+        "aioredis",
         "aiosqlite",
         "Alconna",
         "Arpamar",
@@ -40,6 +41,7 @@
         "Rubics",
         "Starlette",
         "testpypi",
+        "utilles",
         "uvicorn"
     ],
     "python.sortImports.args": [
