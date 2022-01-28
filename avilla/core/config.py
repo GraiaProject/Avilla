@@ -45,7 +45,7 @@ class ConfigFlushingMoment(Enum):
 
 
 class ConfigApplicant(Generic[TModel]):
-    init_moment: Dict[Type[TModel], ConfigFlushingMoment]
+    init_moment: Dict[Type[BaseModel], ConfigFlushingMoment]
     config_model: Type[TModel]
 
 

@@ -28,3 +28,4 @@ cm = ConfigMock(
 
 print(cm.get_config(Avilla))
 print(cm.get_config(TestApplicant))
+print(TestConfig.schema())

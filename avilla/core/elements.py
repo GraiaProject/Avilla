@@ -1,9 +1,7 @@
-from pathlib import Path
 from typing import Optional
 
 from avilla.core.message import Element
 from avilla.core.selectors import resource as resource_selector
-from avilla.core.stream import Stream
 
 
 class Text(Element):

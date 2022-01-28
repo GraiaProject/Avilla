@@ -34,4 +34,4 @@ class Template:
                         patterns.append(kwargs.get(pattern[1:], Text(pattern)))
                     elif re.match(r"\$[0-9]*", pattern):
                         patterns.append(list_get(args, int(pattern[1:])))
-        return MessageChain.create(patterns)
+        return MessageChain(patterns)

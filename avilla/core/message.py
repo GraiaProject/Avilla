@@ -28,12 +28,12 @@ class Element:
         return f"msg_element::{cls.__name__}"
 
 
-class MessageChain(BaseModel):
+class MessageChain:
     """即 "消息链", 被用于承载整个消息内容的数据结构, 包含有一有序列表, 包含有继承了 Element 的各式类实例.
     Example:
-        1. 你可以使用 `MessageChain.create` 方法创建一个消息链:
+        1. 你可以使用 `MessageChain` 方法创建一个消息链:
             ``` python
-            MessageChain.create([
+            MessageChain([
                 Text("这是盛放在这个消息链中的一个 Text 元素")
             ])
             ```
@@ -58,7 +58,7 @@ class MessageChain(BaseModel):
             ```
         8. 使用 `MessageChain.asDisplay` 方法可以获取到字符串形式表示的消息, 至于字面意思, 看示例:
             ``` python
-            print(MessageChain.create([
+            print(MessageChain([
                 Text("text"), Notice(123, display="某人"), Image(...)
             ]).asDisplay()) # -> "text@某人 [图片]"
             ```
@@ -73,27 +73,23 @@ class MessageChain(BaseModel):
         14. `MessageChain.asMerged` 方法可以将消息链中相邻的 Text 元素合并为一个 Text 元素.
         15. 你可以通过一个分片实例取项, 这个分片的 `start` 和 `end` 的 Type Annotation 都是 `Optional[MessageIndex]`:
             ``` python
-            message = MessageChain.create([
+            message = MessageChain([
                 Text("123456789"), Notice(123), Text("3423")
             ])
             message.asMerged()[(0, 12):] # => [Notice(123), Text("3423")]
             ```
     """
 
-    __root__: List[Element]
+    content: List[Element]
 
-    class Config:
-        arbitrary_types_allowed = True
-
-    @classmethod
-    def create(cls, elements: List[Element]) -> "MessageChain":
+    def __init__(self, elements: List[Element]):
         """从传入的序列(可以是元组 tuple, 也可以是列表 list) 创建消息链.
         Args:
             elements (List[T]): 包含且仅包含消息元素的序列
         Returns:
             MessageChain: 以传入的序列作为所承载消息的消息链
         """
-        return cls(__root__=elements)
+        self.content = elements
 
     def has(self, element_class: Element) -> bool:
         """判断消息链中是否含有特定类型的消息元素
@@ -102,7 +98,7 @@ class MessageChain(BaseModel):
         Returns:
             bool: 判断结果
         """
-        return element_class in [type(i) for i in self.__root__]
+        return element_class in [type(i) for i in self.content]
 
     def get(self, element_class: Type[Element]) -> List[Element]:
         """获取消息链中所有特定类型的消息元素
@@ -111,7 +107,7 @@ class MessageChain(BaseModel):
         Returns:
             List[T]: 获取到的符合要求的所有消息元素; 另: 可能是空列表([]).
         """
-        return [i for i in self.__root__ if type(i) is element_class]
+        return [i for i in self.content if type(i) is element_class]
 
     def get_one(self, element_class: Type[Element], index: int) -> Element:
         """获取消息链中第 index + 1 个特定类型的消息元素
@@ -137,7 +133,7 @@ class MessageChain(BaseModel):
         Returns:
             str: 以字符串形式表示的消息链
         """
-        return "".join(i.asDisplay() for i in self.__root__)
+        return "".join(i.asDisplay() for i in self.content)
 
     @classmethod
     def join(cls, *chains: "MessageChain") -> "MessageChain":
@@ -145,24 +141,7 @@ class MessageChain(BaseModel):
         Returns:
             MessageChain: 拼接结果
         """
-        return cls.create(sum([list(i.__root__) for i in chains], []))
-
-    def plus_with(self, *chains: "MessageChain") -> "MessageChain":
-        """在现有的基础上将另一消息链拼接到原来实例的尾部, 并生成, 返回新的实例.
-        Returns:
-            MessageChain: 拼接结果
-        """
-        return self.create(sum([list(i.__root__) for i in chains], self.__root__))
-
-    def plus(self, *chains: "MessageChain") -> None:
-        """在现有的基础上将另一消息链拼接到原来实例的尾部
-        Raises:
-            ValueError: 原有的消息链不可变, 需要转为可变形态.
-        Returns:
-            None: 本方法无返回.
-        """
-        for i in chains:
-            self.__root__.extend(list(i.__root__))
+        return cls(sum([list(i.content) for i in chains], []))
 
     __contains__ = has
 
@@ -185,7 +164,7 @@ class MessageChain(BaseModel):
         """
         from .elements import Text
 
-        result = copy.copy(self.__root__)
+        result = copy.copy(self.content)
         if item.start:
             first_slice = result[item.start[0] :]
             if item.start[1] is not None and first_slice:  # text slice
@@ -216,7 +195,7 @@ class MessageChain(BaseModel):
                 ]
             else:
                 result = first_slice
-        return MessageChain.create(result)
+        return MessageChain(result)
 
     def as_merged(self) -> "MessageChain":
         """合并相邻的 Text 项, 并返回一个新的消息链实例
@@ -228,7 +207,7 @@ class MessageChain(BaseModel):
         result = []
 
         texts = []
-        for i in self.__root__:
+        for i in self.content:
             if not isinstance(i, Text):
                 if texts:
                     result.append(Text("".join(texts)))
@@ -240,7 +219,7 @@ class MessageChain(BaseModel):
             if texts:
                 result.append(Text("".join(texts)))
                 texts.clear()  # 清空缓存
-        return MessageChain.create(type(self.__root__)(result))  # 维持 Mutable
+        return MessageChain(type(self.content)(result))  # 维持 Mutable
 
     def exclude(self, *types: Type[Element]) -> "MessageChain":
         """将除了在给出的消息元素类型中符合的消息元素重新包装为一个新的消息链
@@ -249,7 +228,7 @@ class MessageChain(BaseModel):
         Returns:
             MessageChain: 返回的消息链中不包含参数中给出的消息元素类型
         """
-        return self.create([i for i in self.__root__ if type(i) not in types])
+        return MessageChain([i for i in self.content if type(i) not in types])
 
     def include(self, *types: Type[Element]) -> "MessageChain":
         """将只在给出的消息元素类型中符合的消息元素重新包装为一个新的消息链
@@ -258,7 +237,7 @@ class MessageChain(BaseModel):
         Returns:
             MessageChain: 返回的消息链中只包含参数中给出的消息元素类型
         """
-        return self.create([i for i in self.__root__ if type(i) in types])
+        return MessageChain([i for i in self.content if type(i) in types])
 
     def split(self, pattern: str, raw_string: bool = False) -> List["MessageChain"]:
         """和 `str.split` 差不多, 提供一个字符串, 然后返回分割结果.
@@ -269,12 +248,12 @@ class MessageChain(BaseModel):
 
         result: List["MessageChain"] = []
         tmp = []
-        for element in self.__root__:
+        for element in self.content:
             if isinstance(element, Text):
                 split_result = element.text.split(pattern)
                 for index, split_str in enumerate(split_result):
                     if tmp and index > 0:
-                        result.append(MessageChain.create(tmp))
+                        result.append(MessageChain(tmp))
                         tmp = []
                     if split_str or raw_string:
                         tmp.append(Text(split_str))
@@ -282,26 +261,26 @@ class MessageChain(BaseModel):
                 tmp.append(element)
         else:
             if tmp:
-                result.append(MessageChain.create(tmp))
+                result.append(MessageChain(tmp))
                 tmp = []
         return result
 
     def __repr__(self) -> str:
-        return f"MessageChain({repr(self.__root__)})"
+        return f"MessageChain({repr(self.content)})"
 
     def __iter__(self) -> Iterable[Element]:
-        yield from self.__root__
+        yield from self.content
 
     def startswith(self, string: str) -> bool:
         from .elements import Text
 
-        if not self.__root__ or type(self.__root__[0]) is not Text:
+        if not self.content or type(self.content[0]) is not Text:
             return False
-        return self.__root__[0].text.startswith(string)
+        return self.content[0].text.startswith(string)
 
     def endswith(self, string: str) -> bool:
         from .elements import Text
 
-        if not self.__root__ or type(self.__root__[-1]) is not Text:
+        if not self.content or type(self.content[-1]) is not Text:
             return False
-        return self.__root__[-1].text.endswith(string)  # type: ignore
+        return self.content[-1].text.endswith(string)  # type: ignore

@@ -22,7 +22,7 @@ class MessageSerializeBus(Generic[TProtocol]):
     async def serialize(self, message: MessageChain) -> List[Any]:
         result = []
 
-        for element in message.__root__:
+        for element in message.content:
             message_type = element.__class__
             if message_type in self.message_serializers:
                 result.append(await self.message_serializers[message_type](element))

@@ -1,7 +1,9 @@
-from typing import TYPE_CHECKING, Generic, Optional, TypeVar
+from typing import TYPE_CHECKING, Generic, Iterable, Optional, TypeVar, Union
 
-from avilla.core.message import MessageChain
-from avilla.core.selectors import entity
+from avilla.core.elements import Text
+from avilla.core.message import Element, MessageChain
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector
 from avilla.core.selectors import request as request_selector
 
@@ -21,12 +23,20 @@ class Result(Generic[R]):
 
 
 class MessageSend(Result[message_selector], Execution):
+    target: Union[entity_selector, mainline_selector]
     message: MessageChain
     reply: Optional[str] = None
 
-    def __init__(self, message: MessageChain, reply: Optional[str] = None):
+    def __init__(self, message: Union[MessageChain, str, Iterable[Element]], reply: Optional[str] = None):
+        if isinstance(message, str):
+            message = MessageChain([Text(message)])
+        elif isinstance(message, Iterable):
+            message = MessageChain(list(message))
         self.message = message
         self.reply = reply
+
+    def locate_target(self, target: Union[entity_selector, mainline_selector]):
+        self.target = target
 
 
 class MessageRevoke(Execution):
@@ -71,7 +81,7 @@ class RelationshipDestroy(Execution):
 
 
 class MemberRemove(Execution):
-    member: entity
+    member: entity_selector
 
-    def __init__(self, member: entity):
+    def __init__(self, member: entity_selector):
         self.member = member
