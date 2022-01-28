@@ -123,20 +123,18 @@ class WebsocketClient(ExportInterface, metaclass=ABCMeta):
 
 class HttpServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
-    @asynccontextmanager
     def http_listen(
         self, path: str = "/", methods: List[HTTP_METHODS] = None
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "Callable[[Callable[[HttpServerRequest], Any]], Any]":
         ...
 
 
 class WebsocketServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
-    @asynccontextmanager
     def websocket_listen(
         self,
         path: str = "/",
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "Callable[[Callable[[WebsocketConnection], Any]], Any]":
         ...
 
 
@@ -152,7 +150,7 @@ class ASGIHandlerProvider(ExportInterface, metaclass=ABCMeta):
         ...
 
 
-class HttpClientResponse(BehaviourSession, metaclass=ABCMeta):
+class HttpPacketMixin:
     url: URL
 
     @abstractmethod
@@ -167,6 +165,8 @@ class HttpClientResponse(BehaviourSession, metaclass=ABCMeta):
     async def headers(self) -> Dict[str, str]:
         ...
 
+
+class HttpClientResponse(BehaviourSession, HttpPacketMixin, metaclass=ABCMeta):
     @abstractmethod
     async def close(self):
         ...
@@ -178,6 +178,22 @@ class HttpClientResponse(BehaviourSession, metaclass=ABCMeta):
 
     @abstractmethod
     def raise_for_status(self):
+        ...
+
+
+class HttpServerRequest(BehaviourSession, HttpPacketMixin, metaclass=ABCMeta):
+    @abstractmethod
+    async def response(self, desc: Any):
+        ...
+
+    @property
+    @abstractmethod
+    def method(self) -> HTTP_METHODS:
+        ...
+
+    @property
+    @abstractmethod
+    def path(self) -> str:
         ...
 
 

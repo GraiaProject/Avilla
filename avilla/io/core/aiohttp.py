@@ -87,6 +87,8 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
     def __init__(self, session: ClientSession):
         self.session = session
         self.received_callbacks = []
+        self.error_callbacks = []
+        self.close_callbacks = []
 
     async def accept(self) -> None:
         raise NotImplementedError
