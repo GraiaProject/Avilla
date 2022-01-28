@@ -12,7 +12,7 @@ from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
 from avilla.core.stream import Stream
-from avilla.core.typing import META_OPS, METADATA_VALUE, TConfig, TExecutionMiddleware
+from avilla.core.typing import METADATA_VALUE, TConfig, TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
 
 from .execution import Execution
@@ -103,13 +103,13 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
         return True
 
     async def check_metadata_access(
-        self, metascope: Type[Selector], metakey: str, operator: META_OPS
+        self, metascope: Type[Selector], metakey: str, operator: str
     ) -> Union[List[str], None]:
         return None
 
     @abstractmethod
     async def operate_metadata(
-        self, relationship: "Relationship", metakey: str, operator: META_OPS, value: METADATA_VALUE
+        self, relationship: "Relationship", metakey: str, operator: str, value: METADATA_VALUE
     ) -> Any:
         ...
 

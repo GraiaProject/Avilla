@@ -6,7 +6,7 @@ from uvicorn.config import Config
 
 from avilla.core.launch import LaunchComponent
 from avilla.core.service import Service
-from avilla.core.service.common.http import ASGIHandlerProvider
+from avilla.io.common.http import ASGIHandlerProvider
 
 if TYPE_CHECKING:
     from avilla.core import Avilla

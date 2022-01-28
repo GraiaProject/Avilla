@@ -12,7 +12,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from avilla.core import LaunchComponent, Service
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.service.common.http import (
+from avilla.io.common.http import (
     HTTP_METHODS,
     ASGIHandlerProvider,
     HttpServer,

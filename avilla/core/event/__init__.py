@@ -14,7 +14,7 @@ from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
-from avilla.core.typing import META_OPS, METADATA_VALUE
+from avilla.core.typing import METADATA_VALUE
 
 from ..context import ctx_protocol, ctx_relationship
 
@@ -174,14 +174,14 @@ class ResourceUnavailable(AvillaEvent):
 class MetadataChanged(AvillaEvent):
     ctx: Union[entity_selector, mainline_selector]
     meta: str
-    op: META_OPS
+    op: str
     value: METADATA_VALUE
 
     def __init__(
         self,
         ctx: Union[entity_selector, mainline_selector],
         meta: str,
-        op: META_OPS,
+        op: str,
         value: METADATA_VALUE,
         current_self: entity_selector,
         time: datetime = None,

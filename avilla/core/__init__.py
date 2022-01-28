@@ -15,8 +15,7 @@ from avilla.core.context import ctx_avilla
 from avilla.core.event import RelationshipDispatcher
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.protocol import BaseProtocol
-from avilla.core.resource import ResourceAccessor, ResourceMetaWrapper, ResourceProvider
-from avilla.core.resource.activity import read
+from avilla.core.resource import ResourceProvider
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
 from avilla.core.service.entity import ExportInterface
@@ -153,7 +152,7 @@ class Avilla:
 
     async def fetch_resource(self, resource: resource_selector):
         async with self.access_resource(resource) as accessor:
-            return await accessor.execute(read)
+            return await accessor.read()
 
     def get_resource_meta(self, resource: resource_selector):
         resource_type, resource_id = list(resource.path.items())[0]

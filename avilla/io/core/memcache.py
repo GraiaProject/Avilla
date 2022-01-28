@@ -6,7 +6,7 @@ from typing import Type, Any, List, Tuple, Dict, Optional
 
 from avilla.core import Avilla, Service, LaunchComponent
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.service.common.storage import CacheStorage
+from avilla.io.common.storage import CacheStorage
 
 
 class Memcache(CacheStorage):

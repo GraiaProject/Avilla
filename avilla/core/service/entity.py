@@ -1,18 +1,12 @@
 from dataclasses import dataclass
-from inspect import isclass
 from typing import (
     TYPE_CHECKING,
-    Any,
     Callable,
     Dict,
     Generic,
-    List,
     Optional,
-    Tuple,
-    Type,
     TypeVar,
     Union,
-    cast,
     overload,
 )
 
@@ -68,6 +62,3 @@ class ExportInterface(Generic[TService]):
             raise ValueError("uncertain entity, it's a anonymous interface!")
         self.set_status(self.current, available, description)
 
-    @property
-    def supported_description_types(self):
-        return self.service.supported_description_types

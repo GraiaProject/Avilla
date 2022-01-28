@@ -188,7 +188,7 @@ class WebsocketConnection(BehaviourSession):
         pass
 
     @abstractmethod
-    async def send(self, data: bytes) -> None:
+    async def send(self, data: Union[Stream[bytes], bytes]) -> None:
         ...
 
     @abstractmethod
@@ -213,4 +213,16 @@ class WebsocketConnection(BehaviourSession):
 
     @abstractmethod
     def raise_for_code(self):
+        ...
+
+    @abstractmethod
+    def on_received(self, callback: Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]):
+        ...
+
+    @abstractmethod
+    def on_error(self, callback: Callable[["WebsocketConnection", Exception], Awaitable[Any]]):
+        ...
+
+    @abstractmethod
+    def on_close(self, callback: Callable[["WebsocketConnection"], Awaitable[Any]]):
         ...
