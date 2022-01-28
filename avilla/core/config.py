@@ -73,5 +73,11 @@ class direct(ConfigProvider[TModel]):
 
 
 class AvillaConfig(BaseModel):
+    # Config
     default_local_config_path: Path = Field(default_factory=Path.cwd)
     default_config_provider: Type[ConfigProvider] = Field(default=direct)
+
+    # Builtin Services
+    enable_builtin_services: bool = Field(default=True)
+    use_memcache: bool = Field(default=True)
+

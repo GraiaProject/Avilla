@@ -42,6 +42,7 @@ from avilla.core.service import Service, TInterface
 from avilla.core.service.entity import ExportInterface
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles import priority_strategy
+from avilla.io.core.memcache import MemcacheService
 
 AVILLA_ASCII_LOGO_AS_LIST = [
     "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].",
@@ -136,6 +137,12 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             self.config[applicant] = target_conf  # type: ignore
         self.config.setdefault(Avilla, {...: direct(AvillaConfig())})  # type: ignore
         # all use default value.
+
+        # builtin services
+        avilla_config = cast(AvillaConfig, self.get_config(Avilla))
+        if avilla_config.enable_builtin_services:
+            if avilla_config.use_memcache:
+                self.add_service(MemcacheService())
 
     def get_config(
         self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]], scope: Hashable = ...
