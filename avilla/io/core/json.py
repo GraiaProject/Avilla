@@ -1,7 +1,6 @@
+from json import loads
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Type, Union
-
-from json import loads
 
 from avilla.core.config import ConfigProvider, TModel
 
@@ -10,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class json_provide(ConfigProvider[TModel]):
-    def __init__(self, config_file: Union[Path, str], raw_path: bool = False, json_loader = loads) -> None:
+    def __init__(self, config_file: Union[Path, str], raw_path: bool = False, json_loader=loads) -> None:
         self.config_file = config_file
         self.raw_path = raw_path
         self.json_loader = json_loader

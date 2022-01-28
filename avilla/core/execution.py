@@ -4,10 +4,9 @@ from avilla.core.message import MessageChain
 from avilla.core.selectors import entity
 from avilla.core.selectors import message as message_selector
 from avilla.core.selectors import request as request_selector
-from avilla.core.selectors import resource as resource_selector
 
 if TYPE_CHECKING:
-    from avilla.core.message import Message  # noqa: F401
+    from avilla.core.message import Message
 
 
 class Execution:

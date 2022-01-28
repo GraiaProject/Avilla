@@ -5,6 +5,7 @@ from typing import (
     Any,
     ClassVar,
     Dict,
+    Final,
     Generic,
     List,
     Set,
@@ -13,6 +14,9 @@ from typing import (
     Union,
 )
 
+from pydantic import BaseModel
+
+from avilla.core.config import ConfigApplicant, ConfigFlushingMoment, TModel
 from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
 from avilla.core.operator import Operator
@@ -24,7 +28,7 @@ from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
 from avilla.core.stream import Stream
-from avilla.core.typing import METADATA_VALUE, TConfig, TExecutionMiddleware
+from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
 
 from .execution import Execution
@@ -35,9 +39,10 @@ if TYPE_CHECKING:
     from . import Avilla
 
 
-class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
+class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
     avilla: "Avilla"
-    config: TConfig
+    init_moment: Final[Dict[Type[TModel], ConfigFlushingMoment]] = {}
+    config_model: Type[TModel]
 
     platform: Platform = Platform(
         name="Avilla Universal Protocol Implementation",

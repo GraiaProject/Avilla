@@ -28,8 +28,8 @@ from rich.status import Status
 from avilla.core.config import (
     AvillaConfig,
     ConfigApplicant,
-    ConfigProvider,
     ConfigFlushingMoment,
+    ConfigProvider,
     TModel,
 )
 from avilla.core.context import ctx_avilla
@@ -40,7 +40,7 @@ from avilla.core.resource import ResourceProvider
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
 from avilla.core.service.entity import ExportInterface
-from avilla.core.typing import TConfig, TExecutionMiddleware, TProtocol
+from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles import priority_strategy
 
 AVILLA_ASCII_LOGO_AS_LIST = [
@@ -81,7 +81,6 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]],
             Union[TModel, "ConfigProvider[TModel]", Dict[Hashable, Union[TModel, "ConfigProvider[TModel]"]]],
         ],
-        default_config_provider: Type[ConfigProvider],
         middlewares: List[TExecutionMiddleware] = None,
     ):
         self.broadcast = broadcast
@@ -127,8 +126,15 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             if not isinstance(target_conf, dict):
                 target_conf = {...: target_conf}
 
+            for scope, shortcut in target_conf.items():
+                if not isinstance(shortcut, ConfigProvider):
+                    if isinstance(shortcut, BaseModel):
+                        target_conf[scope] = direct(shortcut)  # type: ignore
+                    else:
+                        raise ValueError(f"invalid configuration: {shortcut}")
+
             self.config[applicant] = target_conf  # type: ignore
-        self.config.setdefault(Avilla, {...: AvillaConfig()})  # type: ignore
+        self.config.setdefault(Avilla, {...: direct(AvillaConfig())})  # type: ignore
         # all use default value.
 
     def get_config(
@@ -271,7 +277,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             # and we are thinking for sometime to remove this moment...
             await asyncio.sleep(1)
             await self.flush_config(ConfigFlushingMoment.in_mainline)
-        
+
         self.new_launch_component("avilla.core.config_flush.mainline", mainline=config_flushing_in_mainline)
 
         loop = asyncio.get_running_loop()

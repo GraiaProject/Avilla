@@ -48,11 +48,14 @@ class ConfigApplicant(Generic[TModel]):
     init_moment: Dict[Type[TModel], ConfigFlushingMoment]
     config_model: Type[TModel]
 
+
 class ConfigProvider(Generic[TModel], metaclass=ABCMeta):
     config: Optional[TModel] = None
 
     @abstractmethod
-    async def provide(self, avilla: "Avilla", model: TModel, scope: Any) -> None: # set self.config, returns None.
+    async def provide(
+        self, avilla: "Avilla", model: TModel, scope: Any
+    ) -> None:  # set self.config, returns None.
         ...
 
     def get_config(self) -> TModel:
@@ -67,17 +70,6 @@ class direct(ConfigProvider[TModel]):
 
     async def provide(self, _1, _2, _3):
         pass
-
-
-"""
-def _(
-    config: Dict[
-        ConfigApplicant[TModel], Union[TModel, Dict[TScope, Union[TModel, "ConfigProvider[TModel]"]]]
-    ],
-    default_config_provider: Type[ConfigProvider],
-) -> TConfig:
-    return config
-"""
 
 
 class AvillaConfig(BaseModel):

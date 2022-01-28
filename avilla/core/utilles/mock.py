@@ -1,11 +1,33 @@
 import asyncio
-from typing import Any, Awaitable, Callable, Dict, List, Set, Type
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Hashable,
+    List,
+    Optional,
+    Set,
+    Type,
+    Union,
+    cast,
+)
 
 from loguru import logger
+from pydantic import BaseModel
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.status import Status
 
+from avilla.core import Avilla
+from avilla.core.config import (
+    AvillaConfig,
+    ConfigApplicant,
+    ConfigFlushingMoment,
+    ConfigProvider,
+    TModel,
+    direct,
+)
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.service import Service, TInterface
 
@@ -134,3 +156,45 @@ class LaunchMock:
             self.sigexit.set()
             launch_task.cancel()
             loop.run_until_complete(launch_task)
+
+
+class ConfigMock:
+    config: Dict[Union[ConfigApplicant, Type[ConfigApplicant]], Dict[Hashable, "ConfigProvider[BaseModel]"]]
+
+    def __init__(
+        self,
+        config: Dict[
+            Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]],
+            Union[TModel, "ConfigProvider[TModel]", Dict[Hashable, Union[TModel, "ConfigProvider[TModel]"]]],
+        ],
+    ):
+        self.config = {}
+        for applicant, target_conf in config.items():
+            if not isinstance(target_conf, dict):
+                target_conf = {...: target_conf}
+
+            for scope, shortcut in target_conf.items():
+                if not isinstance(shortcut, ConfigProvider):
+                    if isinstance(shortcut, BaseModel):
+                        target_conf[scope] = direct(shortcut)  # type: ignore
+                    else:
+                        raise ValueError(f"invalid configuration: {shortcut}")
+
+            self.config[applicant] = target_conf  # type: ignore
+        self.config.setdefault(Avilla, {...: direct(AvillaConfig())})  # type: ignore
+
+    def get_config(
+        self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]], scope: Hashable = ...
+    ) -> Optional[TModel]:
+        scoped = cast(Dict[Hashable, "ConfigProvider[TModel]"], self.config.get(applicant))
+        if scoped:
+            provider = scoped.get(scope)
+            if provider:
+                return provider.get_config()
+
+    async def flush_config(self, when: ConfigFlushingMoment):
+        for applicant, scoped in self.config.items():
+            if when not in applicant.init_moment.values():
+                continue
+            for scope, provider in scoped.items():
+                await provider.provide(self, applicant.config_model, scope)  # type: ignore

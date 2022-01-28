@@ -5,7 +5,6 @@ from typing import (
     Callable,
     Dict,
     List,
-    Literal,
     TypeVar,
     Union,
 )
@@ -17,7 +16,6 @@ if TYPE_CHECKING:
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
-TConfig = TypeVar("TConfig")
 
 TExecutionMiddleware = Callable[["Relationship", "Execution"], AsyncContextManager[None]]
 
