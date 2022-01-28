@@ -39,7 +39,8 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
         - [x] `RedisService (cache based on aioredis)`
       - [ ] `SqlmodelDatabase (database)`
     - [x] `Launch Component`: 统一的生命周期管理
-    - [ ] `Commander`: 基于 `Arclet - Alconna` 的优雅指令触发系统
+    - [x] `Config`: 基于 `pydantic`, 支持作用域机制的配置系统.
+    - [ ] `Commander`: 优雅的指令系统
     - [ ] `Permission`: 对标 `Luckperm`, 以低侵入度的方式提供简洁强大的权限管理能力
       - [ ] `Permissiver`: 权限管理指令, 基于 `Commander`
   + 杂项部分

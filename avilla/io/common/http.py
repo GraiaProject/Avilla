@@ -158,11 +158,11 @@ class HttpClientResponse(BehaviourSession, metaclass=ABCMeta):
     @abstractmethod
     async def read(self) -> Stream[bytes]:
         ...
-    
+
     @abstractmethod
     async def cookies(self) -> Dict[str, str]:
         ...
-    
+
     @abstractmethod
     async def headers(self) -> Dict[str, str]:
         ...
@@ -179,6 +179,7 @@ class HttpClientResponse(BehaviourSession, metaclass=ABCMeta):
     @abstractmethod
     def raise_for_status(self):
         ...
+
 
 class WebsocketConnection(BehaviourSession):
     server_mode: bool
@@ -204,7 +205,7 @@ class WebsocketConnection(BehaviourSession):
         ...
 
     @abstractmethod
-    async def close(self, code: int = 1000, message: bytes = b'') -> None:
+    async def close(self, code: int = 1000, message: bytes = b"") -> None:
         ...
 
     @abstractmethod

@@ -1,10 +1,10 @@
 import asyncio
 from datetime import timedelta
-from heapq import heappush, heappop
+from heapq import heappop, heappush
 from time import time
-from typing import Type, Any, List, Tuple, Dict, Optional
+from typing import Any, Dict, List, Optional, Tuple, Type
 
-from avilla.core import Avilla, Service, LaunchComponent
+from avilla.core import Avilla, LaunchComponent, Service
 from avilla.core.selectors import entity as entity_selector
 from avilla.io.common.storage import CacheStorage
 
@@ -41,7 +41,6 @@ class Memcache(CacheStorage):
                 raise KeyError(key)
         else:
             del self.cache[key]
-        
 
     async def clear(self) -> None:
         self.cache.clear()
@@ -84,11 +83,7 @@ class MemcacheService(Service):
 
     @property
     def launch_component(self) -> LaunchComponent:
-        return LaunchComponent(
-            "cache.client",
-            set(),
-            mainline=self.launch_mainline
-        )
+        return LaunchComponent("cache.client", set(), mainline=self.launch_mainline)
 
     async def launch_mainline(self, avilla: Avilla) -> None:
         while not avilla.sigexit.is_set():

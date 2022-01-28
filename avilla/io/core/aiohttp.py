@@ -1,6 +1,16 @@
 import asyncio
 from contextlib import asynccontextmanager
-from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, List, Optional, Type, Union
+from typing import (
+    Any,
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Type,
+    Union,
+)
 
 from aiohttp import ClientResponse, ClientSession, WSMsgType
 from aiohttp.client_ws import ClientWebSocketResponse
@@ -11,6 +21,8 @@ from yarl import URL
 from avilla.core.launch import LaunchComponent
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.service import Service
+from avilla.core.service.session import BehaviourSession
+from avilla.core.stream import Stream
 from avilla.io.common.http import (
     HTTP_METHODS,
     HttpClient,
@@ -19,8 +31,6 @@ from avilla.io.common.http import (
     WebsocketClient,
     WebsocketConnection,
 )
-from avilla.core.service.session import BehaviourSession
-from avilla.core.stream import Stream
 
 
 def proxysetting_transform(proxy_setting: ProxySetting) -> ProxyInfo:

@@ -1,6 +1,5 @@
-from typing import List, Sequence
-
 import re
+from typing import List, Sequence
 
 from avilla.core.elements import Text
 from avilla.core.message import Element, MessageChain

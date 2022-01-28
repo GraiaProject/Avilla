@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING, Type
+
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 from sqlmodel import SQLModel
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
+
 from avilla.core.launch import LaunchComponent
 from avilla.core.service import Service
 from avilla.core.service.entity import ExportInterface
@@ -17,6 +19,7 @@ class EngineProvider(ExportInterface):
 
     def get(self) -> AsyncEngine:
         return self.engine
+
 
 class SqlmodelService(Service):
     supported_interface_types = {EngineProvider}

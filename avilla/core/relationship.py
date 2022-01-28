@@ -2,8 +2,10 @@ from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Generic, List, TypedDict, TypeVar, Union, cast
 
 from avilla.core.execution import Execution
+from avilla.core.operator import Metadata, OperatorDispatch
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware
@@ -54,53 +56,11 @@ class ExecutorWrapper:
         return self
 
 
-class _RelationshipMetaWrapper:
-    relationship: "Relationship"
-
-    def __init__(self, relationship: "Relationship") -> None:
-        self.relationship = relationship
-
-    async def get(self, metakey: str) -> Any:
-        return await self.relationship.protocol.operate_metadata(
-            self.relationship, metakey, "get", None  # type: ignore
-        )
-
-    async def set(self, metakey: str, value: Any) -> None:
-        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "set", value)  # type: ignore
-
-    async def reset(self, metakey: str) -> None:
-        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "reset", None)  # type: ignore
-
-    async def prev(self, metakey: str) -> Any:
-        return await self.relationship.protocol.operate_metadata(
-            self.relationship, metakey, "prev", None  # type: ignore
-        )
-
-    async def next(self, metakey: str) -> Any:
-        return await self.relationship.protocol.operate_metadata(
-            self.relationship, metakey, "next", None  # type: ignore
-        )
-
-    async def push(self, metakey: str, value: Any) -> None:
-        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "push", value)  # type: ignore
-
-    async def pop(self, metakey: str, index: int) -> Any:
-        return await self.relationship.protocol.operate_metadata(
-            self.relationship, metakey, "pop", index  # type: ignore
-        )
-
-    async def add(self, metakey: str, value: Any) -> None:
-        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "add", value)  # type: ignore
-
-    async def remove(self, metakey: str, value: Any) -> None:
-        await self.relationship.protocol.operate_metadata(self.relationship, metakey, "remove", value)  # type: ignore
-
-
-M = TypeVar("M", bound=_RelationshipMetaWrapper)
+M = TypeVar("M", bound=Metadata)
 
 
 class Relationship(Generic[M]):
-    ctx: Union[entity_selector, mainline_selector]
+    ctx: Union[entity_selector, mainline_selector, request_selector]
     mainline: mainline_selector
     self: self_selector
     via: Union[mainline_selector, entity_selector, None] = None
@@ -131,7 +91,31 @@ class Relationship(Generic[M]):
 
     @property
     def meta(self) -> M:
-        return cast(M, _RelationshipMetaWrapper(self))
+        return cast(
+            M,
+            OperatorDispatch(
+                {
+                    **(
+                        {"member.*": self.protocol.get_operator(self.ctx)}
+                        if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() == "member"
+                        else {}
+                    ),
+                    **(
+                        {"request.*": self.protocol.get_operator(self.ctx)}
+                        if isinstance(self.ctx, request_selector)
+                        else {}
+                    ),
+                    **(
+                        {"contact.*": self.protocol.get_operator(self.ctx)}
+                        if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() != "member"
+                        else {}
+                    ),
+                    "mainline.*": self.protocol.get_operator(self.mainline),
+                    "self.*": self.protocol.get_operator(self.current),
+                    **self.protocol.get_extra_operators(self),  # type: ignore
+                }
+            ),
+        )
 
     @property
     def exec(self):
@@ -144,6 +128,6 @@ class Relationship(Generic[M]):
         return self.protocol.has_ability(ability)
 
 
-class CoreSupport(_RelationshipMetaWrapper):
+class CoreSupport(Metadata):
     "see pyi"
     pass

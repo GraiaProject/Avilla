@@ -8,7 +8,6 @@ from avilla.core.selectors import mainline
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware as TExecutionMiddleware
 
-
 class ExecutorWrapper:
     relationship: "Relationship"
     execution: Execution
@@ -20,7 +19,6 @@ class ExecutorWrapper:
     def to(self, target: Union[entity, mainline]): ...
     def period(self, period: timedelta): ...
     def use(self, middleware: TExecutionMiddleware): ...
-
 
 class _RelationshipMetaWrapper:
     relationship: "Relationship"
@@ -35,9 +33,7 @@ class _RelationshipMetaWrapper:
     async def add(self, metakey: str, value: Any) -> None: ...
     async def remove(self, metakey: str, value: Any) -> None: ...
 
-
 M = TypeVar("M", bound=_RelationshipMetaWrapper)
-
 
 class Relationship(Generic[M]):
     ctx: entity
@@ -45,7 +41,6 @@ class Relationship(Generic[M]):
     self: self_selector
     protocol: "BaseProtocol"
     _middlewares: List[TExecutionMiddleware]
-
     def __init__(
         self,
         protocol: BaseProtocol,
@@ -60,7 +55,6 @@ class Relationship(Generic[M]):
     @property
     def exec(self): ...
     def has_ability(self, ability: str) -> bool: ...
-
 
 class CoreSupport(_RelationshipMetaWrapper):
     #
@@ -102,6 +96,13 @@ class CoreSupport(_RelationshipMetaWrapper):
     @overload
     async def get(self, metakey: Literal["member.last_active_at"]) -> datetime: ...
     #
+    # Contact(like friend, worker etc.) Properties
+    #
+    @overload
+    async def get(self, metakey: Literal["contact.name"]) -> str: ...
+    @overload
+    async def get(self, metakey: Literal["contact.nickname"]) -> str: ...
+    #
     # Request Properties
     #
     @overload
@@ -140,10 +141,10 @@ class CoreSupport(_RelationshipMetaWrapper):
     @overload
     async def get(self, metakey: Literal["self.joined_at"]) -> datetime: ...
     @overload
+    async def get(self, metakey: Literal["self.last_active_at"]) -> datetime: ...
     #
     # necessary overrides
     #
-    async def get(self, metakey: Literal["self.last_active_at"]) -> datetime: ...
     async def get(self, metakey: ...) -> Any: ...
     async def set(self, metakey: ..., value: Any) -> None: ...
     async def reset(self, metakey: ...) -> None: ...

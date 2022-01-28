@@ -1,19 +1,10 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import asynccontextmanager
-from typing import (
-    Any,
-    AsyncGenerator,
-    AsyncIterable,
-    ClassVar,
-    Optional,
-    Set,
-    Tuple,
-)
+from typing import Any, AsyncGenerator, AsyncIterable, ClassVar, Optional, Set, Tuple
 
 from avilla.core.operator import Metadata, Operator, OperatorCache
-from avilla.core.service.entity import Status
-
 from avilla.core.selectors import resource as resource_selector
+from avilla.core.service.entity import Status
 from avilla.core.typing import METADATA_VALUE
 
 
@@ -63,9 +54,7 @@ class ResourceOperator(Operator):
     async def stats(self) -> Status:
         return await self.operate("stats", self.resource, None)
 
-    async def ls(
-        self
-    ) -> Tuple[Status, AsyncIterable[resource_selector]]:
+    async def ls(self) -> Tuple[Status, AsyncIterable[resource_selector]]:
         return await self.operate("ls", self.resource, None)
 
     async def cover(self, to: resource_selector) -> Status:

@@ -12,14 +12,14 @@ from starlette.websockets import WebSocket, WebSocketDisconnect
 
 from avilla.core import LaunchComponent, Service
 from avilla.core.selectors import entity as entity_selector
+from avilla.core.service.session import BehaviourSession
+from avilla.core.stream import Stream
 from avilla.io.common.http import (
     HTTP_METHODS,
     ASGIHandlerProvider,
     HttpServer,
     WebsocketServer,
 )
-from avilla.core.service.session import BehaviourSession
-from avilla.core.stream import Stream
 
 
 class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
@@ -39,10 +39,10 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
         path: str = "/",
         methods: List[HTTP_METHODS] = None,
     ):
-        pass # TODO
+        pass  # TODO
 
     async def websocket_listen(self, path: str = "/"):
-        pass # TODO
+        pass  # TODO
 
 
 class StarletteService(Service):

@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Type, Union, Dict
+from typing import Any, Dict, Type, Union
 
 from aioredis import Redis
 

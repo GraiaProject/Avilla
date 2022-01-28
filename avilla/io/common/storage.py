@@ -6,6 +6,7 @@ from avilla.core.service import ExportInterface
 
 D = TypeVar("D")
 
+
 class Storage(ExportInterface):
     pass
 
@@ -33,6 +34,7 @@ class KVStorage(Storage):
         ...
 """
 # TODO: still in progress (design)
+
 
 class CacheStorage(Storage, Generic[D], metaclass=ABCMeta):
     @abstractmethod

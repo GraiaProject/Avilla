@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Any, Optional, Type
 
-
 from .utilles.selector import DepthSelector, Selector, SelectorKey
 
 if TYPE_CHECKING:
@@ -19,8 +18,11 @@ class entity(Selector):
 
     def get_mainline(self) -> "mainline":
         if "account" in self.path:
-            return mainline._['$avilla:account']
+            return mainline._["$avilla:account"]
         return self.path["mainline"]
+
+    def get_entity_type(self) -> str:
+        return list(self.path.values())[-1]
 
     @property
     def profile_name(self) -> str:

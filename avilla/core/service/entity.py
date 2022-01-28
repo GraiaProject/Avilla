@@ -61,4 +61,3 @@ class ExportInterface(Generic[TService]):
         if self.current is None:
             raise ValueError("uncertain entity, it's a anonymous interface!")
         self.set_status(self.current, available, description)
-

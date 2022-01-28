@@ -1,16 +1,37 @@
 import asyncio
 import importlib.metadata
 from contextlib import asynccontextmanager
-from typing import Any, Awaitable, Callable, Dict, Generic, List, Optional, Set, Type, Union
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Generic,
+    Hashable,
+    List,
+    Optional,
+    Set,
+    Type,
+    Union,
+    cast,
+)
 
 from graia.broadcast import Broadcast
+from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from loguru import logger
+from pydantic import BaseModel
 from rich.console import Console
 from rich.logging import RichHandler
 from rich.status import Status
-from avilla.core.config import ConfigApplicant, ConfigProvider, TModel, TScope
 
+from avilla.core.config import (
+    AvillaConfig,
+    ConfigApplicant,
+    ConfigProvider,
+    ConfigFlushingMoment,
+    TModel,
+)
 from avilla.core.context import ctx_avilla
 from avilla.core.event import RelationshipDispatcher
 from avilla.core.launch import LaunchComponent, resolve_requirements
@@ -20,8 +41,6 @@ from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
 from avilla.core.service.entity import ExportInterface
 from avilla.core.typing import TConfig, TExecutionMiddleware, TProtocol
-from graia.broadcast.entities.dispatcher import BaseDispatcher
-
 from avilla.core.utilles import priority_strategy
 
 AVILLA_ASCII_LOGO_AS_LIST = [
@@ -36,7 +55,7 @@ AVILLA_ASCII_LOGO_AS_LIST = [
 GRAIA_PROJECT_REPOS = ["avilla-core", "graia-broadcast", "graia-saya", "graia-scheduler"]
 
 
-class Avilla:
+class Avilla(ConfigApplicant[AvillaConfig]):
     broadcast: Broadcast
     protocols: List[BaseProtocol]
     protocol_classes: List[Type[BaseProtocol]]
@@ -45,6 +64,7 @@ class Avilla:
     middlewares: List[TExecutionMiddleware]
     services: List[Service]
     resource_providers: List[ResourceProvider]
+    config: Dict[Union[ConfigApplicant, Type[ConfigApplicant]], Dict[Hashable, "ConfigProvider[BaseModel]"]]
 
     _service_interfaces: Dict[Type[ExportInterface], Service]
     _res_provider_types: Dict[str, ResourceProvider]
@@ -59,7 +79,7 @@ class Avilla:
         services: List[Service],
         config: Dict[
             Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]],
-            Union[TModel, Dict[TScope, Union[TModel, "ConfigProvider[TModel]"]]],
+            Union[TModel, "ConfigProvider[TModel]", Dict[Hashable, Union[TModel, "ConfigProvider[TModel]"]]],
         ],
         default_config_provider: Type[ConfigProvider],
         middlewares: List[TExecutionMiddleware] = None,
@@ -82,7 +102,9 @@ class Avilla:
             if isinstance(protocol, ResourceProvider):  # Protocol 可以作为资源提供方
                 self.resource_providers.append(protocol)
 
-        self._res_provider_types = priority_strategy(self.resource_providers, lambda p: p.supported_resource_types)
+        self._res_provider_types = priority_strategy(
+            self.resource_providers, lambda p: p.supported_resource_types
+        )
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
         @self.broadcast.finale_dispatchers.append
@@ -91,10 +113,39 @@ class Avilla:
             async def catch(interface: DispatcherInterface):
                 if interface.annotation is Avilla:
                     return self
-                elif isinstance(interface.annotation, type) and issubclass(interface.annotation, BaseProtocol):
+                elif isinstance(interface.annotation, type) and issubclass(
+                    interface.annotation, BaseProtocol
+                ):
                     for protocol in self.protocol_classes:
                         if interface.annotation is protocol.__class__:
                             return protocol(self)
+
+        # config shortcut flatten
+
+        self.config = {}
+        for applicant, target_conf in config.items():
+            if not isinstance(target_conf, dict):
+                target_conf = {...: target_conf}
+
+            self.config[applicant] = target_conf  # type: ignore
+        self.config.setdefault(Avilla, {...: AvillaConfig()})  # type: ignore
+        # all use default value.
+
+    def get_config(
+        self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]], scope: Hashable = ...
+    ) -> Optional[TModel]:
+        scoped = cast(Dict[Hashable, "ConfigProvider[TModel]"], self.config.get(applicant))
+        if scoped:
+            provider = scoped.get(scope)
+            if provider:
+                return provider.get_config()
+
+    async def flush_config(self, when: ConfigFlushingMoment):
+        for applicant, scoped in self.config.items():
+            if when not in applicant.init_moment.values():
+                continue
+            for scope, provider in scoped.items():
+                await provider.provide(self, applicant.config_model, scope)
 
     @classmethod
     def current(cls) -> "Avilla":
@@ -123,7 +174,9 @@ class Avilla:
         self.services.append(service)
         if isinstance(service, ResourceProvider):
             self.resource_providers.append(service)
-            self._res_provider_types = priority_strategy(self.resource_providers, lambda p: p.supported_resource_types)
+            self._res_provider_types = priority_strategy(
+                self.resource_providers, lambda p: p.supported_resource_types
+            )
         launch_component = service.launch_component
         self.launch_components[launch_component.id] = launch_component
 
@@ -133,7 +186,9 @@ class Avilla:
         self.services.remove(service)
         if isinstance(service, ResourceProvider):
             self.resource_providers.remove(service)
-            self._res_provider_types = priority_strategy(self.resource_providers, lambda p: p.supported_resource_types)
+            self._res_provider_types = priority_strategy(
+                self.resource_providers, lambda p: p.supported_resource_types
+            )
         del self.launch_components[service.launch_component.id]
 
     def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
@@ -159,7 +214,6 @@ class Avilla:
         if resource_type not in self._res_provider_types:
             raise ValueError(f"resource type {resource_type} not supported.")
         provider = self._res_provider_types[resource_type]
-        
 
     async def launch(self):
         logger.configure(
@@ -189,6 +243,9 @@ class Avilla:
 
         logger.info(f"launch components count: {len(self.launch_components)}")
 
+        logger.info("start config flushing, stage: before_prepare")
+        await self.flush_config(ConfigFlushingMoment.before_prepare)
+
         with Status("[orange bold]preparing components...", console=self.rich_console) as status:
             for component_layer in resolve_requirements(set(self.launch_components.values())):
                 tasks = [
@@ -202,7 +259,20 @@ class Avilla:
             status.update("all launch components prepared.")
             await asyncio.sleep(1)
 
+        logger.info("start config flushing, stage: before_mainline")
+        await self.flush_config(ConfigFlushingMoment.before_mainline)
+
         logger.info("[green bold]components prepared, switch to mainlines and block main thread.")
+
+        async def config_flushing_in_mainline(_):
+            # wait for all components prepared
+            # because we can not know whether the components are pending while they prepared their work,
+            # so we don't recommend to use in_mainline moment to flush config.
+            # and we are thinking for sometime to remove this moment...
+            await asyncio.sleep(1)
+            await self.flush_config(ConfigFlushingMoment.in_mainline)
+        
+        self.new_launch_component("avilla.core.config_flush.mainline", mainline=config_flushing_in_mainline)
 
         loop = asyncio.get_running_loop()
         tasks = [

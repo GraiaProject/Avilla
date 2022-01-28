@@ -522,7 +522,7 @@ uvicorn = ["uvicorn"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "a1d56e9dca31a813dd9338670ab2c5cb5ae33cf133a4097f9a2e2d504b0e74f3"
+content-hash = "404041bf07517e6d9a191179c0942be14ba84401c4e3a127f5d5ab8d1a5f6999"
 
 [metadata.files]
 aiohttp = [

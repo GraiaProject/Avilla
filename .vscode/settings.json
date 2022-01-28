@@ -35,6 +35,7 @@
         "iscoroutinefunction",
         "klass",
         "pydantic",
+        "pyhocon",
         "pypi",
         "rsctx",
         "rsexec",

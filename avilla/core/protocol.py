@@ -1,9 +1,21 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, List, Set, Tuple, Type, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Dict,
+    Generic,
+    List,
+    Set,
+    Tuple,
+    Type,
+    Union,
+)
 
 from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
+from avilla.core.operator import Operator
 from avilla.core.permission import Rank
 from avilla.core.platform import Platform
 from avilla.core.selectors import entity as entity_selector
@@ -108,10 +120,11 @@ class BaseProtocol(Generic[TConfig], metaclass=ABCMeta):
         return None
 
     @abstractmethod
-    async def operate_metadata(
-        self, relationship: "Relationship", metakey: str, operator: str, value: METADATA_VALUE
-    ) -> Any:
+    def get_operator(self, target: Selector) -> Operator:
         ...
+
+    def get_extra_operators(self, relationship: "Relationship") -> Dict[str, Operator]:
+        return {}
 
     async def accept_request(self, request: request_selector):
         raise NotImplementedError
