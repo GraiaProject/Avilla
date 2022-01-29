@@ -5,7 +5,6 @@ from avilla.core.execution import Execution as Execution
 from avilla.core.protocol import BaseProtocol as BaseProtocol
 from avilla.core.selectors import entity as entity
 from avilla.core.selectors import mainline
-from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware as TExecutionMiddleware
 
 class ExecutorWrapper:
@@ -38,18 +37,18 @@ M = TypeVar("M", bound=_RelationshipMetaWrapper)
 class Relationship(Generic[M]):
     ctx: entity
     mainline: mainline
-    self: self_selector
+    self: entity
     protocol: "BaseProtocol"
     _middlewares: List[TExecutionMiddleware]
     def __init__(
         self,
         protocol: BaseProtocol,
         ctx: entity,
-        current_self: self_selector,
+        current_self: entity,
         middlewares: List[TExecutionMiddleware] = ...,
     ) -> None: ...
     @property
-    def current(self) -> self_selector: ...
+    def current(self) -> entity: ...
     @property
     def meta(self) -> M: ...
     @property

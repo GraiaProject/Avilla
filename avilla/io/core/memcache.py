@@ -2,11 +2,15 @@ import asyncio
 from datetime import timedelta
 from heapq import heappop, heappush
 from time import time
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Type
 
-from avilla.core import Avilla, LaunchComponent, Service
+from avilla.core.launch import LaunchComponent
 from avilla.core.selectors import entity as entity_selector
+from avilla.core.service import Service
 from avilla.io.common.storage import CacheStorage
+
+if TYPE_CHECKING:
+    from avilla.core import Avilla
 
 
 class Memcache(CacheStorage):

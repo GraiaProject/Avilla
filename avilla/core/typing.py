@@ -20,4 +20,4 @@ TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
 TExecutionMiddleware = Callable[["Relationship", "Execution"], AsyncContextManager[None]]
 
 CONST_TYPES = Union[str, bool, int, float, datetime, timedelta, None]
-METADATA_VALUE = Union[CONST_TYPES, List[CONST_TYPES], Dict[str, CONST_TYPES]]
+STRUCTURE = Union[CONST_TYPES, List[CONST_TYPES], Dict[str, CONST_TYPES]]

@@ -124,7 +124,7 @@ class OperatorCachePatcher(Operator):
 # 然后哈哈，想起来还有个缓存智能失效。焯！
 
 
-class Metadata(Operator):
+class MetadataOperator(Operator):
     async def get(self, key: str) -> Any:
         return await self.operate("get", key, None)
 
@@ -153,20 +153,22 @@ class Metadata(Operator):
         await self.operate("remove", key, value)
 
 
-class Resource(Operator):
-    async def create(self, id: resource_selector) -> Status:
+class ResourceOperator(Operator):
+    resource: resource_selector
+
+    async def create(self, id: resource_selector = None) -> Status:
         return await self.operate("create", id, None)
 
-    async def write(self, id: resource_selector, data: Any) -> Status:
+    async def write(self, data: Any, id: resource_selector = None) -> Status:
         return await self.operate("write", id, data)
 
     async def put(self, data: Any) -> Tuple[Status, Optional[resource_selector]]:
         return await self.operate("put", None, data)
 
-    async def read(self, id: resource_selector) -> Tuple[Status, Optional[Any]]:
+    async def read(self, id: resource_selector = None) -> Tuple[Status, Optional[Any]]:
         return await self.operate("read", id, None)
 
-    async def stats(self, id: resource_selector) -> Status:
+    async def stats(self, id: resource_selector = None) -> Status:
         return await self.operate("stats", id, None)
 
     async def ls(
@@ -174,14 +176,14 @@ class Resource(Operator):
     ) -> Tuple[Status, AsyncIterable[resource_selector]]:
         return await self.operate("ls", parent, None)
 
-    async def cover(self, id: resource_selector, to: resource_selector) -> Status:
+    async def cover(self, to: resource_selector, id: resource_selector = None) -> Status:
         return await self.operate("rename", id, to)
 
     async def remove(
         self,
-        id: resource_selector,
+        id: resource_selector = None,
     ) -> Status:
         return await self.operate("remove", id, None)
 
-    async def meta(self, id: resource_selector) -> Tuple[Status, Optional[Metadata]]:
+    async def meta(self, id: resource_selector = None) -> Tuple[Status, Optional[MetadataOperator]]:
         return await self.operate("meta", id, None)

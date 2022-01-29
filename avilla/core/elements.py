@@ -58,16 +58,6 @@ class Image(Element):
         return "[$Image]"
 
 
-class Quote(Element):
-    id: str
-
-    def __init__(self, id: str) -> None:
-        self.id = id
-
-    def asDisplay(self) -> str:
-        return f"[$Quote:id={self.id}]"
-
-
 class Voice(Element):
     source: resource_selector
 

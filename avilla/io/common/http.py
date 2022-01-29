@@ -3,12 +3,16 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
+    Any,
     AsyncGenerator,
+    Awaitable,
     Callable,
     Dict,
     List,
     Literal,
+    MutableMapping,
     Optional,
+    Type,
     Union,
 )
 
@@ -17,9 +21,6 @@ from yarl import URL
 from avilla.core.service import ExportInterface
 from avilla.core.service.session import BehaviourSession
 from avilla.core.stream import Stream
-
-if TYPE_CHECKING:
-    from typing import Any, Awaitable, MutableMapping, Type
 
 HTTP_METHODS = Union[
     Literal["get"],
@@ -51,7 +52,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         headers: Dict[str, str] = None,
         data: Union[str, bytes] = None,
         proxy: ProxySetting = None,
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
     @abstractmethod
@@ -61,7 +62,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
     @abstractmethod
@@ -72,7 +73,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
     @abstractmethod
@@ -83,7 +84,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
     @abstractmethod
@@ -93,7 +94,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
     @abstractmethod
@@ -104,7 +105,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         data: Union[str, bytes],
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
 
@@ -115,26 +116,22 @@ class WebsocketClient(ExportInterface, metaclass=ABCMeta):
         self,
         url: Union[str, URL],
         headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
         retries_count: int = 3,
-    ) -> "AsyncGenerator[BehaviourSession, None]":
+    ) -> "AsyncGenerator[WebsocketConnection, None]":
         ...
 
 
 class HttpServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
     def http_listen(
-        self, path: str = "/", methods: List[HTTP_METHODS] = None
+        self, path: str, methods: List[HTTP_METHODS] = None
     ) -> "Callable[[Callable[[HttpServerRequest], Any]], Any]":
         ...
 
 
 class WebsocketServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
-    def websocket_listen(
-        self,
-        path: str = "/",
-    ) -> "Callable[[Callable[[WebsocketConnection], Any]], Any]":
+    def websocket_listen(self, path: str) -> "Callable[[Callable[[WebsocketConnection], Any]], Any]":
         ...
 
 

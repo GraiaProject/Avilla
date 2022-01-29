@@ -11,6 +11,7 @@ from typing import (
     List,
     Optional,
     Set,
+    Tuple,
     Type,
     Union,
     cast,
@@ -40,6 +41,7 @@ from avilla.core.resource import ResourceProvider
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
 from avilla.core.service.entity import ExportInterface
+from avilla.core.stream import Stream
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles import DeferDispatcher, priority_strategy
 from avilla.io.core.memcache import MemcacheService
@@ -155,6 +157,11 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             if provider:
                 return provider.get_config()
 
+    def get_config_scopes(self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]]):
+        scoped = self.config.get(applicant)
+        if scoped:
+            return scoped.keys()
+
     async def flush_config(self, when: ConfigFlushingMoment):
         for applicant, scoped in self.config.items():
             if when not in applicant.init_moment.values():
@@ -213,10 +220,13 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
     @asynccontextmanager
     async def access_resource(self, resource: resource_selector):
-        resource_type, resource_id = list(resource.path.items())[0]
+        resource_type = list(resource.path.keys())[0]
         if resource_type not in self._res_provider_types:
             raise ValueError(f"resource type {resource_type} not supported.")
-        provider = self._res_provider_types[resource_type]
+        if "provider" in resource.path:
+            provider = resource.path['provider']
+        else:
+            provider = self._res_provider_types[resource_type]
         async with provider.access_resource(resource) as accessor:
             yield accessor
 
@@ -224,11 +234,10 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         async with self.access_resource(resource) as accessor:
             return await accessor.read()
 
-    def get_resource_meta(self, resource: resource_selector):
-        resource_type, resource_id = list(resource.path.items())[0]
-        if resource_type not in self._res_provider_types:
-            raise ValueError(f"resource type {resource_type} not supported.")
-        provider = self._res_provider_types[resource_type]
+    @asynccontextmanager
+    async def get_resource_meta(self, resource: resource_selector):
+        async with self.access_resource(resource) as accessor:
+            yield await accessor.meta()
 
     async def launch(self):
         logger.configure(

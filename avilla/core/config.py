@@ -28,6 +28,7 @@ TConfig = Dict["ConfigApplicant", Union[TModel, Dict[TScope, Union[TModel, "Conf
 # Applicant, can be a base of a protocol implementation, to make some type hints.
 # also, Avilla is a applicant.
 
+
 class ConfigFlushingMoment(Enum):
     before_prepare = "before_prepare"
     before_mainline = "before_mainline"

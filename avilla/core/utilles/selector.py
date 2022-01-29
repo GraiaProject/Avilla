@@ -71,6 +71,9 @@ class Selector(Generic[S], metaclass=SelectorMeta):
             return False
         return all([v == __o.path[k] for k, v in self.path.items() if k in __o.path])
 
+    def __hash__(self) -> int:
+        return hash(tuple(self.path.items()))
+
 
 class DepthSelector(Selector):
     def keypath(self) -> str:

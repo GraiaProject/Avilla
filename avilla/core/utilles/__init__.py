@@ -2,7 +2,7 @@ import asyncio
 import random
 import string
 from contextlib import suppress
-from types import TracebackType
+from types import MethodType, TracebackType
 from typing import (
     Any,
     Callable,
@@ -12,6 +12,7 @@ from typing import (
     Optional,
     Set,
     Tuple,
+    Type,
     TypeVar,
     Union,
 )
@@ -124,3 +125,22 @@ class DeferDispatcher(BaseDispatcher):
         self, interface: DispatcherInterface, exception: Optional[Exception], tb: Optional[TracebackType]
     ):
         await asyncio.gather(*[run_always_await_safely(defer) for defer in interface.local_storage["defers"]])
+
+
+T = TypeVar("T")
+
+
+class Registrar(Dict):
+    def register(self, key):
+        def decorator(method):
+            self[key] = method
+            return method
+
+        return decorator
+
+    def decorate(self, attr):
+        def decorator(cls: Type[T]) -> Type[T]:
+            getattr(cls, attr).update(self)
+            return cls
+
+        return decorator

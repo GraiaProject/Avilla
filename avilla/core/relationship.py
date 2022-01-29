@@ -3,12 +3,11 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, List, TypedDict, TypeVar, Union, cast
 
 from avilla.core.execution import Execution
-from avilla.core.operator import Metadata, OperatorCachePatcher, OperatorDispatch
+from avilla.core.operator import MetadataOperator, OperatorCachePatcher, OperatorDispatch
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
-from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware
 from avilla.io.common.storage import CacheStorage
 
@@ -58,13 +57,13 @@ class ExecutorWrapper:
         return self
 
 
-M = TypeVar("M", bound=Metadata)
+M = TypeVar("M", bound=MetadataOperator)
 
 
 class Relationship(Generic[M]):
     ctx: Union[entity_selector, mainline_selector, request_selector]
     mainline: mainline_selector
-    self: self_selector
+    self: entity_selector
     via: Union[mainline_selector, entity_selector, None] = None
 
     protocol: "BaseProtocol"
@@ -76,7 +75,7 @@ class Relationship(Generic[M]):
         protocol: "BaseProtocol",
         ctx: Union[entity_selector, mainline_selector],
         mainline: mainline_selector,
-        current_self: self_selector,
+        current_self: entity_selector,
         via: Union[mainline_selector, entity_selector, None] = None,
         middlewares: List[TExecutionMiddleware] = None,
     ) -> None:
@@ -88,8 +87,8 @@ class Relationship(Generic[M]):
         self._middlewares = middlewares or []
 
     @property
-    def current(self) -> self_selector:
-        return self.self or self.protocol.get_self()
+    def current(self) -> entity_selector:
+        return self.self
 
     @cached_property
     def meta(self) -> M:
@@ -123,6 +122,6 @@ class Relationship(Generic[M]):
         return self.protocol.has_ability(ability)
 
 
-class CoreSupport(Metadata):
+class CoreSupport(MetadataOperator):
     "see pyi"
     pass

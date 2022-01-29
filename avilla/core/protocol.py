@@ -16,6 +16,8 @@ from typing import (
 
 from pydantic import BaseModel
 
+from graia.broadcast import Dispatchable
+
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment, TModel
 from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
@@ -26,7 +28,6 @@ from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
-from avilla.core.selectors import self as self_selector
 from avilla.core.stream import Stream
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
@@ -62,11 +63,8 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
     def __post_init__(self) -> None:
         pass
 
-    async def ensure_execution(self, execution: "Execution") -> Any:
-        raise NotImplementedError
-
     @abstractmethod
-    def get_self(self) -> "self_selector":
+    async def ensure_execution(self, execution: "Execution") -> Any:
         raise NotImplementedError
 
     @abstractmethod
@@ -78,7 +76,11 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_relationship(self, ctx: Selector) -> "Relationship":
+    async def parse_event(self, data: Any) -> Dispatchable:
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_relationship(self, ctx: Selector, current_self: entity_selector) -> "Relationship":
         raise NotImplementedError
 
     if TYPE_CHECKING:

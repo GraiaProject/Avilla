@@ -40,10 +40,6 @@ class mainline(DepthSelector):
         _: SelectorKey["mainline", Any]
 
 
-class self(Selector):
-    scope = "self"
-
-
 class message(Selector):
     scope = "message"
 
@@ -73,6 +69,10 @@ class resource(Selector):
 
     def get_mainline(self) -> "mainline":
         return self.path["mainline"]
+
+    @property
+    def resource_type(self) -> str:
+        return list(self.path.keys())[0]
 
 
 class request(Selector):

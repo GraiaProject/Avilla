@@ -35,7 +35,6 @@ class Service(metaclass=ABCMeta):
 
     def __init__(self) -> None:
         self.status = {}
-        self.cb = []
 
     @abstractmethod
     def get_interface(self, interface_type: Type[TInterface]) -> TInterface:

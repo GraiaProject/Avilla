@@ -105,7 +105,7 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
 
     def http_listen(
         self,
-        path: str = "/",
+        path: str,
         methods: List[HTTP_METHODS] = None,
     ):
         methods = methods or ["get", "post", "put", "delete"]
@@ -121,7 +121,7 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
 
         return wrapper
 
-    def websocket_listen(self, path: str = "/"):
+    def websocket_listen(self, path: str):
         def wrapper(callback: Callable[[StarletteWebsocketServerConnection], Any]):
             async def _wrapper(websocket: WebSocket):
                 ws = StarletteWebsocketServerConnection()

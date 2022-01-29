@@ -1,12 +1,15 @@
 import copy
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Iterable, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Iterable, List, Optional, Type, TypeVar, Union
 
 from pydantic import BaseModel  # pylint: ignore
 
 from avilla.core.selectors import entity
 from avilla.core.selectors import mainline as mainline_selector
+
+if TYPE_CHECKING:
+    from avilla.core.selectors import message as message_selector
 
 
 @dataclass
@@ -16,7 +19,10 @@ class Message:
     sender: entity
     content: "MessageChain"
     time: datetime
-    reply: Optional[str] = None
+    reply: Optional["message_selector"] = None
+
+    def to_selector(self) -> "message_selector":
+        return message_selector.mainline[self.mainline]._[self.id]
 
 
 class Element:
@@ -91,7 +97,7 @@ class MessageChain:
         """
         self.content = elements
 
-    def has(self, element_class: Element) -> bool:
+    def has(self, element_class: Type[Element]) -> bool:
         """判断消息链中是否含有特定类型的消息元素
         Args:
             element_class (T): 需要判断的消息元素的类型, 例如 "Text", "Notice", "Image" 等.
@@ -119,14 +125,17 @@ class MessageChain:
         """
         return self.get(element_class)[index]
 
-    def get_first(self, element_class: Type[Element]) -> Element:
+    if TYPE_CHECKING:
+        E = TypeVar('E', bound=Element)
+
+    def get_first(self, element_class: Type[E]) -> E:
         """获取消息链中第 1 个特定类型的消息元素
         Args:
             element_class (Type[Element]): 指定的消息元素的类型, 例如 "Text", "Notice", "Image" 等.
         Returns:
             T: 消息链第 1 个特定类型的消息元素
         """
-        return self.get_one(element_class, 0)
+        return self.get_one(element_class, 0)  # type: ignore
 
     def as_display(self) -> str:
         """获取以字符串形式表示的消息链, 且趋于通常你见到的样子.
