@@ -1,10 +1,12 @@
 import fnmatch
 from abc import ABCMeta, abstractmethod
+from contextlib import asynccontextmanager
 from datetime import timedelta
 from functools import partial
-from typing import Any, AsyncIterable, Dict, Generic, Optional, Tuple, TypeVar
+from typing import Any, AsyncIterable, Dict, Generic, List, Optional, Tuple, TypeVar
 
 from avilla.core.service.entity import Status
+from avilla.core.utilles import random_string
 from avilla.io.common.storage import CacheStorage
 
 from .selectors import resource as resource_selector
@@ -18,7 +20,7 @@ class OperatorCache(Generic[TContent], metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def set(self, key: str, value: TContent, expire: timedelta = None) -> None:
+    async def set(self, key: str, value: TContent) -> None:
         ...
 
     @abstractmethod
@@ -46,7 +48,9 @@ class OperatorDispatch(Operator):
     def __init__(self, patterns: Dict[str, Operator]):
         self.patterns = patterns
 
-    async def operate(self, operator: str, target: Any, value: Any, cache: OperatorCache = None) -> Any:
+    async def operate(
+        self, operator: str, target: Any, value: Any = None, cache: OperatorCache = None
+    ) -> Any:
         if not isinstance(target, str):
             raise TypeError("target must be a string (like a key)")
         for pattern, op in self.patterns.items():
@@ -56,6 +60,68 @@ class OperatorDispatch(Operator):
 
     def __getattr__(self, name: str):
         return partial(self.operate, operator=name)
+
+
+# TODO: 缓存智能失效：放在 Protocol 里面，能获取所有 Operator Cache 管控的缓存类型，
+# 且能够在 MetadataChanged 事件触发，且 key match 时智能取消相应的缓存。
+
+
+class PatchedCache(OperatorCache):
+    cache: CacheStorage
+    keys: List[str]
+    prefix: str
+
+    def __init__(self, cache: CacheStorage, prefix: str = "") -> None:
+        self.cache = cache
+        self.prefix = prefix
+        self.keys = []
+
+    async def get(self, key: str, default: Any = None) -> Any:
+        return await self.cache.get(key, default)
+
+    async def set(self, key: str, value: Any) -> None:
+        await self.cache.set(self.prefix + key, value)
+        self.keys.append(key)
+
+    async def delete(self, key: str, strict: bool = False) -> None:
+        await self.cache.delete(self.prefix + key, strict)
+        self.keys.remove(key)
+
+    async def clear(self) -> None:
+        for key in self.keys:
+            await self.cache.delete(key)
+
+    async def has(self, key: str) -> bool:
+        return await self.cache.has(self.prefix + key)
+
+    @classmethod
+    @asynccontextmanager
+    async def patch(cls, cache: CacheStorage):
+        instance = cls(cache)
+        yield instance
+        await instance.clear()
+
+
+class OperatorCachePatcher(Operator):
+    operator: Operator
+    prefix: str
+    cache: PatchedCache
+
+    def __init__(self, operator: Operator, cache: CacheStorage) -> None:
+        self.operator = operator
+        self.prefix = random_string()
+        self.cache = PatchedCache(cache, self.prefix)
+
+    async def operate(self, operator: str, target: Any, value: Any = None, _=None) -> Any:
+        return await self.operator.operate(operator, target, value, self.cache)
+
+    def __getattr__(self, name: str):
+        return partial(self.operate, operator=name)
+
+
+# 以后用 cast + OperatorCachePatcher + OperatorDispatch 就好了。
+# 什么？你问我这下面两个是什么？两个拿来 type hint 的。
+# 然后哈哈，想起来还有个缓存智能失效。焯！
 
 
 class Metadata(Operator):

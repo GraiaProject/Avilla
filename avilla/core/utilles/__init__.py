@@ -1,6 +1,23 @@
+import asyncio
 import random
 import string
-from typing import Callable, Dict, Hashable, List, Set, Tuple, TypeVar, Union
+from contextlib import suppress
+from types import TracebackType
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Hashable,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
+
+from graia.broadcast import BaseDispatcher, DispatcherInterface
+from graia.broadcast.utilles import run_always_await_safely
 
 
 def random_string(k: int = 12):
@@ -85,3 +102,25 @@ def priority_strategy(
         else:
             raise TypeError(f"{pattern} is not a valid pattern.")
     return result
+
+
+class Defer:
+    def __init__(self, defers: List[Callable[[], Any]]) -> None:
+        self.defers = defers
+
+    def add(self, defer: Callable[[], Any]) -> None:
+        self.defers.append(defer)
+
+
+class DeferDispatcher(BaseDispatcher):
+    async def beforeExecution(self, interface: DispatcherInterface):
+        interface.local_storage["defers"] = []
+
+    async def catch(self, interface: DispatcherInterface):
+        if interface.annotation is Defer:
+            return Defer(interface.local_storage["defers"])
+
+    async def afterExecution(
+        self, interface: DispatcherInterface, exception: Optional[Exception], tb: Optional[TracebackType]
+    ):
+        await asyncio.gather(*[run_always_await_safely(defer) for defer in interface.local_storage["defers"]])

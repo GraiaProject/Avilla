@@ -41,7 +41,7 @@ from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
 from avilla.core.service.entity import ExportInterface
 from avilla.core.typing import TExecutionMiddleware
-from avilla.core.utilles import priority_strategy
+from avilla.core.utilles import DeferDispatcher, priority_strategy
 from avilla.io.core.memcache import MemcacheService
 
 AVILLA_ASCII_LOGO_AS_LIST = [
@@ -138,11 +138,13 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self.config.setdefault(Avilla, {...: direct(AvillaConfig())})  # type: ignore
         # all use default value.
 
-        # builtin services
+        # builtin settings
         avilla_config = cast(AvillaConfig, self.get_config(Avilla))
         if avilla_config.enable_builtin_services:
             if avilla_config.use_memcache:
                 self.add_service(MemcacheService())
+        if avilla_config.use_defer:
+            self.broadcast.finale_dispatchers.append(DeferDispatcher())
 
     def get_config(
         self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]], scope: Hashable = ...

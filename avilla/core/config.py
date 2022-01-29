@@ -26,17 +26,7 @@ TScope = Union[TModel, EllipsisType]
 TConfig = Dict["ConfigApplicant", Union[TModel, Dict[TScope, Union[TModel, "ConfigProvider"]]]]
 
 # Applicant, can be a base of a protocol implementation, to make some type hints.
-"""
-Avilla(
-    config={
-        OnebotProtocol: {
-            entity.account["123456789"]: hocon(OnebotConfig.Ws(...))
-        }
-    },
-    default_config_provider=hocon
-)
-"""
-
+# also, Avilla is a applicant.
 
 class ConfigFlushingMoment(Enum):
     before_prepare = "before_prepare"
@@ -75,9 +65,11 @@ class direct(ConfigProvider[TModel]):
 class AvillaConfig(BaseModel):
     # Config
     default_local_config_path: Path = Field(default_factory=Path.cwd)
-    default_config_provider: Type[ConfigProvider] = Field(default=direct)
+    default_config_provider: Type[ConfigProvider] = direct
 
     # Builtin Services
-    enable_builtin_services: bool = Field(default=True)
-    use_memcache: bool = Field(default=True)
+    enable_builtin_services: bool = True
+    use_memcache: bool = True
 
+    # Builtin Utilles
+    use_defer: bool = True

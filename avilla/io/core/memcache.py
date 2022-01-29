@@ -52,7 +52,6 @@ class Memcache(CacheStorage):
 
 class MemcacheService(Service):
     supported_interface_types = {Memcache, CacheStorage}
-    supported_description_types = set()
 
     interval: float
     cache: Dict[str, Tuple[Optional[float], Any]]

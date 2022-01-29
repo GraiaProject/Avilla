@@ -1,14 +1,16 @@
 from contextlib import AsyncExitStack
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, List, TypedDict, TypeVar, Union, cast
 
 from avilla.core.execution import Execution
-from avilla.core.operator import Metadata, OperatorDispatch
+from avilla.core.operator import Metadata, OperatorCachePatcher, OperatorDispatch
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.selectors import self as self_selector
 from avilla.core.typing import TExecutionMiddleware
+from avilla.io.common.storage import CacheStorage
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -89,33 +91,26 @@ class Relationship(Generic[M]):
     def current(self) -> self_selector:
         return self.self or self.protocol.get_self()
 
-    @property
+    @cached_property
     def meta(self) -> M:
-        return cast(
-            M,
-            OperatorDispatch(
-                {
-                    **(
-                        {"member.*": self.protocol.get_operator(self.ctx)}
-                        if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() == "member"
-                        else {}
-                    ),
-                    **(
-                        {"request.*": self.protocol.get_operator(self.ctx)}
-                        if isinstance(self.ctx, request_selector)
-                        else {}
-                    ),
-                    **(
-                        {"contact.*": self.protocol.get_operator(self.ctx)}
-                        if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() != "member"
-                        else {}
-                    ),
-                    "mainline.*": self.protocol.get_operator(self.mainline),
-                    "self.*": self.protocol.get_operator(self.current),
-                    **self.protocol.get_extra_operators(self),  # type: ignore
-                }
-            ),
+        cache = self.protocol.avilla.get_interface(CacheStorage)
+        operator = OperatorDispatch(
+            {
+                "mainline.*": self.protocol.get_operator(self.mainline),
+                "self.*": self.protocol.get_operator(self.current),
+                **self.protocol.get_extra_operators(self),  # type: ignore
+            }
         )
+        patched = OperatorCachePatcher(operator, cache)
+        prefix = patched.prefix
+        if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() == "member":
+            operator.patterns["member.*"] = self.protocol.get_operator(self.ctx)
+
+        elif isinstance(self.ctx, request_selector):
+            operator.patterns["request.*"] = self.protocol.get_operator(self.ctx)
+        elif isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() != "member":
+            operator.patterns["contact.*"] = self.protocol.get_operator(self.ctx)
+        return cast(M, patched)
 
     @property
     def exec(self):
