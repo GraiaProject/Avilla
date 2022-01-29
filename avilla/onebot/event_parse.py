@@ -1,17 +1,15 @@
+import fnmatch
 from dataclasses import dataclass
+from datetime import datetime
 from typing import TYPE_CHECKING, Dict, Optional
+
 from avilla.core.event.message import MessageReceived
 from avilla.core.message import Message
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import message as message_selector
 from avilla.core.utilles import Registrar
-from avilla.core.selectors import (
-    mainline as mainline_selector,
-    entity as entity_selector,
-    message as message_selector,
-)
 from avilla.core.utilles.event import AbstractEventParser
-import fnmatch
-from datetime import datetime
-
 from avilla.onebot.elements import Reply
 
 if TYPE_CHECKING:
@@ -64,7 +62,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
                 mainline=mainline,
                 content=message_chain,
                 sender=entity_selector.mainline[mainline].member[data["user_id"]],
-                reply=reply, # TODO: 回复
+                reply=reply,  # TODO: 回复
             ),
             current_account,
             received_time,

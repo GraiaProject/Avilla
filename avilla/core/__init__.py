@@ -224,7 +224,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         if resource_type not in self._res_provider_types:
             raise ValueError(f"resource type {resource_type} not supported.")
         if "provider" in resource.path:
-            provider = resource.path['provider']
+            provider = resource.path["provider"]
         else:
             provider = self._res_provider_types[resource_type]
         async with provider.access_resource(resource) as accessor:

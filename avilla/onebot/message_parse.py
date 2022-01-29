@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING, Any, Dict, Type
-from avilla.core.elements import Image, NoticeAll, Text, Notice
+
+from avilla.core.elements import Image, Notice, NoticeAll, Text
 from avilla.core.message import Element
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.message import AbstractMessageParser
-from avilla.core.selectors import resource as resource_selector
 from avilla.onebot.elements import Reply
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class OnebotMessageParser(AbstractMessageParser):
         else:
             raise NotImplementedError(f"Unsupported message type: {elem_type}")
 
-    @registrar.register(Text) 
+    @registrar.register(Text)
     @staticmethod
     def text(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Text:
         return Text(data["data"]["text"])
@@ -43,11 +44,11 @@ class OnebotMessageParser(AbstractMessageParser):
     @staticmethod
     def notice_all(protocol: "OnebotProtocol", data: Dict[str, Any]) -> NoticeAll:
         return NoticeAll()
-    
+
     @registrar.register(Image)
     @staticmethod
     def image(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Image:
-        return Image(resource_selector.image[data['data']['url']].provider[protocol.service.__class__])
+        return Image(resource_selector.image[data["data"]["url"]].provider[protocol.service.__class__])
 
     @registrar.register(Reply)
     @staticmethod

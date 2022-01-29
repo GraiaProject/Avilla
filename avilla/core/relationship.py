@@ -3,7 +3,11 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Generic, List, TypedDict, TypeVar, Union, cast
 
 from avilla.core.execution import Execution
-from avilla.core.operator import MetadataOperator, OperatorCachePatcher, OperatorDispatch
+from avilla.core.operator import (
+    MetadataOperator,
+    OperatorCachePatcher,
+    OperatorDispatch,
+)
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector

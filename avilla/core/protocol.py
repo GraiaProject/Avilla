@@ -14,9 +14,8 @@ from typing import (
     Union,
 )
 
-from pydantic import BaseModel
-
 from graia.broadcast import Dispatchable
+from pydantic import BaseModel
 
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment, TModel
 from avilla.core.launch import LaunchComponent

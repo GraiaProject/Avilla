@@ -6,6 +6,7 @@ from avilla.core.config import ConfigApplicant, ConfigFlushingMoment
 from avilla.core.operator import ResourceOperator
 from avilla.core.resource import ResourceProvider
 from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service
 from avilla.core.service.entity import ExportInterface, Status
 from avilla.io.common.http import (
@@ -23,7 +24,6 @@ from avilla.onebot.config import (
     OnebotWsServerConfig,
 )
 from avilla.onebot.connection import OnebotConnection, OnebotWsClient
-from avilla.core.selectors import resource as resource_selector
 
 if TYPE_CHECKING:
     from avilla.core import Avilla

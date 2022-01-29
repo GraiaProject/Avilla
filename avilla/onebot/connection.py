@@ -1,5 +1,5 @@
-from abc import ABCMeta, abstractmethod
 import asyncio
+from abc import ABCMeta, abstractmethod
 from asyncio import Future
 from typing import TYPE_CHECKING, Dict, Optional, cast, final
 
@@ -26,7 +26,7 @@ class OnebotConnection(metaclass=ABCMeta):
     @abstractmethod
     async def maintask(self):
         raise NotImplementedError
-    
+
     @abstractmethod
     async def send(self, data: dict) -> None:
         raise NotImplementedError

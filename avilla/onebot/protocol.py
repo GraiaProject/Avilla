@@ -1,6 +1,8 @@
 import json
 from typing import Any, ClassVar, Final
 
+from graia.broadcast import Dispatchable
+
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment
 from avilla.core.execution import Execution
 from avilla.core.launch import LaunchComponent
@@ -9,17 +11,17 @@ from avilla.core.platform import Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
 from avilla.core.selectors import entity
+from avilla.core.selectors import entity as entity_selector
 from avilla.core.stream import Stream
 from avilla.core.transformers import u8_string
-from avilla.onebot.event_parse import OnebotEventParser
-from avilla.onebot.execution_ensure import OnebotExecutionHandler
-from avilla.onebot.message_serialize import OnebotMessageSerializer
 from avilla.core.utilles.selector import Selector
 from avilla.onebot.config import OnebotConnectionConfig
-from avilla.onebot.service import OnebotService
-from graia.broadcast import Dispatchable
-from avilla.core.selectors import entity as entity_selector
+from avilla.onebot.event_parse import OnebotEventParser
+from avilla.onebot.execution_ensure import OnebotExecutionHandler
 from avilla.onebot.message_parse import OnebotMessageParser
+from avilla.onebot.message_serialize import OnebotMessageSerializer
+from avilla.onebot.service import OnebotService
+
 
 class OnebotProtocol(BaseProtocol):
     platform: Final[Platform] = Platform(
@@ -55,5 +57,3 @@ class OnebotProtocol(BaseProtocol):
         if isinstance(ctx, entity):
             return Relationship(self, ctx, current_self)
         raise ValueError("cannot parse select")
-
-    

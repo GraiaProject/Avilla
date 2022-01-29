@@ -126,7 +126,7 @@ class MessageChain:
         return self.get(element_class)[index]
 
     if TYPE_CHECKING:
-        E = TypeVar('E', bound=Element)
+        E = TypeVar("E", bound=Element)
 
     def get_first(self, element_class: Type[E]) -> E:
         """获取消息链中第 1 个特定类型的消息元素

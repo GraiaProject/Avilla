@@ -4,11 +4,11 @@ from avilla.core.context import ctx_relationship
 from avilla.core.execution import MessageSend
 from avilla.core.message import Message
 from avilla.core.relationship import Relationship
+from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import message as message_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.exec import ExecutionHandler
-from avilla.core.selectors import mainline as mainline_selector
 from avilla.onebot.utilles import raise_for_obresp
-from avilla.core.selectors import message as message_selector
 
 if TYPE_CHECKING:
     from avilla.onebot.protocol import OnebotProtocol
@@ -30,7 +30,7 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
             if keypath == "group":
                 message = await protocol.serialize_message(exec.message)
                 if exec.reply:
-                    message  = [{"type": "reply", "data": {"id": exec.reply}}] + message
+                    message = [{"type": "reply", "data": {"id": exec.reply}}] + message
                 resp = await conn.action(
                     "send_group_message",
                     {
@@ -47,7 +47,7 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
             elif keypath == "friend":
                 message = await protocol.serialize_message(exec.message)
                 if exec.reply:
-                    message  = [{"type": "reply", "data": {"id": exec.reply}}] + message
+                    message = [{"type": "reply", "data": {"id": exec.reply}}] + message
                 resp = await conn.action(
                     "send_private_msg",  # 莫名其妙，感觉这东西只是拿来 friend msg 的
                     {
