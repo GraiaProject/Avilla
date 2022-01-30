@@ -1,9 +1,10 @@
+from abc import ABCMeta, abstractmethod
 import typing
 from contextvars import Token
 from dataclasses import dataclass
 from datetime import datetime
 from types import TracebackType
-from typing import Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
@@ -14,14 +15,12 @@ from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
-from avilla.core.typing import METADATA_VALUE
+from avilla.core.utilles.selector import Selector
 
 from ..context import ctx_protocol, ctx_relationship
 
 
-class AvillaEvent(Dispatchable):
-    ctx: entity_selector
-
+class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     self: entity_selector
     time: datetime
 
@@ -34,14 +33,19 @@ class AvillaEvent(Dispatchable):
     def get_ability_id(cls) -> str:
         return f"event::{cls.__name__}"
 
+    @property
+    @abstractmethod
+    def ctx(self) -> Selector:
+        ...
+
 
 _Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}
 
 
-class RelationshipDispatcher(BaseDispatcher):  # Avilla 将自动注入...哦, 看起来没这个必要.
+class RelationshipDispatcher(BaseDispatcher):
     @staticmethod
     async def beforeExecution(interface: "DispatcherInterface[AvillaEvent]"):
-        rs = await ctx_protocol.get().get_relationship(interface.event.ctx)
+        rs = await ctx_protocol.get().get_relationship(interface.event.ctx, interface.event.self)
         token = ctx_relationship.set(rs)
         interface.local_storage["_ctxtoken_rs"] = token
 
@@ -70,6 +74,10 @@ class RequestEvent(AvillaEvent):
     def mainline(self):
         return self.request.get_mainline()
 
+    @property
+    def ctx(self) -> Selector:
+        return self.request
+
     def __init__(
         self,
         request: request_selector,
@@ -90,6 +98,10 @@ class RequestEvent(AvillaEvent):
 class RequestAccepted(AvillaEvent):
     request: request_selector
 
+    @property
+    def ctx(self) -> Selector:
+        return self.request
+
     def __init__(
         self,
         request: request_selector,
@@ -103,6 +115,10 @@ class RequestAccepted(AvillaEvent):
 
 class RequestRejected(AvillaEvent):
     request: request_selector
+
+    @property
+    def ctx(self) -> Selector:
+        return self.request
 
     def __init__(
         self,
@@ -118,6 +134,10 @@ class RequestRejected(AvillaEvent):
 class RequestIgnored(AvillaEvent):
     request: request_selector
 
+    @property
+    def ctx(self) -> Selector:
+        return self.request
+
     def __init__(
         self,
         request: request_selector,
@@ -131,7 +151,10 @@ class RequestIgnored(AvillaEvent):
 
 class ResourceAvailable(AvillaEvent):
     resource: resource_selector
-    operator: Optional[entity_selector] = None
+
+    @property
+    def ctx(self) -> Selector:
+        return self.resource
 
     @property
     def mainline(self):
@@ -140,19 +163,20 @@ class ResourceAvailable(AvillaEvent):
     def __init__(
         self,
         resource: resource_selector,
-        operator: Optional[entity_selector],  # 本来应该默认 None, 但是 current_self 不太行....
         current_self: entity_selector,
         time: datetime = None,
     ):
         self.resource = resource
-        self.operator = operator
         self.self = current_self
         self.time = time or datetime.now()
 
 
 class ResourceUnavailable(AvillaEvent):
     resource: resource_selector
-    operator: Optional[entity_selector] = None
+
+    @property
+    def ctx(self) -> Selector:
+        return self.resource
 
     @property
     def mainline(self):
@@ -161,12 +185,10 @@ class ResourceUnavailable(AvillaEvent):
     def __init__(
         self,
         resource: resource_selector,
-        operator: Optional[entity_selector],
         current_self: entity_selector,
         time: datetime = None,
     ):
         self.resource = resource
-        self.operator = operator
         self.self = current_self
         self.time = time or datetime.now()
 
@@ -175,14 +197,14 @@ class MetadataChanged(AvillaEvent):
     ctx: Union[entity_selector, mainline_selector]
     meta: str
     op: str
-    value: METADATA_VALUE
+    value: Any
 
     def __init__(
         self,
         ctx: Union[entity_selector, mainline_selector],
         meta: str,
         op: str,
-        value: METADATA_VALUE,
+        value: Any,
         current_self: entity_selector,
         time: datetime = None,
     ):
@@ -211,6 +233,10 @@ class RankChanged(PermissionChangeInfo):
 class EntityPermissionChanged(AvillaEvent):
     entity: entity_selector
     modifies: List[PermissionChangeInfo]
+
+    @property
+    def ctx(self) -> Selector:
+        return self.entity
 
     def __init__(
         self,

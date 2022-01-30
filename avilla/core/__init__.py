@@ -45,6 +45,7 @@ from avilla.core.stream import Stream
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles import DeferDispatcher, priority_strategy
 from avilla.io.core.memcache import MemcacheService
+from avilla.core.config import direct
 
 AVILLA_ASCII_LOGO_AS_LIST = [
     "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].",
@@ -75,6 +76,9 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     sigexit: asyncio.Event
     rich_console: Console
 
+    init_moment = {AvillaConfig: ConfigFlushingMoment.before_prepare}
+    config_model = AvillaConfig
+
     def __init__(
         self,
         broadcast: Broadcast,
@@ -88,25 +92,27 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     ):
         self.broadcast = broadcast
         self.protocol_classes = protocols
-        self.protocols = [protocol(self) for protocol in protocols]
+        self.sigexit = asyncio.Event(loop=broadcast.loop)
+        self.resource_providers = []
+        self.launch_components = {}
+        self._res_provider_types = priority_strategy(
+            self.resource_providers, lambda p: p.supported_resource_types
+        )
+        self.middlewares = middlewares or []
         self.services = services
         self._service_interfaces = priority_strategy(services, lambda s: s.supported_interface_types)
-        self.middlewares = middlewares or []
-        self.launch_components = {
+        self.protocols = [protocol(self) for protocol in protocols]
+        self._protocol_map = dict(zip(protocols, self.protocols))
+        self.launch_components.update({
             **({i.launch_component.id: i.launch_component for i in services}),
             **({protocol.launch_component.id: protocol.launch_component for protocol in self.protocols}),
-        }
-        self.sigexit = asyncio.Event()
+        })
         self.rich_console = Console()
-        self.resource_providers = []
 
         for protocol in self.protocols:
             if isinstance(protocol, ResourceProvider):  # Protocol 可以作为资源提供方
                 self.resource_providers.append(protocol)
 
-        self._res_provider_types = priority_strategy(
-            self.resource_providers, lambda p: p.supported_resource_types
-        )
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
         @self.broadcast.finale_dispatchers.append
@@ -115,12 +121,8 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             async def catch(interface: DispatcherInterface):
                 if interface.annotation is Avilla:
                     return self
-                elif isinstance(interface.annotation, type) and issubclass(
-                    interface.annotation, BaseProtocol
-                ):
-                    for protocol in self.protocol_classes:
-                        if interface.annotation is protocol.__class__:
-                            return protocol(self)
+                elif interface.annotation in self._protocol_map:
+                    return self._protocol_map[interface.annotation]
 
         # config shortcut flatten
 
@@ -279,7 +281,8 @@ class Avilla(ConfigApplicant[AvillaConfig]):
                 ]
                 for task in tasks:
                     task.add_done_callback(lambda t: status.update(f"{t.get_name()} prepared."))
-                await asyncio.wait(tasks)
+                if tasks:
+                    await asyncio.wait(tasks)
             status.update("all launch components prepared.")
             await asyncio.sleep(1)
 
@@ -309,7 +312,8 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
         logger.info(f"mainline count: {len(tasks)}")
         try:
-            await asyncio.gather(*tasks)
+            if tasks:
+                await asyncio.gather(*tasks)
         except asyncio.CancelledError:
             logger.info("[red bold]cancelled by user.")
             if not self.sigexit.is_set():

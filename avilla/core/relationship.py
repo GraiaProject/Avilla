@@ -32,19 +32,13 @@ class ExecutorWrapper:
 
     def __init__(self, relationship: "Relationship") -> None:
         self.relationship = relationship
+        self.middlewares = []
 
     def __await__(self):
-        exit_stack = AsyncExitStack()
-        yield from exit_stack.__aenter__().__await__()
-        try:
-            for middleware in self.middlewares:
-                yield from exit_stack.enter_async_context(
-                    middleware(self.relationship, self.execution)  # type: ignore
-                ).__await__()
-            result = yield from self.relationship.protocol.ensure_execution(self.execution)  # type: ignore
-            return result
-        finally:
-            yield from exit_stack.__aexit__(None, None, None).__await__()
+        return self.ensure().__await__()
+
+    async def ensure(self):
+        return await self.relationship.protocol.ensure_execution(self.execution)
 
     def execute(self, execution: "Execution"):
         self.execution = execution
@@ -53,7 +47,7 @@ class ExecutorWrapper:
     __call__ = execute
 
     def to(self, target: Union[entity_selector, mainline_selector]):
-        self.meta["to"] = target
+        self.execution.locate_target(target)
         return self
 
     def use(self, middleware: TExecutionMiddleware):

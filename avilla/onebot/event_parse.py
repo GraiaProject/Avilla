@@ -42,10 +42,17 @@ registrar = Registrar()
 @registrar.decorate("parsers")
 class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"]):
     def key(self, token: Dict) -> OnebotEventTypeKey:
-        return super().key(token)
+        return OnebotEventTypeKey(
+            post=token["post_type"],
+            message=token.get("message_type"),
+            request=token.get("request_type"),
+            notice=token.get("notice_type"),
+            meta_event=token.get("meta_event_type"),
+            sub=token.get("sub_type"),
+        )
 
-    @registrar.register(OnebotEventTypeKey(post="message", message="group", sub="normal"))
     @staticmethod
+    @registrar.register(OnebotEventTypeKey(post="message", message="group", sub="normal"))
     async def message(protocol: "OnebotProtocol", data: Dict) -> MessageReceived:
         mainline = mainline_selector.group[str(data["group_id"])]
         message_chain = await protocol.parse_message(data["message"])
@@ -61,8 +68,8 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
                 id=data["message_id"],
                 mainline=mainline,
                 content=message_chain,
-                sender=entity_selector.mainline[mainline].member[data["user_id"]],
-                reply=reply,  # TODO: 回复
+                sender=entity_selector.mainline[mainline].member[str(data["user_id"])],
+                reply=reply,
             ),
             current_account,
             received_time,

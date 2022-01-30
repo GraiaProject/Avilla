@@ -39,6 +39,9 @@ class mainline(DepthSelector):
 
         _: SelectorKey["mainline", Any]
 
+    def keypath(self) -> str:
+        return super().keypath()
+
 
 class message(Selector):
     scope = "message"

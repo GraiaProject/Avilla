@@ -88,11 +88,12 @@ class MemcacheService(Service):
     def launch_component(self) -> LaunchComponent:
         return LaunchComponent("cache.client", set(), mainline=self.launch_mainline)
 
-    async def launch_mainline(self, avilla: Avilla) -> None:
+    async def launch_mainline(self, avilla: "Avilla") -> None:
         while not avilla.sigexit.is_set():
-            expire_time, key = self.expire[0]
-            while expire_time <= time():
-                self.cache.pop(key, None)
-                heappop(self.expire)
+            if self.expire:
                 expire_time, key = self.expire[0]
+                while expire_time <= time():
+                    self.cache.pop(key, None)
+                    heappop(self.expire)
+                    expire_time, key = self.expire[0]
             await asyncio.sleep(self.interval)

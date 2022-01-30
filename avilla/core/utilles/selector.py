@@ -1,21 +1,21 @@
-from typing import TYPE_CHECKING, Any, Dict, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Dict, Generic, Type, TypeVar, Union, cast
 
 T = TypeVar("T")
 A = TypeVar("A")
 
 
 class SelectorKey(Generic[A, T]):
-    selector: str
+    selector: "Type[Selector]"
     key: str
     past: Dict[str, Any]
 
-    def __init__(self, selector: str, key: str, past: Dict[str, Any] = None):
+    def __init__(self, selector: "Type[Selector]", key: str, past: Dict[str, Any] = None):
         self.selector = selector
         self.key = key
         self.past = past or {}
 
     def __getitem__(self, value: T) -> A:
-        instance = Selector(self.selector, self.past)
+        instance = self.selector(self.past)
         instance.path[self.key] = value
         return cast(A, instance)
 
@@ -32,7 +32,7 @@ class SelectorMeta(type):
         scope: str
 
     def __getattr__(cls, key: str) -> "SelectorKey":
-        return SelectorKey(cls.scope, key)
+        return SelectorKey(cls, key)  # type: ignore
 
 
 S = TypeVar("S", bound=str)
@@ -42,8 +42,7 @@ class Selector(Generic[S], metaclass=SelectorMeta):
     scope: S
     path: Dict[str, Any]
 
-    def __init__(self, scope: S, path: Dict[str, Any] = None) -> None:
-        self.scope = scope
+    def __init__(self, path: Dict[str, Any] = None) -> None:
         self.path = path or {}
 
     def to_dict(self):
@@ -58,13 +57,15 @@ class Selector(Generic[S], metaclass=SelectorMeta):
     def __getitem__(self, value: str):
         return self.path[value]
 
-    def __getattr__(self, key: str) -> "SelectorKey":
-        return SelectorKey(self.scope, key, self.path)
+    def __getattr__(self, key: str) -> "Union[SelectorKey, Any]":
+        return SelectorKey(self.__class__, key, self.path)
 
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, Selector):
             return False
-        return self.scope == __o.scope and self.path == __o.path
+        return self.scope == __o.scope and all(
+            [__o[k] == v for k, v in self.path.items()]
+        )
 
     def __and__(self, __o: "Selector") -> bool:
         if self.scope != __o.scope:

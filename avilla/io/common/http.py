@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+import asyncio
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import (
@@ -196,13 +197,14 @@ class HttpServerRequest(BehaviourSession, HttpPacketMixin, metaclass=ABCMeta):
 
 class WebsocketConnection(BehaviourSession):
     server_mode: bool
+    ready: asyncio.Event
 
     @abstractmethod
     async def accept(self) -> None:
         pass
 
     @abstractmethod
-    async def send(self, data: Union[Stream[bytes], bytes]) -> None:
+    async def send(self, data: Union[Stream[Union[bytes, str, dict, list]], bytes, str, dict, list]) -> None:
         ...
 
     @abstractmethod

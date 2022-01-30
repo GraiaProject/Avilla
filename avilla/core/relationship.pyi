@@ -3,7 +3,7 @@ from typing import Any, Dict, Generic, List, Literal, TypeVar, Union, overload
 
 from avilla.core.execution import Execution as Execution
 from avilla.core.protocol import BaseProtocol as BaseProtocol
-from avilla.core.selectors import entity as entity
+from avilla.core.selectors import entity as entity, mainline as mainline
 from avilla.core.selectors import mainline
 from avilla.core.typing import TExecutionMiddleware as TExecutionMiddleware
 
@@ -44,6 +44,7 @@ class Relationship(Generic[M]):
         self,
         protocol: BaseProtocol,
         ctx: entity,
+        mainline: mainline,
         current_self: entity,
         middlewares: List[TExecutionMiddleware] = ...,
     ) -> None: ...

@@ -76,6 +76,7 @@ class AiohttpHttpResponse(HttpClientResponse):
 
 class AiohttpWebsocketClientConnection(WebsocketConnection):
     server_mode = False
+    ready: asyncio.Event
 
     session: ClientSession
     response: Optional[ClientWebSocketResponse]
@@ -86,6 +87,7 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
 
     def __init__(self, session: ClientSession):
         self.session = session
+        self.ready = asyncio.Event()
         self.received_callbacks = []
         self.error_callbacks = []
         self.close_callbacks = []
@@ -93,12 +95,20 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
     async def accept(self) -> None:
         raise NotImplementedError
 
-    async def send(self, data: Union[Stream[bytes], bytes]) -> None:
+    async def send(self, data: Union[Stream[Union[bytes, str, dict, list]], bytes, str, dict, list]) -> None:
         if not self.response:
             raise RuntimeError("Websocket connection not prepared")
         if isinstance(data, Stream):
             data = await data.unwrap()
-        await self.response.send_bytes(data)
+        if isinstance(data, bytes):
+            await self.response.send_bytes(data)
+        elif isinstance(data, str):
+            await self.response.send_str(data)
+        elif isinstance(data, (dict, list)):
+            await self.response.send_json(data)
+        else:
+            raise TypeError(f"Unsupported data type: {type(data)}")
+        logger.debug(f"websocket send: {data}")
 
     async def receive(self) -> Stream[bytes]:
         if not self.response:
@@ -254,7 +264,7 @@ class AiohttpClient(HttpClient, WebsocketClient):
         origin_count = retries_count
         conn = AiohttpWebsocketClientConnection(self.aiohttp_session)
         yield conn
-        # todo: implement retries
+        logger.debug("websocket connection start")
         while retries_count > 0:
             try:
                 async with self.aiohttp_session.ws_connect(
@@ -262,7 +272,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
                     headers=headers,
                 ) as response:
                     conn.response = response
+                    conn.ready.set()
                     async for message in response:
+                        logger.debug(f"websocket message received: {message}")
                         if message.type == WSMsgType.TEXT:
                             await asyncio.gather(
                                 *[

@@ -15,11 +15,10 @@ if TYPE_CHECKING:
 
 registrar = Registrar()
 
-
 @registrar.decorate("handlers")
 class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
-    @registrar.register(MessageSend)
     @staticmethod
+    @registrar.register(MessageSend)
     async def send_message(protocol: "OnebotProtocol", exec: MessageSend):
         rs = ctx_relationship.get()
         if rs is None:
@@ -32,15 +31,17 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
                 if exec.reply:
                     message = [{"type": "reply", "data": {"id": exec.reply}}] + message
                 resp = await conn.action(
-                    "send_group_message",
+                    "send_group_msg",
                     {
                         "group_id": int(exec.target.path["group"]),
                         # v12 中应该直接传，但 v11 的类型还是 number.
                         "message": message,
                     },
+                    timeout=5
                 )
                 raise_for_obresp(resp)
-                return message_selector.mainline[exec.target]._[str(resp["message_id"])]
+                print(resp)
+                return message_selector.mainline[exec.target]._[str(resp['data']["message_id"])]
             elif keypath == "channel.guild":
                 # TODO: gocq 相关, 发频道消息
                 raise NotImplementedError
@@ -55,7 +56,9 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
                         # v12 中应该直接传，但 v11 的类型还是 number.
                         "message": message,
                     },
+                    timeout=5
                 )
+                print(resp)
                 raise_for_obresp(resp)
                 return message_selector.mainline[exec.target]._[str(resp["message_id"])]
             else:

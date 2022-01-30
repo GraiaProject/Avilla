@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
 
 class Execution:
-    pass
+    def locate_target(self, target: Union[mainline_selector, entity_selector]) -> "Execution":
+        ...
 
 
 R = TypeVar("R")

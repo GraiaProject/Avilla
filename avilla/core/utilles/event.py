@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, Generic, TypeVar
+from typing import Any, Awaitable, Callable, Dict, Generic, Optional, TypeVar
 
 from graia.broadcast import Dispatchable
 
@@ -22,11 +22,8 @@ class AbstractEventParser(Generic[T, P], metaclass=ABCMeta):
     def key(self, token: Any) -> T:
         raise NotImplementedError
 
-    async def serialize(self, protocol: P, raw_data: Any) -> Dispatchable:
+    async def parse(self, protocol: P, raw_data: Any) -> Optional[Dispatchable]:
         key = self.key(raw_data)
         for pattern, parser in self.parsers.items():
             if pattern == key:
                 return await parser(protocol, raw_data)
-            else:
-                raise ValueError(f"[{key}] cannot be serialized.")
-        raise ValueError(f"[{key}] cannot be serialized.")

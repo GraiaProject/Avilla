@@ -20,7 +20,7 @@ class OnebotMessageParser(AbstractMessageParser):
         if elem_type == "text":
             return Text
         elif elem_type == "at":
-            if elem_type["data"]["qq"] == "all":
+            if token["data"]["qq"] == "all":
                 return NoticeAll
             return Notice
         elif elem_type == "image":
@@ -30,27 +30,27 @@ class OnebotMessageParser(AbstractMessageParser):
         else:
             raise NotImplementedError(f"Unsupported message type: {elem_type}")
 
-    @registrar.register(Text)
     @staticmethod
-    def text(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Text:
+    @registrar.register(Text)
+    async def text(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Text:
         return Text(data["data"]["text"])
 
-    @registrar.register(Notice)
     @staticmethod
-    def notice(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Notice:
+    @registrar.register(Notice)
+    async def notice(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Notice:
         return Notice(data["data"]["qq"])
 
-    @registrar.register(NoticeAll)
     @staticmethod
-    def notice_all(protocol: "OnebotProtocol", data: Dict[str, Any]) -> NoticeAll:
+    @registrar.register(NoticeAll)
+    async def notice_all(protocol: "OnebotProtocol", data: Dict[str, Any]) -> NoticeAll:
         return NoticeAll()
 
-    @registrar.register(Image)
     @staticmethod
-    def image(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Image:
+    @registrar.register(Image)
+    async def image(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Image:
         return Image(resource_selector.image[data["data"]["url"]].provider[protocol.service.__class__])
 
-    @registrar.register(Reply)
     @staticmethod
-    def reply(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Reply:
+    @registrar.register(Reply)
+    async def reply(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Reply:
         return Reply(data["data"]["id"])

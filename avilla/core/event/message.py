@@ -5,12 +5,17 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 from avilla.core.message import Message, MessageChain
 from avilla.core.selectors import entity
+from avilla.core.utilles.selector import Selector
 
 from . import AvillaEvent
 
 
 class MessageReceived(AvillaEvent):
     message: Message
+
+    @property
+    def ctx(self) -> Selector:
+        return self.message.sender
 
     def __init__(
         self,
@@ -36,6 +41,10 @@ class MessageEdited(AvillaEvent):
     operator: entity
     past: MessageChain
     current: MessageChain
+
+    @property
+    def ctx(self) -> Selector:
+        return self.operator
 
     def __init__(
         self,
@@ -63,6 +72,10 @@ class MessageRevoked(AvillaEvent):
     message: Message
 
     operator: entity
+
+    @property
+    def ctx(self) -> Selector:
+        return self.operator
 
     def __init__(
         self,

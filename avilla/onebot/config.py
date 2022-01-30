@@ -13,6 +13,9 @@ class OnebotConnectionConfig(BaseModel):
     data_parser: Callable[[str], object] = json.loads
     data_serializer: Callable[[object], str] = json.dumps
 
+    class Config:
+        arbitrary_types_allowed = True
+
 
 class OnebotHttpClientConfig(OnebotConnectionConfig):
     url: URL

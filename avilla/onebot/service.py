@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, AsyncGenerator, Dict, List, Optional, Type, cast
 
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment
+from avilla.core.launch import LaunchComponent
 from avilla.core.operator import ResourceOperator
 from avilla.core.resource import ResourceProvider
 from avilla.core.selectors import entity as entity_selector
@@ -71,7 +72,7 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
 
     async def launch_mainline(self, avilla: "Avilla"):
         loop = asyncio.get_running_loop()
-        accounts = cast(List[entity_selector], avilla.get_config_scopes(self))
+        accounts = cast(List[entity_selector], avilla.get_config_scopes(self.__class__))
         if not accounts:
             raise ValueError("No accounts configured")
         assert all(
@@ -79,7 +80,7 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
         ), "Accounts must be entity selectors"
         tasks = []
         for account in accounts:
-            conf = cast(OnebotConnectionConfig, avilla.get_config(self, account))
+            conf = cast(OnebotConnectionConfig, avilla.get_config(self.__class__, account))
             if isinstance(conf, OnebotWsClientConfig):
                 self.websocket_client = avilla.get_interface(WebsocketClient)
                 connection = OnebotWsClient(self.websocket_client, account, self, conf)
@@ -90,9 +91,14 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                 # TODO: OnebotWsServer
             else:
                 raise ValueError(f"{type(conf)} is not supported now.")
+        await asyncio.gather(*tasks)
 
     @asynccontextmanager
     async def access_resource(self, res: resource_selector) -> AsyncGenerator["ResourceOperator", None]:
         if res.resource_type == "image":
             yield OnebotImageAccessor(self, res)
         raise NotImplementedError(f"Resource {res} is not supported")
+
+    @property
+    def launch_component(self) -> LaunchComponent:
+        return LaunchComponent("avilla.onebot.service", {"http.universal_client"}, self.launch_mainline)

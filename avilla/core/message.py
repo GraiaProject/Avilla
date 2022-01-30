@@ -7,9 +7,8 @@ from pydantic import BaseModel  # pylint: ignore
 
 from avilla.core.selectors import entity
 from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import message as message_selector
 
-if TYPE_CHECKING:
-    from avilla.core.selectors import message as message_selector
 
 
 @dataclass
@@ -128,7 +127,7 @@ class MessageChain:
     if TYPE_CHECKING:
         E = TypeVar("E", bound=Element)
 
-    def get_first(self, element_class: Type[E]) -> E:
+    def get_first(self, element_class: "Type[E]") -> "E":
         """获取消息链中第 1 个特定类型的消息元素
         Args:
             element_class (Type[Element]): 指定的消息元素的类型, 例如 "Text", "Notice", "Image" 等.
