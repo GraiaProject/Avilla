@@ -99,10 +99,10 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                     raise ValueError(
                         f"Account {account} already configured event method and action method, ws method is unnecessary"
                     )
-                if "action" in conns:
+                if "event" not in conns:
                     conns["event"] = connection
                     tasks.append(loop.create_task(connection.maintask()))
-                else:
+                if "action" not in conns:
                     conns["action"] = connection
             elif isinstance(conf, OnebotWsServerConfig):
                 self.websocket_server = avilla.get_interface(WebsocketServer)
@@ -128,6 +128,17 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                 conns["event"] = ob_http_server
             else:
                 raise ValueError(f"{type(conf)} is not supported now.")
+        for account in accounts:
+            if isinstance(account, EllipsisType):
+                continue
+            conns = self.accounts[account.without_group()]
+            print(conns)
+            if "event" not in conns and "action" not in conns:
+                raise ValueError(f"Account {account} not configured event and action method")
+            if "event" not in conns:
+                raise ValueError(f"Account {account} not configured event method")
+            if "action" not in conns:
+                raise ValueError(f"Account {account} not configured action method")
         await asyncio.gather(*tasks)
 
     @asynccontextmanager

@@ -29,16 +29,16 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
     @registrar.register(Notice)
     async def notice(protocol: "OnebotProtocol", element: Notice):
         return {
-            "type": "notice",
+            "type": "at",
             "data": {
-                "qq": element.target,
+                "qq": element.target.last()[1],
             },
         }
 
     @staticmethod
     @registrar.register(NoticeAll)
     async def notice_all(protocol: "OnebotProtocol", element: NoticeAll):
-        return {"type": "notice_all"}
+        return {"type": "at", "data": {"qq": "all"}}
 
     @staticmethod
     @registrar.register(Image)
@@ -53,7 +53,7 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
         return {
             "type": "image",
             "data": {
-                "url": "data:image/png;base64," + b64,
+                "file": "base64://" + b64,
             },
         }
 

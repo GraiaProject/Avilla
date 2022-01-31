@@ -6,9 +6,10 @@ from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector
 from avilla.core.selectors import request as request_selector
+from avilla.core.context import ctx_relationship
+from avilla.core.message import Message
 
-if TYPE_CHECKING:
-    from avilla.core.message import Message
+# if TYPE_CHECKING:
 
 
 class Execution:
@@ -26,9 +27,9 @@ class Result(Generic[R]):
 class MessageSend(Result[message_selector], Execution):
     target: Union[entity_selector, mainline_selector]
     message: MessageChain
-    reply: Optional[str] = None
+    reply: Optional[message_selector] = None
 
-    def __init__(self, message: Union[MessageChain, str, List[Union[str, Element]]], reply: Optional[str] = None):
+    def __init__(self, message: Union[MessageChain, str, List[Union[str, Element]]], *, reply: Optional[Union["Message", message_selector, str]] = None):
         if isinstance(message, str):
             message = MessageChain([Text(message)])
         elif isinstance(message, Iterable):
@@ -39,6 +40,14 @@ class MessageSend(Result[message_selector], Execution):
                     
             message = MessageChain(cast(List[Element], result))
         self.message = message
+        if isinstance(reply, Message):
+            reply = reply.to_selector()
+        elif isinstance(reply, str):
+            rs = ctx_relationship.get(None)
+            if rs:
+                reply = message_selector.mainline[rs.mainline]._[reply]
+            else:
+                reply = message_selector._[reply]
         self.reply = reply
 
     def locate_target(self, target: Union[entity_selector, mainline_selector]):

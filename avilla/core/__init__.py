@@ -98,7 +98,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self._flush_resprov_map()
         self.middlewares = middlewares or []
         self.services = services
-        self._service_interfaces = priority_strategy(services, lambda s: s.supported_interface_types)
+        self._flush_serif_map()
         self.protocols = [protocol(self) for protocol in protocols]
         self._protocol_map = dict(zip(protocols, self.protocols))
         self.launch_components.update(
@@ -187,6 +187,9 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             self.resource_providers, lambda p: p.supported_resource_types  # type: ignore
         )
 
+    def _flush_serif_map(self):
+        self._service_interfaces = priority_strategy(self.services, lambda s: s.supported_interface_types)
+
     async def flush_config(self, when: ConfigFlushingMoment):
         for applicant, scoped in self.config.items():
             if when not in applicant.init_moment.values():
@@ -219,6 +222,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         if service in self.services:
             raise ValueError("existed service")
         self.services.append(service)
+        self._flush_serif_map()
         if isinstance(service, ResourceProvider):
             self.resource_providers.append(service)
             self._flush_resprov_map()

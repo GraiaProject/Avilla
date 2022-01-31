@@ -71,9 +71,9 @@ class Service(metaclass=ABCMeta):
     def launch_component(self) -> LaunchComponent:
         pass
 
-    available_waiters: Dict[entity_selector, asyncio.Event]
+    available_waiters: Dict["entity_selector", asyncio.Event]
 
-    async def wait_for_available(self, target: entity_selector):
+    async def wait_for_available(self, target: "entity_selector"):
         status = self.get_status(target)
         if status.available:
             return
@@ -82,6 +82,6 @@ class Service(metaclass=ABCMeta):
         finally:
             self.available_waiters.pop(target, None)
     
-    def trig_available_waiters(self, target: entity_selector):
+    def trig_available_waiters(self, target: "entity_selector"):
         if target in self.available_waiters:
             self.available_waiters[target].set()

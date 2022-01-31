@@ -15,7 +15,7 @@ class OnebotInterface(ExportInterface):
 
     async def action(self, account: entity_selector, act: str, params: dict) -> dict:
         account = account.without_group()
-        if account in self.service.accounts:
+        if account not in self.service.accounts:
             raise ValueError(f"Account {account} is not online")
         stat = cast(Status, self.service.get_status(account))
         if not stat.available:

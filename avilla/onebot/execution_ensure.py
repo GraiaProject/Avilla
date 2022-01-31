@@ -29,7 +29,7 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
             if keypath == "group":
                 message = await protocol.serialize_message(exec.message)
                 if exec.reply:
-                    message = [{"type": "reply", "data": {"id": exec.reply}}] + message
+                    message = [{"type": "reply", "data": {"id": exec.reply.path['_']}}] + message
                 resp = await interface.action(
                     rs.self,
                     "send_group_msg",
@@ -47,7 +47,7 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
             elif keypath == "friend":
                 message = await protocol.serialize_message(exec.message)
                 if exec.reply:
-                    message = [{"type": "reply", "data": {"id": exec.reply}}] + message
+                    message = [{"type": "reply", "data": {"id": exec.reply.path['_']}}] + message
                 resp = await interface.action(
                     rs.self,
                     "send_private_msg",  # 莫名其妙，感觉这东西只是拿来 friend msg 的

@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import Optional, Union
+from pathlib import Path
 
 from avilla.core.message import Element
+from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import resource as resource_selector
 
 
@@ -24,14 +26,15 @@ class Text(Element):
 class Notice(Element):
     """该消息元素用于承载消息中用于提醒/呼唤特定用户的部分."""
 
-    target: str
+    target: entity_selector
 
-    def __init__(self, target: str) -> None:
+    def __init__(self, target: entity_selector) -> None:
         """实例化一个 Notice 消息元素, 用于承载消息中用于提醒/呼唤特定用户的部分.
 
         Args:
             target (str): 需要提醒/呼唤的特定用户的 ID.
         """
+        
         self.target = target
 
     def asDisplay(self) -> str:
@@ -51,7 +54,11 @@ class NoticeAll(Element):
 class Image(Element):
     source: resource_selector
 
-    def __init__(self, source: resource_selector):
+    def __init__(self, source: Union[resource_selector, Path, str]):
+        if isinstance(source, Path):
+            source = resource_selector.file[str(source.absolute())]
+        elif isinstance(source, str):
+            source = resource_selector.file[source]
         self.source = source
 
     def asDisplay(self) -> str:
