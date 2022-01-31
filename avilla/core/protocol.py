@@ -126,7 +126,7 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
         return None
 
     @abstractmethod
-    def get_operator(self, target: Selector) -> Operator:
+    def get_operator(self, account: entity_selector, target: Selector) -> Operator:
         ...
 
     def get_extra_operators(self, relationship: "Relationship") -> Dict[str, Operator]:
