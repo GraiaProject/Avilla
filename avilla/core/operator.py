@@ -42,7 +42,7 @@ class Operator(metaclass=ABCMeta):
         ...
 
 
-class OperatorDispatch(Operator):
+class OperatorKeyDispatch(Operator):
     patterns: Dict[str, Operator]
 
     def __init__(self, patterns: Dict[str, Operator]):

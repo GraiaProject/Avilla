@@ -6,7 +6,7 @@ from avilla.core.execution import Execution
 from avilla.core.operator import (
     MetadataOperator,
     OperatorCachePatcher,
-    OperatorDispatch,
+    OperatorKeyDispatch,
 )
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
@@ -91,7 +91,7 @@ class Relationship(Generic[M]):
     @cached_property
     def meta(self) -> M:
         cache = self.protocol.avilla.get_interface(CacheStorage)
-        operator = OperatorDispatch(
+        operator = OperatorKeyDispatch(
             {
                 "mainline.*": self.protocol.get_operator(self.mainline),
                 "self.*": self.protocol.get_operator(self.current),
