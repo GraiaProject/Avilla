@@ -13,6 +13,7 @@ from typing import (
     Literal,
     MutableMapping,
     Optional,
+    Tuple,
     Type,
     Union,
 )
@@ -50,9 +51,11 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         self,
         method: "HTTP_METHODS",
         url: Union[str, URL],
+        *,
         headers: Dict[str, str] = None,
-        data: Union[str, bytes] = None,
+        data: Union[str, bytes, dict, list] = None,
         proxy: ProxySetting = None,
+        json_serializer: Callable[[Union[dict, list]], str] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -61,6 +64,7 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def get(
         self,
         url: Union[str, URL],
+        *,
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
@@ -71,9 +75,11 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def post(
         self,
         url: Union[str, URL],
-        data: Union[str, bytes],
+        data: Union[str, bytes, dict, list],
+        *,
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
+        json_serializer: Callable[[Union[dict, list]], str] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -82,9 +88,11 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def put(
         self,
         url: Union[str, URL],
-        data: Union[str, bytes],
+        data: Union[str, bytes, dict, list],
+        *,
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
+        json_serializer: Callable[[Union[dict, list]], str] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -103,9 +111,11 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def patch(
         self,
         url: Union[str, URL],
-        data: Union[str, bytes],
+        data: Union[str, bytes, dict, list],
+        *,
         headers: Dict[str, str] = None,
         proxy: ProxySetting = None,
+        json_serializer: Callable[[Union[dict, list]], str] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -132,7 +142,8 @@ class HttpServer(ExportInterface, metaclass=ABCMeta):
 
 class WebsocketServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
-    def websocket_listen(self, path: str) -> "Callable[[Callable[[WebsocketConnection], Any]], Any]":
+    @asynccontextmanager
+    def websocket_listen(self, path: str) -> "AsyncGenerator[Callable[[WebsocketConnection], Any], None]":
         ...
 
 
@@ -181,7 +192,7 @@ class HttpClientResponse(BehaviourSession, HttpPacketMixin, metaclass=ABCMeta):
 
 class HttpServerRequest(BehaviourSession, HttpPacketMixin, metaclass=ABCMeta):
     @abstractmethod
-    async def response(self, desc: Any):
+    async def response(self, desc: Any, status=200):
         ...
 
     @property
@@ -197,14 +208,25 @@ class HttpServerRequest(BehaviourSession, HttpPacketMixin, metaclass=ABCMeta):
 
 class WebsocketConnection(BehaviourSession):
     server_mode: bool
+    client: Optional[Tuple[str, int]] = None
     ready: asyncio.Event
+
+    before_accept_callbacks: List[Callable[["WebsocketConnection"], Awaitable[None]]]
+    connected_callbacks: List[Callable[["WebsocketConnection"], Awaitable[Any]]]
+    received_callbacks: List[Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]]
+    close_callbacks: List[Callable[["WebsocketConnection"], Awaitable[Any]]]
 
     @abstractmethod
     async def accept(self) -> None:
         pass
 
     @abstractmethod
-    async def send(self, data: Union[Stream[Union[bytes, str, dict, list]], bytes, str, dict, list]) -> None:
+    async def send(
+        self,
+        data: Union[Stream[Union[bytes, str, dict, list]], bytes, str, dict, list],
+        *,
+        json_serializer: Callable[[Union[dict, list]], str] = None,
+    ) -> None:
         ...
 
     @abstractmethod
@@ -232,13 +254,23 @@ class WebsocketConnection(BehaviourSession):
         ...
 
     @abstractmethod
-    def on_received(self, callback: Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]):
+    def headers(self) -> Dict[str, str]:
         ...
 
-    @abstractmethod
-    def on_error(self, callback: Callable[["WebsocketConnection", Exception], Awaitable[Any]]):
-        ...
+    def before_accept(self, callback: Callable[["WebsocketConnection"], Awaitable[Any]]):
+        self.before_accept_callbacks.append(callback)
+        return callback
 
-    @abstractmethod
+    def on_connected(self, callback: Callable[["WebsocketConnection"], Awaitable[Any]]):
+        self.connected_callbacks.append(callback)
+        return callback
+
+    def on_received(
+        self, callback: Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]
+    ):
+        self.received_callbacks.append(callback)
+        return callback
+
     def on_close(self, callback: Callable[["WebsocketConnection"], Awaitable[Any]]):
-        ...
+        self.close_callbacks.append(callback)
+        return callback

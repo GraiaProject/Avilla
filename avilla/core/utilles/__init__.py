@@ -1,13 +1,16 @@
 import asyncio
+from pathlib import Path
 import random
 import string
-from contextlib import suppress
+from contextlib import asynccontextmanager, suppress
 from types import MethodType, TracebackType
 from typing import (
     Any,
+    AsyncGenerator,
     Callable,
     Dict,
     Hashable,
+    Iterable,
     List,
     Optional,
     Set,
@@ -19,7 +22,6 @@ from typing import (
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface
 from graia.broadcast.utilles import run_always_await_safely
-
 
 def random_string(k: int = 12):
     return "".join(random.choices(string.ascii_letters + string.digits, k=k))
@@ -144,3 +146,8 @@ class Registrar(Dict):
             return cls
 
         return decorator
+
+async def as_asynciter(iter: Iterable[T]) -> AsyncGenerator[T, None]:
+    for item in iter:
+        yield item
+

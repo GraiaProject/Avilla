@@ -17,7 +17,7 @@ repository = "https://github.com/GraiaProject/AvillaCore"
 [tool.poetry.dependencies]
 graia-broadcast = "^0.15.2"
 python = "^3.8"
-loguru = "^0.5.3"
+loguru = "^0.6.0"
 pydantic = "^1.9.0"
 rich = "^10.13.0"
 yarl = "^1.6.3"

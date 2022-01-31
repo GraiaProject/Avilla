@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Generic, Iterable, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Generic, Iterable, List, Optional, TypeVar, Union, cast
 
 from avilla.core.elements import Text
 from avilla.core.message import Element, MessageChain
@@ -28,11 +28,16 @@ class MessageSend(Result[message_selector], Execution):
     message: MessageChain
     reply: Optional[str] = None
 
-    def __init__(self, message: Union[MessageChain, str, Iterable[Element]], reply: Optional[str] = None):
+    def __init__(self, message: Union[MessageChain, str, List[Union[str, Element]]], reply: Optional[str] = None):
         if isinstance(message, str):
             message = MessageChain([Text(message)])
         elif isinstance(message, Iterable):
-            message = MessageChain(list(message))
+            result = message.copy()
+            for i, element in enumerate(message):
+                if isinstance(element, str):
+                    result[i] = Text(element)
+                    
+            message = MessageChain(cast(List[Element], result))
         self.message = message
         self.reply = reply
 

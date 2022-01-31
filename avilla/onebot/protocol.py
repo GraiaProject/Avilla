@@ -38,8 +38,11 @@ class OnebotProtocol(BaseProtocol):
     service: OnebotService
 
     def __post_init__(self) -> None:
-        self.service = OnebotService(self)
-        self.avilla.add_service(self.service)
+        if self.avilla.has_service(OnebotService):
+            self.service = self.avilla.get_service(OnebotService)  # type: ignore
+        else:
+            self.service = OnebotService(self)
+            self.avilla.add_service(self.service)
 
     async def ensure_execution(self, execution: Execution):
         return await self.execution_handler.trig(self, execution)
@@ -54,7 +57,6 @@ class OnebotProtocol(BaseProtocol):
         return await self.message_serializer.serialize(self, message)
 
     async def get_relationship(self, ctx: Selector, current_self: entity_selector) -> Relationship:
-
         if isinstance(ctx, entity):
             return Relationship(self, ctx, ctx.path['mainline'], current_self)
         raise ValueError("cannot parse select")

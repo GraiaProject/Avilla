@@ -95,18 +95,18 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self.sigexit = asyncio.Event(loop=broadcast.loop)
         self.resource_providers = []
         self.launch_components = {}
-        self._res_provider_types = priority_strategy(
-            self.resource_providers, lambda p: p.supported_resource_types
-        )
+        self._flush_resprov_map()
         self.middlewares = middlewares or []
         self.services = services
         self._service_interfaces = priority_strategy(services, lambda s: s.supported_interface_types)
         self.protocols = [protocol(self) for protocol in protocols]
         self._protocol_map = dict(zip(protocols, self.protocols))
-        self.launch_components.update({
-            **({i.launch_component.id: i.launch_component for i in services}),
-            **({protocol.launch_component.id: protocol.launch_component for protocol in self.protocols}),
-        })
+        self.launch_components.update(
+            {
+                **({i.launch_component.id: i.launch_component for i in services}),
+                **({protocol.launch_component.id: protocol.launch_component for protocol in self.protocols}),
+            }
+        )
         self.rich_console = Console()
 
         for protocol in self.protocols:
@@ -149,6 +149,24 @@ class Avilla(ConfigApplicant[AvillaConfig]):
                 self.add_service(MemcacheService())
         if avilla_config.use_defer:
             self.broadcast.finale_dispatchers.append(DeferDispatcher())
+        if avilla_config.enable_builtin_resource_providers:
+            if avilla_config.use_localfile:
+                from avilla.core.utilles.resource import LocalFileResourceProvider
+
+                self.resource_providers.append(LocalFileResourceProvider())
+                self._flush_resprov_map()
+
+    def has_service(self, service_type: Type[Service]) -> bool:
+        for service in self.services:
+            if isinstance(service, service_type):
+                return True
+        return False
+
+    def get_service(self, service_type: Type[Service]) -> Service:
+        for service in self.services:
+            if isinstance(service, service_type):
+                return service
+        raise ValueError(f"service not found: {service_type}")
 
     def get_config(
         self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]], scope: Hashable = ...
@@ -163,6 +181,11 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         scoped = self.config.get(applicant)
         if scoped:
             return scoped.keys()
+
+    def _flush_resprov_map(self):
+        self._res_provider_types = priority_strategy(
+            self.resource_providers, lambda p: p.supported_resource_types  # type: ignore
+        )
 
     async def flush_config(self, when: ConfigFlushingMoment):
         for applicant, scoped in self.config.items():
@@ -198,9 +221,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self.services.append(service)
         if isinstance(service, ResourceProvider):
             self.resource_providers.append(service)
-            self._res_provider_types = priority_strategy(
-                self.resource_providers, lambda p: p.supported_resource_types
-            )
+            self._flush_resprov_map()
         launch_component = service.launch_component
         self.launch_components[launch_component.id] = launch_component
 
@@ -210,9 +231,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self.services.remove(service)
         if isinstance(service, ResourceProvider):
             self.resource_providers.remove(service)
-            self._res_provider_types = priority_strategy(
-                self.resource_providers, lambda p: p.supported_resource_types
-            )
+            self._flush_resprov_map()
         del self.launch_components[service.launch_component.id]
 
     def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
@@ -223,11 +242,11 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     @asynccontextmanager
     async def access_resource(self, resource: resource_selector):
         resource_type = list(resource.path.keys())[0]
-        if resource_type not in self._res_provider_types:
-            raise ValueError(f"resource type {resource_type} not supported.")
         if "provider" in resource.path:
             provider = resource.path["provider"]
         else:
+            if resource_type not in self._res_provider_types:
+                raise ValueError(f"resource type {resource_type} not supported.")
             provider = self._res_provider_types[resource_type]
         async with provider.access_resource(resource) as accessor:
             yield accessor

@@ -81,6 +81,7 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
     session: ClientSession
     response: Optional[ClientWebSocketResponse]
 
+    connected_callbacks: List[Callable[["AiohttpWebsocketClientConnection"], Awaitable[Any]]]
     received_callbacks: List[Callable[["AiohttpWebsocketClientConnection", Stream[bytes]], Awaitable[Any]]]
     error_callbacks: List[Callable[["AiohttpWebsocketClientConnection", Exception], Awaitable[Any]]]
     close_callbacks: List[Callable[["AiohttpWebsocketClientConnection"], Awaitable[Any]]] = []
@@ -88,6 +89,7 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
     def __init__(self, session: ClientSession):
         self.session = session
         self.ready = asyncio.Event()
+        self.connected_callbacks = []
         self.received_callbacks = []
         self.error_callbacks = []
         self.close_callbacks = []
@@ -136,6 +138,10 @@ class AiohttpWebsocketClientConnection(WebsocketConnection):
 
     def raise_for_status(self):
         pass
+
+    def on_connected(self, callback: Callable[["WebsocketConnection"], Awaitable[Any]]):
+        self.connected_callbacks.append(callback)
+        return callback
 
     def on_received(
         self, callback: Callable[["AiohttpWebsocketClientConnection", Stream[bytes]], Awaitable[Any]]
@@ -273,6 +279,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
                 ) as response:
                     conn.response = response
                     conn.ready.set()
+                    for callback in conn.connected_callbacks:
+                        await callback(conn)
                     async for message in response:
                         logger.debug(f"websocket message received: {message}")
                         if message.type == WSMsgType.TEXT:

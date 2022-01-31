@@ -72,5 +72,9 @@ class AvillaConfig(BaseModel):
     enable_builtin_services: bool = True
     use_memcache: bool = True
 
+    # Builtin Resource Providers
+    enable_builtin_resource_providers: bool = True
+    use_localfile: bool = True
+
     # Builtin Utilles
     use_defer: bool = True

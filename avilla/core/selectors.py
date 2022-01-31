@@ -16,13 +16,21 @@ class entity(Selector):
         member: SelectorKey["entity", str]
         channel: SelectorKey["entity", str]  # 可以发消息的 channel, 类似 tg.
 
+        group: SelectorKey["entity", Any] # 于 mainline.group 不同，这里是拿来 “根据其他字段” 进行 multi config 的，因此这里可以随便填值。
+
     def get_mainline(self) -> "mainline":
         if "account" in self.path:
             return mainline._["$avilla:account"]
         return self.path["mainline"]
 
     def get_entity_type(self) -> str:
-        return list(self.path.values())[-1]
+        return list(self.without_group().path.values())[-1]
+
+    def without_group(self):
+        return entity({k: v for k, v in self.path.items() if k != "group"})
+
+    def __hash__(self) -> int:
+        return hash(tuple(self.path.items()))
 
     @property
     def profile_name(self) -> str:
