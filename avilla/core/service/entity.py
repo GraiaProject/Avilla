@@ -10,7 +10,6 @@ from typing import (
     overload,
 )
 
-
 if TYPE_CHECKING:
     from avilla.core.selectors import entity as entity_selector
     from avilla.core.service import Service

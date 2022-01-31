@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 registrar = Registrar()
 
+
 @registrar.decorate("handlers")
 class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
     @staticmethod
@@ -29,7 +30,7 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
             if keypath == "group":
                 message = await protocol.serialize_message(exec.message)
                 if exec.reply:
-                    message = [{"type": "reply", "data": {"id": exec.reply.path['_']}}] + message
+                    message = [{"type": "reply", "data": {"id": exec.reply.path["_"]}}] + message
                 resp = await interface.action(
                     rs.self,
                     "send_group_msg",
@@ -37,17 +38,17 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
                         "group_id": int(exec.target.path["group"]),
                         # v12 中应该直接传，但 v11 的类型还是 number.
                         "message": message,
-                    }
+                    },
                 )
                 raise_for_obresp(resp)
-                return message_selector.mainline[exec.target]._[str(resp['data']["message_id"])]
+                return message_selector.mainline[exec.target]._[str(resp["data"]["message_id"])]
             elif keypath == "channel.guild":
                 # TODO: gocq 相关, 发频道消息
                 raise NotImplementedError
             elif keypath == "friend":
                 message = await protocol.serialize_message(exec.message)
                 if exec.reply:
-                    message = [{"type": "reply", "data": {"id": exec.reply.path['_']}}] + message
+                    message = [{"type": "reply", "data": {"id": exec.reply.path["_"]}}] + message
                 resp = await interface.action(
                     rs.self,
                     "send_private_msg",  # 莫名其妙，感觉这东西只是拿来 friend msg 的
@@ -55,7 +56,7 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
                         "user_id": int(exec.target.path["friend"]),
                         # v12 中应该直接传，但 v11 的类型还是 number.
                         "message": message,
-                    }
+                    },
                 )
                 raise_for_obresp(resp)
                 return message_selector.mainline[exec.target]._[str(resp["message_id"])]

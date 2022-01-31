@@ -1,5 +1,5 @@
-from abc import ABCMeta, abstractmethod
 import asyncio
+from abc import ABCMeta, abstractmethod
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import (
@@ -265,9 +265,7 @@ class WebsocketConnection(BehaviourSession):
         self.connected_callbacks.append(callback)
         return callback
 
-    def on_received(
-        self, callback: Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]
-    ):
+    def on_received(self, callback: Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]):
         self.received_callbacks.append(callback)
         return callback
 

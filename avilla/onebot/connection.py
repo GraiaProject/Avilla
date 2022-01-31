@@ -1,15 +1,16 @@
 import asyncio
-from functools import partial
-import json
 import hmac
+import json
+import traceback
 from abc import ABCMeta, abstractmethod
 from asyncio import Future
 from contextlib import ExitStack, suppress
-import traceback
+from functools import partial
 from typing import TYPE_CHECKING, Callable, Dict, Literal, Optional, cast, final
 
 from loguru import logger
 
+from avilla.core.context import ctx_avilla, ctx_protocol
 from avilla.core.message import Message
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import message as message_selector
@@ -18,21 +19,20 @@ from avilla.core.transformers import u8_string
 from avilla.core.typing import STRUCTURE
 from avilla.core.utilles import random_string
 from avilla.io.common.http import (
-    HttpServerRequest,
     HttpClient,
+    HttpServer,
+    HttpServerRequest,
     WebsocketClient,
     WebsocketConnection,
-    HttpServer,
     WebsocketServer,
 )
 from avilla.onebot.config import (
     OnebotConnectionConfig,
     OnebotHttpClientConfig,
-    OnebotWsClientConfig,
     OnebotHttpServerConfig,
+    OnebotWsClientConfig,
     OnebotWsServerConfig,
 )
-from avilla.core.context import ctx_avilla, ctx_protocol
 from avilla.onebot.utilles import raise_for_obresp
 
 if TYPE_CHECKING:
@@ -92,7 +92,7 @@ class OnebotHttpClient(OnebotConnection):
             except Exception as e:
                 self.service.set_status(self.account, False, "offline")
                 logger.warning(f"onebot http client for {self.account} disconnected")
-                #raise e # 在？这里 raise 什么意思？
+                # raise e # 在？这里 raise 什么意思？
             else:
                 await asyncio.sleep(30)
 
@@ -249,13 +249,15 @@ class OnebotWsServer(OnebotConnection):
         self.requests = {}
 
     async def maintask(self):
-        self.ws_server.websocket_listen(self.config.api_root + self.config.api)\
-            (partial(self.service.ws_server_on_received, self))
-        self.ws_server.websocket_listen(self.config.api_root + self.config.event)\
-            (partial(self.service.ws_server_on_received, self))
-        self.ws_server.websocket_listen(self.config.api_root + self.config.universal)\
-            (partial(self.service.ws_server_on_received, self))
-
+        self.ws_server.websocket_listen(self.config.api_root + self.config.api)(
+            partial(self.service.ws_server_on_received, self)
+        )
+        self.ws_server.websocket_listen(self.config.api_root + self.config.event)(
+            partial(self.service.ws_server_on_received, self)
+        )
+        self.ws_server.websocket_listen(self.config.api_root + self.config.universal)(
+            partial(self.service.ws_server_on_received, self)
+        )
 
     async def send(self, data: dict) -> Optional[dict]:
         if self.universal_connection:

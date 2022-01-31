@@ -1,14 +1,14 @@
-
-
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, AsyncGenerator
+
 from avilla.core.operator import OperatorCache, ResourceOperator
 from avilla.core.resource import ResourceProvider
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.service.entity import Status
 from avilla.core.stream import Stream
 from avilla.core.utilles import as_asynciter
-from avilla.core.selectors import resource as resource_selector
+
 
 class LocalFileOperator(ResourceOperator):
     path: Path
@@ -27,7 +27,10 @@ class LocalFileOperator(ResourceOperator):
         elif operator == "put":
             self.path.touch()
             self.path.write_bytes(value)
-            return Status(True, "ok"), resource_selector.file[str(self.path)].provider[LocalFileResourceProvider]
+            return (
+                Status(True, "ok"),
+                resource_selector.file[str(self.path)].provider[LocalFileResourceProvider],
+            )
         elif operator == "read":
             return Status(True, "ok"), Stream(self.path.read_bytes())
         elif operator == "stats":
@@ -46,7 +49,7 @@ class LocalFileOperator(ResourceOperator):
             raise NotImplementedError
         else:
             raise ValueError(f"{operator} is not a valid operator.")
-                
+
 
 class LocalFileResourceProvider(ResourceProvider):
     supported_resource_types = {"file": 16}

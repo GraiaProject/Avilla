@@ -1,5 +1,5 @@
-from typing import Optional, Union
 from pathlib import Path
+from typing import Optional, Union
 
 from avilla.core.message import Element
 from avilla.core.selectors import entity as entity_selector
@@ -34,7 +34,7 @@ class Notice(Element):
         Args:
             target (str): 需要提醒/呼唤的特定用户的 ID.
         """
-        
+
         self.target = target
 
     def asDisplay(self) -> str:

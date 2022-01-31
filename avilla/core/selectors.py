@@ -16,7 +16,7 @@ class entity(Selector):
         member: SelectorKey["entity", str]
         channel: SelectorKey["entity", str]  # 可以发消息的 channel, 类似 tg.
 
-        group: SelectorKey["entity", Any] # 于 mainline.group 不同，这里是拿来 “根据其他字段” 进行 multi config 的，因此这里可以随便填值。
+        group: SelectorKey["entity", Any]  # 于 mainline.group 不同，这里是拿来 “根据其他字段” 进行 multi config 的，因此这里可以随便填值。
 
     def get_mainline(self) -> "mainline":
         if "account" in self.path:

@@ -32,6 +32,7 @@ from avilla.core.config import (
     ConfigFlushingMoment,
     ConfigProvider,
     TModel,
+    direct,
 )
 from avilla.core.context import ctx_avilla
 from avilla.core.event import RelationshipDispatcher
@@ -45,7 +46,6 @@ from avilla.core.stream import Stream
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles import DeferDispatcher, priority_strategy
 from avilla.io.core.memcache import MemcacheService
-from avilla.core.config import direct
 
 AVILLA_ASCII_LOGO_AS_LIST = [
     "[bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].",

@@ -1,8 +1,8 @@
 import json
 from typing import Any, Final, Optional
 
-from graia.broadcast.utilles import printer
 from graia.broadcast import Dispatchable
+from graia.broadcast.utilles import printer
 
 from avilla.core.execution import Execution
 from avilla.core.message import MessageChain
@@ -12,6 +12,7 @@ from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
 from avilla.core.selectors import entity
 from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.stream import Stream
 from avilla.core.utilles.selector import Selector
 from avilla.onebot.event_parse import OnebotEventParser
@@ -19,7 +20,6 @@ from avilla.onebot.execution_ensure import OnebotExecutionHandler
 from avilla.onebot.message_parse import OnebotMessageParser
 from avilla.onebot.message_serialize import OnebotMessageSerializer
 from avilla.onebot.service import OnebotService
-from avilla.core.selectors import resource as resource_selector
 
 
 class OnebotProtocol(BaseProtocol):
@@ -59,7 +59,7 @@ class OnebotProtocol(BaseProtocol):
 
     async def get_relationship(self, ctx: Selector, current_self: entity_selector) -> Relationship:
         if isinstance(ctx, entity):
-            return Relationship(self, ctx, ctx.path['mainline'], current_self)
+            return Relationship(self, ctx, ctx.path["mainline"], current_self)
         raise ValueError("cannot parse select")
 
     def get_operator(self, target: Selector) -> Operator:

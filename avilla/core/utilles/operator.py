@@ -1,7 +1,9 @@
 from typing import Any, Awaitable, Callable, Dict, Generic, Optional, Tuple, TypeVar
+
 from avilla.core.operator import Operator, OperatorCache
 
 O = TypeVar("O", bound=Operator)
+
 
 class OperatorImplementDispatch(Generic[O]):
     #                    key   op        operator value          cache
@@ -13,7 +15,9 @@ class OperatorImplementDispatch(Generic[O]):
             if issubclass(base, OperatorImplementDispatch):
                 cls.patterns.update(base.patterns)
 
-    async def operate(self, origin_op: O, op: str, target: str, value: Any, cache: Optional[OperatorCache] = None) -> Any:
+    async def operate(
+        self, origin_op: O, op: str, target: str, value: Any, cache: Optional[OperatorCache] = None
+    ) -> Any:
         operator = self.patterns.get((target, op))
         if not operator:
             raise KeyError(f"cannot dispatch for ({target}, {op})")

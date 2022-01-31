@@ -5,7 +5,7 @@ from graia.broadcast.utilles import Ctx
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse, Response
-from starlette.websockets import WebSocketState, WebSocket, WebSocketDisconnect
+from starlette.websockets import WebSocket, WebSocketDisconnect, WebSocketState
 
 from avilla.core import LaunchComponent, Service
 from avilla.core.selectors import entity as entity_selector
@@ -160,7 +160,7 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
                     return
                 await conn.accept()
                 for cb in ws.connected_callbacks:
-                    await cb(ws) # 在这里可以想。
+                    await cb(ws)  # 在这里可以想。
                 avilla = self.service.avilla
                 try:
                     while not avilla.sigexit.is_set():
@@ -170,7 +170,6 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
                 except WebSocketDisconnect:
                     for cb in ws.close_callbacks:
                         await cb(ws)
-                    
 
         self.starlette.websocket_route(path)(connection_wrapper)
         yield ws

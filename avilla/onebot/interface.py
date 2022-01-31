@@ -7,6 +7,7 @@ from avilla.onebot.connection import OnebotConnection
 if TYPE_CHECKING:
     from .service import OnebotService
 
+
 class OnebotInterface(ExportInterface):
     service: "OnebotService"
 

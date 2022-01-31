@@ -1,5 +1,5 @@
-from abc import ABCMeta, abstractmethod
 import asyncio
+from abc import ABCMeta, abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -23,6 +23,7 @@ TCallback = TypeVar("TCallback", bound=Callable)
 
 if TYPE_CHECKING:
     from avilla.core.selectors import entity as entity_selector
+
 
 class Service(metaclass=ABCMeta):
     supported_interface_types: ClassVar[
@@ -55,7 +56,9 @@ class Service(metaclass=ABCMeta):
     if TYPE_CHECKING:
 
         @abstractmethod
-        def get_status(self, entity: "entity_selector" = None) -> Union[Status, Dict[entity_selector, Status]]:
+        def get_status(
+            self, entity: "entity_selector" = None
+        ) -> Union[Status, Dict[entity_selector, Status]]:
             pass
 
     def set_status(self, entity: "entity_selector", available: bool, description: str) -> None:
@@ -81,7 +84,7 @@ class Service(metaclass=ABCMeta):
             await self.available_waiters.setdefault(target, asyncio.Event()).wait()
         finally:
             self.available_waiters.pop(target, None)
-    
+
     def trig_available_waiters(self, target: "entity_selector"):
         if target in self.available_waiters:
             self.available_waiters[target].set()

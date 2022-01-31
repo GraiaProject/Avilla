@@ -3,10 +3,11 @@ from typing import Any, Dict, Generic, List, Literal, TypeVar, Union, overload
 
 from avilla.core.execution import Execution as Execution
 from avilla.core.protocol import BaseProtocol as BaseProtocol
-from avilla.core.selectors import entity as entity, mainline as mainline
+from avilla.core.selectors import entity as entity
 from avilla.core.selectors import mainline
-from avilla.core.typing import TExecutionMiddleware as TExecutionMiddleware
+from avilla.core.selectors import mainline as mainline
 from avilla.core.selectors import resource as resource
+from avilla.core.typing import TExecutionMiddleware as TExecutionMiddleware
 
 class ExecutorWrapper:
     relationship: "Relationship"

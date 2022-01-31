@@ -1,13 +1,21 @@
-from typing import TYPE_CHECKING, Generic, Iterable, List, Optional, TypeVar, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    TypeVar,
+    Union,
+    cast,
+)
 
+from avilla.core.context import ctx_relationship
 from avilla.core.elements import Text
-from avilla.core.message import Element, MessageChain
+from avilla.core.message import Element, Message, MessageChain
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector
 from avilla.core.selectors import request as request_selector
-from avilla.core.context import ctx_relationship
-from avilla.core.message import Message
 
 # if TYPE_CHECKING:
 
@@ -29,7 +37,12 @@ class MessageSend(Result[message_selector], Execution):
     message: MessageChain
     reply: Optional[message_selector] = None
 
-    def __init__(self, message: Union[MessageChain, str, List[Union[str, Element]]], *, reply: Optional[Union["Message", message_selector, str]] = None):
+    def __init__(
+        self,
+        message: Union[MessageChain, str, List[Union[str, Element]]],
+        *,
+        reply: Optional[Union["Message", message_selector, str]] = None,
+    ):
         if isinstance(message, str):
             message = MessageChain([Text(message)])
         elif isinstance(message, Iterable):
@@ -37,7 +50,7 @@ class MessageSend(Result[message_selector], Execution):
             for i, element in enumerate(message):
                 if isinstance(element, str):
                     result[i] = Text(element)
-                    
+
             message = MessageChain(cast(List[Element], result))
         self.message = message
         if isinstance(reply, Message):

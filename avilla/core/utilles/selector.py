@@ -63,9 +63,7 @@ class Selector(Generic[S], metaclass=SelectorMeta):
     def __eq__(self, __o: object) -> bool:
         if not isinstance(__o, Selector):
             return False
-        return self.scope == __o.scope and all(
-            [__o[k] == v for k, v in self.path.items()]
-        )
+        return self.scope == __o.scope and all([__o[k] == v for k, v in self.path.items()])
 
     def __and__(self, __o: "Selector") -> bool:
         if self.scope != __o.scope:

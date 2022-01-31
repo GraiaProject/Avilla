@@ -1,15 +1,27 @@
 import asyncio
-from contextlib import ExitStack, asynccontextmanager
 import hmac
 import json
-from typing import TYPE_CHECKING, AsyncGenerator, Callable, Dict, List, Optional, Tuple, Type, Union, cast
+from contextlib import ExitStack, asynccontextmanager
+from typing import (
+    TYPE_CHECKING,
+    AsyncGenerator,
+    Callable,
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+    cast,
+)
 
 from loguru import logger
+from starlette.responses import JSONResponse
 
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment
+from avilla.core.context import ctx_avilla, ctx_protocol, ctx_relationship
 from avilla.core.launch import LaunchComponent
 from avilla.core.operator import ResourceOperator
-from avilla.core.context import ctx_relationship, ctx_avilla, ctx_protocol
 from avilla.core.resource import ResourceProvider
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import resource as resource_selector
@@ -33,10 +45,17 @@ from avilla.onebot.config import (
     OnebotWsClientConfig,
     OnebotWsServerConfig,
 )
-from avilla.onebot.connection import OnebotConnection, OnebotConnectionRole, OnebotHttpClient, OnebotHttpServer, OnebotWsClient, OnebotWsServer
+from avilla.onebot.connection import (
+    OnebotConnection,
+    OnebotConnectionRole,
+    OnebotHttpClient,
+    OnebotHttpServer,
+    OnebotWsClient,
+    OnebotWsServer,
+)
 from avilla.onebot.utilles import raise_for_obresp
+
 from .interface import OnebotInterface
-from starlette.responses import JSONResponse
 
 if TYPE_CHECKING:
     from avilla.core import Avilla
@@ -178,9 +197,10 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
         if account not in self.accounts:
             await conn.close()
             return
-        role = cast(OnebotConnectionRole, {
-            "API": "action", "Event": "event", "Universal": "universal"
-        }[headers["X-Client-Role"]])
+        role = cast(
+            OnebotConnectionRole,
+            {"API": "action", "Event": "event", "Universal": "universal"}[headers["X-Client-Role"]],
+        )
         config = srv.config
         if config.access_token is not None:
             logger.warning(f"you set access_token for a reverse ws, but it's unused by the internal logic")
@@ -196,15 +216,19 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                 conns[cast(OnebotConnectionRole, "universal")] = srv
 
                 if "action" not in conns:
-                    conns['action'] = srv
+                    conns["action"] = srv
                 else:
-                    logger.warning(f"{account} already has action method, reverse-ws method is unnecessary, so it will be ignored")
+                    logger.warning(
+                        f"{account} already has action method, reverse-ws method is unnecessary, so it will be ignored"
+                    )
                     await conn.close()
-        
+
                 if "event" not in conns:
-                    conns['event'] = srv
+                    conns["event"] = srv
                 else:
-                    logger.warning(f"{account} already has event method, reverse-ws method is unnecessary, so it will be closed.")
+                    logger.warning(
+                        f"{account} already has event method, reverse-ws method is unnecessary, so it will be closed."
+                    )
                     await conn.close()
         else:
             logger.warning(f"{account} already has {role} method, reverse-ws method is unnecessary")
@@ -222,7 +246,9 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
         account = entity_selector.account[headers["X-Self-ID"]]
         self.set_status(account, False, "closed")
 
-    async def ws_server_on_received(self, srv: OnebotWsServer, conn: WebsocketConnection, stream: Stream[bytes]):
+    async def ws_server_on_received(
+        self, srv: OnebotWsServer, conn: WebsocketConnection, stream: Stream[bytes]
+    ):
         data = (
             await stream.transform(u8_string)
             .transform(cast(Callable[[str], Dict], srv.config.data_parser))
@@ -233,9 +259,7 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
             if data["echo"] in srv.requests:
                 srv.requests[data["echo"]].set_result(data)
             else:
-                logger.warning(
-                    f"Received echo message {data['echo']} but not found in requests: {data}"
-                )
+                logger.warning(f"Received echo message {data['echo']} but not found in requests: {data}")
         else:
             # logger.debug(f"received event: {data}")
             event = await self.protocol.parse_event(data)

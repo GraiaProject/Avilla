@@ -10,7 +10,6 @@ from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector
 
 
-
 @dataclass
 class Message:
     id: str
