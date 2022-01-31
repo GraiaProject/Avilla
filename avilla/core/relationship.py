@@ -93,20 +93,20 @@ class Relationship(Generic[M]):
         cache = self.protocol.avilla.get_interface(CacheStorage)
         operator = OperatorKeyDispatch(
             {
-                "mainline.*": self.protocol.get_operator(self.mainline),
-                "self.*": self.protocol.get_operator(self.current),
+                "mainline.*": self.protocol.get_operator(self.self, self.mainline),
+                "self.*": self.protocol.get_operator(self.self, self.current),
                 **self.protocol.get_extra_operators(self),  # type: ignore
             }
         )
         patched = OperatorCachePatcher(operator, cache)
         prefix = patched.prefix
         if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() == "member":
-            operator.patterns["member.*"] = self.protocol.get_operator(self.ctx)
+            operator.patterns["member.*"] = self.protocol.get_operator(self.self, self.ctx)
 
         elif isinstance(self.ctx, request_selector):
-            operator.patterns["request.*"] = self.protocol.get_operator(self.ctx)
+            operator.patterns["request.*"] = self.protocol.get_operator(self.self, self.ctx)
         elif isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() != "member":
-            operator.patterns["contact.*"] = self.protocol.get_operator(self.ctx)
+            operator.patterns["contact.*"] = self.protocol.get_operator(self.self, self.ctx)
         return cast(M, patched)
 
     @property
