@@ -48,7 +48,7 @@ class LocalFileOperator(ResourceOperator):
         elif operator == "meta":
             raise NotImplementedError
         else:
-            raise ValueError(f"{operator} is not a valid operator.")
+            raise NotImplementedError(f"{operator} is not a supported operator.")
 
 
 class LocalFileResourceProvider(ResourceProvider):
@@ -57,3 +57,21 @@ class LocalFileResourceProvider(ResourceProvider):
     @asynccontextmanager
     async def access_resource(self, res: resource_selector) -> AsyncGenerator["ResourceOperator", None]:
         yield LocalFileOperator(Path(list(res.path.values())[0]))
+
+class RawBytesResource(ResourceOperator):
+    data: bytes
+
+    def __init__(self, data: bytes) -> None:
+        super().__init__()
+
+    async def operate(self, operator: str, target: Any, value: Any, cache: OperatorCache = None) -> Any:
+        if operator == "read":
+            return Status(True, "ok"), Stream(self.data)
+        raise NotImplementedError(f"{operator} is not a supported operator.")
+
+class RawBytesResourceProvider(ResourceProvider):
+    supported_resource_types = {"raw": 16}
+
+    @asynccontextmanager
+    async def access_resource(self, res: resource_selector) -> AsyncGenerator["ResourceOperator", None]:
+        yield RawBytesResource(res.path['raw'])

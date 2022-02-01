@@ -157,6 +157,11 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
                 self.resource_providers.append(LocalFileResourceProvider())
                 self._flush_resprov_map()
+            if avilla_config.use_raw:
+                from avilla.core.utilles.resource import RawBytesResourceProvider
+
+                self.resource_providers.append(RawBytesResourceProvider())
+                self._flush_resprov_map()
 
     def has_service(self, service_type: Type[Service]) -> bool:
         for service in self.services:

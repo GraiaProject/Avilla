@@ -66,6 +66,7 @@ class resource(Selector):
     scope = "resource"
 
     if TYPE_CHECKING:
+        raw: SelectorKey["resource", bytes]
         dir: SelectorKey["resource", str]
         file: SelectorKey["resource", str]
         image: SelectorKey["resource", str]
