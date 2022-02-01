@@ -111,22 +111,35 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                 continue
             conf = cast(OnebotConnectionConfig, avilla.get_config(self.__class__, account))
             conns = self.accounts.setdefault(account.without_group(), {})
+            self.set_status(account.without_group(), False, "non-configured")
             if isinstance(conf, OnebotWsClientConfig):
                 self.websocket_client = avilla.get_interface(WebsocketClient)
-                connection = OnebotWsClient(self.websocket_client, account, self, conf)
+                ob_ws_client = OnebotWsClient(self.websocket_client, account, self, conf)
                 if "event" in conns and "action" in conns:
                     raise ValueError(
                         f"Account {account} already configured event method and action method, ws method is unnecessary"
                     )
                 if "event" not in conns:
-                    conns["event"] = connection
-                    tasks.append(loop.create_task(connection.maintask()))
+                    conns["event"] = ob_ws_client
+                    tasks.append(loop.create_task(ob_ws_client.maintask()))
                 if "action" not in conns:
-                    conns["action"] = connection
+                    conns["action"] = ob_ws_client
+                if conns.get("event") is ob_ws_client and conns.get("action") is ob_ws_client:
+                    conns['universal'] = ob_ws_client
             elif isinstance(conf, OnebotWsServerConfig):
                 self.websocket_server = avilla.get_interface(WebsocketServer)
                 ob_ws_server = OnebotWsServer(self.websocket_server, account, self, conf)
                 tasks.append(loop.create_task(ob_ws_server.maintask()))
+                if "event" in conns and "action" in conns:
+                    raise ValueError(
+                        f"Account {account} already configured event method and action method, ws-reverse method is unnecessary"
+                    )
+                if "action" not in conns:
+                    conns["action"] = ob_ws_server
+                if "event" not in conns:
+                    conns["event"] = ob_ws_server
+                if conns.get("event") is ob_ws_server and conns.get("action") is ob_ws_server:
+                    conns["universal"] = ob_ws_server
             elif isinstance(conf, OnebotHttpClientConfig):
                 self.http_client = avilla.get_interface(HttpClient)
                 ob_http_client = OnebotHttpClient(self.http_client, account, self, conf)
@@ -151,7 +164,6 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
             if isinstance(account, EllipsisType):
                 continue
             conns = self.accounts[account.without_group()]
-            print(conns)
             if "event" not in conns and "action" not in conns:
                 raise ValueError(f"Account {account} not configured event and action method")
             if "event" not in conns:
@@ -193,65 +205,63 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
 
     async def ws_server_before_accept(self, srv: OnebotWsServer, conn: WebsocketConnection):
         headers = conn.headers()
-        account = entity_selector.account[headers["X-Self-ID"]]
+        account = entity_selector.account[headers["x-self-id"]]
         if account not in self.accounts:
             await conn.close()
             return
         role = cast(
             OnebotConnectionRole,
-            {"API": "action", "Event": "event", "Universal": "universal"}[headers["X-Client-Role"]],
+            {"API": "action", "Event": "event", "Universal": "universal"}[headers["x-client-role"]],
         )
         config = srv.config
         if config.access_token is not None:
             logger.warning(f"you set access_token for a reverse ws, but it's unused by the internal logic")
         client = cast(Tuple[str, int], conn.client)
         conns = self.accounts[account]
-        if role not in conns:
-            logger.info(f"{account} connected by {client[0]}:{client[1]}, act as {role}")
-            if role == "universal":
-                if "universal" in conns:
-                    logger.warning(f"{account} already connected as universal, close the current connection")
-                    await conn.close()
-                    return
-                conns[cast(OnebotConnectionRole, "universal")] = srv
+        # 大问题。。主要还是得看 user conf.
+        logger.info(f"{account} connected by {client[0]}:{client[1]}, act as {role}")
+        if role == "universal":
+            if conns.get("universal") is not srv:
+                logger.warning(f"{account} already configured as universal but in another way, close the current connection")
+                await conn.close()
+                return
+            conns[cast(OnebotConnectionRole, "universal")] = srv
 
-                if "action" not in conns:
-                    conns["action"] = srv
-                else:
+            if "action" not in conns:
+                conns["action"] = srv
+            else:
+                if conns['action'] is not srv:
                     logger.warning(
-                        f"{account} already has action method, reverse-ws method is unnecessary, so it will be ignored"
+                        f"{account} already has action method but in another way, reverse-ws method is unnecessary, so it will be ignored"
                     )
                     await conn.close()
 
-                if "event" not in conns:
-                    conns["event"] = srv
-                else:
+            if "event" not in conns:
+                conns["event"] = srv
+            else:
+                if conns['event'] is not srv:
                     logger.warning(
-                        f"{account} already has event method, reverse-ws method is unnecessary, so it will be closed."
+                        f"{account} already has event method but in another way, reverse-ws method is unnecessary, so it will be ignored"
                     )
                     await conn.close()
-        else:
-            logger.warning(f"{account} already has {role} method, reverse-ws method is unnecessary")
-            await conn.close()
-            return
 
-    async def ws_server_on_connected(self, conn: WebsocketConnection):
+    async def ws_server_on_connected(self, srv: OnebotWsServer, conn: WebsocketConnection):
         headers = conn.headers()
-        account = entity_selector.account[headers["X-Self-ID"]]
+        account = entity_selector.account[headers["x-self-id"]]
         self.set_status(account, True, "ok")
         self.trig_available_waiters(account)
 
-    async def ws_server_on_close(self, conn: WebsocketConnection):
+    async def ws_server_on_close(self, srv: OnebotWsServer, conn: WebsocketConnection):
         headers = conn.headers()
-        account = entity_selector.account[headers["X-Self-ID"]]
+        account = entity_selector.account[headers["x-self-id"]]
         self.set_status(account, False, "closed")
 
     async def ws_server_on_received(
-        self, srv: OnebotWsServer, conn: WebsocketConnection, stream: Stream[bytes]
+        self, srv: OnebotWsServer, conn: WebsocketConnection, stream: Stream[Union[bytes, str, dict, list]]
     ):
         data = (
-            await stream.transform(u8_string)
-            .transform(cast(Callable[[str], Dict], srv.config.data_parser))
+            await stream.transform(u8_string, bytes)  # type: ignore
+            .transform(cast(Callable[[str], Dict], srv.config.data_parser), str)
             .unwrap()
         )
         if "echo" in data:

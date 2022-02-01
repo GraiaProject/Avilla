@@ -10,7 +10,9 @@ from avilla.core import Avilla
 from avilla.core.event.message import MessageReceived
 from avilla.core.selectors import entity, mainline, resource
 from avilla.io.core.aiohttp import AiohttpService
-from avilla.onebot.config import OnebotWsClientConfig
+from avilla.io.core.starlette import StarletteService
+from avilla.io.core.uvicorn import UvicornService
+from avilla.onebot.config import OnebotWsClientConfig, OnebotWsServerConfig
 from avilla.onebot.protocol import OnebotProtocol
 from avilla.onebot.service import OnebotService
 
@@ -21,11 +23,12 @@ avilla = Avilla(
     protocols=[OnebotProtocol],
     services=[
         AiohttpService(ClientSession(loop=loop)),
+        StarletteService(),
+        UvicornService("localhost", 5290)
     ],
     config={
         OnebotService: {
-            entity.account['1779309090']: OnebotWsClientConfig(
-                url=URL("ws://localhost:6700/"),
+            entity.account['1779309090']: OnebotWsServerConfig(
                 access_token=None
             )
         }
@@ -35,6 +38,7 @@ avilla = Avilla(
 @broadcast.receiver(MessageReceived)
 async def hello_world(event: MessageReceived, rs: Relationship, message: Message):
     if message.mainline['group'] == "931587979" and message.sender['member'] == "1846913566":
+        print("?????")
         await rs.exec(MessageSend([
             Text("hello world"),
         ], reply=message)).to(rs.mainline)

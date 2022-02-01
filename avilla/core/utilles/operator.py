@@ -7,7 +7,7 @@ O = TypeVar("O", bound=Operator)
 
 class OperatorImplementDispatch(Generic[O]):
     #                    key   op        operator value          cache
-    patterns: Dict[Tuple[str, str], Callable[[O, Any, Optional[OperatorCache]], Awaitable[Any]]]
+    patterns: Dict[Tuple[str, str], Callable[[O, Any, Optional[OperatorCache]], Awaitable[Any]]] = {}
 
     def __init_subclass__(cls, **kwargs) -> None:
         cls.patterns = {}

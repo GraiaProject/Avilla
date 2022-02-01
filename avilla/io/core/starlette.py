@@ -1,7 +1,10 @@
+import asyncio
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple, Type, Union
+import json
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple, Type, Union, cast
 
 from graia.broadcast.utilles import Ctx
+from loguru import logger
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse, PlainTextResponse, Response
@@ -10,6 +13,7 @@ from starlette.websockets import WebSocket, WebSocketDisconnect, WebSocketState
 from avilla.core import LaunchComponent, Service
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.stream import Stream
+from avilla.core.transformers import u8_encode
 from avilla.core.utilles import random_string
 from avilla.io.common.http import (
     HTTP_METHODS,
@@ -70,16 +74,28 @@ class StarletteWebsocketServerConnection(WebsocketConnection):
         self.before_accept_callbacks = []
         self.connected_callbacks = []
         self.received_callbacks = []
-        self.closed_callbacks = []
+        self.close_callbacks = []
         self.websocket_ctx = Ctx(f"starlette_ws_{random_string()}")
 
-    async def send(self, data: Union[Stream[bytes], bytes]) -> None:
+    async def send(
+        self,
+        data: Union[Stream[Union[bytes, str, dict, list]], bytes, str, dict, list],
+        *,
+        json_serializer: Callable[[Union[dict, list]], str] = None,
+    ) -> None:
         ws = self.websocket_ctx.get()
         if ws is None:
             raise RuntimeError("Websocket connection not prepared")
         if isinstance(data, Stream):
             data = await data.unwrap()
-        await ws.send_bytes(data)
+        if isinstance(data, (dict, list)):
+            await ws.send_json(data)
+        elif isinstance(data, str):
+            await ws.send_text(data)
+        elif isinstance(data, bytes):
+            await ws.send_bytes(data)
+        else:
+            raise TypeError(f"Unsupported data type: {type(data)}")
 
     async def close(self, code: int = 1000, message: bytes = b"") -> None:
         ws = self.websocket_ctx.get()
@@ -152,24 +168,25 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
 
         async def connection_wrapper(conn: WebSocket):
             with ws.websocket_ctx.use(conn):
-                for cb in ws.before_accept_callbacks:
-                    await cb(ws)
+                await asyncio.wait([cb(ws) for cb in ws.before_accept_callbacks])
                 # 不合法直接 close.
                 # 我记得 accept 之前不能 send, 所以别想啦。
-                if conn.client_state == WebSocketState.DISCONNECTED:
+                if conn.application_state == WebSocketState.DISCONNECTED:
                     return
                 await conn.accept()
-                for cb in ws.connected_callbacks:
-                    await cb(ws)  # 在这里可以想。
+                await asyncio.wait([cb(ws) for cb in ws.connected_callbacks])
+                # 在这里可以想。
                 avilla = self.service.avilla
                 try:
                     while not avilla.sigexit.is_set():
-                        msg = await conn.receive_bytes()
-                        for cb in ws.received_callbacks:
-                            await cb(ws, Stream(msg))
+                        msg = await conn.receive()
+                        if msg['type'] == "websocket.receive":
+                            await asyncio.wait([cb(ws, Stream(msg['text'])) for cb in ws.received_callbacks])
+                        elif msg['type'] == "websocket.disconnect":
+                            break
                 except WebSocketDisconnect:
-                    for cb in ws.close_callbacks:
-                        await cb(ws)
+                    await asyncio.wait([cb(ws) for cb in ws.close_callbacks])
+                logger.warning(f"Websocket connection closed: {path}, {conn.client}")
 
         self.starlette.websocket_route(path)(connection_wrapper)
         yield ws
@@ -203,4 +220,4 @@ class StarletteService(Service):
 
     @property
     def launch_component(self) -> LaunchComponent:
-        return LaunchComponent("http.universal_server", set())
+        return LaunchComponent("http.universal_server", set(), prepare=self.launch_prepare)

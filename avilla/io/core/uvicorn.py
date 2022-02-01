@@ -42,13 +42,16 @@ class UvicornService(Service):
             Config(
                 asgi_handler,
                 host=self.host,
-                port=self.port,
+                port=self.port
             )
         )
         # TODO: 使用户拥有更多的对 Config 的配置能力.
 
-    async def launch_mainline(self, _):
+    async def launch_mainline(self, avilla: "Avilla"):
         await self.server.serve()
+        avilla.sigexit.set()
+        if avilla.maintask:
+            avilla.maintask.cancel()
         for task in asyncio.all_tasks():
             if task.get_name() == "avilla-launch":
                 task.cancel()

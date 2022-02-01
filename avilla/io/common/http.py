@@ -143,7 +143,7 @@ class HttpServer(ExportInterface, metaclass=ABCMeta):
 class WebsocketServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
     @asynccontextmanager
-    def websocket_listen(self, path: str) -> "AsyncGenerator[Callable[[WebsocketConnection], Any], None]":
+    def websocket_listen(self, path: str) -> "AsyncGenerator[WebsocketConnection, None]":
         ...
 
 
@@ -213,7 +213,7 @@ class WebsocketConnection(BehaviourSession):
 
     before_accept_callbacks: List[Callable[["WebsocketConnection"], Awaitable[None]]]
     connected_callbacks: List[Callable[["WebsocketConnection"], Awaitable[Any]]]
-    received_callbacks: List[Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]]
+    received_callbacks: List[Callable[["WebsocketConnection", Stream[Union[str, bytes, dict, list]]], Awaitable[Any]]]
     close_callbacks: List[Callable[["WebsocketConnection"], Awaitable[Any]]]
 
     @abstractmethod
@@ -230,7 +230,7 @@ class WebsocketConnection(BehaviourSession):
         ...
 
     @abstractmethod
-    async def receive(self) -> Stream[bytes]:
+    async def receive(self) -> Stream[Union[str, bytes, dict, list]]:
         ...
 
     @abstractmethod
@@ -265,7 +265,7 @@ class WebsocketConnection(BehaviourSession):
         self.connected_callbacks.append(callback)
         return callback
 
-    def on_received(self, callback: Callable[["WebsocketConnection", Stream[bytes]], Awaitable[Any]]):
+    def on_received(self, callback: Callable[["WebsocketConnection", Stream[Union[str, bytes, dict, list]]], Awaitable[Any]]):
         self.received_callbacks.append(callback)
         return callback
 

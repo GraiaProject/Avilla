@@ -6,7 +6,7 @@ from abc import ABCMeta, abstractmethod
 from asyncio import Future
 from contextlib import ExitStack, suppress
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Dict, Literal, Optional, cast, final
+from typing import TYPE_CHECKING, Callable, Dict, Literal, Optional, Union, cast, final
 
 from loguru import logger
 
@@ -155,10 +155,10 @@ class OnebotWsClient(OnebotConnection):
                 logger.warning(f"onebot websocket client for {self.account} disconnected")
 
             @self.ws_connection.on_received
-            async def on_received_data(connection: WebsocketConnection, stream: Stream[bytes]):
+            async def on_received_data(connection: WebsocketConnection, stream: Stream[Union[dict, list,bytes,str]]):
                 data = (
-                    await stream.transform(u8_string)
-                    .transform(cast(Callable[[str], Dict], self.config.data_parser))
+                    await stream.transform(u8_string, bytes)  # type: ignore
+                    .transform(cast(Callable[[str], Dict], self.config.data_parser), str)
                     .unwrap()
                 )
                 if "echo" in data:
@@ -249,15 +249,12 @@ class OnebotWsServer(OnebotConnection):
         self.requests = {}
 
     async def maintask(self):
-        self.ws_server.websocket_listen(self.config.api_root + self.config.api)(
-            partial(self.service.ws_server_on_received, self)
-        )
-        self.ws_server.websocket_listen(self.config.api_root + self.config.event)(
-            partial(self.service.ws_server_on_received, self)
-        )
-        self.ws_server.websocket_listen(self.config.api_root + self.config.universal)(
-            partial(self.service.ws_server_on_received, self)
-        )
+        async with self.ws_server.websocket_listen(self.config.api_root + self.config.universal) as conn:
+            conn.before_accept(partial(self.service.ws_server_before_accept, self))
+            conn.on_connected(partial(self.service.ws_server_on_connected, self))
+            conn.on_received(partial(self.service.ws_server_on_received, self))
+            conn.on_close(partial(self.service.ws_server_on_close, self))
+            self.universal_connection = conn
 
     async def send(self, data: dict) -> Optional[dict]:
         if self.universal_connection:

@@ -74,6 +74,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     _res_provider_types: Dict[str, ResourceProvider]
 
     sigexit: asyncio.Event
+    maintask: Optional[asyncio.Task] = None
     rich_console: Console
 
     init_moment = {AvillaConfig: ConfigFlushingMoment.before_prepare}
@@ -302,6 +303,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
                     for component in component_layer
                     if component.prepare
                 ]
+                logger.debug(tasks)
                 for task in tasks:
                     task.add_done_callback(lambda t: status.update(f"{t.get_name()} prepared."))
                 if tasks:
@@ -336,7 +338,8 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         logger.info(f"mainline count: {len(tasks)}")
         try:
             if tasks:
-                await asyncio.gather(*tasks)
+                self.maintask = loop.create_task(asyncio.wait(tasks))
+                await asyncio.shield(self.maintask)
         except asyncio.CancelledError:
             logger.info("[red bold]cancelled by user.")
             if not self.sigexit.is_set():
