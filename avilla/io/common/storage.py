@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from datetime import timedelta
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, List, TypeVar
 
 from avilla.core.service import ExportInterface
 
@@ -55,4 +55,8 @@ class CacheStorage(Storage, Generic[D], metaclass=ABCMeta):
 
     @abstractmethod
     async def has(self, key: str) -> bool:
+        ...
+
+    @abstractmethod
+    async def keys(self) -> List[str]:
         ...

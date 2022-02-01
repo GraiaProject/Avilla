@@ -13,6 +13,7 @@ from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.typing import TExecutionMiddleware
+from avilla.core.utilles import Defer
 from avilla.io.common.storage import CacheStorage
 
 if TYPE_CHECKING:
@@ -99,7 +100,8 @@ class Relationship(Generic[M]):
             }
         )
         patched = OperatorCachePatcher(operator, cache)
-        prefix = patched.prefix
+        defer = Defer.current()
+        defer.add(patched.cache.clear)
         if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() == "member":
             operator.patterns["member.*"] = self.protocol.get_operator(self.self, self.ctx)
 

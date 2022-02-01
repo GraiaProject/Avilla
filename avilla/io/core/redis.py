@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, Type, Union
+from typing import Any, Dict, List, Type, Union
 
 from aioredis import Redis
 
@@ -31,6 +31,9 @@ class RedisCache(CacheStorage):
 
     async def has(self, key: str) -> bool:
         return await self.redis.exists(key)
+
+    async def keys(self) -> List[str]:
+        return await self.redis.keys()
 
 
 class RedisService(Service):

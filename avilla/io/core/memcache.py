@@ -53,6 +53,9 @@ class Memcache(CacheStorage):
     async def has(self, key: str) -> bool:
         return key in self.cache
 
+    async def keys(self) -> List[str]:
+        return list(self.cache.keys())
+
 
 class MemcacheService(Service):
     supported_interface_types = {Memcache, CacheStorage}

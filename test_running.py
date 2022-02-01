@@ -1,14 +1,17 @@
 import asyncio
+import traceback
 from aiohttp import ClientSession
 from graia.broadcast import Broadcast
 from avilla.core.elements import Image, Notice, Text
 from avilla.core.execution import MessageSend
 from avilla.core.message import Message
-from avilla.core.relationship import Relationship
+from avilla.core.relationship import CoreSupport, Relationship
 from yarl import URL
 from avilla.core import Avilla
 from avilla.core.event.message import MessageReceived
 from avilla.core.selectors import entity, mainline, resource
+from avilla.core.utilles import Defer
+from avilla.io.common.storage import CacheStorage
 from avilla.io.core.aiohttp import AiohttpService
 from avilla.io.core.starlette import StarletteService
 from avilla.io.core.uvicorn import UvicornService
@@ -24,24 +27,27 @@ avilla = Avilla(
     services=[
         AiohttpService(ClientSession(loop=loop)),
         StarletteService(),
-        UvicornService("localhost", 5290)
+        UvicornService("localhost", 5290),
     ],
-    config={
-        OnebotService: {
-            entity.account['1779309090']: OnebotWsServerConfig(
-                access_token=None
-            )
-        }
-    }
+    config={OnebotService: {entity.account["1779309090"]: OnebotWsServerConfig(access_token=None)}},
 )
 
+
 @broadcast.receiver(MessageReceived)
-async def hello_world(event: MessageReceived, rs: Relationship, message: Message):
-    if message.mainline['group'] == "931587979" and message.sender['member'] == "1846913566":
-        print("?????")
-        await rs.exec(MessageSend([
-            Text("hello world"),
-        ], reply=message)).to(rs.mainline)
+async def hello_world(event: MessageReceived, rs: Relationship[CoreSupport], message: Message, protocol: OnebotProtocol, defer: Defer):
+    try:
+        if message.mainline["group"] == "931587979" and message.sender["member"] == "1846913566":
+            print("?????")
+            print(await rs.meta.get("mainline.name"))
+            print(await rs.meta.get("mainline.name"))
+            cache = avilla.get_interface(CacheStorage)
+            print(await cache.keys())
+            print(defer.defers)
+        # await rs.exec(MessageSend([
+        #    Text("hello world"),
+        # ], reply=message)).to(rs.mainline)
+    except:
+        traceback.print_exc()
 
 
 loop.run_until_complete(avilla.launch())

@@ -21,8 +21,7 @@ from typing import (
 )
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface
-from graia.broadcast.utilles import run_always_await_safely
-
+from graia.broadcast.utilles import run_always_await_safely, Ctx
 
 def random_string(k: int = 12):
     return "".join(random.choices(string.ascii_letters + string.digits, k=k))
@@ -109,6 +108,12 @@ def priority_strategy(
 
 
 class Defer:
+    _ctx: Ctx[List[Callable[[], Any]]] = Ctx("defer")
+
+    @classmethod
+    def current(cls):
+        return cls(cls._ctx.get())
+
     def __init__(self, defers: List[Callable[[], Any]]) -> None:
         self.defers = defers
 
@@ -119,6 +124,7 @@ class Defer:
 class DeferDispatcher(BaseDispatcher):
     async def beforeExecution(self, interface: DispatcherInterface):
         interface.local_storage["defers"] = []
+        interface.local_storage["defers_ctxtoken"] = Defer._ctx.set(interface.local_storage["defers"])
 
     async def catch(self, interface: DispatcherInterface):
         if interface.annotation is Defer:
@@ -128,6 +134,7 @@ class DeferDispatcher(BaseDispatcher):
         self, interface: DispatcherInterface, exception: Optional[Exception], tb: Optional[TracebackType]
     ):
         await asyncio.gather(*[run_always_await_safely(defer) for defer in interface.local_storage["defers"]])
+        Defer._ctx.reset(interface.local_storage["defers_ctxtoken"])
 
 
 T = TypeVar("T")

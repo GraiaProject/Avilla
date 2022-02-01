@@ -13,6 +13,7 @@ from typing import (
     Type,
     Union,
     cast,
+    overload,
 )
 
 from loguru import logger
@@ -89,6 +90,15 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
 
     def get_interface(self, interface_type: Type[OnebotInterface]) -> OnebotInterface:
         return OnebotInterface(self)
+
+    if TYPE_CHECKING:
+        @overload
+        def get_status(self) -> Dict[entity_selector, Status]:
+            ...
+        
+        @overload
+        def get_status(self, account: entity_selector) -> Status:
+            ...
 
     def get_status(self, account: Optional[entity_selector] = None):
         if not account:

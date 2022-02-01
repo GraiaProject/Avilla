@@ -33,4 +33,4 @@ def parent_generate(entity: entity_selector):
         mainline: mainline_selector = entity.path["mainline"]
         length = len(mainline.path)
         for i in range(length):
-            yield mainline_selector("mainline", dict(list(mainline.path.items())[: length - i]))
+            yield mainline_selector(dict(list(mainline.path.items())[: length - i]))

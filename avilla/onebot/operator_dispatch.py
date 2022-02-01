@@ -21,6 +21,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
     async def get_mainline_name(operator: "OnebotOperator", _, cache: OperatorCache = None):
         if cache:
             cached_value = await cache.get("mainline.name", None)
+            print(f"cached_value: {cached_value}")
             if cached_value is not None:
                 return cached_value
         if not operator.mainline:
@@ -34,13 +35,13 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
         data = resp["data"]
         if cache:
             await cache.set("mainline.name", data["group_name"])
-            if "member_count" in resp:
+            if "member_count" in data:
                 await cache.set("mainline.current_count", data["member_count"])
-            if "max_member_count" in resp:
+            if "max_member_count" in data:
                 await cache.set("mainline.max_count", data["max_member_count"])
-            if "group_memo" in resp:
+            if "group_memo" in data:
                 await cache.set("mainline.description", data["group_memo"])
-            if "group_create_time" in resp:
+            if "group_create_time" in data:
                 await cache.set("mainline.create_time", datetime.fromtimestamp(data["group_create_time"]))
         return data["group_name"]
 
@@ -91,13 +92,13 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
         data = resp["data"]
         if cache:
             await cache.set("mainline.current_count", data["member_count"])
-            if "group_name" in resp:
+            if "group_name" in data:
                 await cache.set("mainline.name", data["group_name"])
-            if "max_member_count" in resp:
+            if "max_member_count" in data:
                 await cache.set("mainline.max_count", data["max_member_count"])
-            if "group_memo" in resp:
+            if "group_memo" in data:
                 await cache.set("mainline.description", data["group_memo"])
-            if "group_create_time" in resp:
+            if "group_create_time" in data:
                 await cache.set("mainline.create_time", datetime.fromtimestamp(data["group_create_time"]))
         return data["member_count"]
 
@@ -119,13 +120,13 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
         data = resp["data"]
         if cache:
             await cache.set("mainline.max_count", data["max_member_count"])
-            if "member_count" in resp:
+            if "member_count" in data:
                 await cache.set("mainline.current_count", data["member_count"])
-            if "group_name" in resp:
+            if "group_name" in data:
                 await cache.set("mainline.name", data["group_name"])
-            if "group_memo" in resp:
+            if "group_memo" in data:
                 await cache.set("mainline.description", data["group_memo"])
-            if "group_create_time" in resp:
+            if "group_create_time" in data:
                 await cache.set("mainline.create_time", datetime.fromtimestamp(data["group_create_time"]))
         return data["max_member_count"]
 

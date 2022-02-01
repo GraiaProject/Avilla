@@ -77,7 +77,7 @@ class PatchedCache(OperatorCache):
         self.keys = []
 
     async def get(self, key: str, default: Any = None) -> Any:
-        return await self.cache.get(key, default)
+        return await self.cache.get(self.prefix + key, default)
 
     async def set(self, key: str, value: Any) -> None:
         await self.cache.set(self.prefix + key, value)
@@ -89,7 +89,7 @@ class PatchedCache(OperatorCache):
 
     async def clear(self) -> None:
         for key in self.keys:
-            await self.cache.delete(key)
+            await self.cache.delete(self.prefix + key)
 
     async def has(self, key: str) -> bool:
         return await self.cache.has(self.prefix + key)

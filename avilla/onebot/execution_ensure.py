@@ -25,6 +25,8 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
     async def send_message(protocol: "OnebotProtocol", exec: MessageSend):
         rs = ctx_relationship.get()
         interface = protocol.avilla.get_interface(OnebotInterface)
+        if not interface.service.get_status(rs.self).available:
+            raise RuntimeError("account is not available, check your connection!")
         if isinstance(exec.target, mainline_selector):
             keypath = exec.target.keypath()
             if keypath == "group":
