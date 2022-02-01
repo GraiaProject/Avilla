@@ -55,11 +55,11 @@ class OperatorKeyDispatch(Operator):
             raise TypeError("target must be a string (like a key)")
         for pattern, op in self.patterns.items():
             if fnmatch.fnmatch(target, pattern):
-                return await op.operate(target, operator, value, cache)
+                return await op.operate(operator, target, value, cache)
         raise KeyError(f"cannot dispatch for target '{target}'")
 
     def __getattr__(self, name: str):
-        return partial(self.operate, operator=name)
+        return partial(self.operate, name)
 
 
 # TODO: 缓存智能失效：放在 Protocol 里面，能获取所有 Operator Cache 管控的缓存类型，
@@ -116,7 +116,7 @@ class OperatorCachePatcher(Operator):
         return await self.operator.operate(operator, target, value, self.cache)
 
     def __getattr__(self, name: str):
-        return partial(self.operate, operator=name)
+        return partial(self.operate, name)
 
 
 # 以后用 cast + OperatorCachePatcher + OperatorDispatch 就好了。
