@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Optional, Type
+from typing import TYPE_CHECKING, Any, Literal, Optional, Type
 
 from .utilles.selector import DepthSelector, Selector, SelectorKey
 
@@ -15,6 +15,7 @@ class entity(Selector):
         friend: SelectorKey["entity", str]
         member: SelectorKey["entity", str]
         channel: SelectorKey["entity", str]  # 可以发消息的 channel, 类似 tg.
+        anonymous: SelectorKey["entity", str]  # 匿名用户
 
         group: SelectorKey["entity", Any]  # 于 mainline.group 不同，这里是拿来 “根据其他字段” 进行 multi config 的，因此这里可以随便填值。
 
@@ -44,6 +45,8 @@ class mainline(DepthSelector):
         group: SelectorKey["mainline", str]
         channel: SelectorKey["mainline", str]
         guild: SelectorKey["mainline", str]
+        friend: SelectorKey["mainline", str]
+        member: SelectorKey["mainline", str]
 
         _: SelectorKey["mainline", Any]
 

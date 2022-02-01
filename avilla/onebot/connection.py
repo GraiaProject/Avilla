@@ -177,6 +177,8 @@ class OnebotWsClient(OnebotConnection):
                             stack.enter_context(ctx_avilla.use(avilla))
                             stack.enter_context(ctx_protocol.use(self.service.protocol))
                             broadcast.postEvent(event)
+                    else:
+                        logger.warning(f"Received unknown event: {data}")
 
             # await avilla.sigexit.wait()
 

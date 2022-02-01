@@ -290,3 +290,5 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                     stack.enter_context(ctx_avilla.use(self.protocol.avilla))
                     stack.enter_context(ctx_protocol.use(self.protocol))
                     self.protocol.avilla.broadcast.postEvent(event)
+            else:
+                logger.warning(f"Received unknown event: {data}")
