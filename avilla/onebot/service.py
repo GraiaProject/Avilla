@@ -38,7 +38,7 @@ from avilla.io.common.http import (
     WebsocketConnection,
     WebsocketServer,
 )
-from avilla.onebot.accessors import OnebotImageAccessor
+from avilla.onebot.resource import OnebotImageAccessor
 from avilla.onebot.config import (
     OnebotConnectionConfig,
     OnebotHttpClientConfig,

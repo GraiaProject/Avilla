@@ -1,4 +1,4 @@
-from .accessors import OnebotImageAccessor as OnebotImageAccessor
+from .resource import OnebotImageAccessor as OnebotImageAccessor
 from .config import OnebotWsClientConfig as OnebotWsClientConfig
 from .connection import OnebotConnection as OnebotConnection
 from .elements import Reply as Reply
