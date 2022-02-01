@@ -43,6 +43,7 @@ async def hello_world(event: MessageReceived, rs: Relationship[CoreSupport], mes
             cache = avilla.get_interface(CacheStorage)
             print(await cache.keys())
             print(defer.defers)
+            await rs.exec(MessageSend(message.content)).to(rs.mainline)
         # await rs.exec(MessageSend([
         #    Text("hello world"),
         # ], reply=message)).to(rs.mainline)

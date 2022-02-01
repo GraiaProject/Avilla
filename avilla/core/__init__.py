@@ -72,6 +72,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
     _service_interfaces: Dict[Type[ExportInterface], Service]
     _res_provider_types: Dict[str, ResourceProvider]
+    _res_provider_classes: Dict[Type[ResourceProvider], ResourceProvider]
 
     sigexit: asyncio.Event
     maintask: Optional[asyncio.Task] = None
@@ -187,6 +188,9 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self._res_provider_types = priority_strategy(
             self.resource_providers, lambda p: p.supported_resource_types  # type: ignore
         )
+        self._res_provider_classes = {
+            type(provider): provider for provider in self.resource_providers
+        }
 
     def _flush_serif_map(self):
         self._service_interfaces = priority_strategy(self.services, lambda s: s.supported_interface_types)
@@ -248,7 +252,10 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     async def access_resource(self, resource: resource_selector):
         resource_type = list(resource.path.keys())[0]
         if "provider" in resource.path:
-            provider = resource.path["provider"]
+            provider_type = resource.path["provider"]
+            if provider_type not in self._res_provider_classes:
+                raise ValueError(f"resource provider not found: {provider_type}")
+            provider = self._res_provider_classes[provider_type]
         else:
             if resource_type not in self._res_provider_types:
                 raise ValueError(f"resource type {resource_type} not supported.")

@@ -184,9 +184,11 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
 
     @asynccontextmanager
     async def access_resource(self, res: resource_selector) -> AsyncGenerator["ResourceOperator", None]:
+        print(res.resource_type)
         if res.resource_type == "image":
             yield OnebotImageAccessor(self, res)
-        raise NotImplementedError(f"Resource {res} is not supported")
+        else:
+            raise NotImplementedError(f"Resource {res} is not supported")
 
     @property
     def launch_component(self) -> LaunchComponent:

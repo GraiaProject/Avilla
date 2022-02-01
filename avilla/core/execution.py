@@ -45,6 +45,8 @@ class MessageSend(Result[message_selector], Execution):
     ):
         if isinstance(message, str):
             message = MessageChain([Text(message)])
+        if isinstance(message, MessageChain):
+            pass
         elif isinstance(message, Iterable):
             result = message.copy()
             for i, element in enumerate(message):
