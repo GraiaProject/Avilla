@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal, Optional, Union
 
 from yarl import URL
 
@@ -18,17 +19,45 @@ class Face(Element):
 
 class RPS(Element):
     pass
+
+
 class Dice(Element):
     pass
+
+
 class Shake(Element):
     pass
+
+
 @dataclass
 class Poke(Element):
-    type:str
+    type: str
     id: str
     name: str
+
+
 class Anonymous(Element):
     ignore: bool
+
+
+class Share(Element):
+    url: URL
+    title: str
+    content: Optional[str] = None
+    image: Optional[URL] = None
+
+
+class Contact(Element):
+    type: Union[Literal["qq"], Literal["group"]]
+    id: str
+
+
+class Location(Element):
+    lat: float
+    lon: float
+    title: str
+
+
 @dataclass
 class Reply(Element):
     id: str

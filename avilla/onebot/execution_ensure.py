@@ -61,6 +61,6 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
                     },
                 )
                 raise_for_obresp(resp)
-                return message_selector.mainline[exec.target]._[str(resp["message_id"])]
+                return message_selector.mainline[exec.target]._[str(resp["data"]["message_id"])]
             else:
                 raise NotImplementedError(f"unknown mainline/entity to send: {exec.target}")

@@ -28,22 +28,24 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
             raise ValueError("context error: mainline missing")
 
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
-        resp = await ob.action(
-            operator.account, "get_group_info", {"group_id": int(operator.mainline.path["group"])}
-        )
-        raise_for_obresp(resp)
-        data = resp["data"]
-        if cache:
-            await cache.set("mainline.name", data["group_name"])
-            if "member_count" in data:
-                await cache.set("mainline.current_count", data["member_count"])
-            if "max_member_count" in data:
-                await cache.set("mainline.max_count", data["max_member_count"])
-            if "group_memo" in data:
-                await cache.set("mainline.description", data["group_memo"])
-            if "group_create_time" in data:
-                await cache.set("mainline.create_time", datetime.fromtimestamp(data["group_create_time"]))
-        return data["group_name"]
+        if operator.mainline.keypath() == "group":
+            resp = await ob.action(
+                operator.account, "get_group_info", {"group_id": int(operator.mainline.path["group"])}
+            )
+            raise_for_obresp(resp)
+            data = resp["data"]
+            if cache:
+                await cache.set("mainline.name", data["group_name"])
+                if "member_count" in data:
+                    await cache.set("mainline.current_count", data["member_count"])
+                if "max_member_count" in data:
+                    await cache.set("mainline.max_count", data["max_member_count"])
+                if "group_memo" in data:
+                    await cache.set("mainline.description", data["group_memo"])
+                if "group_create_time" in data:
+                    await cache.set("mainline.create_time", datetime.fromtimestamp(data["group_create_time"]))
+            return data["group_name"]
+        # TODO: 更完善的处理, 对了，下面的也要一起改。
 
     @staticmethod
     @registrar.register(("mainline.name", "set"))

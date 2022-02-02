@@ -133,7 +133,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
                 id=data["message_id"],
                 mainline=mainline,
                 content=message_chain,
-                sender=entity_selector.mainline[mainline].friend[str(data["self_id"])],
+                sender=entity_selector.mainline[mainline].friend[str(data["user_id"])],
                 reply=reply,
             ),
             current_account,

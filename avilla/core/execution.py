@@ -3,11 +3,11 @@ from typing import (
     Generic,
     Iterable,
     List,
+    Literal,
     Optional,
     TypeVar,
     Union,
     cast,
-    Literal
 )
 
 from avilla.core.context import ctx_relationship
@@ -22,12 +22,11 @@ from avilla.core.selectors import request as request_selector
 
 
 class Execution:
-    located: bool = True
+    located: bool = False
     locate_class: Literal["mainline", "ctx", "via", "current"] = "mainline"
 
     def locate_target(self, target: Union[mainline_selector, entity_selector]):
         self.located = True
-
 
 
 R = TypeVar("R")

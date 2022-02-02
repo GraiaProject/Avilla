@@ -44,17 +44,18 @@ async def hello_world(
     defer: Defer,
 ):
     try:
-        if message.mainline["group"] == "931587979" and message.sender["member"] == "1846913566":
+        print(message.sender.get_entity_value(), message.sender)
+        if message.sender.get_entity_value() == "1846913566":
             print("?????")
-            print(await rs.meta.get("mainline.name"))
-            print(await rs.meta.get("mainline.name"))
+            #print(await rs.meta.get("mainline.name"))
+            #print(await rs.meta.get("mainline.name"))
             cache = avilla.get_interface(CacheStorage)
             print(await cache.keys())
             print(defer.defers)
-            await rs.exec(MessageSend(message.content)).to(rs.mainline)
-        # await rs.exec(MessageSend([
-        #    Text("hello world"),
-        # ], reply=message)).to(rs.mainline)
+            #await rs.exec(MessageSend(message.content)).to(rs.mainline)
+            await rs.exec(MessageSend([
+                Text("hello world"),
+            ], reply=message))
     except:
         traceback.print_exc()
 

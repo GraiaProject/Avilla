@@ -1,6 +1,16 @@
 from contextlib import AsyncExitStack
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, List, Optional, TypedDict, TypeVar, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Generic,
+    List,
+    Optional,
+    TypedDict,
+    TypeVar,
+    Union,
+    cast,
+)
 
 from avilla.core.execution import Execution
 from avilla.core.operator import (

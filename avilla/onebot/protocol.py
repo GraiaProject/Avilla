@@ -79,4 +79,3 @@ class OnebotProtocol(BaseProtocol):
                 return stream
             else:
                 raise ValueError(f"resource cannot fetch: {resource}")
-            

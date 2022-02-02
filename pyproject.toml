@@ -1,14 +1,9 @@
 [project]
 # PEP 621 project metadata
 # See https://www.python.org/dev/peps/pep-0621/
-name = "avilla-core"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
-description = ""
-version = "1.0.0-pre"
-license = {text = "MIT"}
-requires-python = ">=3.8,<4.0"
 dependencies = [
   "graia-broadcast<1.0.0,>=0.15.2",
   "loguru<1.0.0,>=0.6.0",
@@ -16,7 +11,12 @@ dependencies = [
   "rich<11.0.0,>=10.13.0",
   "yarl<2.0.0,>=1.6.3",
 ]
+description = ""
+license = {text = "MIT"}
+name = "avilla-core"
 readme = "README.md"
+requires-python = ">=3.8,<4.0"
+version = "1.0.0-pre"
 
 [project.urls]
 homepage = "https://github.com/GraiaProject/Avilla"

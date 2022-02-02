@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Any, Dict, Type
 
-from avilla.core.elements import Image, Notice, NoticeAll, Text, Video, Audio
+from avilla.core.elements import Audio, Image, Notice, NoticeAll, Text, Video
 from avilla.core.message import Element
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.utilles import Registrar
@@ -33,7 +33,7 @@ class OnebotMessageParser(AbstractMessageParser):
                 return NoticeAll
             return Notice
         elif elem_type == "image":
-            if token["data"]["type"] == "flash":
+            if token["data"].get("type") == "flash":
                 return FlashImage
             return Image
         elif elem_type in element_map:

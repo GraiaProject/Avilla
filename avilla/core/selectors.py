@@ -25,6 +25,9 @@ class entity(Selector):
         return self.path["mainline"]
 
     def get_entity_type(self) -> str:
+        return list(self.without_group().path.keys())[-1]
+
+    def get_entity_value(self) -> Any:
         return list(self.without_group().path.values())[-1]
 
     def without_group(self):
