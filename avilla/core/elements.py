@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from avilla.core.message import Element
 from avilla.core.selectors import entity as entity_selector
@@ -65,14 +65,14 @@ class Image(Element):
         return "[$Image]"
 
 
-class Voice(Element):
+class Audio(Element):
     source: resource_selector
 
     def __init__(self, source: resource_selector):
         self.source = source
 
     def asDisplay(self) -> str:
-        return "[$Voice]"
+        return "[$Audio]"
 
 
 class Video(Element):
@@ -83,3 +83,15 @@ class Video(Element):
 
     def asDisplay(self) -> str:
         return "[$Video]"
+
+
+class Unknown(Element):
+    type: str
+    raw_data: Any
+
+    def __init__(self, type: str, raw_data: Any) -> None:
+        self.type = type
+        self.raw_data = raw_data
+
+    def asDisplay(self) -> str:
+        return f"[$Unknown:type={self.type}]"

@@ -1,3 +1,4 @@
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime as dt
 from typing import Any, Dict, List, Optional, Tuple, Union
@@ -34,3 +35,39 @@ def parent_generate(entity: entity_selector):
         length = len(mainline.path)
         for i in range(length):
             yield mainline_selector(dict(list(mainline.path.items())[: length - i]))
+
+
+class AbstractPermissionManager(metaclass=ABCMeta):
+    @abstractmethod
+    def ranks(self) -> List[Rank]:
+        ...
+
+    @abstractmethod
+    def rules(
+        self, context: Optional[Union[Rank, str, entity_selector, mainline_selector]] = None
+    ) -> List[Rule]:
+        ...
+
+    @abstractmethod
+    def nodes(self) -> List[Node]:
+        ...
+
+    @abstractmethod
+    def node(self, id: str) -> Optional[Node]:
+        ...
+
+    @abstractmethod
+    def rank(self, id: str) -> Optional[Rank]:
+        ...
+
+    @abstractmethod
+    def has_rank(self, id: str) -> bool:
+        ...
+
+    @abstractmethod
+    def register_node(self, id: str, defaults: Dict[str, bool]):
+        ...
+
+    @abstractmethod
+    def register_rank(self, id: str, mixins: List[str]):
+        ...

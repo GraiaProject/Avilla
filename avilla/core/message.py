@@ -3,8 +3,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Iterable, List, Optional, Type, TypeVar, Union
 
-from pydantic import BaseModel  # pylint: ignore
-
 from avilla.core.selectors import entity
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector

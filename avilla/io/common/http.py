@@ -213,7 +213,9 @@ class WebsocketConnection(BehaviourSession):
 
     before_accept_callbacks: List[Callable[["WebsocketConnection"], Awaitable[None]]]
     connected_callbacks: List[Callable[["WebsocketConnection"], Awaitable[Any]]]
-    received_callbacks: List[Callable[["WebsocketConnection", Stream[Union[str, bytes, dict, list]]], Awaitable[Any]]]
+    received_callbacks: List[
+        Callable[["WebsocketConnection", Stream[Union[str, bytes, dict, list]]], Awaitable[Any]]
+    ]
     close_callbacks: List[Callable[["WebsocketConnection"], Awaitable[Any]]]
 
     @abstractmethod
@@ -265,7 +267,10 @@ class WebsocketConnection(BehaviourSession):
         self.connected_callbacks.append(callback)
         return callback
 
-    def on_received(self, callback: Callable[["WebsocketConnection", Stream[Union[str, bytes, dict, list]]], Awaitable[Any]]):
+    def on_received(
+        self,
+        callback: Callable[["WebsocketConnection", Stream[Union[str, bytes, dict, list]]], Awaitable[Any]],
+    ):
         self.received_callbacks.append(callback)
         return callback
 

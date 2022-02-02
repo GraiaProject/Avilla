@@ -21,7 +21,8 @@ from typing import (
 )
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface
-from graia.broadcast.utilles import run_always_await_safely, Ctx
+from graia.broadcast.utilles import Ctx, run_always_await_safely
+
 
 def random_string(k: int = 12):
     return "".join(random.choices(string.ascii_letters + string.digits, k=k))

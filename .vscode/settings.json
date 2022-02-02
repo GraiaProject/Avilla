@@ -8,12 +8,10 @@
         "--ignore F401"
     ],
     "python.linting.maxNumberOfProblems": 1000,
-    "python.analysis.diagnosticMode": "workspace",
     "python.analysis.completeFunctionParens": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.extraPaths": [
-        "./avilla-core",
-        "./avilla-onebot"
+        "__pypackages__/3.8/lib",
     ],
     "python.sortImports.path": "isort",
     "cSpell.words": [
@@ -37,7 +35,8 @@
         "initctx",
         "isclass",
         "iscoroutinefunction",
-        "klass",
+        "mirai",
+        "miraijvm",
         "obresp",
         "pydantic",
         "pyhocon",
@@ -49,10 +48,20 @@
         "Starlette",
         "testpypi",
         "utilles",
-        "uvicorn"
+        "uvicorn",
+        "vuepress"
     ],
     "python.sortImports.args": [
         "--profile",
         "\"black\""
-    ]
+    ],
+    "python.autoComplete.extraPaths": [
+        "__pypackages__/3.8/lib"
+    ],
+    "python.linting.ignorePatterns": [
+        "**/site-packages/**/*.py",
+        ".vscode/*.py",
+        "__pypackages__"
+    ],
+    "python.languageServer": "Pylance",
 }

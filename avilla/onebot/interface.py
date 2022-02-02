@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, List, cast
 
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.service.entity import ExportInterface, Status
@@ -34,3 +34,19 @@ class OnebotInterface(ExportInterface):
             if conf:
                 timeout = conf.resp_timeout
         return await actor.action(act, params, timeout=timeout)
+
+    def is_available(self, account: entity_selector) -> bool:
+        account = account.without_group()
+        if account not in self.service.accounts:
+            return False
+        stat = cast(Status, self.service.get_status(account))
+        return stat.available
+
+    def get_status(self, account: entity_selector) -> Status:
+        account = account.without_group()
+        if account not in self.service.accounts:
+            raise ValueError(f"Account {account} is not online")
+        return self.service.get_status(account)
+
+    def get_accounts(self) -> List[entity_selector]:
+        return list(self.service.accounts.keys())

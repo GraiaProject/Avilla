@@ -128,3 +128,9 @@ dmypy.json
 # Pyre type checker
 .pyre/
 #pyproject.toml
+
+# Docs node_modules
+docs/node_modules
+
+# PDM 
+.pdm.toml

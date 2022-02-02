@@ -53,18 +53,24 @@ class Stream(Generic[T]):
             ...
 
         @overload
-        def transform(self, wrapper: "Callable[[T | V], V]", assert_type: Optional[Type[T]] = None) -> "Stream[T]":
+        def transform(
+            self, wrapper: "Callable[[T | V], V]", assert_type: Optional[Type[T]] = None
+        ) -> "Stream[T]":
             ...
 
         @overload
         def transform(self, wrapper: "Callable[[T], Awaitable[V]]") -> "Stream[V]":
             ...
-        
+
         @overload
-        def transform(self, wrapper: "Callable[[T | V], Awaitable[V]]", assert_type: Optional[Type[T]] = None) -> "Stream[T]":
+        def transform(
+            self, wrapper: "Callable[[T | V], Awaitable[V]]", assert_type: Optional[Type[T]] = None
+        ) -> "Stream[T]":
             ...
 
-        def transform(self, wrapper: "Callable[[T], Any]", assert_type: Optional[Type[T]] = None) -> "Stream[Any]":
+        def transform(
+            self, wrapper: "Callable[[T], Any]", assert_type: Optional[Type[T]] = None
+        ) -> "Stream[Any]":
             ...
 
     else:

@@ -155,7 +155,9 @@ class OnebotWsClient(OnebotConnection):
                 logger.warning(f"onebot websocket client for {self.account} disconnected")
 
             @self.ws_connection.on_received
-            async def on_received_data(connection: WebsocketConnection, stream: Stream[Union[dict, list,bytes,str]]):
+            async def on_received_data(
+                connection: WebsocketConnection, stream: Stream[Union[dict, list, bytes, str]]
+            ):
                 data = (
                     await stream.transform(u8_string, bytes)  # type: ignore
                     .transform(cast(Callable[[str], Dict], self.config.data_parser), str)

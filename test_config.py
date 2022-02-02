@@ -1,5 +1,7 @@
 from typing import Any
+
 from pydantic import BaseModel
+
 from avilla.core import Avilla
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment
 from avilla.core.utilles.mock import ConfigMock

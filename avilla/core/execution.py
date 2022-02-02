@@ -7,6 +7,7 @@ from typing import (
     TypeVar,
     Union,
     cast,
+    Literal
 )
 
 from avilla.core.context import ctx_relationship
@@ -21,8 +22,12 @@ from avilla.core.selectors import request as request_selector
 
 
 class Execution:
-    def locate_target(self, target: Union[mainline_selector, entity_selector]) -> "Execution":
-        ...
+    located: bool = True
+    locate_class: Literal["mainline", "ctx", "via", "current"] = "mainline"
+
+    def locate_target(self, target: Union[mainline_selector, entity_selector]):
+        self.located = True
+
 
 
 R = TypeVar("R")
@@ -66,6 +71,7 @@ class MessageSend(Result[message_selector], Execution):
         self.reply = reply
 
     def locate_target(self, target: Union[entity_selector, mainline_selector]):
+        self.located = True
         self.target = target
 
 

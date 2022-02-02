@@ -1,6 +1,6 @@
 from contextlib import AsyncExitStack
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, List, TypedDict, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Generic, List, Optional, TypedDict, TypeVar, Union, cast
 
 from avilla.core.execution import Execution
 from avilla.core.operator import (
@@ -20,26 +20,23 @@ if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 
-class ExecuteMeta(TypedDict):
-    to: Union[mainline_selector, entity_selector]
-
-
 class ExecutorWrapper:
     relationship: "Relationship"
     execution: "Execution"
     middlewares: List[TExecutionMiddleware]
 
-    meta: ExecuteMeta
-
     def __init__(self, relationship: "Relationship") -> None:
         self.relationship = relationship
-        self.middlewares = []
+        self.middlewares = relationship.protocol.avilla.exec_middlewares.copy()
 
     def __await__(self):
         return self.ensure().__await__()
 
     async def ensure(self):
-        return await self.relationship.protocol.ensure_execution(self.execution)
+        async with AsyncExitStack() as stack:
+            for middleware in reversed(self.middlewares):
+                await stack.enter_async_context(middleware(self.relationship, self.execution))  # type: ignore
+            return await self.relationship.protocol.ensure_execution(self.execution)
 
     def execute(self, execution: "Execution"):
         self.execution = execution
@@ -63,7 +60,7 @@ class Relationship(Generic[M]):
     ctx: Union[entity_selector, mainline_selector, request_selector]
     mainline: mainline_selector
     self: entity_selector
-    via: Union[mainline_selector, entity_selector, None] = None
+    via: Optional[Union[entity_selector, mainline_selector]]
 
     protocol: "BaseProtocol"
 

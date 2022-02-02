@@ -2,8 +2,8 @@ import fnmatch
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Dict, Optional
-from avilla.core.event import ResourceAvailable
 
+from avilla.core.event import ResourceAvailable
 from avilla.core.event.message import MessageReceived
 from avilla.core.message import Message
 from avilla.core.selectors import entity as entity_selector
@@ -147,7 +147,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
         # 淦。
         if "group_id" not in data:
             raise ValueError("group_id not in data, so avilla cannot handle the temp message")
-        mainline = mainline_selector.group[str(data["group_id"])].member[str(data['user_id'])]
+        mainline = mainline_selector.group[str(data["group_id"])].member[str(data["user_id"])]
         message_chain = await protocol.parse_message(data["message"])
         current_account = entity_selector.account[str(data["self_id"])]
         received_time = datetime.fromtimestamp(data["time"])
@@ -232,7 +232,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
     @registrar.register(OnebotEventTypeKey(post="notice", notice="friend_recall"))
     async def friend_recall(protocol: "OnebotProtocol", data: Dict):
         ...
-    
+
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="notify", sub="poke"))
     async def notify_poke(protocol: "OnebotProtocol", data: Dict):
@@ -242,7 +242,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
     @registrar.register(OnebotEventTypeKey(post="request", notice="friend"))
     async def request_friend(protocol: "OnebotProtocol", data: Dict):
         ...
-    
+
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="request", notice="group", sub="add"))
     async def request_group_add(protocol: "OnebotProtocol", data: Dict):
@@ -262,12 +262,12 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
     @registrar.register(OnebotEventTypeKey(post="meta_event", meta_event="lifecycle", sub="disable"))
     async def meta_event_lifecycle_disable(protocol: "OnebotProtocol", data: Dict):
         ...
-    
+
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="meta_event", meta_event="lifecycle", sub="connect"))
     async def meta_event_lifecycle_connect(protocol: "OnebotProtocol", data: Dict):
         ...
-    
+
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="meta_event", meta_event="heartbeat"))
     async def meta_event_heartbeat(protocol: "OnebotProtocol", data: Dict):

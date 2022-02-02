@@ -1,6 +1,6 @@
 import asyncio
-from contextlib import asynccontextmanager
 import json
+from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple, Type, Union, cast
 
 from graia.broadcast.utilles import Ctx
@@ -180,9 +180,9 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
                 try:
                     while not avilla.sigexit.is_set():
                         msg = await conn.receive()
-                        if msg['type'] == "websocket.receive":
-                            await asyncio.wait([cb(ws, Stream(msg['text'])) for cb in ws.received_callbacks])
-                        elif msg['type'] == "websocket.disconnect":
+                        if msg["type"] == "websocket.receive":
+                            await asyncio.wait([cb(ws, Stream(msg["text"])) for cb in ws.received_callbacks])
+                        elif msg["type"] == "websocket.disconnect":
                             break
                 except WebSocketDisconnect:
                     await asyncio.wait([cb(ws) for cb in ws.close_callbacks])

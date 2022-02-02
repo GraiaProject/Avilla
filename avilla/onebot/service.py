@@ -38,7 +38,6 @@ from avilla.io.common.http import (
     WebsocketConnection,
     WebsocketServer,
 )
-from avilla.onebot.resource import OnebotImageAccessor
 from avilla.onebot.config import (
     OnebotConnectionConfig,
     OnebotHttpClientConfig,
@@ -54,6 +53,7 @@ from avilla.onebot.connection import (
     OnebotWsClient,
     OnebotWsServer,
 )
+from avilla.onebot.resource import OnebotImageAccessor
 from avilla.onebot.utilles import raise_for_obresp
 
 from .interface import OnebotInterface
@@ -92,10 +92,11 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
         return OnebotInterface(self)
 
     if TYPE_CHECKING:
+
         @overload
         def get_status(self) -> Dict[entity_selector, Status]:
             ...
-        
+
         @overload
         def get_status(self, account: entity_selector) -> Status:
             ...
@@ -135,7 +136,7 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                 if "action" not in conns:
                     conns["action"] = ob_ws_client
                 if conns.get("event") is ob_ws_client and conns.get("action") is ob_ws_client:
-                    conns['universal'] = ob_ws_client
+                    conns["universal"] = ob_ws_client
             elif isinstance(conf, OnebotWsServerConfig):
                 self.websocket_server = avilla.get_interface(WebsocketServer)
                 ob_ws_server = OnebotWsServer(self.websocket_server, account, self, conf)
@@ -234,7 +235,9 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
         logger.info(f"{account} connected by {client[0]}:{client[1]}, act as {role}")
         if role == "universal":
             if conns.get("universal") is not srv:
-                logger.warning(f"{account} already configured as universal but in another way, close the current connection")
+                logger.warning(
+                    f"{account} already configured as universal but in another way, close the current connection"
+                )
                 await conn.close()
                 return
             conns[cast(OnebotConnectionRole, "universal")] = srv
@@ -242,7 +245,7 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
             if "action" not in conns:
                 conns["action"] = srv
             else:
-                if conns['action'] is not srv:
+                if conns["action"] is not srv:
                     logger.warning(
                         f"{account} already has action method but in another way, reverse-ws method is unnecessary, so it will be ignored"
                     )
@@ -251,7 +254,7 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
             if "event" not in conns:
                 conns["event"] = srv
             else:
-                if conns['event'] is not srv:
+                if conns["event"] is not srv:
                     logger.warning(
                         f"{account} already has event method but in another way, reverse-ws method is unnecessary, so it will be ignored"
                     )

@@ -16,6 +16,8 @@ from typing import (
     Union,
     cast,
 )
+from avilla.core.execution import Execution
+from avilla.core.relationship import Relationship
 
 from graia.broadcast import Broadcast
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -65,7 +67,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     protocol_classes: List[Type[BaseProtocol]]
 
     launch_components: Dict[str, LaunchComponent]
-    middlewares: List[TExecutionMiddleware]
+    exec_middlewares: List[TExecutionMiddleware]
     services: List[Service]
     resource_providers: List[ResourceProvider]
     config: Dict[Union[ConfigApplicant, Type[ConfigApplicant]], Dict[Hashable, "ConfigProvider[BaseModel]"]]
@@ -98,7 +100,9 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self.resource_providers = []
         self.launch_components = {}
         self._flush_resprov_map()
-        self.middlewares = middlewares or []
+        self.exec_middlewares = []
+        if middlewares:
+            self.exec_middlewares.extend(middlewares)
         self.services = services
         self._flush_serif_map()
         self.protocols = [protocol(self) for protocol in protocols]
@@ -125,6 +129,22 @@ class Avilla(ConfigApplicant[AvillaConfig]):
                     return self
                 elif interface.annotation in self._protocol_map:
                     return self._protocol_map[interface.annotation]
+
+        @self.exec_middlewares.append
+        @asynccontextmanager
+        async def _auto_rsmldet(rs: Relationship, exec: Execution):
+            if not exec.located:
+                if exec.locate_class == "mainline":
+                    exec.locate_target(rs.mainline)
+                elif exec.locate_class == "ctx":
+                    exec.locate_target(rs.ctx)
+                elif exec.locate_class == "via":
+                    exec.locate_target(rs.via)  # type: ignore
+                elif exec.locate_class == "current":
+                    exec.locate_target(rs.current)
+                else:
+                    logger.warning(f"unknown locate_class: {exec} - {exec.locate_class}")
+            yield
 
         # config shortcut flatten
 
@@ -194,9 +214,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self._res_provider_types = priority_strategy(
             self.resource_providers, lambda p: p.supported_resource_types  # type: ignore
         )
-        self._res_provider_classes = {
-            type(provider): provider for provider in self.resource_providers
-        }
+        self._res_provider_classes = {type(provider): provider for provider in self.resource_providers}
 
     def _flush_serif_map(self):
         self._service_interfaces = priority_strategy(self.services, lambda s: s.supported_interface_types)

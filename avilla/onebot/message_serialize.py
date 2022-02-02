@@ -1,11 +1,12 @@
 from base64 import b64encode
 from typing import TYPE_CHECKING, cast
 
-from avilla.core.elements import Image, Notice, NoticeAll, Text
+from avilla.core.elements import Image, Notice, NoticeAll, Text, Video, Audio
 from avilla.core.stream import Stream
 from avilla.core.transformers import u8_string
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.message import MessageSerializer
+from avilla.onebot.elements import *
 
 if TYPE_CHECKING:
     from .protocol import OnebotProtocol
@@ -57,5 +58,61 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
             },
         }
 
-    # TODO: Voice, Video. etc.
-    # File will be provided by Resource API.
+    @staticmethod
+    @registrar.register(FlashImage)
+    async def flash_image(protocol: "OnebotProtocol", element: FlashImage):
+        avilla = protocol.avilla
+        status, stream = await avilla.fetch_resource(element.source)
+        if not status.available:
+            raise RuntimeError(f"FlashImage resource not available: {element.source} - {status.description}")
+        stream = cast(Stream[bytes], stream)
+        b64 = await stream.transform(b64encode).transform(u8_string).unwrap()
+        return {
+            "type": "image",
+            "data": {
+                "file": "base64://" + b64,
+                "type": "flash",
+            },
+        }
+
+    @staticmethod
+    @registrar.register(Audio)
+    async def voice(protocol: "OnebotProtocol", element: Audio):
+        avilla = protocol.avilla
+        status, stream = await avilla.fetch_resource(element.source)
+        if not status.available:
+            raise RuntimeError(f"Image resource not available: {element.source} - {status.description}")
+        stream = cast(Stream[bytes], stream)
+        b64 = await stream.transform(b64encode).transform(u8_string).unwrap()
+        return {
+            "type": "record",
+            "data": {
+                "file": "base64://" + b64,
+            },
+        }
+
+    @staticmethod
+    @registrar.register(Video)
+    async def video(protocol: "OnebotProtocol", element: Video):
+        avilla = protocol.avilla
+        status, stream = await avilla.fetch_resource(element.source)
+        if not status.available:
+            raise RuntimeError(f"Image resource not available: {element.source} - {status.description}")
+        stream = cast(Stream[bytes], stream)
+        b64 = await stream.transform(b64encode).transform(u8_string).unwrap()
+        return {
+            "type": "video",
+            "data": {
+                "file": "base64://" + b64,
+            },
+        }
+
+    @staticmethod
+    @registrar.register(Face)
+    async def face(protocol: "OnebotProtocol", element: Face):
+        return {
+            "type": "face",
+            "data": {
+                "id": element.id,
+            },
+        }

@@ -1,5 +1,5 @@
 import json
-from typing import Any, Final, Optional
+from typing import Any, Final, Optional, cast
 
 from graia.broadcast import Dispatchable
 from graia.broadcast.utilles import printer
@@ -10,7 +10,8 @@ from avilla.core.operator import Operator
 from avilla.core.platform import Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
-from avilla.core.selectors import entity as entity_selector, mainline as mainline_selector
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.stream import Stream
 from avilla.core.utilles.selector import Selector
@@ -71,5 +72,11 @@ class OnebotProtocol(BaseProtocol):
         )
 
     async def fetch_resource(self, resource: resource_selector) -> Stream[Any]:
-        raise NotImplementedError
-        # TODO: implement
+        async with self.service.access_resource(resource) as accessor:
+            status, stream = await accessor.read()
+            stream = cast(Stream[Any], stream)
+            if status.available:
+                return stream
+            else:
+                raise ValueError(f"resource cannot fetch: {resource}")
+            
