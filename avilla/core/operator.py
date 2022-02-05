@@ -70,6 +70,8 @@ class PatchedCache(OperatorCache):
     cache: CacheStorage
     keys: List[str]
     prefix: str
+    event_meta: Optional[Dict[str, Any]] = None
+    # 指从接收到的 event 中获取的 meta, 用于 event parsing -> relationship meta 这二层的单向透传
 
     def __init__(self, cache: CacheStorage, prefix: str = "") -> None:
         self.cache = cache
@@ -77,21 +79,30 @@ class PatchedCache(OperatorCache):
         self.keys = []
 
     async def get(self, key: str, default: Any = None) -> Any:
+        if self.event_meta and key in self.event_meta:
+            return self.event_meta[key]
         return await self.cache.get(self.prefix + key, default)
 
     async def set(self, key: str, value: Any) -> None:
+        if self.event_meta and key in self.event_meta:
+            del self.event_meta[key]
         await self.cache.set(self.prefix + key, value)
         self.keys.append(key)
 
     async def delete(self, key: str, strict: bool = False) -> None:
-        await self.cache.delete(self.prefix + key, strict)
-        self.keys.remove(key)
+        if self.event_meta and key in self.event_meta:
+            del self.event_meta[key]
+        if self.has(key):
+            await self.cache.delete(self.prefix + key, strict)
+            self.keys.remove(key)
 
     async def clear(self) -> None:
         for key in self.keys:
             await self.cache.delete(self.prefix + key)
 
     async def has(self, key: str) -> bool:
+        if self.event_meta and key in self.event_meta:
+            return True
         return await self.cache.has(self.prefix + key)
 
     @classmethod

@@ -15,19 +15,20 @@ from typing import (
     cast,
     overload,
 )
+from avilla.core.event import AvillaEvent
 
 from loguru import logger
 from starlette.responses import JSONResponse
 
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment
-from avilla.core.context import ctx_avilla, ctx_protocol, ctx_relationship
+from avilla.core.context import ctx_avilla, ctx_protocol, ctx_eventmeta
 from avilla.core.launch import LaunchComponent
 from avilla.core.operator import ResourceOperator
 from avilla.core.resource import ResourceProvider
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service
-from avilla.core.service.entity import ExportInterface, Status
+from avilla.core.service.entity import Status
 from avilla.core.stream import Stream
 from avilla.core.transformers import u8_string
 from avilla.io.common.http import (
@@ -214,6 +215,8 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                 with ExitStack() as stack:
                     stack.enter_context(ctx_avilla.use(self.protocol.avilla))
                     stack.enter_context(ctx_protocol.use(self.protocol))
+                    if isinstance(event, AvillaEvent) and event._event_meta:
+                        stack.enter_context(ctx_eventmeta.use(event._event_meta))
                     self.protocol.avilla.broadcast.postEvent(event)
 
     async def ws_server_before_accept(self, srv: OnebotWsServer, conn: WebsocketConnection):
@@ -292,6 +295,8 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
                 with ExitStack() as stack:
                     stack.enter_context(ctx_avilla.use(self.protocol.avilla))
                     stack.enter_context(ctx_protocol.use(self.protocol))
+                    if isinstance(event, AvillaEvent) and event._event_meta:
+                        stack.enter_context(ctx_eventmeta.use(event._event_meta))
                     self.protocol.avilla.broadcast.postEvent(event)
             else:
                 logger.warning(f"Received unknown event: {data}")

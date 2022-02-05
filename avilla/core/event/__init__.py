@@ -24,6 +24,8 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     self: entity_selector
     time: datetime
 
+    _event_meta: Optional[Dict[str, Any]] = None
+
     def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__}: {' '.join([f'{k}={v.__repr__()}' for k, v in vars(self).items()])}>"
@@ -38,8 +40,9 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     def ctx(self) -> Selector:
         ...
 
-
-_Dispatcher_Tokens: "Dict[int, Token[Relationship]]" = {}
+    def with_meta(self, meta: Dict[str, Any]):
+        self._event_meta = meta
+        return self
 
 
 class RelationshipDispatcher(BaseDispatcher):
@@ -198,6 +201,7 @@ class MetadataChanged(AvillaEvent):
     meta: str
     op: str
     value: Any
+    operator: Optional[entity_selector] = None
 
     def __init__(
         self,
@@ -206,12 +210,14 @@ class MetadataChanged(AvillaEvent):
         op: str,
         value: Any,
         current_self: entity_selector,
+        operator: entity_selector = None,
         time: datetime = None,
     ):
         self.ctx = ctx
         self.meta = meta
         self.op = op
         self.value = value
+        self.operator = operator
         self.self = current_self
         self.time = time or datetime.now()
 
@@ -253,19 +259,21 @@ class EntityPermissionChanged(AvillaEvent):
 
 class RelationshipCreated(AvillaEvent):
     ctx: Union[mainline_selector, entity_selector]
-    via: Union[mainline_selector, entity_selector, None]  # 我暂时想不到为什么要有了 via 再多一个 operator 的理由.
+    via: Union[mainline_selector, entity_selector, None]
+    # 用 via 同时表示两个方向的关系.(自发行为和被动行为)
 
     def __init__(
         self,
         ctx: Union[mainline_selector, entity_selector],
-        via: Union[mainline_selector, entity_selector, None],
         current_self: entity_selector,
         time: datetime = None,
+        via: Union[mainline_selector, entity_selector, None] = None
     ):
         self.ctx = ctx
         self.via = via
         self.self = current_self
         self.time = time or datetime.now()
+
 
 
 class RelationshipDestroyed(AvillaEvent):
@@ -275,9 +283,9 @@ class RelationshipDestroyed(AvillaEvent):
     def __init__(
         self,
         ctx: Union[mainline_selector, entity_selector],
-        via: Union[mainline_selector, entity_selector, None],
         current_self: entity_selector,
         time: datetime = None,
+        via: Union[mainline_selector, entity_selector, None] = None
     ):
         self.ctx = ctx
         self.via = via

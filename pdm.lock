@@ -138,7 +138,7 @@ summary = "A list-like structure which implements collections.abc.MutableSequenc
 
 [[package]]
 name = "graia-broadcast"
-version = "0.15.2"
+version = "0.15.3"
 requires_python = ">=3.7,<4.0"
 summary = "a highly customizable, elegantly designed event system based on asyncio"
 
@@ -344,7 +344,7 @@ dependencies = [
     "h11>=0.8",
     "httptools<0.4.0,>=0.2.0",
     "python-dotenv>=0.13",
-    "uvicorn<1.0.0,>=0.17.1",
+    "uvicorn==0.17.1",
     "uvloop!=0.15.0,!=0.15.1,>=0.14.0; sys_platform != \"win32\" and (sys_platform != \"cygwin\" and platform_python_implementation != \"PyPy\")",
     "watchgod>=0.6",
     "websockets>=10.0",
@@ -579,10 +579,6 @@ content_hash = "sha256:8eef67e62a0778094105f81a5e52ab4dc8e8e4bf331da843836ab8676
     {file = "frozenlist-1.3.0-cp39-cp39-win32.whl", hash = "sha256:01a73627448b1f2145bddb6e6c2259988bb8aee0fb361776ff8604b99616cd08"},
     {file = "frozenlist-1.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:772965f773757a6026dea111a15e6e2678fbd6216180f82a48a40b27de1ee2ab"},
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
-]
-"graia-broadcast 0.15.2" = [
-    {file = "graia_broadcast-0.15.2-py3-none-any.whl", hash = "sha256:8062c99cb3f6c1dd55d9b2cb0f950ce454f202994f828362f0f8408cc35150ad"},
-    {file = "graia-broadcast-0.15.2.tar.gz", hash = "sha256:7b917f909d4ae7c8977d3a3208970956d6ff82b2de3f6cd5d058e3533751e7bf"},
 ]
 "graia-scheduler 0.0.6" = [
     {file = "graia_scheduler-0.0.6-py3-none-any.whl", hash = "sha256:bc29952bbb1c2f8c8875c32bec9dcdedc0fa22ba89b94804498963b491eed1e5"},

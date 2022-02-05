@@ -18,6 +18,7 @@ from avilla.core.operator import (
     OperatorCachePatcher,
     OperatorKeyDispatch,
 )
+from avilla.core.context import ctx_eventmeta
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
@@ -107,6 +108,9 @@ class Relationship(Generic[M]):
             }
         )
         patched = OperatorCachePatcher(operator, cache)
+        eventmeta = ctx_eventmeta.get(None)
+        if eventmeta:
+            patched.cache.event_meta = eventmeta
         defer = Defer.current()
         defer.add(patched.cache.clear)
         if isinstance(self.ctx, entity_selector) and self.ctx.get_entity_type() == "member":

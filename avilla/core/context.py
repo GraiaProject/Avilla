@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 
 from graia.broadcast.utilles import Ctx
 
@@ -13,3 +13,5 @@ ctx_avilla: "Ctx[Avilla]" = Ctx("avilla")
 ctx_protocol: "Ctx[BaseProtocol]" = Ctx("protocol")
 ctx_relationship: "Ctx[Relationship]" = Ctx("relationship")
 ctx_event: "Ctx[Dispatchable]" = Ctx("event")
+
+ctx_eventmeta: "Ctx[Dict[str, Any]]" = Ctx("eventmeta")
