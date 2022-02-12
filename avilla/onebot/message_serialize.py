@@ -1,29 +1,29 @@
 from base64 import b64encode
 from typing import TYPE_CHECKING, cast
 
-from avilla.core.message import MessageChain
 from avilla.core.elements import Audio, Image, Notice, NoticeAll, Text, Video
+from avilla.core.message import MessageChain
 from avilla.core.stream import Stream
 from avilla.core.transformers import u8_string
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.message import MessageSerializer
 from avilla.onebot.elements import (
-    FlashImage,
-    Face,
     RPS,
-    Dice,
-    Shake,
-    Poke,
+    XML,
     Anonymous,
-    Share,
     Contact,
+    Dice,
+    Face,
+    FlashImage,
+    Forward,
+    Json,
     Location,
     Music,
-    Reply,
-    Forward,
     Node,
-    XML,
-    Json,
+    Poke,
+    Reply,
+    Shake,
+    Share,
 )
 
 if TYPE_CHECKING:
@@ -66,9 +66,7 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
         # 暂时还是 base64 吧。
         status, stream = await avilla.fetch_resource(element.source)
         if not status.available:
-            raise RuntimeError(
-                f"Image resource not available: {element.source} - {status.description}"
-            )
+            raise RuntimeError(f"Image resource not available: {element.source} - {status.description}")
         stream = cast(Stream[bytes], stream)
         b64 = await stream.transform(b64encode).transform(u8_string).unwrap()
         return {
@@ -84,9 +82,7 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
         avilla = protocol.avilla
         status, stream = await avilla.fetch_resource(element.source)
         if not status.available:
-            raise RuntimeError(
-                f"FlashImage resource not available: {element.source} - {status.description}"
-            )
+            raise RuntimeError(f"FlashImage resource not available: {element.source} - {status.description}")
         stream = cast(Stream[bytes], stream)
         b64 = await stream.transform(b64encode).transform(u8_string).unwrap()
         return {
@@ -103,9 +99,7 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
         avilla = protocol.avilla
         status, stream = await avilla.fetch_resource(element.source)
         if not status.available:
-            raise RuntimeError(
-                f"Image resource not available: {element.source} - {status.description}"
-            )
+            raise RuntimeError(f"Image resource not available: {element.source} - {status.description}")
         stream = cast(Stream[bytes], stream)
         b64 = await stream.transform(b64encode).transform(u8_string).unwrap()
         return {
@@ -121,9 +115,7 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
         avilla = protocol.avilla
         status, stream = await avilla.fetch_resource(element.source)
         if not status.available:
-            raise RuntimeError(
-                f"Image resource not available: {element.source} - {status.description}"
-            )
+            raise RuntimeError(f"Image resource not available: {element.source} - {status.description}")
         stream = cast(Stream[bytes], stream)
         b64 = await stream.transform(b64encode).transform(u8_string).unwrap()
         return {
@@ -266,26 +258,26 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
                 "id": element.id,
             },
         }
-    
+
     @staticmethod
     @registrar.register(Node)
     async def node(protocol: "OnebotProtocol", element: Node):
         if element.id:
             return {
-            "type": "node",
-            "data": {
-                "id": element.id,
-            },
-        }
+                "type": "node",
+                "data": {
+                    "id": element.id,
+                },
+            }
         return {
             "type": "node",
             "data": {
                 "user_id": element.user_id,
                 "nickname": element.nickname,
-                "content": await protocol.serialize_message(cast(MessageChain,element.content)),
+                "content": await protocol.serialize_message(cast(MessageChain, element.content)),
             },
         }
-    
+
     @staticmethod
     @registrar.register(XML)
     async def xml(protocol: "OnebotProtocol", element: XML):
@@ -295,7 +287,7 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
                 "data": element.data,
             },
         }
-    
+
     @staticmethod
     @registrar.register(Json)
     async def json(protocol: "OnebotProtocol", element: Json):

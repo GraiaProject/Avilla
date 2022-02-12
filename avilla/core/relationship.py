@@ -12,13 +12,13 @@ from typing import (
     cast,
 )
 
+from avilla.core.context import ctx_eventmeta
 from avilla.core.execution import Execution
 from avilla.core.operator import (
     MetadataOperator,
     OperatorCachePatcher,
     OperatorKeyDispatch,
 )
-from avilla.core.context import ctx_eventmeta
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector

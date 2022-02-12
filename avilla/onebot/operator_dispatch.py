@@ -14,6 +14,24 @@ if TYPE_CHECKING:
 registrar = Registrar()
 
 
+def get_mainline(operator: "OnebotOperator") -> mainline_selector:
+    if (
+        (operator.ctx and "mainline" not in operator.ctx.path)
+        and not operator.mainline
+        or (operator.mainline and "group" not in operator.mainline.path)
+    ):
+        # 需要注意的是，后期可能有 channel for ob 支持，
+        # 那时候就要通过判断 keypath 来知道用哪个接口了。
+        # 因为 member 同样适用于 channel(channel.guild 也一样。)
+        raise ValueError("context error: mainline missing")
+    if operator.ctx and "mainline" in operator.ctx.path:
+        return operator.ctx.path["mainline"]
+    elif operator.mainline:
+        return operator.mainline
+    else:
+        raise ValueError("context error: invalid mainline setting")
+
+
 @registrar.decorate("patterns")
 class OnebotOperatorDispatch(OperatorImplementDispatch):
     @staticmethod
@@ -21,7 +39,6 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
     async def get_mainline_name(operator: "OnebotOperator", _, cache: OperatorCache = None):
         if cache:
             cached_value = await cache.get("mainline.name", None)
-            print(f"cached_value: {cached_value}")
             if cached_value is not None:
                 return cached_value
         if not operator.mainline:
@@ -141,26 +158,12 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
                 return cached_value
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
             "get_group_member_info",
-            {"group_id": int(mainline.path["group"]), "member_id": int(operator.ctx.path["member"])},
+            {"group_id": int(mainline.path["group"]), "user_id": int(operator.ctx.path["member"])},
         )
         raise_for_obresp(resp)
         data = resp["data"]
@@ -182,26 +185,12 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
                 return cached_value
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
             "get_group_member_info",
-            {"group_id": int(mainline.path["group"]), "member_id": int(operator.ctx.path["member"])},
+            {"group_id": int(mainline.path["group"]), "user_id": int(operator.ctx.path["member"])},
         )
         raise_for_obresp(resp)
         data = resp["data"]
@@ -219,28 +208,14 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
     async def set_member_nickname(operator: "OnebotOperator", value: str, cache: OperatorCache = None):
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
             "set_group_card",
             {
                 "group_id": int(mainline.path["group"]),
-                "member_id": int(operator.ctx.path["member"]),
+                "user_id": int(operator.ctx.path["member"]),
                 "card": value,
             },
         )
@@ -252,28 +227,14 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
     async def reset_member_nickname(operator: "OnebotOperator", _, cache: OperatorCache = None):
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
             "set_group_card",
             {
                 "group_id": int(mainline.path["group"]),
-                "member_id": int(operator.ctx.path["member"]),
+                "user_id": int(operator.ctx.path["member"]),
                 "card": "",
             },
         )
@@ -289,26 +250,12 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
                 return cached_value
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
             "get_group_member_info",
-            {"group_id": int(mainline.path["group"]), "member_id": int(operator.ctx.path["member"])},
+            {"group_id": int(mainline.path["group"]), "user_id": int(operator.ctx.path["member"])},
         )
         raise_for_obresp(resp)
         data = resp["data"]
@@ -330,21 +277,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
                 return
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
 
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
@@ -363,21 +296,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
     async def reset_member_budget(operator: "OnebotOperator", _, cache: OperatorCache = None):
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
@@ -418,26 +337,12 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
                 return cached_value
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
             "get_group_member_info",
-            {"group_id": int(mainline.path["group"]), "member_id": int(operator.ctx.path["member"])},
+            {"group_id": int(mainline.path["group"]), "user_id": int(operator.ctx.path["member"])},
         )
         raise_for_obresp(resp)
         data = resp["data"]
@@ -459,26 +364,12 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
                 return cached_value
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
-        if (
-            "mainline" not in operator.ctx.path
-            or not operator.mainline
-            or "group" not in operator.mainline.path
-        ):
-            # 需要注意的是，后期可能有 channel for ob 支持，
-            # 那时候就要通过判断 keypath 来知道用哪个接口了。
-            # 因为 member 同样适用于 channel(channel.guild 也一样。)
-            raise ValueError("context error: mainline missing")
-        if "mainline" in operator.ctx.path:
-            mainline: mainline_selector = operator.ctx.path["mainline"]
-        elif operator.mainline:
-            mainline = operator.mainline
-        else:
-            raise ValueError("context error: invalid mainline setting")
+        mainline = get_mainline(operator)
         ob = operator.protocol.avilla.get_interface(OnebotInterface)
         resp = await ob.action(
             operator.account,
             "get_group_member_info",
-            {"group_id": int(mainline.path["group"]), "member_id": int(operator.ctx.path["member"])},
+            {"group_id": int(mainline.path["group"]), "user_id": int(operator.ctx.path["member"])},
         )
         raise_for_obresp(resp)
         data = resp["data"]

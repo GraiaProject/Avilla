@@ -1,6 +1,5 @@
 import typing
 from abc import ABCMeta, abstractmethod
-from contextvars import Token
 from dataclasses import dataclass
 from datetime import datetime
 from types import TracebackType
@@ -267,13 +266,12 @@ class RelationshipCreated(AvillaEvent):
         ctx: Union[mainline_selector, entity_selector],
         current_self: entity_selector,
         time: datetime = None,
-        via: Union[mainline_selector, entity_selector, None] = None
+        via: Union[mainline_selector, entity_selector, None] = None,
     ):
         self.ctx = ctx
         self.via = via
         self.self = current_self
         self.time = time or datetime.now()
-
 
 
 class RelationshipDestroyed(AvillaEvent):
@@ -285,7 +283,7 @@ class RelationshipDestroyed(AvillaEvent):
         ctx: Union[mainline_selector, entity_selector],
         current_self: entity_selector,
         time: datetime = None,
-        via: Union[mainline_selector, entity_selector, None] = None
+        via: Union[mainline_selector, entity_selector, None] = None,
     ):
         self.ctx = ctx
         self.via = via

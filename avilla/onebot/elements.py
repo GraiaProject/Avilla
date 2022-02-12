@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from typing import Literal, Optional, Union, List
+from typing import List, Literal, Optional, Union
 
 from yarl import URL
-from avilla.core.message import MessageChain
-from avilla.core.selectors import entity as entity_selector
+
 from avilla.core.elements import Image
-from avilla.core.message import Element
+from avilla.core.message import Element, MessageChain
+from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import resource as resource_selector
 
 

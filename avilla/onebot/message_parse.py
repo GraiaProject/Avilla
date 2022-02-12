@@ -2,10 +2,8 @@ from typing import TYPE_CHECKING, Any, Dict, Type
 
 from avilla.core.elements import Audio, Image, Notice, NoticeAll, Text, Video
 from avilla.core.message import Element
-from avilla.core.selectors import (
-    resource as resource_selector,
-    entity as entity_selector,
-)
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import resource as resource_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.message import AbstractMessageParser
 from avilla.onebot.elements import *
@@ -61,40 +59,22 @@ class OnebotMessageParser(AbstractMessageParser):
     @staticmethod
     @registrar.register(Image)
     async def image(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Image:
-        return Image(
-            resource_selector.image[data["data"]["url"]].provider[
-                protocol.service.__class__
-            ]
-        )
+        return Image(resource_selector.image[data["data"]["url"]].provider[protocol.service.__class__])
 
     @staticmethod
     @registrar.register(FlashImage)
-    async def flash_image(
-        protocol: "OnebotProtocol", data: Dict[str, Any]
-    ) -> FlashImage:
-        return FlashImage(
-            resource_selector.image[data["data"]["url"]].provider[
-                protocol.service.__class__
-            ]
-        )
+    async def flash_image(protocol: "OnebotProtocol", data: Dict[str, Any]) -> FlashImage:
+        return FlashImage(resource_selector.image[data["data"]["url"]].provider[protocol.service.__class__])
 
     @staticmethod
     @registrar.register(Audio)
     async def voice(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Audio:
-        return Audio(
-            resource_selector.audio[data["data"]["url"]].provider[
-                protocol.service.__class__
-            ]
-        )
+        return Audio(resource_selector.audio[data["data"]["url"]].provider[protocol.service.__class__])
 
     @staticmethod
     @registrar.register(Video)
     async def video(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Video:
-        return Video(
-            resource_selector.video[data["data"]["url"]].provider[
-                protocol.service.__class__
-            ]
-        )
+        return Video(resource_selector.video[data["data"]["url"]].provider[protocol.service.__class__])
 
     @staticmethod
     @registrar.register(Face)

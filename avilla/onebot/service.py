@@ -15,13 +15,12 @@ from typing import (
     cast,
     overload,
 )
-from avilla.core.event import AvillaEvent
 
 from loguru import logger
-from starlette.responses import JSONResponse
 
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment
-from avilla.core.context import ctx_avilla, ctx_protocol, ctx_eventmeta
+from avilla.core.context import ctx_avilla, ctx_eventmeta, ctx_protocol
+from avilla.core.event import AvillaEvent
 from avilla.core.launch import LaunchComponent
 from avilla.core.operator import ResourceOperator
 from avilla.core.resource import ResourceProvider
@@ -186,7 +185,6 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
 
     @asynccontextmanager
     async def access_resource(self, res: resource_selector) -> AsyncGenerator["ResourceOperator", None]:
-        print(res.resource_type)
         if res.resource_type == "image":
             yield OnebotImageAccessor(self, res)
         else:
@@ -231,7 +229,7 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
         )
         config = srv.config
         if config.access_token is not None:
-            logger.warning(f"you set access_token for a reverse ws, but it's unused by the internal logic")
+            logger.warning("you set access_token for a reverse ws, but it's unused by the internal logic")
         client = cast(Tuple[str, int], conn.client)
         conns = self.accounts[account]
         # 大问题。。主要还是得看 user conf.

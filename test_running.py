@@ -3,6 +3,7 @@ import traceback
 
 from aiohttp import ClientSession
 from graia.broadcast import Broadcast
+from loguru import logger
 from yarl import URL
 
 from avilla.core import Avilla
@@ -34,7 +35,6 @@ avilla = Avilla(
     config={OnebotService: {entity.account["1779309090"]: OnebotWsServerConfig(access_token=None)}},
 )
 
-
 @broadcast.receiver(MessageReceived)
 async def hello_world(
     event: MessageReceived,
@@ -44,18 +44,12 @@ async def hello_world(
     defer: Defer,
 ):
     try:
-        print(message.sender.get_entity_value(), message.sender)
         if message.sender.get_entity_value() == "1846913566":
-            print("?????")
-            #print(await rs.meta.get("mainline.name"))
-            #print(await rs.meta.get("mainline.name"))
-            cache = avilla.get_interface(CacheStorage)
-            print(await cache.keys())
-            print(defer.defers)
+            print(await rs.meta.get("member.name"))
             #await rs.exec(MessageSend(message.content)).to(rs.mainline)
-            await rs.exec(MessageSend([
-                Text("hello world"),
-            ], reply=message))
+            #await rs.exec(MessageSend([
+            #    Text("hello world"),
+            #], reply=message))
     except:
         traceback.print_exc()
 

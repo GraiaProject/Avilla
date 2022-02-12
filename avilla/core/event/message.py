@@ -4,7 +4,8 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 from avilla.core.message import Message, MessageChain
-from avilla.core.selectors import entity, message as message_selector
+from avilla.core.selectors import entity
+from avilla.core.selectors import message as message_selector
 from avilla.core.utilles.selector import Selector
 
 from . import AvillaEvent

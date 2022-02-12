@@ -3,7 +3,12 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Dict, Optional
 
-from avilla.core.event import MetadataChanged, RelationshipCreated, RelationshipDestroyed, ResourceAvailable
+from avilla.core.event import (
+    MetadataChanged,
+    RelationshipCreated,
+    RelationshipDestroyed,
+    ResourceAvailable,
+)
 from avilla.core.event.message import MessageReceived, MessageRevoked
 from avilla.core.message import Message
 from avilla.core.selectors import entity as entity_selector
@@ -193,12 +198,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
         target = entity_selector.mainline[mainline].member[str(data["user_id"])]
         current_account = entity_selector.account[str(data["self_id"])]
         received_time = datetime.fromtimestamp(data["time"])
-        return RelationshipDestroyed(
-            target,
-            current_account,
-            received_time,
-            via=target # 表示自己退出来
-        )
+        return RelationshipDestroyed(target, current_account, received_time, via=target)  # 表示自己退出来
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="group_decrease", sub="kick"))
@@ -209,12 +209,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
         operator = entity_selector.mainline[mainline].member[str(data["operator_id"])]
         current_account = entity_selector.account[str(data["self_id"])]
         received_time = datetime.fromtimestamp(data["time"])
-        return RelationshipDestroyed(
-            target,
-            current_account,
-            received_time,
-            via=operator
-        )
+        return RelationshipDestroyed(target, current_account, received_time, via=operator)
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="group_decrease", sub="kick_me"))
@@ -223,12 +218,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
         operator = entity_selector.mainline[mainline].member[str(data["operator_id"])]
         current_account = entity_selector.account[str(data["self_id"])]
         received_time = datetime.fromtimestamp(data["time"])
-        return RelationshipDestroyed(
-            current_account,
-            current_account,
-            received_time,
-            via=operator
-        )
+        return RelationshipDestroyed(current_account, current_account, received_time, via=operator)
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="group_increase", sub="approve"))
@@ -240,12 +230,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
         operator = entity_selector.mainline[mainline].member[str(data["operator_id"])]
         current_account = entity_selector.account[str(data["self_id"])]
         received_time = datetime.fromtimestamp(data["time"])
-        return RelationshipCreated(
-            target,
-            current_account,
-            received_time,
-            via=operator
-        )
+        return RelationshipCreated(target, current_account, received_time, via=operator)
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="group_ban", sub="ban"))
@@ -264,10 +249,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
             operator=operator,
             current_self=current_account,
             time=received_time,
-        ).with_meta({
-            "member.muted": True,
-            "member.mute_period": duration
-        })
+        ).with_meta({"member.muted": True, "member.mute_period": duration})
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="group_ban", sub="lift_ban"))
@@ -285,10 +267,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
             operator=operator,
             current_self=current_account,
             time=received_time,
-        ).with_meta({
-            "member.muted": False,
-            "member.mute_period": None
-        })
+        ).with_meta({"member.muted": False, "member.mute_period": None})
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="friend_add"))
@@ -297,11 +276,7 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
         friend = entity_selector.mainline[mainline].friend[str(data["user_id"])]
         current_account = entity_selector.account[str(data["self_id"])]
         received_time = datetime.fromtimestamp(data["time"])
-        return RelationshipCreated(
-            friend,
-            current_account,
-            received_time
-        )
+        return RelationshipCreated(friend, current_account, received_time)
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="group_recall"))

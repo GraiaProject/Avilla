@@ -7,11 +7,11 @@ from asyncio import Future
 from contextlib import ExitStack, suppress
 from functools import partial
 from typing import TYPE_CHECKING, Callable, Dict, Literal, Optional, Union, cast, final
-from avilla.core.event import AvillaEvent
 
 from loguru import logger
 
-from avilla.core.context import ctx_avilla, ctx_protocol, ctx_eventmeta
+from avilla.core.context import ctx_avilla, ctx_eventmeta, ctx_protocol
+from avilla.core.event import AvillaEvent
 from avilla.core.message import Message
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import message as message_selector
