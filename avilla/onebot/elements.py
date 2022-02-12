@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from typing import List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Literal, Optional, overload
 
 from yarl import URL
 
 from avilla.core.elements import Image
 from avilla.core.message import Element, MessageChain
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.selectors import resource as resource_selector
 
 
 class FlashImage(Image):
@@ -65,13 +64,34 @@ class Location(Element):
 
 @dataclass
 class Music(Element):
-    type: Union[Literal["qq"], Literal["163"], Literal["xm"], Literal["custom"]]
+    type: Literal["qq", "163", "xm", "custom"]
     id: Optional[str] = None
     url: Optional[URL] = None
     audio: Optional[URL] = None
     title: Optional[str] = None
     content: Optional[str] = None
     image: Optional[URL] = None
+    if TYPE_CHECKING:
+
+        @overload
+        def __init__(self, type: Literal["qq", "163", "xm"], id: str):
+            ...
+
+        @overload
+        def __init__(
+            self,
+            type: Literal["custom"],
+            *,
+            url: URL,
+            audio: URL,
+            title: str,
+            content: Optional[str] = None,
+            image: Optional[URL] = None,
+        ):
+            ...
+
+        def __init__(self, *args, **kwargs):
+            ...
 
 
 @dataclass
@@ -90,6 +110,18 @@ class Node(Element):
     user_id: Optional[str] = None
     nickname: Optional[str] = None
     content: Optional[MessageChain] = None
+    if TYPE_CHECKING:
+
+        @overload
+        def __init__(self, id: str):
+            ...
+
+        @overload
+        def __init__(self, *, user_id: str, nickname: str, content: MessageChain):
+            ...
+
+        def __init__(self, *args, **kwargs):
+            ...
 
 
 @dataclass
