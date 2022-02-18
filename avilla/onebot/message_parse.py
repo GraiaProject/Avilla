@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Dict, Type
 from avilla.core.elements import Audio, Image, Notice, NoticeAll, Text, Video
 from avilla.core.message import Element
 from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import message
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.message import AbstractMessageParser
@@ -142,10 +143,9 @@ class OnebotMessageParser(AbstractMessageParser):
     @registrar.register(Node)
     async def node(protocol: "OnebotProtocol", data: Dict[str, Any]) -> Node:
         return Node(
-            None,
-            data["data"]["user_id"],
-            data["data"]["nickname"],
-            await protocol.parse_message(data["data"]["message"]),
+            user_id=data["data"]["user_id"],
+            nickname=data["data"]["nickname"],
+            content=await protocol.parse_message(data["data"]["message"]),
         )
 
     @staticmethod
