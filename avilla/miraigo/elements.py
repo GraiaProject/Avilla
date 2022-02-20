@@ -2,14 +2,41 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, Optional, Union, overload
-from urllib.parse import urldefrag
 
-from avilla.core.selectors import resource as resource_selector
-from avilla.core.elements import Image
-from avilla.core.message import Element, MessageChain
-from avilla.core.selectors import entity as entity_selector
-from avilla.onebot.elements import Reply, Music
 from yarl import URL
+
+from avilla.core.elements import Image, Video
+from avilla.core.message import Element
+from avilla.core.selectors import entity as entity_selector
+from avilla.core.selectors import resource as resource_selector
+from avilla.onebot.elements import XML, Json, Music, Reply
+
+
+class CardImage(Image):
+    minwidth: int
+    minheight: int
+    maxwidth: int
+    maxheight: int
+    source_name: Optional[str]
+    icon: Optional[URL]
+
+    def __init__(
+        self,
+        source: Union[resource_selector, Path, str],
+        minwidth: int = 400,
+        minheight: int = 400,
+        maxwidth: int = 500,
+        maxheight: int = 1000,
+        source_name: Optional[str] = None,
+        icon: Optional[URL] = None,
+    ):
+        self.minwidth = minwidth
+        self.minheight = minheight
+        self.maxwidth = maxwidth
+        self.maxheight = maxheight
+        self.source_name = source_name
+        self.icon = icon
+        super().__init__(source)
 
 
 class Image(Image):
@@ -83,3 +110,42 @@ class Music(Music):
 
         def __init__(self, *args, **kwargs):
             ...
+
+
+@dataclass
+class Redbag(Element):
+    title: str
+
+
+@dataclass
+class Poke(Element):
+    qq: entity_selector
+
+
+class Video(Video):
+    cover: resource_selector
+
+    def __init__(self, source: resource_selector, cover: resource_selector):
+        self.cover = cover
+        super().__init__(source)
+
+
+class XML(XML):
+    resid: int
+
+    def __init__(self, data: str, resid: int = 0):
+        self.resid = resid
+        super().__init__(data)
+
+
+class Json(Json):
+    resid: int
+
+    def __init__(self, data: str, resid: int = 0):
+        self.resid = resid
+        super().__init__(data)
+
+
+@dataclass
+class TTS(Element):
+    text: str
