@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Literal, Optional, Union, overload
 from yarl import URL
 
 from avilla.core.elements import Image, Video
-from avilla.core.message import Element
+from avilla.core.message import Element, MessageChain
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import resource as resource_selector
-from avilla.onebot.elements import XML, Json, Music, Reply
+from avilla.onebot.elements import XML, Json, Music, Node, Reply
 
 
 class CardImage(Image):
@@ -122,10 +122,28 @@ class Poke(Element):
     qq: entity_selector
 
 
-class Video(Video):
-    cover: resource_selector
+class Node(Node):
+    seq: Optional[str]
+    time: Optional[datetime]
 
-    def __init__(self, source: resource_selector, cover: resource_selector):
+    def __init__(
+        self,
+        id: Optional[str] = None,
+        user_id: Optional[str] = None,
+        nickname: Optional[str] = None,
+        content: Optional[MessageChain] = None,
+        seq: Optional[str] = None,
+        time: Optional[datetime] = None,
+    ):
+        self.seq = seq
+        self.time = time
+        super().__init__(id, user_id, nickname, content)
+
+
+class Video(Video):
+    cover: Optional[resource_selector]
+
+    def __init__(self, source: resource_selector, cover: Optional[resource_selector] = None):
         self.cover = cover
         super().__init__(source)
 

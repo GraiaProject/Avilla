@@ -1,19 +1,19 @@
 from typing import TYPE_CHECKING, Any, Dict, Type
 
-from avilla.core.elements import Audio, Notice, NoticeAll, Text, Element
+from avilla.core.elements import Audio, Element, Notice, NoticeAll, Text
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.utilles import Registrar
-from avilla.onebot.message_parse import OnebotMessageParser
 from avilla.miraigo.elements import (
-    Reply,
-    Redbag,
-    Video,
     XML,
-    Json,
-    Image,
     FlashImage,
+    Image,
+    Json,
+    Redbag,
+    Reply,
     ShowImage,
+    Video,
 )
+from avilla.onebot.message_parse import OnebotMessageParser
 
 if TYPE_CHECKING:
     from avilla.miraigo.protocol import MiraigoProtocol
