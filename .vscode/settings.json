@@ -11,7 +11,7 @@
     "python.analysis.completeFunctionParens": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.extraPaths": [
-        "__pypackages__/3.8/lib",
+        "__pypackages__/3.9/lib",
     ],
     "python.sortImports.path": "isort",
     "cSpell.words": [
@@ -64,4 +64,7 @@
         "__pypackages__"
     ],
     "python.languageServer": "Pylance",
+    "yaml.schemas": {
+        "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
+    }
 }

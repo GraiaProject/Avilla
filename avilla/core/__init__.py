@@ -34,7 +34,7 @@ from avilla.core.config import (
     TModel,
     direct,
 )
-from avilla.core.context import ctx_avilla
+from avilla.core.context import ctx_avilla, ctx_protocol, ctx_relationship
 from avilla.core.event import RelationshipDispatcher
 from avilla.core.execution import Execution
 from avilla.core.launch import LaunchComponent, resolve_requirements
@@ -92,7 +92,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]],
             Union[TModel, "ConfigProvider[TModel]", Dict[Hashable, Union[TModel, "ConfigProvider[TModel]"]]],
         ],
-        middlewares: List[TExecutionMiddleware] = None,
+        middlewares: Optional[List[TExecutionMiddleware]] = None,
     ):
         self.broadcast = broadcast
         self.protocol_classes = protocols
@@ -228,15 +228,24 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
     @classmethod
     def current(cls) -> "Avilla":
-        return ctx_avilla.get()
+        avilla = ctx_avilla.get()
+        if avilla:
+            return avilla
+        protocol = ctx_protocol.get()
+        if protocol:
+            return protocol.avilla
+        rs = ctx_relationship.get()
+        if rs:
+            return rs.protocol.avilla
+        raise RuntimeError("avilla instance missing")
 
     def new_launch_component(
         self,
         id: str,
-        requirements: Set[str] = None,
+        requirements: Optional[Set[str]] = None,
         mainline: Optional[Callable[["Avilla"], Awaitable[Any]]] = None,
-        prepare: Callable[["Avilla"], Awaitable[Any]] = None,
-        cleanup: Callable[["Avilla"], Awaitable[Any]] = None,
+        prepare: Optional[Callable[["Avilla"], Awaitable[Any]]] = None,
+        cleanup: Optional[Callable[["Avilla"], Awaitable[Any]]] = None,
     ) -> LaunchComponent:
         component = LaunchComponent(id, requirements or set(), mainline, prepare, cleanup)
         self.launch_components[id] = component

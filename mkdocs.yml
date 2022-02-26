@@ -1,0 +1,56 @@
+site_name: Avilla
+repo_url: https://github.com/GraiaProject/Avilla
+repo_name: GraiaProject/Avilla
+site_description: "the docs of avilla, next-gen of graia."
+
+extra:
+  generator: true
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/GraiaProject
+      name: Github Organization
+
+    - icon: fontawesome/brands/qq
+      link: https://jq.qq.com/?_wv=1027&k=VXp6plBD
+      name: QQ 群
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+
+markdown_extensions:
+  - attr_list
+  - md_in_html
+  - admonition # 提示块
+  - footnotes # 脚注
+  - meta # 定义元数据, 通过文章上下文控制, 如disqus
+  - pymdownx.caret # 下划线上标
+  - pymdownx.tilde # 删除线下标
+  - pymdownx.critic # 增加删除修改高亮注释, 可修饰行内或段落
+  - pymdownx.details # 提示块可折叠
+  - pymdownx.inlinehilite # 行内代码高亮
+  - pymdownx.highlight
+  - pymdownx.snippets
+  - pymdownx.mark # 文本高亮
+  - pymdownx.smartsymbols # 符号转换
+  - pymdownx.superfences # 代码嵌套在列表里
+  - pymdownx.keys
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc: # 锚点
+      permalink: 🔗
+  - pymdownx.arithmatex # 数学公式
+  - pymdownx.betterem: # 对加粗和斜体更好的检测
+      smart_enable: all
+  - pymdownx.tasklist: # 复选框checklist
+      custom_checkbox: true
+  - pymdownx.tabbed:
+      alternate_style: true
