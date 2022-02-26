@@ -1,4 +1,0 @@
-from avilla.onebot.config import OnebotHttpClientConfig as MiraigoHttpClientConfig
-from avilla.onebot.config import OnebotHttpServerConfig as MiraigoHttpServerConfig
-from avilla.onebot.config import OnebotWsClientConfig as MiraigoWsClientConfig
-from avilla.onebot.config import OnebotWsServerConfig as MiraigoWsServerConfig

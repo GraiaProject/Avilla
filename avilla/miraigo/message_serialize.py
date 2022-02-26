@@ -6,6 +6,7 @@ from avilla.core.stream import Stream
 from avilla.core.transformers import u8_string
 from avilla.core.utilles import Registrar
 from avilla.miraigo.elements import (
+    TTS,
     XML,
     FlashImage,
     Image,
@@ -35,7 +36,6 @@ class MiraigoMessageSerializer(OnebotMessageSerializer):
     @registrar.register(ShowImage)
     async def show_image(protocol: "MiraigoProtocol", element: ShowImage):
         avilla = protocol.avilla
-        # 暂时还是 base64 吧。
         status, stream = await avilla.fetch_resource(element.source)
         if not status.available:
             raise RuntimeError(f"ShowImage resource not available: {element.source} - {status.description}")
@@ -167,5 +167,15 @@ class MiraigoMessageSerializer(OnebotMessageSerializer):
             "data": {
                 "json": element.data,
                 "resid": element.resid,
+            },
+        }
+
+    @staticmethod
+    @registrar.register(TTS)
+    async def tts(protocol: "MiraigoProtocol", element: TTS):
+        return {
+            "type": "tts",
+            "data": {
+                "text": element.text,
             },
         }
