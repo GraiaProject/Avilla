@@ -37,3 +37,8 @@ class Medium(PlatformDescription):
 @dataclass
 class Adapter(PlatformDescription):
     version: Optional[str] = None
+
+
+@dataclass
+class MediumDistribution(PlatformDescription):
+    pass
