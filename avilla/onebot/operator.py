@@ -20,8 +20,8 @@ class OnebotOperator(MetadataOperator):
         self,
         protocol: "OnebotProtocol",
         account: entity_selector,
-        ctx: entity_selector = None,
-        mainline: mainline_selector = None,
+        ctx: Optional[entity_selector] = None,
+        mainline: Optional[mainline_selector] = None,
     ) -> None:
         self.protocol = protocol
         self.account = account
@@ -30,5 +30,5 @@ class OnebotOperator(MetadataOperator):
 
     operate_dispatch: "OperatorImplementDispatch[OnebotOperator]" = OnebotOperatorDispatch()
 
-    async def operate(self, operator: str, target: Any, value: Any, cache: OperatorCache = None) -> Any:
+    async def operate(self, operator: str, target: Any, value: Any, cache: Optional[OperatorCache] = None) -> Any:
         return await self.operate_dispatch.operate(self, operator, target, value, cache)

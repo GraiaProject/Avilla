@@ -1,27 +1,39 @@
 from dataclasses import dataclass
-from typing import Literal, Union
+from typing import Dict, Literal, NoReturn, Optional, Type, TypeVar, Union
 
 
-@dataclass(frozen=True)
-class Platform:
-
-    "对接的平台的名称"  # Tencent/QQ
+@dataclass
+class PlatformDescription:
+    supplier: str  # 供应商
     name: str
+    humanized_name: str
 
-    "协议实现的名称"  # miraijvm, miraigo etc., use ',' or 'universal'
-    protocol_provider_name: Union[str, Literal["universal"]]
 
-    "对接平台使用的协议, 或者API的名称"  # OneBot
-    implementation: str
+PD = TypeVar("PD", bound=PlatformDescription)
 
-    "对接平台的协议/API的版本"  # v11
-    supported_impl_version: str
 
-    "协议/API 的迭代版本"  # 11
-    generation: str
+@dataclass
+class Platform:
+    description: Dict[Type[PlatformDescription], PlatformDescription]
 
-    @property
-    def universal_identifier(self) -> str:
-        return (
-            f"{self.name}/{self.protocol_provider_name}:{self.implementation}@{self.supported_impl_version}"
-        )
+    def __init__(self, *description: PlatformDescription) -> None:
+        self.description = {type(i): i for i in description}
+
+    def __getitem__(self, item: Type[PD]) -> Union[PD, NoReturn]:
+        return self.description[item]  # type: ignore
+
+
+@dataclass
+class Base(PlatformDescription):
+    version: Optional[str] = None
+
+
+@dataclass
+class Medium(PlatformDescription):
+    generation: Optional[str] = None
+    version: Optional[str] = None
+
+
+@dataclass
+class Adapter(PlatformDescription):
+    version: Optional[str] = None

@@ -7,7 +7,7 @@ from graia.broadcast.utilles import printer
 from avilla.core.execution import Execution
 from avilla.core.message import MessageChain
 from avilla.core.operator import Operator
-from avilla.core.platform import Platform
+from avilla.core.platform import Adapter, Base, Medium, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
 from avilla.core.selectors import entity as entity_selector
@@ -25,12 +25,18 @@ from avilla.onebot.service import OnebotService
 
 class OnebotProtocol(BaseProtocol):
     platform: Final[Platform] = Platform(
-        name="Onebot v11 for Avilla",
-        protocol_provider_name="OneBot",
-        implementation="avilla-onebot",
-        supported_impl_version="$any",
-        generation="v11",
+        Base(supplier="Tencent", name="qq", humanized_name="QQ"),
+        Medium(
+            supplier="howmanybots@github", name="onebot", humanized_name="OneBot", generation="v11", version="11"
+        ),
+        Adapter(
+            supplier="GraiaProject@github",
+            name="onebot-protocol",
+            humanized_name="OneBot for Avilla",
+            version="unknown",
+        ),
     )
+
     required_components = {"http.universal_client"}
 
     execution_handler: Final[OnebotExecutionHandler] = OnebotExecutionHandler()

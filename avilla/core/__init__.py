@@ -317,7 +317,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
         for protocol in self.protocols:
             if protocol.__class__.platform is not BaseProtocol.platform:
-                logger.info(f"using platform: {protocol.__class__.platform.universal_identifier}")
+                logger.info(f"using platform: {protocol.__class__.platform}")
 
         for service in self.services:
             logger.info(f"using service: {service.__class__.__name__}")
