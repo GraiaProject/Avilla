@@ -1,9 +1,8 @@
 from datetime import datetime
-from importlib.resources import path
 from typing import TYPE_CHECKING
 
 from avilla.core.context import ctx_relationship
-from avilla.core.execution import MessageFetch, MessageRevoke, MessageSend
+from avilla.core.execution import MessageFetch, MessageRevoke, MessageSend, RequestAccept, RequestReject
 from avilla.core.message import Message, MessageChain
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
@@ -168,3 +167,52 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
                 )
             )
         return result
+
+    @staticmethod
+    @registrar.register(RequestAccept)
+    async def accept_request(protocol: "OnebotProtocol", exec: RequestAccept):
+        rs = ctx_relationship.get()
+        interface = protocol.avilla.get_interface(OnebotInterface)
+        if not rs or not interface.service.get_status(rs.self).available:
+            raise RuntimeError("account is not available, check your connection!")
+        if exec.request.path["mainline"].keypath() == "group":
+            resp = await interface.action(
+                rs.self,
+                "set_group_add_request",
+                {"flag": exec.request.path["_"], "type": ..., "approval": True},  # TODO: add/invite
+            )
+        elif exec.request.path["mainline"].keypath() == "friend":
+            resp = await interface.action(
+                rs.self,
+                "set_friend_add_request",
+                {"flag": exec.request.path["_"], "approval": True, "remark": ...},  # TODO: add remark
+            )
+        else:
+            raise NotImplementedError(f"unknown mainline: {exec.request.path['mainline']}")
+        raise_for_obresp(resp)
+
+    @staticmethod
+    @registrar.register(RequestReject)
+    async def reject_request(protocol: "OnebotProtocol", exec: RequestReject):
+        rs = ctx_relationship.get()
+        interface = protocol.avilla.get_interface(OnebotInterface)
+        if not rs or not interface.service.get_status(rs.self).available:
+            raise RuntimeError("account is not available, check your connection!")
+        if exec.request.path["mainline"].keypath() == "group":
+            resp = await interface.action(
+                rs.self,
+                "set_group_add_request",
+                {
+                    "flag": exec.request.path["_"],
+                    "type": ...,  # TODO: add/invite
+                    "approval": False,
+                    "reason": ...,  # TODO: add reason
+                },
+            )
+        elif exec.request.path["mainline"].keypath() == "friend":
+            resp = await interface.action(
+                rs.self, "set_friend_add_request", {"flag": exec.request.path["_"], "approval": False}
+            )
+        else:
+            raise NotImplementedError(f"unknown mainline: {exec.request.path['mainline']}")
+        raise_for_obresp(resp)
