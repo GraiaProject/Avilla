@@ -21,7 +21,17 @@ element_map: Dict[str, Type[Element]] = {
     "video": Video,
     "face": Face,
     "rps": RPS,
+    "dice": Dice,
+    "shake": Shake,
+    "poke": Poke,
+    "share": Share,
+    "contact": Contact,
+    "location": Location,
     "reply": Reply,
+    "forward": Forward,
+    "node": Node,
+    "xml": XML,
+    "json": Json,
 }
 
 
