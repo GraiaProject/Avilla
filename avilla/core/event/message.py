@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -22,7 +23,7 @@ class MessageReceived(AvillaEvent):
         self,
         message: Message,
         current_self: entity,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ) -> None:
         self.message = message
         self.self = current_self
@@ -54,7 +55,7 @@ class MessageEdited(AvillaEvent):
         past: MessageChain,
         current: MessageChain,
         current_self: entity,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ) -> None:
         self.message = message
         self.operator = operator
@@ -83,7 +84,7 @@ class MessageRevoked(AvillaEvent):
         message: message_selector,
         operator: entity,
         current_self: entity,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ) -> None:
         self.message = message
         self.operator = operator
