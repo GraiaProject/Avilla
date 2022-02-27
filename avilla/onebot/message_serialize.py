@@ -238,6 +238,8 @@ class OnebotMessageSerializer(MessageSerializer["OnebotProtocol"]):
                     "url": str(element.url),
                     "audio": str(element.audio),
                     "title": element.title,
+                    "content": element.content,
+                    "image": str(element.image),
                 },
             }
 
