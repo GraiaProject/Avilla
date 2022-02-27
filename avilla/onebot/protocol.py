@@ -26,7 +26,11 @@ class OnebotProtocol(BaseProtocol):
     platform: Final[Platform] = Platform(
         Base(supplier="Tencent", name="qq", humanized_name="QQ"),
         Medium(
-            supplier="howmanybots@github", name="onebot", humanized_name="OneBot", generation="v11", version="11"
+            supplier="howmanybots@github",
+            name="onebot",
+            humanized_name="OneBot",
+            generation="v11",
+            version="11",
         ),
         Adapter(
             supplier="GraiaProject@github",
