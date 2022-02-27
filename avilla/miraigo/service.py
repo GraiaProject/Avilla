@@ -1,7 +1,6 @@
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING
 
-
 from avilla.core.launch import LaunchComponent
 from avilla.onebot.service import OnebotService
 

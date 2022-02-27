@@ -1,33 +1,36 @@
-from typing import Final, cast
+from typing import Final
 
-
-from avilla.core.platform import Platform
+from avilla.core.platform import Adapter, Base, Medium, Platform
 from avilla.miraigo.event_parse import MiraigoEventParser
 from avilla.miraigo.execution_ensure import MiraigoExecutionHandler
 from avilla.miraigo.message_parse import MiraigoMessageParser
 from avilla.miraigo.message_serialize import MiraigoMessageSerializer
 from avilla.miraigo.service import MiraigoService
-from avilla.onebot.event_parse import OnebotEventParser
-from avilla.onebot.execution_ensure import OnebotExecutionHandler
-from avilla.onebot.message_parse import OnebotMessageParser
-from avilla.onebot.message_serialize import OnebotMessageSerializer
 from avilla.onebot.protocol import OnebotProtocol
-from avilla.onebot.service import OnebotService
 
 
 class MiraigoProtocol(OnebotProtocol):
     platform: Final[Platform] = Platform(  # type: ignore
-        name="Onebot v11 for Avilla, based on MiraiGo",
-        protocol_provider_name="MiraiGo",
-        implementation="avilla-onebot",
-        supported_impl_version="1.0.0",
-        generation="v11",
+        Base(supplier="Tencent", name="qq", humanized_name="QQ"),
+        Medium(
+            supplier="Mrs4s@github",
+            name="miraigo",
+            humanized_name="MiraiGo",
+            generation="v11",
+            version="1.0.0",
+        ),
+        Adapter(
+            supplier="GraiaProject@github",
+            name="miraigo-protocol",
+            humanized_name="OneBot for Avilla, based on MiraiGo",
+            version="unknown",
+        ),
     )
 
-    execution_handler: Final[OnebotExecutionHandler] = MiraigoExecutionHandler()  # type: ignore
-    message_parser: Final[OnebotMessageParser] = MiraigoMessageParser()  # type: ignore
-    message_serializer: Final[OnebotMessageSerializer] = MiraigoMessageSerializer()  # type: ignore
-    event_parser: Final[OnebotEventParser] = MiraigoEventParser()  # type: ignore
+    execution_handler: Final[MiraigoExecutionHandler] = MiraigoExecutionHandler()  # type: ignore
+    message_parser: Final[MiraigoMessageParser] = MiraigoMessageParser()  # type: ignore
+    message_serializer: Final[MiraigoMessageSerializer] = MiraigoMessageSerializer()  # type: ignore
+    event_parser: Final[MiraigoEventParser] = MiraigoEventParser()  # type: ignore
     service: MiraigoService
 
     def __post_init__(self) -> None:
