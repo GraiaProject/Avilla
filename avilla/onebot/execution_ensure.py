@@ -1,14 +1,21 @@
+from datetime import datetime
+from importlib.resources import path
 from typing import TYPE_CHECKING
+from unittest import result
 
 from avilla.core.context import ctx_relationship
-from avilla.core.execution import MessageSend
-from avilla.core.message import Message
+from avilla.core.execution import MessageFetch, MessageRevoke, MessageSend
+from avilla.core.message import Message, MessageChain
 from avilla.core.relationship import Relationship
+from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
+from avilla.core.selectors import message
 from avilla.core.selectors import message as message_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.exec import ExecutionHandler
 from avilla.onebot.config import OnebotConnectionConfig
+from avilla.onebot.elements import Forward, Reply
+from avilla.onebot.execution import ForwardMessageFetch
 from avilla.onebot.interface import OnebotInterface
 from avilla.onebot.utilles import raise_for_obresp
 
@@ -25,7 +32,7 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
     async def send_message(protocol: "OnebotProtocol", exec: MessageSend):
         rs = ctx_relationship.get()
         interface = protocol.avilla.get_interface(OnebotInterface)
-        if not interface.service.get_status(rs.self).available:
+        if not rs or not interface.service.get_status(rs.self).available:
             raise RuntimeError("account is not available, check your connection!")
         if isinstance(exec.target, mainline_selector):
             keypath = exec.target.keypath()
@@ -64,3 +71,104 @@ class OnebotExecutionHandler(ExecutionHandler["OnebotProtocol"]):
                 return message_selector.mainline[exec.target]._[str(resp["data"]["message_id"])]
             else:
                 raise NotImplementedError(f"unknown mainline/entity to send: {exec.target}")
+
+    @staticmethod
+    @registrar.register(MessageRevoke)
+    async def revoke_message(protocol: "OnebotProtocol", exec: MessageRevoke):
+        rs = ctx_relationship.get()
+        interface = protocol.avilla.get_interface(OnebotInterface)
+        if not rs or not interface.service.get_status(rs.self).available:
+            raise RuntimeError("account is not available, check your connection!")
+        resp = await interface.action(
+            rs.self,
+            "delete_msg",
+            {
+                "message_id": exec.message.path["_"],
+            },
+        )
+        raise_for_obresp(resp)
+
+    @staticmethod
+    @registrar.register(MessageFetch)
+    async def fetch_message(protocol: "OnebotProtocol", exec: MessageFetch):
+        rs = ctx_relationship.get()
+        interface = protocol.avilla.get_interface(OnebotInterface)
+        if not rs or not interface.service.get_status(rs.self).available:
+            raise RuntimeError("account is not available, check your connection!")
+        resp = await interface.action(
+            rs.self,
+            "get_msg",
+            {
+                "message_id": exec.message.path["_"],
+            },
+        )
+        raise_for_obresp(resp)
+
+        data = resp["data"]
+        if data["message_type"] == "group":
+            mainline = mainline_selector.group[str(data["group_id"])]
+            sender = entity_selector.mainline[mainline].member[str(data["sender"]["user_id"])]
+        elif data["message_type"] == "private":
+            mainline = mainline_selector.friend[str(data["user_id"])]
+            sender = entity_selector.mainline[mainline].friend[str(data["sender"]["user_id"])]
+        else:
+            raise NotImplementedError(f"unknown message type: {data['message_type']}")
+        message_chain = await protocol.parse_message(data["message"])
+        received_time = datetime.fromtimestamp(data["time"])
+        reply = None
+        if message_chain.has(Reply):
+            reply_elem = message_chain.get_first(Reply)
+            reply = message_selector.mainline[mainline]._[reply_elem.id]
+            message_chain.content.remove(reply_elem)
+        return Message(
+            id=data["message_id"],
+            mainline=mainline,
+            sender=sender,
+            content=message_chain,
+            time=received_time,
+            reply=reply,
+        )
+
+    @staticmethod
+    @registrar.register(ForwardMessageFetch)
+    async def fetch_forward_message(protocol: "OnebotProtocol", exec: ForwardMessageFetch):
+        rs = ctx_relationship.get()
+        interface = protocol.avilla.get_interface(OnebotInterface)
+        if not rs or not interface.service.get_status(rs.self).available:
+            raise RuntimeError("account is not available, check your connection!")
+        message = exec.message
+        if isinstance(message, message_selector):
+            message = await OnebotExecutionHandler.fetch_message(protocol, MessageFetch(message))
+        if isinstance(message, Message):
+            message = message.content
+        if isinstance(message, MessageChain):
+            message = message.get_first(Forward)
+        if isinstance(message, Forward):
+            message = message.id
+        resp = await interface.action(
+            rs.self,
+            "get_forward_msg",
+            {
+                "message_id": message,
+            },
+        )
+        raise_for_obresp(resp)
+
+        result = []
+        for message in resp["data"]["messages"]:
+            if rs.mainline.keypath() == "group":
+                sender = entity_selector.mainline[rs.mainline].member[str(message["sender"]["user_id"])]
+            elif rs.mainline.keypath() == "friend":
+                sender = entity_selector.mainline[rs.mainline].friend[str(message["sender"]["user_id"])]
+            else:
+                raise NotImplementedError(f"unknown mainline: {rs.mainline}")
+            result.append(
+                Message(
+                    id="",
+                    mainline=rs.mainline,
+                    sender=sender,
+                    content=await protocol.parse_message(message["content"]),
+                    time=datetime.fromtimestamp(message["time"]),
+                )
+            )
+        return result
