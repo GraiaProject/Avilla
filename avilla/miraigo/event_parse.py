@@ -22,25 +22,6 @@ registrar = Registrar()
 @registrar.decorate("parsers")
 class MiraigoEventParser(OnebotEventParser):
     @staticmethod
-    @registrar.register(OnebotEventTypeKey(post="notice", notice="group_recall"))
-    async def group_recall(protocol: "MiraigoProtocol", data: Dict):
-        # TODO: no self_id
-        ...
-
-    @staticmethod
-    @registrar.register(OnebotEventTypeKey(post="notice", notice="friend_recall"))
-    async def friend_recall(protocol: "MiraigoProtocol", data: Dict):
-        # TODO: no self_id
-        ...
-
-    @staticmethod
-    @registrar.register(OnebotEventTypeKey(post="notice", notice="notify", sub="poke"))
-    async def notify_poke(protocol: "MiraigoProtocol", data: Dict):
-        # TODO: 群内戳一戳 + 好友戳一戳. 等待Onebot实现.
-        # TODO: 群内戳一戳 no self_id
-        ...
-
-    @staticmethod
     @registrar.register(OnebotEventTypeKey(post="notice", notice="notify", sub="lucky_king"))
     async def notify_lucky_king(protocol: "MiraigoProtocol", data: Dict):
         # TODO
