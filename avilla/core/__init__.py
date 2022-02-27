@@ -34,7 +34,7 @@ from avilla.core.config import (
     TModel,
     direct,
 )
-from avilla.core.context import ctx_avilla, ctx_protocol, ctx_relationship
+from avilla.core.context import ctx_avilla, ctx_protocol, ctx_relationship, get_current_avilla
 from avilla.core.event import RelationshipDispatcher
 from avilla.core.execution import Execution
 from avilla.core.launch import LaunchComponent, resolve_requirements
@@ -228,16 +228,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
     @classmethod
     def current(cls) -> "Avilla":
-        avilla = ctx_avilla.get()
-        if avilla:
-            return avilla
-        protocol = ctx_protocol.get()
-        if protocol:
-            return protocol.avilla
-        rs = ctx_relationship.get()
-        if rs:
-            return rs.protocol.avilla
-        raise RuntimeError("avilla instance missing")
+        return get_current_avilla()
 
     def new_launch_component(
         self,
