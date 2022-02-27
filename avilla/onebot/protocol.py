@@ -2,7 +2,6 @@ import json
 from typing import Any, Final, Optional, cast
 
 from graia.broadcast import Dispatchable
-from graia.broadcast.utilles import printer
 
 from avilla.core.execution import Execution
 from avilla.core.message import MessageChain

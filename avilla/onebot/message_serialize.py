@@ -15,7 +15,6 @@ from avilla.onebot.elements import (
     Dice,
     Face,
     FlashImage,
-    Forward,
     Json,
     Location,
     Music,

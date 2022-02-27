@@ -1,19 +1,15 @@
 from datetime import datetime
 from importlib.resources import path
 from typing import TYPE_CHECKING
-from unittest import result
 
 from avilla.core.context import ctx_relationship
 from avilla.core.execution import MessageFetch, MessageRevoke, MessageSend
 from avilla.core.message import Message, MessageChain
-from avilla.core.relationship import Relationship
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
-from avilla.core.selectors import message
 from avilla.core.selectors import message as message_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.exec import ExecutionHandler
-from avilla.onebot.config import OnebotConnectionConfig
 from avilla.onebot.elements import Forward, Reply
 from avilla.onebot.execution import ForwardMessageFetch
 from avilla.onebot.interface import OnebotInterface
