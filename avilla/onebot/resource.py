@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Any
 
-from avilla.core.context import ctx_avilla
 from avilla.core.operator import OperatorCache, ResourceOperator
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.service.entity import Status

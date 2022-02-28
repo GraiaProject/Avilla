@@ -1,28 +1,22 @@
 import asyncio
-import hmac
 import json
-import traceback
 from abc import ABCMeta, abstractmethod
 from asyncio import Future
-from contextlib import ExitStack, suppress
+from contextlib import ExitStack
 from functools import partial
-from typing import TYPE_CHECKING, Callable, Dict, Literal, Optional, Union, cast, final
+from typing import TYPE_CHECKING, Callable, Dict, Literal, Optional, Union, cast
 
 from loguru import logger
 
 from avilla.core.context import ctx_avilla, ctx_eventmeta, ctx_protocol
 from avilla.core.event import AvillaEvent
-from avilla.core.message import Message
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.selectors import message as message_selector
 from avilla.core.stream import Stream
 from avilla.core.transformers import u8_string
-from avilla.core.typing import STRUCTURE
 from avilla.core.utilles import random_string
 from avilla.io.common.http import (
     HttpClient,
     HttpServer,
-    HttpServerRequest,
     WebsocketClient,
     WebsocketConnection,
     WebsocketServer,

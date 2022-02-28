@@ -3,11 +3,26 @@ from typing import TYPE_CHECKING, Any, Dict, Type
 from avilla.core.elements import Audio, Image, Notice, NoticeAll, Text, Video
 from avilla.core.message import Element
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.selectors import message
 from avilla.core.selectors import resource as resource_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.message import AbstractMessageParser
-from avilla.onebot.elements import *
+from avilla.onebot.elements import (
+    RPS,
+    XML,
+    Contact,
+    Dice,
+    Face,
+    FlashImage,
+    Forward,
+    Image,
+    Json,
+    Location,
+    Node,
+    Poke,
+    Reply,
+    Shake,
+    Share,
+)
 
 if TYPE_CHECKING:
     from avilla.onebot.protocol import OnebotProtocol
@@ -21,7 +36,17 @@ element_map: Dict[str, Type[Element]] = {
     "video": Video,
     "face": Face,
     "rps": RPS,
+    "dice": Dice,
+    "shake": Shake,
+    "poke": Poke,
+    "share": Share,
+    "contact": Contact,
+    "location": Location,
     "reply": Reply,
+    "forward": Forward,
+    "node": Node,
+    "xml": XML,
+    "json": Json,
 }
 
 

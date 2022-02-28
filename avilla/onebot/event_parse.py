@@ -7,6 +7,7 @@ from avilla.core.event import (
     MetadataChanged,
     RelationshipCreated,
     RelationshipDestroyed,
+    RequestEvent,
     ResourceAvailable,
 )
 from avilla.core.event.message import MessageReceived, MessageRevoked
@@ -14,6 +15,7 @@ from avilla.core.message import Message
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector
+from avilla.core.selectors import request as request_selector
 from avilla.core.utilles import Registrar
 from avilla.core.utilles.event import AbstractEventParser
 from avilla.onebot.elements import Reply
@@ -314,19 +316,37 @@ class OnebotEventParser(AbstractEventParser[OnebotEventTypeKey, "OnebotProtocol"
         ...
 
     @staticmethod
-    @registrar.register(OnebotEventTypeKey(post="request", notice="friend"))
+    @registrar.register(OnebotEventTypeKey(post="request", request="friend"))
     async def request_friend(protocol: "OnebotProtocol", data: Dict):
-        ...
+        mainline = mainline_selector.friend[str(data["user_id"])]
+        friend = entity_selector.mainline[mainline].friend[str(data["user_id"])]
+        current_account = entity_selector.account[str(data["self_id"])]
+        received_time = datetime.fromtimestamp(data["time"])
+        return RequestEvent(
+            request_selector.mainline[mainline].via[friend]._[data["flag"]], current_account, received_time
+        ).with_meta({"request.reason": data["comment"]})
 
     @staticmethod
-    @registrar.register(OnebotEventTypeKey(post="request", notice="group", sub="add"))
+    @registrar.register(OnebotEventTypeKey(post="request", request="group", sub="add"))
     async def request_group_add(protocol: "OnebotProtocol", data: Dict):
-        ...
+        mainline = mainline_selector.group[str(data["group_id"])]
+        member = entity_selector.mainline[mainline].member[str(data["user_id"])]
+        current_account = entity_selector.account[str(data["self_id"])]
+        received_time = datetime.fromtimestamp(data["time"])
+        return RequestEvent(
+            request_selector.mainline[mainline].via[member]._[data["flag"]], current_account, received_time
+        ).with_meta({"request.reason": data["comment"]})
 
     @staticmethod
-    @registrar.register(OnebotEventTypeKey(post="request", notice="group", sub="invite"))
+    @registrar.register(OnebotEventTypeKey(post="request", request="group", sub="invite"))
     async def request_group_invite(protocol: "OnebotProtocol", data: Dict):
-        ...
+        mainline = mainline_selector.group[str(data["group_id"])]
+        member = entity_selector.mainline[mainline].member[str(data["user_id"])]
+        current_account = entity_selector.account[str(data["self_id"])]
+        received_time = datetime.fromtimestamp(data["time"])
+        return RequestEvent(
+            request_selector.mainline[mainline].via[member]._[data["flag"]], current_account, received_time
+        ).with_meta({"request.reason": data["comment"]})
 
     @staticmethod
     @registrar.register(OnebotEventTypeKey(post="meta_event", meta_event="lifecycle", sub="enable"))

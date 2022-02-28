@@ -4,8 +4,6 @@ from typing import Callable, Optional
 from pydantic import BaseModel
 from yarl import URL
 
-from avilla.core.config import ConfigApplicant, ConfigFlushingMoment, TModel
-
 
 class OnebotConnectionConfig(BaseModel):
     access_token: Optional[str] = None

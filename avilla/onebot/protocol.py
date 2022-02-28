@@ -2,7 +2,6 @@ import json
 from typing import Any, Final, Optional, cast
 
 from graia.broadcast import Dispatchable
-from graia.broadcast.utilles import printer
 
 from avilla.core.execution import Execution
 from avilla.core.message import MessageChain
@@ -27,7 +26,11 @@ class OnebotProtocol(BaseProtocol):
     platform: Final[Platform] = Platform(
         Base(supplier="Tencent", name="qq", humanized_name="QQ"),
         Medium(
-            supplier="howmanybots@github", name="onebot", humanized_name="OneBot", generation="v11", version="11"
+            supplier="howmanybots@github",
+            name="onebot",
+            humanized_name="OneBot",
+            generation="v11",
+            version="11",
         ),
         Adapter(
             supplier="GraiaProject@github",
