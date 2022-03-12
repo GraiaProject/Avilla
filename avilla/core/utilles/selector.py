@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Generic, Type, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Type, TypeVar, Union, cast
 
 T = TypeVar("T")
 A = TypeVar("A")
@@ -9,7 +9,7 @@ class SelectorKey(Generic[A, T]):
     key: str
     past: Dict[str, Any]
 
-    def __init__(self, selector: "Type[Selector]", key: str, past: Dict[str, Any] = None):
+    def __init__(self, selector: "Type[Selector]", key: str, past: Optional[Dict[str, Any]] = None):
         self.selector = selector
         self.key = key
         self.past = past or {}
@@ -42,7 +42,7 @@ class Selector(Generic[S], metaclass=SelectorMeta):
     scope: S
     path: Dict[str, Any]
 
-    def __init__(self, path: Dict[str, Any] = None) -> None:
+    def __init__(self, path: Optional[Dict[str, Any]] = None) -> None:
         self.path = path or {}
 
     def to_dict(self):

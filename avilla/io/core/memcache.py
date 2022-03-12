@@ -21,7 +21,7 @@ class Memcache(CacheStorage):
         self.cache = cache
         self.expire = expire
 
-    async def get(self, key: str, default: Any = None) -> Any:
+    async def get(self, key: str, default: Optional[Any] = None) -> Any:
         value = self.cache.get(key)
         if value:
             if value[0] is None or value[0] >= time():
@@ -30,7 +30,7 @@ class Memcache(CacheStorage):
                 del self.cache[key]
         return default
 
-    async def set(self, key: str, value: Any, expire: timedelta = None) -> None:
+    async def set(self, key: str, value: Any, expire: Optional[timedelta] = None) -> None:
         if expire is None:
             self.cache[key] = (None, value)
             return
@@ -67,8 +67,8 @@ class MemcacheService(Service):
     def __init__(
         self,
         interval: float = 0.1,
-        cache: Dict[str, Tuple[Optional[float], Any]] = None,
-        expire: List[Tuple[float, str]] = None,
+        cache: Optional[Dict[str, Tuple[Optional[float], Any]]] = None,
+        expire: Optional[List[Tuple[float, str]]] = None,
     ):
         self.interval = interval
         self.cache = cache if cache else {}
@@ -80,7 +80,7 @@ class MemcacheService(Service):
             return Memcache(self.cache, self.expire)
         raise ValueError(f"unsupported interface type {interface_type}")
 
-    def get_status(self, entity: entity_selector = None):
+    def get_status(self, entity: Optional[entity_selector] = None):
         if entity is None:
             return self.status
         if entity not in self.status:

@@ -52,10 +52,10 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         method: "HTTP_METHODS",
         url: Union[str, URL],
         *,
-        headers: Dict[str, str] = None,
-        data: Union[str, bytes, dict, list] = None,
-        proxy: ProxySetting = None,
-        json_serializer: Callable[[Union[dict, list]], str] = None,
+        headers: Optional[Dict[str, str]] = None,
+        data: Optional[Union[str, bytes, dict, list]] = None,
+        proxy: Optional[ProxySetting] = None,
+        json_serializer: Optional[Callable[[Union[dict, list]], str]] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -65,8 +65,8 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         self,
         url: Union[str, URL],
         *,
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -77,9 +77,9 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         data: Union[str, bytes, dict, list],
         *,
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
-        json_serializer: Callable[[Union[dict, list]], str] = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
+        json_serializer: Optional[Callable[[Union[dict, list]], str]] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -90,9 +90,9 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         data: Union[str, bytes, dict, list],
         *,
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
-        json_serializer: Callable[[Union[dict, list]], str] = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
+        json_serializer: Optional[Callable[[Union[dict, list]], str]] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -101,8 +101,8 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
     def delete(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -113,9 +113,9 @@ class HttpClient(ExportInterface, metaclass=ABCMeta):
         url: Union[str, URL],
         data: Union[str, bytes, dict, list],
         *,
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
-        json_serializer: Callable[[Union[dict, list]], str] = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
+        json_serializer: Optional[Callable[[Union[dict, list]], str]] = None,
     ) -> "AsyncGenerator[HttpClientResponse, None]":
         ...
 
@@ -126,7 +126,7 @@ class WebsocketClient(ExportInterface, metaclass=ABCMeta):
     def websocket_connect(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str] = None,
+        headers: Optional[Dict[str, str]] = None,
         retries_count: int = 3,
     ) -> "AsyncGenerator[WebsocketConnection, None]":
         ...
@@ -135,7 +135,7 @@ class WebsocketClient(ExportInterface, metaclass=ABCMeta):
 class HttpServer(ExportInterface, metaclass=ABCMeta):
     @abstractmethod
     def http_listen(
-        self, path: str, methods: List[HTTP_METHODS] = None
+        self, path: str, methods: Optional[List[HTTP_METHODS]] = None
     ) -> "Callable[[Callable[[HttpServerRequest], Any]], Any]":
         ...
 
@@ -227,7 +227,7 @@ class WebsocketConnection(BehaviourSession):
         self,
         data: Union[Stream[Union[bytes, str, dict, list]], bytes, str, dict, list],
         *,
-        json_serializer: Callable[[Union[dict, list]], str] = None,
+        json_serializer: Optional[Callable[[Union[dict, list]], str]] = None,
     ) -> None:
         ...
 

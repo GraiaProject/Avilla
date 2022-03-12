@@ -49,7 +49,7 @@ class Filter(Decorator, Generic[S, L]):
         self,
         alpha: Callable[..., S] = lambda: None,
         omega: Callable[[OmegaReport], L] = lambda x: x.result[-1],
-        initial_chain: List[Callable[..., Any]] = None,
+        initial_chain: Optional[List[Callable[..., Any]]] = None,
     ):
         self.alpha = ExecTarget(alpha)
         self.omega = omega
@@ -65,7 +65,9 @@ class Filter(Decorator, Generic[S, L]):
         self.selected_branch = branch
         return self
 
-    def use(self: "Filter[Any, L]", new_step: Callable[[L], R], branch: str = None) -> "Filter[L, R]":
+    def use(
+        self: "Filter[Any, L]", new_step: Callable[[L], R], branch: Optional[str] = None
+    ) -> "Filter[L, R]":
         self.chains[branch or self.selected_branch].append(new_step)
         return self  # type: ignore
 

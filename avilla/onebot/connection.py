@@ -50,7 +50,7 @@ class OnebotConnection(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def action(self, action: str, data: dict, timeout: float = None) -> dict:
+    async def action(self, action: str, data: dict, timeout: Optional[float] = None) -> dict:
         raise NotImplementedError
 
 
@@ -101,7 +101,7 @@ class OnebotHttpClient(OnebotConnection):
         ) as response:
             return await (await response.read()).transform(u8_string).transform(json.loads).unwrap()
 
-    async def action(self, action: str, data: dict, timeout: float = None) -> dict:
+    async def action(self, action: str, data: dict, timeout: Optional[float] = None) -> dict:
         return await asyncio.wait_for(self.send({"action": action, "params": data}), timeout) or {}
 
 
@@ -186,7 +186,7 @@ class OnebotWsClient(OnebotConnection):
             raise RuntimeError("Not connected")
         await self.ws_connection.send(data)
 
-    async def action(self, action: str, params: dict, timeout: float = None):
+    async def action(self, action: str, params: dict, timeout: Optional[float] = None):
         request_id = random_string()
         self.requests[request_id] = asyncio.get_running_loop().create_future()
         try:
@@ -220,7 +220,7 @@ class OnebotHttpServer(OnebotConnection):
     async def send(self, data: dict) -> Optional[dict]:
         raise NotImplementedError
 
-    async def action(self, action: str, data: dict, timeout: float = None) -> dict:
+    async def action(self, action: str, data: dict, timeout: Optional[float] = None) -> dict:
         raise NotImplementedError
 
 
@@ -265,7 +265,7 @@ class OnebotWsServer(OnebotConnection):
         else:
             raise RuntimeError("Not connected")
 
-    async def action(self, action: str, params: dict, timeout: float = None):
+    async def action(self, action: str, params: dict, timeout: Optional[float] = None):
         request_id = random_string()
         self.requests[request_id] = asyncio.get_running_loop().create_future()
         try:

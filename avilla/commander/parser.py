@@ -235,4 +235,3 @@ class MessageChainType:
     @staticmethod
     def __call__(string: str) -> MessageChain:
         return chain_from_mapping_string(string, elem_mapping_ctx.get())
-

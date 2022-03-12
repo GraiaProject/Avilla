@@ -1,6 +1,19 @@
 from contextvars import ContextVar
 import inspect
-from typing import TYPE_CHECKING, Any, Callable, Dict, Generator, List, NoReturn, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Generator,
+    List,
+    NoReturn,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.typing import T_Dispatcher
@@ -9,6 +22,7 @@ from graia.broadcast.utilles import dispatcher_mixin_handler
 from pydantic.typing import DictStrAny
 
 T = TypeVar("T")
+
 
 def gen_subclass(cls: Type[T]) -> Generator[Type[T], None, None]:
     """生成某个类的所有子类 (包括其自身)
@@ -36,6 +50,7 @@ def const_call(val: T) -> Callable[[], T]:
         Callable[[], T]: 返回的函数
     """
     return lambda: val
+
 
 def assert_on_(pre_condition: Union[bool, Any], condition: bool, *message: Any) -> Union[None, NoReturn]:
     """检查条件是否成立, 如果不成立则抛出 ValueError

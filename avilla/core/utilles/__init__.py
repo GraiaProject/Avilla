@@ -113,7 +113,7 @@ class Defer:
 
     @classmethod
     def current(cls):
-        return cls(cls._ctx.get())
+        return cls(cls._ctx.get() or [])
 
     def __init__(self, defers: List[Callable[[], Any]]) -> None:
         self.defers = defers

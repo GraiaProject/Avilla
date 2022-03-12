@@ -16,7 +16,7 @@ TContent = TypeVar("TContent")
 
 class OperatorCache(Generic[TContent], metaclass=ABCMeta):
     @abstractmethod
-    async def get(self, key: str, default: Any = None) -> TContent:
+    async def get(self, key: str, default: Optional[Any] = None) -> TContent:
         ...
 
     @abstractmethod
@@ -38,7 +38,9 @@ class OperatorCache(Generic[TContent], metaclass=ABCMeta):
 
 class Operator(metaclass=ABCMeta):
     @abstractmethod
-    async def operate(self, operator: str, target: Any, value: Any, cache: OperatorCache = None) -> Any:
+    async def operate(
+        self, operator: str, target: Any, value: Any, cache: Optional[OperatorCache] = None
+    ) -> Any:
         ...
 
 
@@ -49,7 +51,7 @@ class OperatorKeyDispatch(Operator):
         self.patterns = patterns
 
     async def operate(
-        self, operator: str, target: Any, value: Any = None, cache: OperatorCache = None
+        self, operator: str, target: Any, value: Optional[Any] = None, cache: Optional[OperatorCache] = None
     ) -> Any:
         if not isinstance(target, str):
             raise TypeError("target must be a string (like a key)")
@@ -78,7 +80,7 @@ class PatchedCache(OperatorCache):
         self.prefix = prefix
         self.keys = []
 
-    async def get(self, key: str, default: Any = None) -> Any:
+    async def get(self, key: str, default: Optional[Any] = None) -> Any:
         if self.event_meta and key in self.event_meta:
             return self.event_meta[key]
         return await self.cache.get(self.prefix + key, default)
@@ -123,7 +125,7 @@ class OperatorCachePatcher(Operator):
         self.prefix = random_string()
         self.cache = PatchedCache(cache, self.prefix)
 
-    async def operate(self, operator: str, target: Any, value: Any = None, _=None) -> Any:
+    async def operate(self, operator: str, target: Any, value: Optional[Any] = None, _=None) -> Any:
         return await self.operator.operate(operator, target, value, self.cache)
 
     def __getattr__(self, name: str):
@@ -167,19 +169,19 @@ class MetadataOperator(Operator):
 class ResourceOperator(Operator):
     resource: resource_selector
 
-    async def create(self, id: resource_selector = None) -> Status:
+    async def create(self, id: Optional[resource_selector] = None) -> Status:
         return await self.operate("create", id, None)
 
-    async def write(self, data: Any, id: resource_selector = None) -> Status:
+    async def write(self, data: Any, id: Optional[resource_selector] = None) -> Status:
         return await self.operate("write", id, data)
 
     async def put(self, data: Any) -> Tuple[Status, Optional[resource_selector]]:
         return await self.operate("put", None, data)
 
-    async def read(self, id: resource_selector = None) -> Tuple[Status, Optional[Any]]:
+    async def read(self, id: Optional[resource_selector] = None) -> Tuple[Status, Optional[Any]]:
         return await self.operate("read", id, None)
 
-    async def stats(self, id: resource_selector = None) -> Status:
+    async def stats(self, id: Optional[resource_selector] = None) -> Status:
         return await self.operate("stats", id, None)
 
     async def ls(
@@ -187,14 +189,14 @@ class ResourceOperator(Operator):
     ) -> Tuple[Status, AsyncIterable[resource_selector]]:
         return await self.operate("ls", parent, None)
 
-    async def cover(self, to: resource_selector, id: resource_selector = None) -> Status:
+    async def cover(self, to: resource_selector, id: Optional[resource_selector] = None) -> Status:
         return await self.operate("rename", id, to)
 
     async def remove(
         self,
-        id: resource_selector = None,
+        id: Optional[resource_selector] = None,
     ) -> Status:
         return await self.operate("remove", id, None)
 
-    async def meta(self, id: resource_selector = None) -> Tuple[Status, Optional[MetadataOperator]]:
+    async def meta(self, id: Optional[resource_selector] = None) -> Tuple[Status, Optional[MetadataOperator]]:
         return await self.operate("meta", id, None)

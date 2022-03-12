@@ -44,13 +44,7 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
     init_moment: Final[Dict[Type[TModel], ConfigFlushingMoment]] = {}
     config_model: Type[TModel]
 
-    platform: Platform = Platform(
-        name="Avilla Universal Protocol Implementation",
-        protocol_provider_name="Avilla Protocol",
-        implementation="avilla-core",
-        supported_impl_version="$any",
-        generation="1",
-    )
+    platform: Platform = Platform()
 
     required_components: ClassVar[Set[str]]
     protocol_ranks: ClassVar[Tuple[Union[Rank, str], ...]]
@@ -101,7 +95,7 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
     @property
     def launch_component(self) -> LaunchComponent:
         return LaunchComponent(
-            f"avilla.core.protocol:{self.platform.implementation}",
+            "avilla.core.protocol:base_protocol",
             self.required_components,
             self.launch_mainline,
             self.launch_prepare,

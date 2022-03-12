@@ -43,7 +43,9 @@ class ExportInterface(Generic[TService]):
     def set_current(self, entity: "entity_selector") -> None:
         self.current = entity
 
-    def get_status(self, entity: "entity_selector" = None) -> Union[Status, Dict["entity_selector", Status]]:
+    def get_status(
+        self, entity: Optional["Optional[entity_selector]"] = None
+    ) -> Union[Status, Dict["entity_selector", Status]]:
         if entity is not None:
             return self.service.get_status(entity)
         return self.service.get_status()

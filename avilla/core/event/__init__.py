@@ -84,7 +84,7 @@ class RequestEvent(AvillaEvent):
         self,
         request: request_selector,
         current_self: entity_selector,
-        time: datetime = None,
+        time: Optional[datetime] = None,
         acceptable: bool = True,
         rejectable: bool = True,
         ignorable: bool = False,
@@ -108,7 +108,7 @@ class RequestAccepted(AvillaEvent):
         self,
         request: request_selector,
         current_self: entity_selector,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ):
         self.request = request
         self.self = current_self
@@ -126,7 +126,7 @@ class RequestRejected(AvillaEvent):
         self,
         request: request_selector,
         current_self: entity_selector,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ):
         self.request = request
         self.self = current_self
@@ -144,7 +144,7 @@ class RequestIgnored(AvillaEvent):
         self,
         request: request_selector,
         current_self: entity_selector,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ):
         self.request = request
         self.self = current_self
@@ -166,7 +166,7 @@ class ResourceAvailable(AvillaEvent):
         self,
         resource: resource_selector,
         current_self: entity_selector,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ):
         self.resource = resource
         self.self = current_self
@@ -188,7 +188,7 @@ class ResourceUnavailable(AvillaEvent):
         self,
         resource: resource_selector,
         current_self: entity_selector,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ):
         self.resource = resource
         self.self = current_self
@@ -209,8 +209,8 @@ class MetadataChanged(AvillaEvent):
         op: str,
         value: Any,
         current_self: entity_selector,
-        operator: entity_selector = None,
-        time: datetime = None,
+        operator: Optional[entity_selector] = None,
+        time: Optional[datetime] = None,
     ):
         self.ctx = ctx
         self.meta = meta
@@ -248,7 +248,7 @@ class EntityPermissionChanged(AvillaEvent):
         entity: entity_selector,
         modifies: List[PermissionChangeInfo],
         current_self: entity_selector,
-        time: datetime = None,
+        time: Optional[datetime] = None,
     ):
         self.entity = entity
         self.modifies = modifies
@@ -265,8 +265,8 @@ class RelationshipCreated(AvillaEvent):
         self,
         ctx: Union[mainline_selector, entity_selector],
         current_self: entity_selector,
-        time: datetime = None,
-        via: Union[mainline_selector, entity_selector, None] = None,
+        time: Optional[datetime] = None,
+        via: Optional[Union[mainline_selector, entity_selector, None]] = None,
     ):
         self.ctx = ctx
         self.via = via
@@ -282,8 +282,8 @@ class RelationshipDestroyed(AvillaEvent):
         self,
         ctx: Union[mainline_selector, entity_selector],
         current_self: entity_selector,
-        time: datetime = None,
-        via: Union[mainline_selector, entity_selector, None] = None,
+        time: Optional[datetime] = None,
+        via: Optional[Union[mainline_selector, entity_selector, None]] = None,
     ):
         self.ctx = ctx
         self.via = via

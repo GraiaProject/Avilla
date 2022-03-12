@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 
 from avilla.core.operator import OperatorCache, ResourceOperator
 from avilla.core.selectors import resource as resource_selector
@@ -14,7 +14,9 @@ class OnebotImageAccessor(ResourceOperator):
         self.service = service
         self.resource = resource
 
-    async def operate(self, operator: str, target: Any, value: Any, cache: OperatorCache = None) -> Any:
+    async def operate(
+        self, operator: str, target: Any, value: Any, cache: Optional[OperatorCache] = None
+    ) -> Any:
         if operator == "read":
             url = self.resource.path["image"]
             avilla = self.service.protocol.avilla

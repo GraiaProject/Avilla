@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from datetime import timedelta
-from typing import Any, Generic, List, TypeVar
+from typing import Any, Generic, List, Optional, TypeVar
 
 from avilla.core.service import ExportInterface
 
@@ -14,7 +14,7 @@ class Storage(ExportInterface):
 """
 class KVStorage(Storage):
     @abstractmethod
-    async def get(self, key: str, default: Any = None) -> Any:
+    async def get(self, key: str, default: Optional[Any ] = None) -> Any:
         ...
 
     @abstractmethod
@@ -38,11 +38,11 @@ class KVStorage(Storage):
 
 class CacheStorage(Storage, Generic[D], metaclass=ABCMeta):
     @abstractmethod
-    async def get(self, key: str, default: Any = None) -> D:
+    async def get(self, key: str, default: Optional[Any] = None) -> D:
         ...
 
     @abstractmethod
-    async def set(self, key: str, value: Any, expire: timedelta = None) -> None:
+    async def set(self, key: str, value: Any, expire: Optional[timedelta] = None) -> None:
         ...
 
     @abstractmethod

@@ -110,18 +110,6 @@ class Node(Element):
     user_id: Optional[str] = None
     nickname: Optional[str] = None
     content: Optional[MessageChain] = None
-    if TYPE_CHECKING:
-
-        @overload
-        def __init__(self, id: str):
-            ...
-
-        @overload
-        def __init__(self, *, user_id: str, nickname: str, content: MessageChain):
-            ...
-
-        def __init__(self, *args, **kwargs):
-            ...
 
 
 @dataclass

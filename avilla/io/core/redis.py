@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, List, Optional, Type, Union
 
 from aioredis import Redis
 
@@ -15,10 +15,10 @@ class RedisCache(CacheStorage):
     def __init__(self, redis: Redis):
         self.redis = redis
 
-    async def get(self, key: str, default: Any = None) -> Any:
+    async def get(self, key: str, default: Optional[Any] = None) -> Any:
         return await self.redis.get(key) or default
 
-    async def set(self, key: str, value: Any, expire: timedelta = None) -> None:
+    async def set(self, key: str, value: Any, expire: Optional[timedelta] = None) -> None:
         await self.redis.set(key, value)
         if expire:
             await self.redis.expire(key, int(expire.total_seconds()))
@@ -51,7 +51,9 @@ class RedisService(Service):
             return RedisCache(self.redis)
         raise ValueError(f"unsupported interface type {interface_type}")
 
-    def get_status(self, entity: entity_selector = None) -> Union[Status, Dict[entity_selector, Status]]:
+    def get_status(
+        self, entity: Optional[entity_selector] = None
+    ) -> Union[Status, Dict[entity_selector, Status]]:
         if entity is None:
             return self.status
         if entity not in self.status:

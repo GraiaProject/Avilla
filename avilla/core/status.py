@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
+
 @dataclass
 class PartStatus:
     available: bool
     description: str
 
     unknown: bool = False
+
 
 @dataclass
 class Status:
@@ -22,6 +24,6 @@ class Status:
             for part in parts:
                 self.parts[part] = PartStatus(False, "", True)
         self.parts["main"] = PartStatus(False, "", True)
-    
+
     def __getitem__(self, key: str) -> PartStatus:
         return self.parts[key]

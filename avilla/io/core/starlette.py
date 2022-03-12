@@ -1,7 +1,7 @@
 import asyncio
 import json
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple, Type, Union, cast
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, Union, cast
 
 from graia.broadcast.utilles import Ctx
 from loguru import logger
@@ -81,7 +81,7 @@ class StarletteWebsocketServerConnection(WebsocketConnection):
         self,
         data: Union[Stream[Union[bytes, str, dict, list]], bytes, str, dict, list],
         *,
-        json_serializer: Callable[[Union[dict, list]], str] = None,
+        json_serializer: Optional[Callable[[Union[dict, list]], str]] = None,
     ) -> None:
         ws = self.websocket_ctx.get()
         if ws is None:
@@ -147,7 +147,7 @@ class StarletteServer(HttpServer, WebsocketServer, ASGIHandlerProvider):
     def http_listen(
         self,
         path: str,
-        methods: List[HTTP_METHODS] = None,
+        methods: Optional[List[HTTP_METHODS]] = None,
     ):
         methods = methods or ["get", "post", "put", "delete"]
 
@@ -199,7 +199,7 @@ class StarletteService(Service):
 
     starlette: Starlette
 
-    def __init__(self, starlette: Starlette = None) -> None:
+    def __init__(self, starlette: Optional[Starlette] = None) -> None:
         self.starlette = starlette or Starlette()
         super().__init__()
 
@@ -208,7 +208,7 @@ class StarletteService(Service):
             return StarletteServer(self, self.starlette)
         raise ValueError(f"unsupported interface type {interface_type}")
 
-    def get_status(self, entity: entity_selector = None):
+    def get_status(self, entity: Optional[entity_selector] = None):
         if entity is None:
             return self.status
         if entity not in self.status:

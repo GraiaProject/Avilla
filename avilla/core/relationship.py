@@ -83,8 +83,8 @@ class Relationship(Generic[M]):
         ctx: Union[entity_selector, mainline_selector],
         mainline: mainline_selector,
         current_self: entity_selector,
-        via: Union[mainline_selector, entity_selector, None] = None,
-        middlewares: List[TExecutionMiddleware] = None,
+        via: Optional[Union[mainline_selector, entity_selector, None]] = None,
+        middlewares: Optional[List[TExecutionMiddleware]] = None,
     ) -> None:
         self.ctx = ctx
         self.mainline = mainline

@@ -30,5 +30,7 @@ class OnebotOperator(MetadataOperator):
 
     operate_dispatch: "OperatorImplementDispatch[OnebotOperator]" = OnebotOperatorDispatch()
 
-    async def operate(self, operator: str, target: Any, value: Any, cache: Optional[OperatorCache] = None) -> Any:
+    async def operate(
+        self, operator: str, target: Any, value: Any, cache: Optional[OperatorCache] = None
+    ) -> Any:
         return await self.operate_dispatch.operate(self, operator, target, value, cache)

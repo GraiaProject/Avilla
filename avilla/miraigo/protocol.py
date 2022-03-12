@@ -1,6 +1,6 @@
 from typing import Final
 
-from avilla.core.platform import Adapter, Base, Medium, Platform
+from avilla.core.platform import Adapter, Base, Medium, Platform, MediumDistribution
 from avilla.miraigo.event_parse import MiraigoEventParser
 from avilla.miraigo.execution_ensure import MiraigoExecutionHandler
 from avilla.miraigo.message_parse import MiraigoMessageParser
@@ -13,11 +13,16 @@ class MiraigoProtocol(OnebotProtocol):
     platform: Final[Platform] = Platform(  # type: ignore
         Base(supplier="Tencent", name="qq", humanized_name="QQ"),
         Medium(
+            supplier="botuniverse@github",
+            name="onebot",
+            humanized_name="OneBot",
+            generation="v11",
+            version="11",
+        ),
+        MediumDistribution(
             supplier="Mrs4s@github",
             name="miraigo",
             humanized_name="MiraiGo",
-            generation="v11",
-            version="1.0.0",
         ),
         Adapter(
             supplier="GraiaProject@github",

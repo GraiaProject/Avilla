@@ -16,6 +16,7 @@ ctx_event: "Ctx[Dispatchable]" = Ctx("event")
 
 ctx_eventmeta: "Ctx[Dict[str, Any]]" = Ctx("eventmeta")
 
+
 def get_current_avilla():
     avilla = ctx_avilla.get()
     if avilla:
@@ -28,6 +29,7 @@ def get_current_avilla():
         return relationship.protocol.avilla
     raise RuntimeError("no any current avilla")
 
+
 def get_current_protocol():
     protocol = ctx_protocol.get()
     if protocol:
@@ -36,6 +38,7 @@ def get_current_protocol():
     if relationship:
         return relationship.protocol
     raise RuntimeError("no any current protocol")
+
 
 def get_current_relationship():
     relationship = ctx_relationship.get()

@@ -10,11 +10,12 @@ class Text(Element):
     text: str
     style: Optional[str]
 
-    def __init__(self, text: str, style: str = None) -> None:
+    def __init__(self, text: str, style: Optional[str] = None) -> None:
         """实例化一个 Text 消息元素, 用于承载消息中的文字.
 
         Args:
             text (str): 元素所包含的文字
+            style (Optional[str]): 默认为空, 文字的样式
         """
         self.text = text
         self.style = style

@@ -36,7 +36,7 @@ def get_mainline(operator: "OnebotOperator") -> mainline_selector:
 class OnebotOperatorDispatch(OperatorImplementDispatch):
     @staticmethod
     @registrar.register(("mainline.name", "get"))
-    async def get_mainline_name(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_mainline_name(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("mainline.name", None)
             if cached_value is not None:
@@ -66,7 +66,9 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("mainline.name", "set"))
-    async def set_mainline_name(operator: "OnebotOperator", _, name: str, cache: OperatorCache = None):
+    async def set_mainline_name(
+        operator: "OnebotOperator", _, name: str, cache: Optional[OperatorCache] = None
+    ):
         if cache:
             await cache.set("mainline.name", name)
         if not operator.mainline:
@@ -81,21 +83,23 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("mainline.description", "get"))
-    async def get_mainline_description(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_mainline_description(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         # Onebot 规范不支持 get_group_info 获取群组描述, 但 gocq 提供了 group_memo 字段。
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("mainline.description", "set"))
     async def set_mainline_description(
-        operator: "OnebotOperator", _, description: str, cache: OperatorCache = None
+        operator: "OnebotOperator", _, description: str, cache: Optional[OperatorCache] = None
     ):
         # Onebot 同样不支持设置群组描述， gocq 看起来也一样
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("mainline.current_count", "get"))
-    async def get_mainline_current_count(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_mainline_current_count(
+        operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None
+    ):
         if cache:
             cached_value = await cache.get("mainline.current_count", None)
             if cached_value is not None:
@@ -123,7 +127,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("mainline.max_count", "get"))
-    async def get_mainline_max_count(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_mainline_max_count(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("mainline.max_count", None)
             if cached_value is not None:
@@ -151,7 +155,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.name", "get"))
-    async def get_member_name(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_name(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("member.name", None)
             if cached_value is not None:
@@ -178,7 +182,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.nickname", "get"))
-    async def get_member_nickname(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_nickname(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("member.nickname", None)
             if cached_value is not None:
@@ -205,7 +209,9 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.nickname", "set"))
-    async def set_member_nickname(operator: "OnebotOperator", value: str, cache: OperatorCache = None):
+    async def set_member_nickname(
+        operator: "OnebotOperator", value: str, cache: Optional[OperatorCache] = None
+    ):
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
         mainline = get_mainline(operator)
@@ -224,7 +230,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.nickname", "reset"))
-    async def reset_member_nickname(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def reset_member_nickname(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
         mainline = get_mainline(operator)
@@ -243,7 +249,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.budget", "get"))
-    async def get_member_budget(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_budget(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("member.budget", None)
             if cached_value is not None:
@@ -270,7 +276,9 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.budget", "set"))
-    async def set_member_budget(operator: "OnebotOperator", value: str, cache: OperatorCache = None):
+    async def set_member_budget(
+        operator: "OnebotOperator", value: str, cache: Optional[OperatorCache] = None
+    ):
         if cache:
             cached_value = await cache.get("member.budget", None)
             if cached_value is not None and cached_value == value:
@@ -293,7 +301,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.budget", "reset"))
-    async def reset_member_budget(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def reset_member_budget(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if not operator.ctx or "member" not in operator.ctx.path:
             raise ValueError("context error: member missing")
         mainline = get_mainline(operator)
@@ -312,25 +320,27 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.muted", "get"))
-    async def get_member_muted(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_muted(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         # Onebot 没有获取禁言状态的接口。
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("member.muted", "set"))
-    async def set_member_muted(operator: "OnebotOperator", value: bool, cache: OperatorCache = None):
+    async def set_member_muted(
+        operator: "OnebotOperator", value: bool, cache: Optional[OperatorCache] = None
+    ):
         # Onebot 没有禁言状态的接口。
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("member.mute_period", "get"))
-    async def get_member_mute_period(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_mute_period(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         # Onebot 没有获取禁言时间的接口。
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("member.joined_at", "get"))
-    async def get_member_joined_at(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_joined_at(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("member.name", None)
             if cached_value is not None:
@@ -357,7 +367,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("member.last_active_at", "get"))
-    async def get_member_last_active_at(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_last_active_at(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("member.name", None)
             if cached_value is not None:
@@ -384,7 +394,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("contact.name", "get"))
-    async def get_contact_name(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_contact_name(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("contact.name", None)
             if cached_value is not None:
@@ -416,7 +426,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("contact.nickname", "get"))
-    async def get_contact_nickname(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_contact_nickname(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("contact.nickname", None)
             if cached_value is not None:
@@ -450,25 +460,25 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("contact.avatar", "get"))
-    async def get_contact_avatar(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_contact_avatar(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         # TODO: contact avatar get
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("mainline.avatar", "get"))
-    async def get_mainline_avatar(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_mainline_avatar(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         # TODO: mainline avatar get
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("member.avatar", "get"))
-    async def get_member_avatar(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_member_avatar(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         # TODO: member avatar get
         raise NotImplementedError
 
     @staticmethod
     @registrar.register(("self.name", "get"))
-    async def get_self_name(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_self_name(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("self.name", None)
             if cached_value is not None:
@@ -487,7 +497,7 @@ class OnebotOperatorDispatch(OperatorImplementDispatch):
 
     @staticmethod
     @registrar.register(("self.nickname", "get"))
-    async def get_self_nickname(operator: "OnebotOperator", _, cache: OperatorCache = None):
+    async def get_self_nickname(operator: "OnebotOperator", _, cache: Optional[OperatorCache] = None):
         if cache:
             cached_value = await cache.get("self.nickname", None)
             if cached_value is not None:

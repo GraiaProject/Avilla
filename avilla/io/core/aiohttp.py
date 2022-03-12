@@ -171,9 +171,9 @@ class AiohttpClient(HttpClient, WebsocketClient):
         self,
         method: "HTTP_METHODS",
         url: Union[str, URL],
-        headers: Dict[str, str] = None,
-        data: Union[str, bytes] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        data: Optional[Union[str, bytes]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.request(
             method,
@@ -188,8 +188,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def get(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.get(
             url, headers=headers, proxy=proxysetting_transform(proxy) if proxy is not None else None
@@ -201,8 +201,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
         self,
         url: Union[str, URL],
         data: Union[str, bytes],
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.post(
             url,
@@ -217,8 +217,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
         self,
         url: Union[str, URL],
         data: Union[str, bytes],
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.put(
             url,
@@ -233,8 +233,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
         self,
         url: Union[str, URL],
         data: Union[str, bytes],
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.delete(
             url,
@@ -249,8 +249,8 @@ class AiohttpClient(HttpClient, WebsocketClient):
         self,
         url: Union[str, URL],
         data: Union[str, bytes],
-        headers: Dict[str, str] = None,
-        proxy: ProxySetting = None,
+        headers: Optional[Dict[str, str]] = None,
+        proxy: Optional[ProxySetting] = None,
     ) -> "AsyncGenerator[BehaviourSession, None]":
         async with self.aiohttp_session.patch(
             url,
@@ -264,7 +264,7 @@ class AiohttpClient(HttpClient, WebsocketClient):
     async def websocket_connect(
         self,
         url: Union[str, URL],
-        headers: Dict[str, str] = None,
+        headers: Optional[Dict[str, str]] = None,
         retries_count: int = 3,
     ) -> "AsyncGenerator[AiohttpWebsocketClientConnection, None]":
         origin_count = retries_count
@@ -326,7 +326,7 @@ class AiohttpService(Service):
 
     client_session: ClientSession
 
-    def __init__(self, client_session: ClientSession = None) -> None:
+    def __init__(self, client_session: Optional[ClientSession] = None) -> None:
         self.client_session = client_session or ClientSession()
         super().__init__()
 
@@ -335,7 +335,7 @@ class AiohttpService(Service):
             return AiohttpClient(self, self.client_session)
         raise ValueError(f"unsupported interface type {interface_type}")
 
-    def get_status(self, entity: entity_selector = None):
+    def get_status(self, entity: Optional[entity_selector] = None):
         if entity is None:
             return self.status
         if entity not in self.status:

@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Optional
 
 from avilla.core.operator import OperatorCache, ResourceOperator
 from avilla.core.resource import ResourceProvider
@@ -16,7 +16,9 @@ class LocalFileOperator(ResourceOperator):
     def __init__(self, path: Path) -> None:
         self.path = path
 
-    async def operate(self, operator: str, target: Any, value: Any, cache: OperatorCache = None) -> Any:
+    async def operate(
+        self, operator: str, target: Any, value: Any, cache: Optional[OperatorCache] = None
+    ) -> Any:
         if operator == "create":
             if self.path.exists():
                 raise ValueError(f"{self.path} already exists.")
@@ -65,7 +67,9 @@ class RawBytesResource(ResourceOperator):
     def __init__(self, data: bytes) -> None:
         super().__init__()
 
-    async def operate(self, operator: str, target: Any, value: Any, cache: OperatorCache = None) -> Any:
+    async def operate(
+        self, operator: str, target: Any, value: Any, cache: Optional[OperatorCache] = None
+    ) -> Any:
         if operator == "read":
             return Status(True, "ok"), Stream(self.data)
         raise NotImplementedError(f"{operator} is not a supported operator.")

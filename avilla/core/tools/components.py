@@ -46,7 +46,7 @@ class Components(Decorator, Generic[T]):
         if interface.annotation != MessageChain:
             chain = await interface.dispatcher_interface.lookup_param("message", MessageChain, None)
         else:
-            chain = interface.return_value
+            chain = interface.return_value  # type: ignore
 
         selected = []
         matched_times = 0

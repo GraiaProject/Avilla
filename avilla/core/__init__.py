@@ -330,7 +330,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         with Status("[orange bold]preparing components...", console=self.rich_console) as status:
             for component_layer in resolve_requirements(set(self.launch_components.values())):
                 tasks = [
-                    asyncio.create_task(component.prepare(self), name=component.id)
+                    asyncio.create_task(component.prepare(self), name=component.id)  # type: ignore
                     for component in component_layer
                     if component.prepare
                 ]
@@ -359,7 +359,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
 
         loop = asyncio.get_running_loop()
         tasks = [
-            loop.create_task(component.mainline(self), name=component.id)
+            loop.create_task(component.mainline(self), name=component.id)  # type: ignore
             for component in self.launch_components.values()
             if component.mainline
         ]
@@ -379,7 +379,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             logger.info("[red bold]all mainlines exited, cleanup start.")
             for component_layer in reversed(resolve_requirements(set(self.launch_components.values()))):
                 tasks = [
-                    asyncio.create_task(component.cleanup(self), name=component.id)
+                    asyncio.create_task(component.cleanup(self), name=component.id)  # type: ignore
                     for component in component_layer
                     if component.cleanup
                 ]

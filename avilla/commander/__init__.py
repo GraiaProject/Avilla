@@ -349,8 +349,8 @@ class Commander:
                 Listener(
                     self.listen_func,
                     self.broadcast.getDefaultNamespace(),
-                    #list(gen_subclass(MessageEvent)),
-                    [MessageReceived]
+                    # list(gen_subclass(MessageEvent)),
+                    [MessageReceived],
                 )
             )
 
@@ -405,12 +405,17 @@ class Commander:
 
         for (t_type, tokens) in command_tokens:
             if t_type in {CommandToken.TEXT, CommandToken.CHOICE}:
-                assert not any(token in pattern_arg_map for token in tokens), f"{tokens} conflicts with a Arg object!"
+                assert not any(
+                    token in pattern_arg_map for token in tokens
+                ), f"{tokens} conflicts with a Arg object!"
                 token_list.append(set(cast(List[str], tokens)))
 
             elif t_type is CommandToken.ANNOTATED:
                 wildcard, name, annotation, default = cast(List[str], tokens)
-                if wildcard or default: assert tokens is command_tokens[-1][1], "Not setting wildcard / optional on the last slot!"
+                if wildcard or default:
+                    assert (
+                        tokens is command_tokens[-1][1]
+                    ), "Not setting wildcard / optional on the last slot!"
                 if wildcard:
                     last = CommandPattern.ELast.WILDCARD
                 if default:
@@ -454,11 +459,13 @@ class Commander:
                     parsed_slot.param_name = name  # assuming that param_name is consistent
                     slot_map[name] = parsed_slot | slot_map.get(name, {})  # parsed slot < provided slot
                     if default is not ...:
-                        assert \
-                            slot_map[name].placeholder in command_tokens[-1][1] \
-                            and command_tokens[-1][0] in {CommandToken.ANNOTATED, CommandToken.PARAM},\
-                            "Not setting wildcard / optional on the last slot!"
-                        
+                        assert slot_map[name].placeholder in command_tokens[-1][1] and command_tokens[-1][
+                            0
+                        ] in {
+                            CommandToken.ANNOTATED,
+                            CommandToken.PARAM,
+                        }, "Not setting wildcard / optional on the last slot!"
+
                         nonlocal last
                         if last is CommandPattern.ELast.REQUIRED:
                             last = CommandPattern.ELast.OPTIONAL

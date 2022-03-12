@@ -50,10 +50,10 @@ class LaunchMock:
     def new_launch_component(
         self,
         id: str,
-        requirements: Set[str] = None,
-        mainline: Callable[["LaunchMock"], Awaitable[Any]] = None,
-        prepare: Callable[["LaunchMock"], Awaitable[Any]] = None,
-        cleanup: Callable[["LaunchMock"], Awaitable[Any]] = None,
+        requirements: Optional[Set[str]] = None,
+        mainline: Optional[Callable[["LaunchMock"], Awaitable[Any]]] = None,
+        prepare: Optional[Callable[["LaunchMock"], Awaitable[Any]]] = None,
+        cleanup: Optional[Callable[["LaunchMock"], Awaitable[Any]]] = None,
     ) -> LaunchComponent:
         component = LaunchComponent(id, requirements or set(), mainline, prepare, cleanup)  # type: ignore
         self.launch_components[id] = component

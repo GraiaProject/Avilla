@@ -7,6 +7,7 @@ from typing import (
     ClassVar,
     Dict,
     List,
+    Optional,
     Set,
     Tuple,
     Type,
@@ -57,7 +58,7 @@ class Service(metaclass=ABCMeta):
 
         @abstractmethod
         def get_status(
-            self, entity: "entity_selector" = None
+            self, entity: Optional["Optional[entity_selector]"] = None
         ) -> Union[Status, Dict[entity_selector, Status]]:
             pass
 
