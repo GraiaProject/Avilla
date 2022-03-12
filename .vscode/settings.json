@@ -56,7 +56,7 @@
         "\"black\""
     ],
     "python.autoComplete.extraPaths": [
-        "__pypackages__/3.8/lib"
+        "__pypackages__/3.9/lib"
     ],
     "python.linting.ignorePatterns": [
         "**/site-packages/**/*.py",
@@ -66,5 +66,14 @@
     "python.languageServer": "Pylance",
     "yaml.schemas": {
         "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
+    },
+    "files.exclude": {
+        "__pypackages__": true
+    },
+    "search.exclude": {
+        "__pypackages__": true
+    },
+    "files.watcherExclude": {
+        "__pypackages__": true
     }
 }

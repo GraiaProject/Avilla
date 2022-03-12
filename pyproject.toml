@@ -53,3 +53,7 @@ target-version = ['py38']
 
 [tool.isort]
 profile = "black"
+
+[tool.pyright]
+exclude = "./__pypackages__"
+ignore = "./__pypackages__"
