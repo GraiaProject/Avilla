@@ -1,9 +1,8 @@
-from typing import TYPE_CHECKING, Any, Literal, Optional, Type
+from typing import TYPE_CHECKING, Any, Optional
+
+from avilla.core.platform import Base
 
 from .utilles.selector import DepthSelector, Selector, SelectorKey
-
-if TYPE_CHECKING:
-    from avilla.core.resource import ResourceProvider
 
 
 class entity(Selector):
@@ -45,6 +44,7 @@ class mainline(DepthSelector):
     scope = "mainline"
 
     if TYPE_CHECKING:
+        platform: SelectorKey["mainline", Base]
         group: SelectorKey["mainline", str]
         channel: SelectorKey["mainline", str]
         guild: SelectorKey["mainline", str]
@@ -54,7 +54,7 @@ class mainline(DepthSelector):
         _: SelectorKey["mainline", Any]
 
     def keypath(self) -> str:
-        return super().keypath()
+        return super().keypath({"platform"})
 
 
 class message(Selector):
@@ -66,31 +66,6 @@ class message(Selector):
 
     def get_mainline(self) -> "mainline":
         return self.path["mainline"]
-
-
-class resource(Selector):
-    scope = "resource"
-
-    if TYPE_CHECKING:
-        raw: SelectorKey["resource", bytes]
-        dir: SelectorKey["resource", str]
-        file: SelectorKey["resource", str]
-        image: SelectorKey["resource", str]
-        audio: SelectorKey["resource", str]
-        video: SelectorKey["resource", str]
-        sticker: SelectorKey["resource", str]
-        animation: SelectorKey["resource", str]
-        unknown: SelectorKey["resource", str]
-
-        mainline: SelectorKey["resource", "mainline"]
-        provider: SelectorKey["resource", "Type[ResourceProvider]"]
-
-    def get_mainline(self) -> "mainline":
-        return self.path["mainline"]
-
-    @property
-    def resource_type(self) -> str:
-        return list(self.path.keys())[0]
 
 
 class request(Selector):

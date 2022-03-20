@@ -3,8 +3,7 @@ from typing import Any, Optional, Union
 
 from avilla.core.message import Element
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.selectors import resource as resource_selector
-
+from avilla.core.resource import LocalFileResource, Resource
 
 class Text(Element):
     text: str
@@ -53,13 +52,13 @@ class NoticeAll(Element):
 
 
 class Image(Element):
-    source: resource_selector
+    source: Resource[bytes]
 
-    def __init__(self, source: Union[resource_selector, Path, str]):
+    def __init__(self, source: Union[Resource[bytes], Path, str]):
         if isinstance(source, Path):
-            source = resource_selector.file[str(source.absolute())]
+            source = LocalFileResource(source)
         elif isinstance(source, str):
-            source = resource_selector.file[source]
+            source = LocalFileResource(Path(source))
         self.source = source
 
     def asDisplay(self) -> str:
@@ -67,9 +66,13 @@ class Image(Element):
 
 
 class Audio(Element):
-    source: resource_selector
+    source: Resource[bytes]
 
-    def __init__(self, source: resource_selector):
+    def __init__(self, source: Union[Resource[bytes], Path, str]):
+        if isinstance(source, Path):
+            source = LocalFileResource(source)
+        elif isinstance(source, str):
+            source = LocalFileResource(Path(source))
         self.source = source
 
     def asDisplay(self) -> str:
@@ -77,9 +80,13 @@ class Audio(Element):
 
 
 class Video(Element):
-    source: resource_selector
+    source: Resource[bytes]
 
-    def __init__(self, source: resource_selector):
+    def __init__(self, source: Union[Resource[bytes], Path, str]):
+        if isinstance(source, Path):
+            source = LocalFileResource(source)
+        elif isinstance(source, str):
+            source = LocalFileResource(Path(source))
         self.source = source
 
     def asDisplay(self) -> str:

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Type, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Set, Type, TypeVar, Union, cast
 
 T = TypeVar("T")
 A = TypeVar("A")
@@ -75,5 +75,5 @@ class Selector(Generic[S], metaclass=SelectorMeta):
 
 
 class DepthSelector(Selector):
-    def keypath(self) -> str:
-        return ".".join([k for k in self.path.keys()])
+    def keypath(self, exclude: Set[str] = frozenset()) -> str:  # type: ignore
+        return ".".join([k for k in self.path.keys() if k not in exclude])

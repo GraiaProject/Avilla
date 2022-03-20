@@ -16,6 +16,7 @@ from typing import (
     Union,
     cast,
 )
+from avilla.core.resource import Resource, ResourceProvider
 
 from graia.broadcast import Broadcast
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -34,14 +35,12 @@ from avilla.core.config import (
     TModel,
     direct,
 )
-from avilla.core.context import ctx_avilla, ctx_protocol, ctx_relationship, get_current_avilla
+from avilla.core.context import get_current_avilla
 from avilla.core.event import RelationshipDispatcher
 from avilla.core.execution import Execution
 from avilla.core.launch import LaunchComponent, resolve_requirements
 from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
-from avilla.core.resource import ResourceProvider
-from avilla.core.selectors import resource as resource_selector
 from avilla.core.service import Service, TInterface
 from avilla.core.service.entity import ExportInterface
 from avilla.core.stream import Stream
@@ -69,12 +68,10 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     launch_components: Dict[str, LaunchComponent]
     exec_middlewares: List[TExecutionMiddleware]
     services: List[Service]
-    resource_providers: List[ResourceProvider]
+    resource_providers: Dict[Type[Resource], ResourceProvider]
     config: Dict[Union[ConfigApplicant, Type[ConfigApplicant]], Dict[Hashable, "ConfigProvider[BaseModel]"]]
 
     _service_interfaces: Dict[Type[ExportInterface], Service]
-    _res_provider_types: Dict[str, ResourceProvider]
-    _res_provider_classes: Dict[Type[ResourceProvider], ResourceProvider]
 
     sigexit: asyncio.Event
     maintask: Optional[asyncio.Task] = None
@@ -97,7 +94,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         self.broadcast = broadcast
         self.protocol_classes = protocols
         self.sigexit = asyncio.Event(loop=broadcast.loop)
-        self.resource_providers = []
+        self.resource_providers = {}
         self.launch_components = {}
         self._flush_resprov_map()
         self.exec_middlewares = []
@@ -114,10 +111,6 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             }
         )
         self.rich_console = Console()
-
-        for protocol in self.protocols:
-            if isinstance(protocol, ResourceProvider):  # Protocol 可以作为资源提供方
-                self.resource_providers.append(protocol)
 
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
@@ -171,18 +164,6 @@ class Avilla(ConfigApplicant[AvillaConfig]):
                 self.add_service(MemcacheService())
         if avilla_config.use_defer:
             self.broadcast.finale_dispatchers.append(DeferDispatcher())
-        if avilla_config.enable_builtin_resource_providers:
-            if avilla_config.use_localfile:
-                from avilla.core.utilles.resource import LocalFileResourceProvider
-
-                self.resource_providers.append(LocalFileResourceProvider())
-                self._flush_resprov_map()
-
-            if avilla_config.use_raw:
-                from avilla.core.utilles.resource import RawBytesResourceProvider
-
-                self.resource_providers.append(RawBytesResourceProvider())
-                self._flush_resprov_map()
 
     def has_service(self, service_type: Type[Service]) -> bool:
         for service in self.services:
@@ -230,6 +211,10 @@ class Avilla(ConfigApplicant[AvillaConfig]):
     def current(cls) -> "Avilla":
         return get_current_avilla()
 
+    @property
+    def loop(self):
+        return self.broadcast.loop
+
     def new_launch_component(
         self,
         id: str,
@@ -252,9 +237,6 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             raise ValueError("existed service")
         self.services.append(service)
         self._flush_serif_map()
-        if isinstance(service, ResourceProvider):
-            self.resource_providers.append(service)
-            self._flush_resprov_map()
         launch_component = service.launch_component
         self.launch_components[launch_component.id] = launch_component
 
@@ -262,39 +244,12 @@ class Avilla(ConfigApplicant[AvillaConfig]):
         if service not in self.services:
             raise ValueError("service doesn't exist.")
         self.services.remove(service)
-        if isinstance(service, ResourceProvider):
-            self.resource_providers.remove(service)
-            self._flush_resprov_map()
         del self.launch_components[service.launch_component.id]
 
     def get_interface(self, interface_type: Type[TInterface]) -> TInterface:
         if interface_type not in self._service_interfaces:
             raise ValueError(f"interface type {interface_type} not supported.")
         return self._service_interfaces[interface_type].get_interface(interface_type)
-
-    @asynccontextmanager
-    async def access_resource(self, resource: resource_selector):
-        resource_type = list(resource.path.keys())[0]
-        if "provider" in resource.path:
-            provider_type = resource.path["provider"]
-            if provider_type not in self._res_provider_classes:
-                raise ValueError(f"resource provider not found: {provider_type}")
-            provider = self._res_provider_classes[provider_type]
-        else:
-            if resource_type not in self._res_provider_types:
-                raise ValueError(f"resource type {resource_type} not supported.")
-            provider = self._res_provider_types[resource_type]
-        async with provider.access_resource(resource) as accessor:
-            yield accessor
-
-    async def fetch_resource(self, resource: resource_selector):
-        async with self.access_resource(resource) as accessor:
-            return await accessor.read()
-
-    @asynccontextmanager
-    async def get_resource_meta(self, resource: resource_selector):
-        async with self.access_resource(resource) as accessor:
-            yield await accessor.meta()
 
     async def launch(self):
         logger.configure(
@@ -391,8 +346,7 @@ class Avilla(ConfigApplicant[AvillaConfig]):
             logger.warning("[red bold]exiting...")
 
     def launch_blocking(self):
-        loop = asyncio.new_event_loop()
-        self.sigexit = asyncio.Event(loop=loop)
+        loop = self.broadcast.loop
         launch_task = loop.create_task(self.launch(), name="avilla-launch")
         try:
             loop.run_until_complete(launch_task)

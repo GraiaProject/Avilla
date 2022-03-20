@@ -205,6 +205,7 @@ summary = "Experimental type system extensions for programs checked with the myp
 [[package]]
 name = "pathspec"
 version = "0.9.0"
+requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,>=2.7"
 summary = "Utility library for gitignore style pattern matching of file paths."
 
 [[package]]
@@ -309,6 +310,11 @@ dependencies = [
 ]
 
 [[package]]
+name = "stringcase"
+version = "1.2.0"
+summary = "String case converter."
+
+[[package]]
 name = "tomli"
 version = "1.2.3"
 requires_python = ">=3.6"
@@ -338,13 +344,10 @@ requires_python = ">=3.7"
 summary = "The lightning-fast ASGI server."
 dependencies = [
     "PyYAML>=5.1",
-    "asgiref>=3.4.0",
-    "click>=7.0",
     "colorama>=0.4; sys_platform == \"win32\"",
-    "h11>=0.8",
     "httptools<0.4.0,>=0.2.0",
     "python-dotenv>=0.13",
-    "uvicorn==0.17.1",
+    "uvicorn",
     "uvloop!=0.15.0,!=0.15.1,>=0.14.0; sys_platform != \"win32\" and (sys_platform != \"cygwin\" and platform_python_implementation != \"PyPy\")",
     "watchgod>=0.6",
     "websockets>=10.0",
@@ -386,7 +389,7 @@ dependencies = [
 
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:8eef67e62a0778094105f81a5e52ab4dc8e8e4bf331da843836ab8676c8abc5c"
+content_hash = "sha256:7ffccde82ba2f0414a35dd65860f85f7990a441eb49c54058336b1a11cbe4e81"
 
 [metadata.files]
 "aiohttp 3.8.1" = [
@@ -579,6 +582,10 @@ content_hash = "sha256:8eef67e62a0778094105f81a5e52ab4dc8e8e4bf331da843836ab8676
     {file = "frozenlist-1.3.0-cp39-cp39-win32.whl", hash = "sha256:01a73627448b1f2145bddb6e6c2259988bb8aee0fb361776ff8604b99616cd08"},
     {file = "frozenlist-1.3.0-cp39-cp39-win_amd64.whl", hash = "sha256:772965f773757a6026dea111a15e6e2678fbd6216180f82a48a40b27de1ee2ab"},
     {file = "frozenlist-1.3.0.tar.gz", hash = "sha256:ce6f2ba0edb7b0c1d8976565298ad2deba6f8064d2bebb6ffce2ca896eb35b0b"},
+]
+"graia-broadcast 0.15.3" = [
+    {file = "graia_broadcast-0.15.3-py3-none-any.whl", hash = "sha256:0b294f5ff4d95a03f0820b2e5310ff8fc26a73d992cd937b00ad062736eecaf1"},
+    {file = "graia-broadcast-0.15.3.tar.gz", hash = "sha256:c13f589615a0dd09032c84d19f539b3215169fe30587cd1fc77233201d2f0f1f"},
 ]
 "graia-scheduler 0.0.6" = [
     {file = "graia_scheduler-0.0.6-py3-none-any.whl", hash = "sha256:bc29952bbb1c2f8c8875c32bec9dcdedc0fa22ba89b94804498963b491eed1e5"},
@@ -817,6 +824,9 @@ content_hash = "sha256:8eef67e62a0778094105f81a5e52ab4dc8e8e4bf331da843836ab8676
 "starlette 0.18.0" = [
     {file = "starlette-0.18.0-py3-none-any.whl", hash = "sha256:377d64737a0e03560cb8eaa57604afee143cea5a4996933242798a7820e64f53"},
     {file = "starlette-0.18.0.tar.gz", hash = "sha256:b45c6e9a617ecb5caf7e6446bd8d767b0084d6217e8e1b08187ca5191e10f097"},
+]
+"stringcase 1.2.0" = [
+    {file = "stringcase-1.2.0.tar.gz", hash = "sha256:48a06980661908efe8d9d34eab2b6c13aefa2163b3ced26972902e3bdfd87008"},
 ]
 "tomli 1.2.3" = [
     {file = "tomli-1.2.3-py3-none-any.whl", hash = "sha256:e3069e4be3ead9668e21cb9b074cd948f7b3113fd9c8bba083f48247aab8b11c"},

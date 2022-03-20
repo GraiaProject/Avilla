@@ -11,8 +11,11 @@ from typing import (
     Set,
     Tuple,
     Type,
+    TypeVar,
     Union,
 )
+from avilla.core.metadata import MetadataModifies
+from avilla.core.resource import Resource
 
 from graia.broadcast import Dispatchable
 from pydantic import BaseModel
@@ -20,13 +23,11 @@ from pydantic import BaseModel
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment, TModel
 from avilla.core.launch import LaunchComponent
 from avilla.core.message import MessageChain
-from avilla.core.operator import Operator
 from avilla.core.permission import Rank
 from avilla.core.platform import Platform
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
-from avilla.core.selectors import resource as resource_selector
 from avilla.core.stream import Stream
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
@@ -102,29 +103,26 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
             self.launch_cleanup,
         )
 
-    def has_ability(self, ability: str) -> bool:
-        raise NotImplementedError
-
     async def exec_directly(self, execution: Execution, *middlewares: TExecutionMiddleware) -> Any:
         async with AsyncExitStack() as exit_stack:
             for middleware in middlewares:
                 await exit_stack.enter_async_context(middleware(self, execution))  # type: ignore
             return await self.ensure_execution(execution)
 
-    def check_selector(self, selector: Selector) -> bool:
-        return True
+    def complete_selector(self, selector: Selector) -> Selector:
+        return selector
+    
+    if TYPE_CHECKING:
+        T = TypeVar("T")
+        M = TypeVar("M", bound=Resource)
 
-    async def check_metadata_access(
-        self, metascope: Type[Selector], metakey: str, operator: str
-    ) -> Union[List[str], None]:
-        return None
+    async def fetch_metadata(self, relationship: "Relationship[Any]", meta_class: Type[M]) -> M:  # type: ignore
+        raise NotImplementedError
 
-    @abstractmethod
-    def get_operator(self, account: entity_selector, target: Selector) -> Operator:
-        ...
+    async def modify_metadata(self, relationship: "Relationship[Any]", modifies: MetadataModifies["T"]) -> "T":  # type: ignore
+        raise NotImplementedError
 
-    def get_extra_operators(self, relationship: "Relationship") -> Dict[str, Operator]:
-        return {}
+    async def fetch_resource()
 
     async def accept_request(self, request: request_selector):
         raise NotImplementedError
@@ -134,10 +132,6 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
 
     async def ignore_request(self, request: request_selector):
         raise NotImplementedError
-
-    @abstractmethod
-    async def fetch_resource(self, resource: resource_selector) -> Stream[Any]:
-        ...
 
     async def permission_change_callback(
         self, ctx: Union[entity_selector, mainline_selector], op: str, value: str

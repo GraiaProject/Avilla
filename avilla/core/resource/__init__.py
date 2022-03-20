@@ -1,15 +1,31 @@
 from abc import ABCMeta, abstractmethod
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator, ClassVar, Dict, Set, Union
+from pathlib import Path
+from typing import TYPE_CHECKING, Generic, Optional, Type, TypeVar, Union
+from avilla.core.metadata import Metadata, MetadataModifies
+from avilla.core.selectors import mainline
 
-from avilla.core.operator import ResourceOperator
-from avilla.core.selectors import resource as resource_selector
+if TYPE_CHECKING:
+    from avilla.core.relationship import Relationship
 
+
+T = TypeVar("T")
+
+class Resource(Generic[T]):
+    mainline: Optional[mainline] = None
+
+R = TypeVar("R", bound=Resource)
+M = TypeVar("M", bound=Metadata)
 
 class ResourceProvider(metaclass=ABCMeta):
-    supported_resource_types: ClassVar[Union[Set[str], Dict[str, int]]]
+    @abstractmethod
+    async def fetch(self, resource: Resource[T], relationship: Optional["Relationship"] = None) -> T:
+        # TODO: 指导开发者使用 Relationship as a Guest, 以实现鉴权.
+        pass
 
     @abstractmethod
-    @asynccontextmanager
-    def access_resource(self, res: resource_selector) -> AsyncGenerator["ResourceOperator", None]:
-        ...
+    async def meta(self, resource: Resource, meta_class: Type[M]) -> M:
+        pass
+
+    @abstractmethod
+    async def modify(self, resource: Resource, modifies: MetadataModifies[T]) -> T:
+        pass

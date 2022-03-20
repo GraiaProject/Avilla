@@ -3,7 +3,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
 from types import TracebackType
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
@@ -13,7 +13,7 @@ from avilla.core.relationship import Relationship
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
-from avilla.core.selectors import resource as resource_selector
+from avilla.core.resource import Resource
 from avilla.core.utilles.selector import Selector
 
 from ..context import ctx_protocol, ctx_relationship
@@ -150,21 +150,22 @@ class RequestIgnored(AvillaEvent):
         self.self = current_self
         self.time = time or datetime.now()
 
+R = TypeVar("R", bound=Resource)
 
-class ResourceAvailable(AvillaEvent):
-    resource: resource_selector
+class ResourceAvailable(AvillaEvent, Generic[R]):
+    resource: R
 
     @property
-    def ctx(self) -> Selector:
+    def ctx(self) -> R:
         return self.resource
 
     @property
     def mainline(self):
-        return self.resource.get_mainline()
+        return self.resource.mainline
 
     def __init__(
         self,
-        resource: resource_selector,
+        resource: R,
         current_self: entity_selector,
         time: Optional[datetime] = None,
     ):
@@ -173,20 +174,20 @@ class ResourceAvailable(AvillaEvent):
         self.time = time or datetime.now()
 
 
-class ResourceUnavailable(AvillaEvent):
-    resource: resource_selector
+class ResourceUnavailable(AvillaEvent, Generic[R]):
+    resource: R
 
     @property
-    def ctx(self) -> Selector:
+    def ctx(self) -> R:
         return self.resource
 
     @property
     def mainline(self):
-        return self.resource.get_mainline()
+        return self.resource.mainline
 
     def __init__(
         self,
-        resource: resource_selector,
+        resource: R,
         current_self: entity_selector,
         time: Optional[datetime] = None,
     ):
@@ -194,6 +195,8 @@ class ResourceUnavailable(AvillaEvent):
         self.self = current_self
         self.time = time or datetime.now()
 
+
+# TODO: MetadataChanged 可能也要用上 MetadataModifies....
 
 class MetadataChanged(AvillaEvent):
     ctx: Union[entity_selector, mainline_selector]
