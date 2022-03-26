@@ -32,11 +32,13 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 * `Avilla Protocol` : 对各式常见的行为进行抽象, 并通过可扩展的模型, 实现尽可能的功能可迁移性.
   + 特色
     - [x] `Service`: 向程序中其他部分提供经过通用抽象过的资源, 并对其加以维护, 使各部分稳定性增强, 耦合度降低.
-      - [x] `AiohttpClient (http & websocket client)`
-      - [x] `StarletteServer (http & websocket server)`
-      - [x] `UvicornService (powerful ASGI server)`
+    - [ ] `Transport (avilla.io)`: 统一的网络通信接口, 与 `Service` 配合; 取材自 `anyio.abc.Stream`.
+      - [ ] `AiohttpClient (http & websocket client)`
+      - [ ] `StarletteServer (http & websocket server)`
+      - [ ] `UvicornService (powerful ASGI server)`
       - `CacheManager (cache)`
-        - [x] `RedisService (cache based on aioredis)`
+        - [x] `MemcacheService`: 内置并默认启用的简易缓存部件. 
+        - [ ] `RedisService (cache based on aioredis)`
     - [x] `Launch Component`: 统一的生命周期管理
     - [x] `Config`: 基于 `pydantic`, 支持作用域机制的配置系统.
     - [x] `Commander`: 优雅的指令系统
