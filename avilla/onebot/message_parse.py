@@ -31,7 +31,6 @@ registrar = Registrar()
 
 element_map: Dict[str, Type[Element]] = {
     "text": Text,
-    "reply": Reply,
     "voice": Audio,
     "video": Video,
     "face": Face,
@@ -55,13 +54,9 @@ class OnebotMessageParser(AbstractMessageParser):
     def type_getter(self, token: Dict[str, Any]) -> Type[Element]:
         elem_type = token.get("type", "")
         if elem_type == "at":
-            if token["data"]["qq"] == "all":
-                return NoticeAll
-            return Notice
+            return NoticeAll if token["data"]["qq"] == "all" else Notice
         elif elem_type == "image":
-            if token["data"].get("type") == "flash":
-                return FlashImage
-            return Image
+            return FlashImage if token["data"].get("type") == "flash" else Image
         elif elem_type in element_map:
             return element_map[elem_type]
         else:

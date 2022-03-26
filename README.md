@@ -47,13 +47,11 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
     - [x] `Stream API`: 用于简化对获得的二进制信息处理.
     - [x] `Platform API`: 通过与 `Protocol` 协作, 扩展 Avilla Protocol, 使其能用于平台的特有特性.
   + 实现支持
-   - [ ] `Avilla for OneBot` : 对  [ `OneBot` ](https://github.com/botuniverse/onebot) 的协议实现.
-
-     - [ ] `Avilla for go-cqhttp` : 对 [ `go-cqhttp` ](https://github.com/Mrs4s/go-cqhttp) 的扩展 API 支持.
-
-   - [ ] `Avilla for Telegram` : 对 [ `Telegram Bot API` ](https://core.telegram.org/bots) 的协议实现.
-   - [ ] `Avilla for Discord` : 对 [ `Discord Bot` ](https://docs.botsfordiscord.com/) 的协议实现.
-   - [ ] `Avilla for mirai-api-http` : 对 [ `mirai-api-http` ](https://github.com/project-mirai/mirai-api-http) 的支持.
+    - [ ] `Avilla for OneBot` : 对  [ `OneBot` ](https://github.com/botuniverse/onebot) 的协议实现.
+      - [ ] `Avilla for go-cqhttp` : 对 [ `go-cqhttp` ](https://github.com/Mrs4s/go-cqhttp) 的扩展 API 支持.
+    - [ ] `Avilla for Telegram` : 对 [ `Telegram Bot API` ](https://core.telegram.org/bots) 的协议实现.
+    - [ ] `Avilla for Discord` : 对 [ `Discord Bot` ](https://docs.botsfordiscord.com/) 的协议实现.
+    - [ ] `Avilla for mirai-api-http` : 对 [ `mirai-api-http` ](https://github.com/project-mirai/mirai-api-http) 的支持.
 * And more...
 
 ## 我们的愿景

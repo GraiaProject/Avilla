@@ -245,21 +245,19 @@ class OnebotService(ConfigApplicant[OnebotConnectionConfig], Service, ResourcePr
 
             if "action" not in conns:
                 conns["action"] = srv
-            else:
-                if conns["action"] is not srv:
-                    logger.warning(
-                        f"{account} already has action method but in another way, reverse-ws method is unnecessary, so it will be ignored"
-                    )
-                    await conn.close()
+            elif conns["action"] is not srv:
+                logger.warning(
+                    f"{account} already has action method but in another way, reverse-ws method is unnecessary, so it will be ignored"
+                )
+                await conn.close()
 
             if "event" not in conns:
                 conns["event"] = srv
-            else:
-                if conns["event"] is not srv:
-                    logger.warning(
-                        f"{account} already has event method but in another way, reverse-ws method is unnecessary, so it will be ignored"
-                    )
-                    await conn.close()
+            elif conns["event"] is not srv:
+                logger.warning(
+                    f"{account} already has event method but in another way, reverse-ws method is unnecessary, so it will be ignored"
+                )
+                await conn.close()
 
     async def ws_server_on_connected(self, srv: OnebotWsServer, conn: WebsocketConnection):
         headers = conn.headers()

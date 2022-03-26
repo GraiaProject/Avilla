@@ -55,15 +55,15 @@ class Metadata(Generic[M], metaclass=ABCMeta):
                     field.annotation = field.annotation or annotations.get(name, None)
                 fields.append(field)
                 _exists.add(name)
-        for name, annotation in annotations.items():
-            if name not in SPECIALLISTS and name not in _exists:
-                fields.append(
-                    MetaField(
-                        id=f"{stringcase.snakecase(cls.__name__)}.{stringcase.snakecase(name)}",
-                        annotation=annotation,
-                        attr=name,
-                    )
-                )
+        fields.extend(
+            MetaField(
+                id=f"{stringcase.snakecase(cls.__name__)}.{stringcase.snakecase(name)}",
+                annotation=annotation,
+                attr=name,
+            )
+            for name, annotation in annotations.items()
+            if name not in SPECIALLISTS and name not in _exists
+        )
         return fields
 
     @classmethod
@@ -74,15 +74,15 @@ class Metadata(Generic[M], metaclass=ABCMeta):
             if not field.attr:
                 raise KeyError(f"{field.id} cannot be referred to a real attribute of {cls.__name__}")
             override_value = mapping.get(field.id)
-            if field.id not in mapping:
-                if field.default is EMPTY:
-                    raise ValueError(f"{field.id} is required")
-                value = field.default
-            else:
+            if field.id in mapping:
                 value = override_value
+            elif field.default is EMPTY:
+                raise ValueError(f"{field.id} is required")
+            else:
+                value = field.default
             setattr(instance, field.attr, value)
         return instance
 
     def __repr__(self) -> str:
-        vars = ", ".join(f"{k}={repr(v)}" for k, v in self.__dict__.items() if not k.startswith("_"))
-        return f"{self.__class__.__name__}({vars})"
+        values = ", ".join(f"{k}={repr(v)}" for k, v in self.__dict__.items() if not k.startswith("_"))
+        return f"{self.__class__.__name__}({values})"
