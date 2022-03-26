@@ -1,5 +1,6 @@
 import asyncio
 from typing import TYPE_CHECKING
+from loguru import logger
 
 from uvicorn import Server
 from uvicorn.config import Config
@@ -47,6 +48,13 @@ class UvicornService(Service):
     async def launch_mainline(self, avilla: "Avilla"):
         await self.server.serve()
 
+    async def launch_cleanup(self, _):
+        logger.warning("try to shutdown uvicorn server...")
+        self.server.should_exit = True
+        await asyncio.sleep(10)
+        logger.warning("timeout, force exit uvicorn server...")
+        self.server.force_exit = True
+
     @property
     def launch_component(self) -> LaunchComponent:
         return LaunchComponent(
@@ -54,5 +62,5 @@ class UvicornService(Service):
             {"http.universal_server"},
             self.launch_mainline,
             self.launch_prepare,
-            lambda _: self.server.shutdown()
+            self.launch_cleanup
         )
