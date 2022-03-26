@@ -32,16 +32,18 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 * `Avilla Protocol` : 对各式常见的行为进行抽象, 并通过可扩展的模型, 实现尽可能的功能可迁移性.
   + 特色
     - [x] `Service`: 向程序中其他部分提供经过通用抽象过的资源, 并对其加以维护, 使各部分稳定性增强, 耦合度降低.
-      - [x] `AiohttpClient (http & websocket client)`
-      - [x] `StarletteServer (http & websocket server)`
-      - [x] `UvicornService (powerful ASGI server)`
+    - [ ] `Transport (avilla.io)`: 统一的网络通信接口, 与 `Service` 配合; 取材自 `anyio.abc.Stream`.
+      - [ ] `AiohttpClient (http & websocket client)`
+      - [ ] `StarletteServer (http & websocket server)`
+      - [ ] `UvicornService (powerful ASGI server)`
       - `CacheManager (cache)`
-        - [x] `RedisService (cache based on aioredis)`
-    - [x] `Launch Component`: 统一的生命周期管理
+        - [x] `MemcacheService`: 内置并默认启用的简易缓存系统, 同时具有性能与开箱即用特性. 
+        - [ ] `RedisService (cache based on aioredis)`
+    - [x] `Launch API`: 程序生命周期管理, 提供准备(`prepare`), 主线(`mainline`) 与 清理(`cleanup`) 三个时间节点; 支持依赖编排.
     - [x] `Config`: 基于 `pydantic`, 支持作用域机制的配置系统.
     - [x] `Commander`: 优雅的指令系统
-    - [ ] `Permission`: 对标 `Luckperm`, 以低侵入度的方式提供简洁强大的权限管理能力
-      - [ ] `Permissiver`: 权限管理指令, 基于 `Commander`
+    - [ ] `Permission`: 以低侵入度的方式提供简洁强大的权限管理能力
+      - [ ] `Syr`: 简易的权限系统指令集, 基于 `Commander`
   + 杂项部分
     - [x] `Selector`: 实现了扁平化处理 "个体"(`Entity`) 与 "主线"(`Mainline`) 的能力.
     - [x] `Stream API`: 用于简化对获得的二进制信息处理.

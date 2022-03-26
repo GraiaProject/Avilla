@@ -11,6 +11,9 @@ from avilla.io.common.http import ASGIHandlerProvider
 if TYPE_CHECKING:
     from avilla.core import Avilla
 
+class WithoutSigHandlerServer(Server):
+    def install_signal_handlers(self) -> None:
+        return
 
 class UvicornService(Service):
     supported_interface_types = set()
@@ -38,17 +41,11 @@ class UvicornService(Service):
 
     async def launch_prepare(self, avilla: "Avilla"):
         asgi_handler = avilla.get_interface(ASGIHandlerProvider).get_asgi_handler()
-        self.server = Server(Config(asgi_handler, host=self.host, port=self.port))
+        self.server = WithoutSigHandlerServer(Config(asgi_handler, host=self.host, port=self.port))
         # TODO: 使用户拥有更多的对 Config 的配置能力.
 
     async def launch_mainline(self, avilla: "Avilla"):
         await self.server.serve()
-        avilla.sigexit.set()
-        if avilla.maintask:
-            avilla.maintask.cancel()
-        for task in asyncio.all_tasks():
-            if task.get_name() == "avilla-launch":
-                task.cancel()
 
     @property
     def launch_component(self) -> LaunchComponent:
@@ -57,4 +54,5 @@ class UvicornService(Service):
             {"http.universal_server"},
             self.launch_mainline,
             self.launch_prepare,
+            lambda _: self.server.shutdown()
         )
