@@ -5,13 +5,14 @@ authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
 dependencies = [
-    "graia-broadcast<1.0.0,>=0.15.2",
-    "loguru<1.0.0,>=0.6.0",
-    "pydantic<2.0.0,>=1.9.0",
-    "rich<11.0.0,>=10.13.0",
-    "yarl<2.0.0,>=1.6.3",
+    "graia-broadcast>=0.16.1",
+    "loguru>=0.6.0",
+    "pydantic>=1.9.0",
+    "rich>=12.1.0",
+    "yarl>=1.7.2",
     "anyio>=3.5.0",
     "stringcase>=1.2.0",
+    "graia-amnesia>=0.2.0",
 ]
 description = ""
 license = {text = "MIT"}
