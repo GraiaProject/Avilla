@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import weakref
 from contextlib import AsyncExitStack
 from functools import cached_property, partial
 from typing import (
@@ -13,11 +16,12 @@ from typing import (
     cast,
     overload,
 )
-import weakref
+
+from graia.amnesia.transport.common.storage import CacheStorage
 
 from avilla.core.context import ctx_eventmeta
 from avilla.core.execution import Execution
-from avilla.core.metadata import Metadata, MetadataModifies
+from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.resource import Resource
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
@@ -25,7 +29,6 @@ from avilla.core.selectors import request as request_selector
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles import Defer, random_string
 from avilla.core.utilles.selector import Selector
-from avilla.io.common.storage import CacheStorage
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -127,7 +130,7 @@ class Relationship(Generic[M]):
         self.current = current
         self.protocol = protocol
         self._middlewares = middlewares or []
-        
+
         cache = self.protocol.avilla.get_interface(CacheStorage)
         if cache:
             self.cache = PatchedCache(cache, random_string())
@@ -152,7 +155,7 @@ class Relationship(Generic[M]):
             return self.protocol.complete_selector(mainline_selector(tempdict))
         elif isinstance(selector, entity_selector):
             if "mainline" not in selector.path:
-                selector.path['mainline'] = self.mainline
+                selector.path["mainline"] = self.mainline
             return self.protocol.complete_selector(selector)
         else:
             raise TypeError(f"{selector} is not a supported selector for rs.complete.")
@@ -162,17 +165,20 @@ class Relationship(Generic[M]):
         pass
 
     @overload
-    async def meta(self, target: Type[_M]) -> _M:
+    async def meta(self, op: Type[_M]) -> _M:
         ...
 
     @overload
-    async def meta(self, target: MetadataModifies[_T]) -> _T:
+    async def meta(self, op: MetadataModifies[_T]) -> _T:
         ...
 
-    async def meta(self, target: ...) -> ...:
-        if issubclass(target, Metadata):
-            return await self.protocol.fetch_metadata(self, target)
-        elif isinstance(target, MetadataModifies):
-            return await self.protocol.modify_metadata(self, target)
-        else:
-            raise TypeError("unknown operation")
+    @overload
+    async def meta(self, target: Any, op: Type[_M]) -> _M:
+        ...
+
+    @overload
+    async def meta(self, target: Any, op: MetadataModifies[_T]) -> _T:
+        ...
+
+    async def meta(self, arg1: Type[Metadata] | MetadataModifies | Any, arg2: Type[Metadata] | MetadataModifies | None = None) -> ...:  # type: ignore
+        ...

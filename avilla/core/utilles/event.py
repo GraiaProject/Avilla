@@ -3,7 +3,7 @@ from typing import Any, Awaitable, Callable, Dict, Generic, Optional, TypeVar
 
 from graia.broadcast import Dispatchable
 
-from avilla.core.message import Element
+from graia.amnesia.message import Element
 
 T = TypeVar("T")
 P = TypeVar("P")

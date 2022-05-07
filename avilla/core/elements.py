@@ -1,26 +1,12 @@
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
-from avilla.core.message import Element
+from graia.amnesia.message import Element
 from avilla.core.selectors import entity as entity_selector
-from avilla.core.resource import LocalFileResource, Resource
+from avilla.core.resource import Resource
+from avilla.core.resource.local import LocalFileResource
 
-class Text(Element):
-    text: str
-    style: Optional[str]
-
-    def __init__(self, text: str, style: Optional[str] = None) -> None:
-        """实例化一个 Text 消息元素, 用于承载消息中的文字.
-
-        Args:
-            text (str): 元素所包含的文字
-            style (Optional[str]): 默认为空, 文字的样式
-        """
-        self.text = text
-        self.style = style
-
-    def asDisplay(self) -> str:
-        return self.text
+from graia.amnesia.message.element import Text as Text
 
 
 class Notice(Element):
@@ -37,7 +23,7 @@ class Notice(Element):
 
         self.target = target
 
-    def asDisplay(self) -> str:
+    def __str__(self) -> str:
         return f"[$Notice:target={self.target}]"
 
 
@@ -47,49 +33,49 @@ class NoticeAll(Element):
     def __init__(self) -> None:
         super().__init__()
 
-    def asDisplay(self) -> str:
+    def __str__(self) -> str:
         return "[$NoticeAll]"
 
 
 class Image(Element):
-    source: Resource[bytes]
+    resource: Resource[bytes]
 
-    def __init__(self, source: Union[Resource[bytes], Path, str]):
-        if isinstance(source, Path):
-            source = LocalFileResource(source)
-        elif isinstance(source, str):
-            source = LocalFileResource(Path(source))
-        self.source = source
+    def __init__(self, resource: Union[Resource[bytes], Path, str]):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
 
-    def asDisplay(self) -> str:
+    def __str__(self) -> str:
         return "[$Image]"
 
 
 class Audio(Element):
-    source: Resource[bytes]
+    resource: Resource[bytes]
 
-    def __init__(self, source: Union[Resource[bytes], Path, str]):
-        if isinstance(source, Path):
-            source = LocalFileResource(source)
-        elif isinstance(source, str):
-            source = LocalFileResource(Path(source))
-        self.source = source
+    def __init__(self, resource: Union[Resource[bytes], Path, str]):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
 
-    def asDisplay(self) -> str:
+    def __str__(self) -> str:
         return "[$Audio]"
 
 
 class Video(Element):
-    source: Resource[bytes]
+    resource: Resource[bytes]
 
-    def __init__(self, source: Union[Resource[bytes], Path, str]):
-        if isinstance(source, Path):
-            source = LocalFileResource(source)
-        elif isinstance(source, str):
-            source = LocalFileResource(Path(source))
-        self.source = source
+    def __init__(self, resource: Union[Resource[bytes], Path, str]):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
 
-    def asDisplay(self) -> str:
+    def __str__(self) -> str:
         return "[$Video]"
 
 
@@ -101,5 +87,5 @@ class Unknown(Element):
         self.type = type
         self.raw_data = raw_data
 
-    def asDisplay(self) -> str:
+    def __str__(self) -> str:
         return f"[$Unknown:type={self.type}]"

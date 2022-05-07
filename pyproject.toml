@@ -10,9 +10,7 @@ dependencies = [
     "pydantic>=1.9.0",
     "rich>=12.1.0",
     "yarl>=1.7.2",
-    "anyio>=3.5.0",
-    "stringcase>=1.2.0",
-    "graia-amnesia>=0.2.0",
+    "graia-amnesia>=0.4.0",
 ]
 description = ""
 license = {text = "MIT"}

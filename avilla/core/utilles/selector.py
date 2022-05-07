@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Set, Type, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Generic, Optional, Set, Type, TypeVar, Union, cast
 
 T = TypeVar("T")
 A = TypeVar("A")
@@ -20,6 +20,7 @@ class SelectorKey(Generic[A, T]):
         return cast(A, instance)
 
     def __getattr__(self, addition_name: str):
+        # sourcery skip: use-fstring-for-concatenation
         self.key += "." + addition_name
         return self
 
@@ -32,6 +33,7 @@ class SelectorMeta(type):
         scope: str
 
     def __getattr__(cls, key: str) -> "SelectorKey":
+        # sourcery skip: instance-method-first-arg-name
         return SelectorKey(cls, key)  # type: ignore
 
 
@@ -61,6 +63,7 @@ class Selector(Generic[S], metaclass=SelectorMeta):
         return SelectorKey(self.__class__, key, self.path)
 
     def __eq__(self, __o: object) -> bool:
+        # sourcery skip: assign-if-exp, comprehension-to-generator, reintroduce-else, swap-if-expression
         if not isinstance(__o, Selector):
             return False
         return self.scope == __o.scope and all([__o[k] == v for k, v in self.path.items()])
@@ -68,12 +71,14 @@ class Selector(Generic[S], metaclass=SelectorMeta):
     def __and__(self, __o: "Selector") -> bool:
         if self.scope != __o.scope:
             return False
-        return all([v == __o.path[k] for k, v in self.path.items() if k in __o.path])
+        return all(v == __o.path[k] for k, v in self.path.items() if k in __o.path)
 
     def __hash__(self) -> int:
         return hash(tuple(self.path.items()))
 
 
 class DepthSelector(Selector):
+    _keypath_excludes: "ClassVar[frozenset[str]]" = frozenset()
+
     def keypath(self, exclude: Set[str] = frozenset()) -> str:  # type: ignore
-        return ".".join([k for k in self.path.keys() if k not in exclude])
+        return ".".join([k for k in self.path.keys() if k not in set(*exclude, *self._keypath_excludes)])

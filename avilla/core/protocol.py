@@ -14,16 +14,15 @@ from typing import (
     TypeVar,
     Union,
 )
-from avilla.core.metadata import MetadataModifies
+from avilla.core.metadata.model import MetadataModifies
 from avilla.core.resource import Resource
 
 from graia.broadcast import Dispatchable
 from pydantic import BaseModel
 
 from avilla.core.config import ConfigApplicant, ConfigFlushingMoment, TModel
-from avilla.core.launch import LaunchComponent
-from avilla.core.message import MessageChain
-from avilla.core.permission import Rank
+from graia.amnesia.launch.component import LaunchComponent
+from graia.amnesia.message import MessageChain
 from avilla.core.platform import Platform
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
@@ -48,7 +47,6 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
     platform: Platform = Platform()
 
     required_components: ClassVar[Set[str]]
-    protocol_ranks: ClassVar[Tuple[Union[Rank, str], ...]]
 
     def __init__(self, avilla: "Avilla") -> None:
         self.avilla = avilla
@@ -77,32 +75,6 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
     async def get_relationship(self, ctx: Selector, current_self: entity_selector) -> "Relationship":
         raise NotImplementedError
 
-    if TYPE_CHECKING:
-
-        async def launch_prepare(self, avilla: "Avilla"):
-            """LaunchComponent.prepare"""
-
-        async def launch_cleanup(self, avilla: "Avilla"):
-            """LaunchComponent.cleanup"""
-
-        async def launch_mainline(self, avilla: "Avilla"):
-            """LaunchComponent.task"""
-
-    else:
-        launch_prepare = None
-        launch_cleanup = None
-        launch_mainline = None
-
-    @property
-    def launch_component(self) -> LaunchComponent:
-        return LaunchComponent(
-            "avilla.core.protocol:base_protocol",
-            self.required_components,
-            self.launch_mainline,
-            self.launch_prepare,
-            self.launch_cleanup,
-        )
-
     async def exec_directly(self, execution: Execution, *middlewares: TExecutionMiddleware) -> Any:
         async with AsyncExitStack() as exit_stack:
             for middleware in middlewares:
@@ -111,18 +83,6 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
 
     def complete_selector(self, selector: Selector) -> Selector:
         return selector
-    
-    if TYPE_CHECKING:
-        T = TypeVar("T")
-        M = TypeVar("M", bound=Resource)
-
-    async def fetch_metadata(self, relationship: "Relationship[Any]", meta_class: Type[M]) -> M:  # type: ignore
-        raise NotImplementedError
-
-    async def modify_metadata(self, relationship: "Relationship[Any]", modifies: MetadataModifies["T"]) -> "T":  # type: ignore
-        raise NotImplementedError
-
-    async def fetch_resource()
 
     async def accept_request(self, request: request_selector):
         raise NotImplementedError

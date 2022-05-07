@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Generic, Optional, Type, TypeVar, Union
-from avilla.core.metadata import Metadata, MetadataModifies
+from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.selectors import mainline
 
 if TYPE_CHECKING:
@@ -20,12 +20,4 @@ class ResourceProvider(metaclass=ABCMeta):
     @abstractmethod
     async def fetch(self, resource: Resource[T], relationship: Optional["Relationship"] = None) -> T:
         # TODO: 指导开发者使用 Relationship as a Guest, 以实现鉴权.
-        pass
-
-    @abstractmethod
-    async def meta(self, resource: Resource, meta_class: Type[M]) -> M:
-        pass
-
-    @abstractmethod
-    async def modify(self, resource: Resource, modifies: MetadataModifies[T]) -> T:
         pass

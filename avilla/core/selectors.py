@@ -41,6 +41,7 @@ class entity(Selector):
 
 
 class mainline(DepthSelector):
+    _keypath_excludes = frozenset(["platform"])
     scope = "mainline"
 
     if TYPE_CHECKING:
@@ -52,9 +53,6 @@ class mainline(DepthSelector):
         member: SelectorKey["mainline", str]
 
         _: SelectorKey["mainline", Any]
-
-    def keypath(self) -> str:
-        return super().keypath({"platform"})
 
 
 class message(Selector):

@@ -10,10 +10,10 @@ from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 from avilla.core.relationship import Relationship
+from avilla.core.resource import Resource
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
-from avilla.core.resource import Resource
 from avilla.core.utilles.selector import Selector
 
 from ..context import ctx_protocol, ctx_relationship
