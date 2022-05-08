@@ -1,9 +1,10 @@
 import re
 from typing import List, Sequence
 
-from avilla.core.elements import Text
-from graia.amnesia.message import  MessageChain
+from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Element
+
+from avilla.core.elements import Text
 
 
 def list_get(seq: Sequence, index, default=None):

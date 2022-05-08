@@ -1,9 +1,8 @@
 from abc import ABCMeta, abstractmethod
 from typing import Any, Awaitable, Callable, Dict, Generic, Optional, TypeVar
 
-from graia.broadcast import Dispatchable
-
 from graia.amnesia.message import Element
+from graia.broadcast import Dispatchable
 
 T = TypeVar("T")
 P = TypeVar("P")

@@ -1,4 +1,16 @@
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Generic, Optional, Set, Type, TypeVar, Union, cast
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    ClassVar,
+    Dict,
+    Generic,
+    Optional,
+    Set,
+    Type,
+    TypeVar,
+    Union,
+    cast,
+)
 
 T = TypeVar("T")
 A = TypeVar("A")

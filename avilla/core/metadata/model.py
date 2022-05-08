@@ -15,10 +15,9 @@ from typing import (
     TypeVar,
 )
 
-
 if TYPE_CHECKING:
-    from avilla.core.utilles.selector import Selector
     from avilla.core.relationship import Relationship
+    from avilla.core.utilles.selector import Selector
 
 T = TypeVar("T")  # 返回值
 
@@ -40,18 +39,24 @@ class MetaField:
     def __init__(self, id: str) -> None:
         self.id = id
     
-    def __get__(self, instance: Metadata | None, owner):
+    def __get__(self, instance: Metadata | None, owner) -> Any:
         # sourcery skip: assign-if-exp, reintroduce-else
         if instance is None:
             return self
         return instance._content[self.id]
     
     def __set__(self, instance: Metadata, value: Any) -> None:
-        instance._content[self.id] = value
         if instance._modifies is None:
             instance._modifies = MetadataModifies(
-                instance, instance.__class__, [self.id], {}, {self.id: value}
+                instance, instance.__class__, [], {}, {}
             )
+        instance._modifies.modified.append(self.id)
+        instance._modifies.past[self.id] = instance._content[self.id]
+        instance._modifies.current[self.id] = value
+        instance._content[self.id] = value
+
+def meta_field(id: str) -> Any:
+    return MetaField(id)
 
 
 class Metadata(Generic[T], metaclass=ABCMeta):

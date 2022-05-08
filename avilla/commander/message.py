@@ -1,9 +1,10 @@
 import re
 from typing import Dict, List, Tuple, Type
-from avilla.commander.utilles import gen_subclass
-from avilla.core.elements import Text
+
 from graia.amnesia.message import Element, MessageChain
 
+from avilla.commander.utilles import gen_subclass
+from avilla.core.elements import Text
 
 ELEMENT_MAPPING: Dict[str, Type[Element]] = {i.__name__: i for i in gen_subclass(Element)}
 

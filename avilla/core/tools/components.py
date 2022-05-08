@@ -1,9 +1,8 @@
 from typing import Callable, Generic, Optional, Tuple, Type, TypeVar, Union
 
+from graia.amnesia.message import Element, MessageChain
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.interfaces.decorator import DecoratorInterface
-
-from graia.amnesia.message import MessageChain, Element
 
 T = TypeVar("T")
 

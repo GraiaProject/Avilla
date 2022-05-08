@@ -1,10 +1,11 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, Type, overload
-from avilla.core.platform import Base
 
 from avilla.core.metadata.source import MetadataSource
-from avilla.core.utilles.selector import DepthSelector, Selector
+from avilla.core.platform import Base
 from avilla.core.selectors import mainline
+from avilla.core.utilles.selector import DepthSelector, Selector
 
 
 class MetaSelectorPrefix:

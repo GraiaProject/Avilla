@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import TYPE_CHECKING, Generic, Optional, Type, TypeVar, Union
+
 from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.selectors import mainline
 

@@ -21,10 +21,8 @@ from typing import (
     Union,
     cast,
 )
-from avilla.commander.message import chain_from_mapping_string, chain_to_mapping_str
-from avilla.core.elements import Text
-from avilla.core.utilles.ast import remove_type_checking
 
+from graia.amnesia.message import Element, MessageChain
 from graia.broadcast import Broadcast, Listener
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -34,16 +32,14 @@ from graia.broadcast.typing import T_Dispatcher
 from pydantic import BaseModel, create_model, validator
 from pydantic.fields import ModelField
 
-from .utilles import (
-    ConstantDispatcher,
-    const_call,
-    eval_ctx,
-    resolve_dispatchers_mixin,
-)
+from avilla.commander.message import chain_from_mapping_string, chain_to_mapping_str
 from avilla.core.context import ctx_event
-from graia.amnesia.message import MessageChain, Element
+from avilla.core.elements import Text
 from avilla.core.event.message import MessageReceived
+from avilla.core.utilles.ast import remove_type_checking
+
 from .parser import CommandToken, CommandTokenTuple, split, tokenize_command
+from .utilles import ConstantDispatcher, const_call, eval_ctx, resolve_dispatchers_mixin
 
 InnerTypes = tuple()
 

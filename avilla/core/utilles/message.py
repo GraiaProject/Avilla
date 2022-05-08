@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, Generic, List, Type, TypeVar, Union
+from typing import Any, Awaitable, Callable, Dict, Generic, List, Type, TypeVar
 
-from graia.amnesia.message import MessageChain, Element
+from graia.amnesia.message import Element, MessageChain
 
 T = TypeVar("T", bound=Element)
 P = TypeVar("P")

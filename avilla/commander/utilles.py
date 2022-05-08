@@ -1,5 +1,5 @@
-from contextvars import ContextVar
 import inspect
+from contextvars import ContextVar
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -14,11 +14,11 @@ from typing import (
     TypeVar,
     Union,
 )
+
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.typing import T_Dispatcher
 from graia.broadcast.utilles import dispatcher_mixin_handler
-
 from pydantic.typing import DictStrAny
 
 T = TypeVar("T")

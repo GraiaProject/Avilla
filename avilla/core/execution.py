@@ -10,16 +10,15 @@ from typing import (
     cast,
 )
 
+from graia.amnesia.message import Element, MessageChain
+
 from avilla.core.context import ctx_relationship
 from avilla.core.elements import Text
 from avilla.core.message import Message
-from graia.amnesia.message import MessageChain
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector
 from avilla.core.selectors import request as request_selector
-
-from graia.amnesia.message import Element
 
 # if TYPE_CHECKING:
 

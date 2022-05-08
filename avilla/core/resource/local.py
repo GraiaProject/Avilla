@@ -1,6 +1,7 @@
 
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
+
 from avilla.core.metadata.model import Metadata
 from avilla.core.resource import Resource, ResourceProvider
 
