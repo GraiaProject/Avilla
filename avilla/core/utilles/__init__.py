@@ -3,15 +3,20 @@ from __future__ import annotations
 import asyncio
 import random
 import string
+from collections import ChainMap
 from types import TracebackType
 from typing import (
     Any,
     AsyncGenerator,
     Callable,
     Dict,
+    Generator,
     Iterable,
+    Iterator,
     List,
+    Mapping,
     Optional,
+    Tuple,
     Type,
     TypeVar,
 )
@@ -82,3 +87,64 @@ class Registrar(Dict):
 async def as_asynciter(iter: Iterable[T]) -> AsyncGenerator[T, None]:
     for item in iter:
         yield item
+
+def as_generator(iter: Iterable[T]) -> Generator[T, None, None]:
+    yield from iter
+
+_K = TypeVar("_K")
+_V = TypeVar("_V")
+_D = TypeVar("_D")
+
+class LayeredChain(Mapping[_K, _V]):
+    def __init__(self, *groups: Iterable[Dict[_K, _V]]):
+        self.groups = groups
+    
+    def _floor_gen(self):
+        generators = [as_generator(i) for i in self.groups]
+        while True:
+            m = map(lambda x: next(x, None), generators)
+            n = [i for i in m if i is not None]
+            if not n:
+                break
+            yield n
+
+    def _iter_floor_chain(self):
+        for floor in self._floor_gen():
+            yield ChainMap(*floor)
+
+    def __getitem__(self, __k: _K) -> _V:
+        for chain_map in self._iter_floor_chain():
+            if __k in chain_map:
+                return chain_map[__k]
+        raise KeyError(__k)
+    
+    def __iter__(self):
+        for chain_map in self._iter_floor_chain():
+            yield from chain_map.keys()
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.groups})"
+    
+    def __str__(self):
+        return f"{self.__class__.__name__}({self.groups})"
+    
+    def __contains__(self, __k: _K) -> bool:
+        return any(__k in chain_map for chain_map in self._iter_floor_chain())
+    
+    def get(self, __k: _K, default: _V | _D = None) -> _V | _D:
+        for chain_map in self._iter_floor_chain():
+            if __k in chain_map:
+                return chain_map[__k]
+        return default
+
+    def items(self) -> Iterator[Tuple[_K, _V]]:
+        for chain_map in self._iter_floor_chain():
+            yield from chain_map.items()
+
+    def keys(self) -> Iterator[_K]:
+        for chain_map in self._iter_floor_chain():
+            yield from chain_map.keys()
+
+    def values(self) -> Iterator[_V]:
+        for chain_map in self._iter_floor_chain():
+            yield from chain_map.values()
