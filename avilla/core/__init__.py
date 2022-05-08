@@ -88,6 +88,8 @@ class Avilla:
             # Ensureable 用于注册各种东西, 包括 Service, ResourceProvider 等.
             # 相对的, 各个 Protocol 实例各维护/调用一个 Profile, 这个也算是 Config 相关的妥协
             protocol.ensure(self)
+    
+        # TODO: Avilla Backend Service: 维护一些东西, 我还得再捋捋..
 
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
@@ -109,7 +111,10 @@ class Avilla:
                 elif exec.locate_type == "ctx":
                     exec.locate_target(rs.ctx)
                 elif exec.locate_type == "via":
-                    exec.locate_target(rs.via)  # type: ignore
+                    if rs.via is None:
+                        logger.warning("relationship's via is None, skip locate")
+                        return
+                    exec.locate_target(rs.via)
                 elif exec.locate_type == "current":
                     exec.locate_target(rs.current)
                 else:
@@ -117,58 +122,6 @@ class Avilla:
             yield
 
         self.exec_middlewares.append(_rs_target_ensure)
-        # 或者给 avilla 相关写个服务, get_interface 之类的分发功能
-        # ？！
-        """
-        # config shortcut flatten
-
-        self.config = {}
-        for applicant, target_conf in config.items():
-            if not isinstance(target_conf, dict):
-                target_conf = {...: target_conf}
-
-            for scope, shortcut in target_conf.items():
-                if not isinstance(shortcut, ConfigProvider):
-                    if isinstance(shortcut, BaseModel):
-                        target_conf[scope] = direct(shortcut)  # type: ignore
-                    else:
-                        raise ValueError(f"invalid configuration: {shortcut}")
-
-            self.config[applicant] = target_conf  # type: ignore
-        self.config.setdefault(Avilla, {...: direct(AvillaConfig())})  # type: ignore
-        # all use default value.
-
-        # builtin settings
-        avilla_config = cast(AvillaConfig, self.get_config(Avilla))
-        if avilla_config.enable_builtin_services:
-            if avilla_config.use_memcache:
-                self.add_service(MemcacheService())
-        if avilla_config.use_defer:
-            self.broadcast.finale_dispatchers.append(DeferDispatcher())
-        """
-
-    """
-    def get_config(
-        self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]], scope: Hashable = ...
-    ) -> Optional[TModel]:
-        scoped = cast(Dict[Hashable, "ConfigProvider[TModel]"], self.config.get(applicant))
-        if scoped:
-            provider = scoped.get(scope)
-            if provider:
-                return provider.get_config()
-
-    def get_config_scopes(self, applicant: Union[ConfigApplicant[TModel], Type[ConfigApplicant[TModel]]]):
-        scoped = self.config.get(applicant)
-        if scoped:
-            return scoped.keys()
-
-    async def flush_config(self, when: ConfigFlushingMoment):
-        for applicant, scoped in self.config.items():
-            if when not in applicant.init_moment.values():
-                continue
-            for scope, provider in scoped.items():
-                await provider.provide(self, applicant.config_model, scope)
-    """
 
     @classmethod
     def current(cls) -> "Avilla":

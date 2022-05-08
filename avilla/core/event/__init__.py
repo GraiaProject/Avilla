@@ -9,6 +9,7 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
+from avilla.core.metadata.model import MetadataModifies
 from avilla.core.relationship import Relationship
 from avilla.core.resource import Resource
 from avilla.core.selectors import entity as entity_selector
@@ -203,25 +204,19 @@ class ResourceUnavailable(AvillaEvent, Generic[R]):
 
 class MetadataChanged(AvillaEvent):
     ctx: Union[entity_selector, mainline_selector]
-    meta: str
-    op: str
-    value: Any
+    modifies: MetadataModifies
     operator: Optional[entity_selector] = None
 
     def __init__(
         self,
         ctx: Union[entity_selector, mainline_selector],
-        meta: str,
-        op: str,
-        value: Any,
+        modifies: MetadataModifies,
         current_self: entity_selector,
         operator: Optional[entity_selector] = None,
         time: Optional[datetime] = None,
     ):
         self.ctx = ctx
-        self.meta = meta
-        self.op = op
-        self.value = value
+        self.modifies = modifies
         self.operator = operator
         self.self = current_self
         self.time = time or datetime.now()
@@ -266,6 +261,7 @@ class RelationshipCreated(AvillaEvent):
     ctx: Union[mainline_selector, entity_selector]
     via: Union[mainline_selector, entity_selector, None]
     # 用 via 同时表示两个方向的关系.(自发行为和被动行为)
+    # 自发行为就是 None, 被动行为反之
 
     def __init__(
         self,

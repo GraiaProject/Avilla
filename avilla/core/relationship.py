@@ -47,7 +47,7 @@ class ExecutorWrapper:
     async def ensure(self):
         async with AsyncExitStack() as stack:
             for middleware in reversed(self.middlewares):
-                await stack.enter_async_context(middleware(self.relationship, self.execution))  # type: ignore
+                await stack.enter_async_context(middleware(self.relationship, self.execution))
             return await self.relationship.protocol.ensure_execution(self.execution)
 
     def execute(self, execution: "Execution"):
@@ -194,30 +194,42 @@ class Relationship(Generic[M]):
             target = arg1.default_target_by_relationship(self)
             model = arg1
             if target is None:
-                raise ValueError(f"{arg1} is not a supported metadata for rs.meta, which requires a categorical target.")
+                raise ValueError(
+                    f"{arg1} is not a supported metadata for rs.meta, which requires a categorical target."
+                )
             source = self.avilla.metadata_interface.get_source(target)
             if source is None:
-                raise ValueError(f"{arg1} is not a supported metadata at present, which not ordered by any source.")
+                raise ValueError(
+                    f"{arg1} is not a supported metadata at present, which not ordered by any source."
+                )
             return await source.fetch(target, model)
         elif isinstance(arg1, MetadataModifies) and arg2 is None:
             target = arg1.model.default_target_by_relationship(self)
             if target is None:
-                raise ValueError(f"{arg1.model}'s modify is not a supported metadata for rs.meta, which requires a categorical target.")
+                raise ValueError(
+                    f"{arg1.model}'s modify is not a supported metadata for rs.meta, which requires a categorical target."
+                )
             source = self.avilla.metadata_interface.get_source(target)
             if source is None:
-                raise ValueError(f"{arg1.model}'s modify is not a supported metadata at present, which not ordered by any source.")
+                raise ValueError(
+                    f"{arg1.model}'s modify is not a supported metadata at present, which not ordered by any source."
+                )
             return await source.modify(target, arg1)
         elif arg2 is not None:
             if isinstance(arg2, type) and issubclass(arg2, Metadata):
                 target, model = arg1, arg2
                 source = self.avilla.metadata_interface.get_source(target)
                 if source is None:
-                    raise ValueError(f"{arg1} is not a supported metadata at present, which not ordered by any source.")
+                    raise ValueError(
+                        f"{arg1} is not a supported metadata at present, which not ordered by any source."
+                    )
                 return await source.fetch(target, model)
             elif isinstance(arg2, MetadataModifies):
                 target, model, modify = arg1, arg2.model, arg2
                 source = self.avilla.metadata_interface.get_source(target)
                 if source is None:
-                    raise ValueError(f"{model}'s modify is not a supported metadata at present, which not ordered by any source.")
+                    raise ValueError(
+                        f"{model}'s modify is not a supported metadata at present, which not ordered by any source."
+                    )
                 return await source.modify(target, modify)
             raise TypeError(f"{arg1} & {arg2} is not a supported metadata operation for rs.meta.")

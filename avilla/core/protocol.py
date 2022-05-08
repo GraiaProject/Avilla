@@ -55,11 +55,13 @@ class BaseProtocol(metaclass=ABCMeta):
     def ensure(self, interact: Avilla) -> Any:
         ...
 
+    """
     async def exec_directly(self, execution: Execution, *middlewares: TExecutionMiddleware) -> Any:
         async with AsyncExitStack() as exit_stack:
             for middleware in middlewares:
-                await exit_stack.enter_async_context(middleware(self, execution))  # type: ignore
+                await exit_stack.enter_async_context(middleware(self.avilla.get_guest_relationship(), execution))
             return await self.ensure_execution(execution)
+    """
 
     def complete_selector(self, selector: Selector) -> Selector:
         return selector

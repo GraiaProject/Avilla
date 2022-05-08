@@ -1,9 +1,9 @@
-import copy
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Iterable, List, Optional, Type, TypeVar, Union
 
-from graia.amnesia.message import MessageChain
+from graia.amnesia.message import MessageChain as MessageChain
 
 from avilla.core.selectors import entity
 from avilla.core.selectors import mainline as mainline_selector
@@ -15,9 +15,9 @@ class Message:
     id: str
     mainline: mainline_selector
     sender: entity
-    content: "MessageChain"
+    content: MessageChain
     time: datetime
-    reply: Optional["message_selector"] = None
+    reply: message_selector | None = None
 
     def to_selector(self) -> "message_selector":
         return message_selector.mainline[self.mainline]._[self.id]

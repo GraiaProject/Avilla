@@ -44,9 +44,9 @@ class SelectorMeta(type):
     if TYPE_CHECKING:
         scope: str
 
-    def __getattr__(cls, key: str) -> "SelectorKey":
+    def __getattr__(cls: Type["Selector"], key: str) -> "SelectorKey":  # type: ignore
         # sourcery skip: instance-method-first-arg-name
-        return SelectorKey(cls, key)  # type: ignore
+        return SelectorKey(cls, key)
 
 
 S = TypeVar("S", bound=str)
