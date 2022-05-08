@@ -1,23 +1,19 @@
+from __future__ import annotations
+
 import asyncio
 import random
 import string
-from contextlib import asynccontextmanager, suppress
-from pathlib import Path
-from types import MethodType, TracebackType
+from types import TracebackType
 from typing import (
     Any,
     AsyncGenerator,
     Callable,
     Dict,
-    Hashable,
     Iterable,
     List,
     Optional,
-    Set,
-    Tuple,
     Type,
     TypeVar,
-    Union,
 )
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface
@@ -35,11 +31,11 @@ def as_async(func):
     return wrapper
 
 class Defer:
-    _ctx: Ctx[List[Callable[[], Any]]] = Ctx("defer")
+    _ctx: Ctx[List[Callable[[], Any]] | None] = Ctx("defer")
 
     @classmethod
     def current(cls):
-        return cls(cls._ctx.get() or [])
+        return cls(cls._ctx.get(None) or [])
 
     def __init__(self, defers: List[Callable[[], Any]]) -> None:
         self.defers = defers

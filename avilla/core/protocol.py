@@ -1,33 +1,14 @@
 from abc import ABCMeta, abstractmethod
 from contextlib import AsyncExitStack
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Dict,
-    Final,
-    Generic,
-    List,
-    Set,
-    Tuple,
-    Type,
-    TypeVar,
-    Union,
-)
-from avilla.core.metadata.model import MetadataModifies
-from avilla.core.resource import Resource
+from typing import TYPE_CHECKING, Any, Union
 
-from graia.broadcast import Dispatchable
-from pydantic import BaseModel
-
-from avilla.core.config import ConfigApplicant, ConfigFlushingMoment, TModel
-from graia.amnesia.launch.component import LaunchComponent
 from graia.amnesia.message import MessageChain
+from graia.broadcast import Dispatchable
+
 from avilla.core.platform import Platform
 from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
-from avilla.core.stream import Stream
 from avilla.core.typing import TExecutionMiddleware
 from avilla.core.utilles.selector import Selector
 
@@ -39,14 +20,9 @@ if TYPE_CHECKING:
     from . import Avilla
 
 
-class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
+class BaseProtocol(metaclass=ABCMeta):
     avilla: "Avilla"
-    init_moment: Final[Dict[Type[TModel], ConfigFlushingMoment]] = {}
-    config_model: Type[TModel]
-
     platform: Platform = Platform()
-
-    required_components: ClassVar[Set[str]]
 
     def __init__(self, avilla: "Avilla") -> None:
         self.avilla = avilla
@@ -74,6 +50,10 @@ class BaseProtocol(ConfigApplicant[TModel], metaclass=ABCMeta):
     @abstractmethod
     async def get_relationship(self, ctx: Selector, current_self: entity_selector) -> "Relationship":
         raise NotImplementedError
+
+    @abstractmethod
+    def ensure(self, interact: Avilla) -> Any:
+        ...
 
     async def exec_directly(self, execution: Execution, *middlewares: TExecutionMiddleware) -> Any:
         async with AsyncExitStack() as exit_stack:

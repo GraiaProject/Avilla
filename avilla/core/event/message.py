@@ -1,10 +1,11 @@
 from datetime import datetime
 from typing import Optional
 
+from graia.amnesia.message import MessageChain
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from avilla.core.message import Message, MessageChain
+from avilla.core.message import Message
 from avilla.core.selectors import entity
 from avilla.core.selectors import message as message_selector
 from avilla.core.utilles.selector import Selector
@@ -19,12 +20,7 @@ class MessageReceived(AvillaEvent):
     def ctx(self) -> Selector:
         return self.message.sender
 
-    def __init__(
-        self,
-        message: Message,
-        current_self: entity,
-        time: Optional[datetime] = None,
-    ) -> None:
+    def __init__(self, message: Message, current_self: entity, time: Optional[datetime] = None) -> None:
         self.message = message
         self.self = current_self
         self.time = time or datetime.now()

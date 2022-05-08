@@ -26,7 +26,7 @@ from graia.amnesia.message import Element
 
 class Execution:
     located: bool = False
-    locate_class: Literal["mainline", "ctx", "via", "current"] = "mainline"
+    locate_type: Literal["mainline", "ctx", "via", "current"] = "mainline"
 
     def locate_target(self, target: Union[mainline_selector, entity_selector]):
         self.located = True

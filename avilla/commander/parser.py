@@ -5,7 +5,7 @@ from contextvars import ContextVar
 from typing import Dict, List, Literal, Tuple, TypeVar, Union
 from avilla.commander.message import chain_from_mapping_string
 
-from avilla.core.message import Element, MessageChain
+from graia.amnesia.message import MessageChain, Element
 
 Element_T = TypeVar("Element_T", bound=Element)
 

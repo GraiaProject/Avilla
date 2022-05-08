@@ -1,9 +1,24 @@
 from __future__ import annotations
-from abc import ABCMeta, abstractmethod
+
 import inspect
-from typing import Any, Dict, Generic, List, Tuple, Type, TypeVar, Optional
-from dataclasses import Field, dataclass
-import stringcase
+from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+)
+
+
+if TYPE_CHECKING:
+    from avilla.core.utilles.selector import Selector
+    from avilla.core.relationship import Relationship
 
 T = TypeVar("T")  # 返回值
 
@@ -57,3 +72,7 @@ class Metadata(Generic[T], metaclass=ABCMeta):
     def __repr__(self) -> str:
         values = ", ".join(f"{k}={repr(v)}" for k, v in self._content.items() if not k.startswith("_"))
         return f"{self.__class__.__name__}({values})"
+
+    @classmethod
+    def default_target_by_relationship(cls, relationship: "Relationship") -> Selector | None:
+        pass

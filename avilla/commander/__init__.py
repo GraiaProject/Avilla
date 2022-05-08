@@ -41,7 +41,7 @@ from .utilles import (
     resolve_dispatchers_mixin,
 )
 from avilla.core.context import ctx_event
-from avilla.core.message import MessageChain, Element
+from graia.amnesia.message import MessageChain, Element
 from avilla.core.event.message import MessageReceived
 from .parser import CommandToken, CommandTokenTuple, split, tokenize_command
 
@@ -68,7 +68,7 @@ def chain_validator(value: MessageChain, field: ModelField) -> Union[MessageChai
         assert isinstance(value.content[0], field.type_)
         return value.content[0]
     if isinstance(value, MessageChain):
-        return value.as_display()
+        return str(value)
     if value is None:
         return field.default
     return value
@@ -316,7 +316,7 @@ class CommandHandler(ExecTarget):
                 param_result[slot.param_name] = slot.model(val=value).__dict__["val"]
             else:
                 if slot.type is _raw:
-                    param_result[slot.param_name] = MessageChain([Text(" ")]).join(*wildcard_list).as_merged()
+                    param_result[slot.param_name] = MessageChain([Text(" ")]).join(*wildcard_list).merge()
                 else:
                     if TYPE_CHECKING:
                         assert slot.model

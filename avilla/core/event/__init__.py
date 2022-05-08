@@ -47,9 +47,12 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 class RelationshipDispatcher(BaseDispatcher):
     @staticmethod
     async def beforeExecution(interface: "DispatcherInterface[AvillaEvent]"):
-        rs = await ctx_protocol.get().get_relationship(interface.event.ctx, interface.event.self)
-        token = ctx_relationship.set(rs)
-        interface.local_storage["_ctxtoken_rs"] = token
+        protocol = ctx_protocol.get()
+        if protocol is not None:
+            rs = await protocol.get_relationship(interface.event.ctx, interface.event.self)
+            token = ctx_relationship.set(rs)
+            interface.local_storage['relationship'] = rs
+            interface.local_storage["_ctxtoken_rs"] = token
 
     @staticmethod
     async def afterExecution(

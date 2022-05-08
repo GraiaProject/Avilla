@@ -2,11 +2,11 @@ from pathlib import Path
 from typing import Any, Union
 
 from graia.amnesia.message import Element
-from avilla.core.selectors import entity as entity_selector
+from graia.amnesia.message.element import Text as Text
+
 from avilla.core.resource import Resource
 from avilla.core.resource.local import LocalFileResource
-
-from graia.amnesia.message.element import Text as Text
+from avilla.core.selectors import entity as entity_selector
 
 
 class Notice(Element):

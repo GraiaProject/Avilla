@@ -2,6 +2,7 @@ import copy
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Generic, List, Optional, Type, TypeVar, Union
 
+from graia.amnesia.message import MessageChain
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.entities.exectarget import ExecTarget
@@ -10,7 +11,6 @@ from graia.broadcast.exceptions import ExecutionStop
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from avilla.core.message import MessageChain
 from avilla.core.relationship import Relationship
 from avilla.core.selectors import entity, mainline
 
@@ -199,8 +199,7 @@ class Filter(Decorator, Generic[S, L]):
 
     async def target(self, decorator_interface: DecoratorInterface):
         alpha_result: S = await decorator_interface.dispatcher_interface.broadcast.Executor(
-            self.alpha,
-            decorator_interface.dispatcher_interface.dispatchers,  # cannot be original...
+            self.alpha, decorator_interface.dispatcher_interface.dispatchers  # cannot be original...
         )
 
         step = None
