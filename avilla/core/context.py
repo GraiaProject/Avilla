@@ -1,3 +1,4 @@
+import functools
 from typing import TYPE_CHECKING, Any, Dict
 
 from graia.broadcast.utilles import Ctx
@@ -45,3 +46,14 @@ def get_current_relationship():
     if relationship:
         return relationship
     raise RuntimeError("no any current relationship")
+
+
+def require_relationship(func):
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        relationship = ctx_relationship.get()
+        if relationship:
+            return await func(*args, **kwargs)
+        raise RuntimeError("no any current relationship")
+
+    return wrapper

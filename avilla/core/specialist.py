@@ -1,7 +1,6 @@
 from .platform import Base
-from .selectors import entity, mainline
+from .selectors import mainline
 
-special_platform = Base("GraiaProject@github", "avilla-protocol", "Avilla")
-special_mainline = mainline.platform[special_platform].special[True]
-guest = entity.mainline[special_mainline].guest[True]
+avilla_platform_base = Base("GraiaProject@github", "avilla-protocol", "Avilla")
+special_mainline = mainline.platform[avilla_platform_base].special[True]
 

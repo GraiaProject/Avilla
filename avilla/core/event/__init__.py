@@ -200,8 +200,6 @@ class ResourceUnavailable(AvillaEvent, Generic[R]):
         self.time = time or datetime.now()
 
 
-# TODO: MetadataChanged 可能也要用上 MetadataModifies....
-
 class MetadataChanged(AvillaEvent):
     ctx: Union[entity_selector, mainline_selector]
     modifies: MetadataModifies
@@ -218,41 +216,6 @@ class MetadataChanged(AvillaEvent):
         self.ctx = ctx
         self.modifies = modifies
         self.operator = operator
-        self.self = current_self
-        self.time = time or datetime.now()
-
-
-@dataclass
-class PermissionChangeInfo:
-    pass
-
-
-@dataclass
-class RankChanged(PermissionChangeInfo):
-    past: str
-    current: str
-
-
-# TODO: 更完备的权限变化描述方式, 属权限系统部分.
-
-
-class EntityPermissionChanged(AvillaEvent):
-    entity: entity_selector
-    modifies: List[PermissionChangeInfo]
-
-    @property
-    def ctx(self) -> Selector:
-        return self.entity
-
-    def __init__(
-        self,
-        entity: entity_selector,
-        modifies: List[PermissionChangeInfo],
-        current_self: entity_selector,
-        time: Optional[datetime] = None,
-    ):
-        self.entity = entity
-        self.modifies = modifies
         self.self = current_self
         self.time = time or datetime.now()
 

@@ -1,108 +1,61 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Type, overload
+from typing import TYPE_CHECKING, Any, Callable, Type, TypeVar, overload
 
+from avilla.core.metadata.model import Metadata
 from avilla.core.metadata.source import MetadataSource
-from avilla.core.platform import Base
-from avilla.core.selectors import mainline
-from avilla.core.utilles.selector import DepthSelector, Selector
 
-
-class MetaSelectorPrefix:
-    type: Type[Selector]
-
-    # common
-    last: str | None = None
-
-    # depth
-    keypath: str | None = None
-
-    # mainline
-    platform: Base | None = None
-
-    @overload
-    def __init__(self, type: Type[Selector]) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self, type: Type[DepthSelector], *, keypath: str | None = None, last: str | None = None
-    ) -> None:
-        ...
-
-    @overload
-    def __init__(
-        self, type: Type[mainline], *, platform: Base | None = None, keypath: str | None = None
-    ) -> None:
-        ...
-
-    def __init__(
-        self,
-        type: Type[Selector],
-        *,
-        last: str | None = None,
-        keypath: str | None = None,
-        platform: Base | None = None,
-    ) -> None:
-        self.type = type
-        self.last = last
-        self.keypath = keypath
-        self.platform = platform
-
-    def __hash__(self) -> int:
-        return hash((self.type, self.last, self.keypath, self.platform))
-
+if TYPE_CHECKING:
+    from typing_extensions import TypeGuard
 
 class MetadataInterface:
-    sources: dict[MetaSelectorPrefix | Type, MetadataSource]
+    sources: list[MetadataSource]
+
+    rules: dict[str, dict[Callable[[Any], TypeGuard[Any]], list[MetadataSource]]]
+    # restriction, literal | typeguard, sources
 
     def __init__(self):
-        self.sources = {}
+        self.sources = []
+        self.rules = {
+            "target": {}
+        }
 
-    def register(self, prefix: MetaSelectorPrefix | Type, source: MetadataSource):
-        if prefix in self.sources:
-            raise ValueError(f"Prefix {prefix} already registered")
-        self.sources[prefix] = source
+    def register(self, source: MetadataSource, **restructions: Callable[[Any], TypeGuard[Any]]) -> None:
+        self.sources.append(source)
+        for restriction, value in restructions.items():
+            if restriction not in self.rules:
+                self.rules[restriction] = {}
+            if value not in self.rules[restriction]:
+                self.rules[restriction][value] = []
+            self.rules[restriction][value].append(source)
 
-    def get_source(self, target: Any):
-        target_type = type(target)
-        if not issubclass(target_type, Selector):
-            return self.sources.get(target_type)
-        if target_type is mainline:
-            assert isinstance(target, mainline)
-            keypath = target.keypath()
-            last = target.last()
-            platform = target.path.get("platform")
-            for prefix in self.sources:
-                if all(
-                    (
-                        isinstance(prefix, MetaSelectorPrefix),
-                        prefix.type is mainline,
-                        prefix.platform == platform if prefix.platform is not None else True,
-                        prefix.keypath == keypath if prefix.keypath is not None else True,
-                        prefix.last == last if prefix.last is not None else True,
-                    )
-                ):
-                    return self.sources[prefix]
-        elif issubclass(target_type, DepthSelector):
-            for prefix in self.sources:
-                if all(
-                    (
-                        isinstance(prefix, MetaSelectorPrefix),
-                        prefix.type is target_type,
-                        prefix.keypath == target.keypath() if prefix.keypath is not None else True,
-                        prefix.last == target.last() if prefix.last is not None else True,
-                    )
-                ):
-                    return self.sources[prefix]
-        else:
-            for prefix in self.sources:
-                if all(
-                    (
-                        isinstance(prefix, MetaSelectorPrefix),
-                        prefix.type is target_type,
-                        prefix.last == target.last() if prefix.last is not None else True,
-                    )
-                ):
-                    return self.sources[prefix]
-        raise ValueError(f"No source found for {target}")
+    if TYPE_CHECKING:
+        T_target = TypeVar("T_target")
+        T_metamodel = TypeVar("T_metamodel", bound=Metadata)
+
+        @overload
+        def get_source(self, target: T_target, metamodel: Type[T_metamodel]) -> MetadataSource[T_target, T_metamodel]: ...
+
+        @overload
+        def get_source(self, target: T_target, metamodel: Type[T_metamodel], *, **restrictions: Any) -> MetadataSource[T_target, T_metamodel]: ...
+
+    def get_source(self, target: ..., metamodel: ..., *, **restrictions: Any):
+        restrictions["target"] = target
+        restrictions["metamodel"] = metamodel
+
+        _set = None
+        for restriction, value in restrictions.items():
+            if restriction not in self.rules:
+                raise ValueError(f"Unknown restriction: {restriction}")
+            _i_set = [v for k, v in self.rules[restriction].items() if callable(k) and k(value)]
+            if not _i_set:
+                raise ValueError(f"No source found for {restriction} applying {value}")
+            _i_set = set(_i_set[0]).intersection(*_i_set[1:])
+            if _set is None:
+                _set = _i_set
+                continue
+            _set.intersection_update(_i_set)
+        assert _set is not None, "No source found for this target"
+        if len(_set) > 1:
+            raise ValueError("Multiple sources found, dichotomous conflict.")
+        return list(_set)[0]

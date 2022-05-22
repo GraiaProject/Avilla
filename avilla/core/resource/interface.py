@@ -1,46 +1,50 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Callable
 
-from avilla.core.platform import Base
 from avilla.core.resource import Resource, ResourceProvider
 
-
-@dataclass
-class ResourceMatchPrefix:
-    resource_type: type[Resource]
-    keypath: str | None = None
-    platform: Base | None = None
+if TYPE_CHECKING:
+    from typing_extensions import TypeGuard
 
 
 class ResourceInterface:
-    providers: dict[ResourceMatchPrefix, ResourceProvider]
+    providers: list[ResourceProvider]
+
+    rules: dict[str, dict[Callable[[Any], TypeGuard[Any]], list[ResourceProvider]]]
+    # restriction, literal | typeguard, providers
 
     def __init__(self):
-        self.providers = {}
+        self.providers = []
+        self.rules = {
+            "resource": {}
+        }
 
-    def register(
-        self,
-        resource_type: type[Resource],
-        provider: ResourceProvider,
-        *,
-        mainline_keypath: str | None = None,
-        platform: Base | None = None,
-    ):
-        self.providers[ResourceMatchPrefix(resource_type, mainline_keypath, platform)] = provider
+    def register(self, provider: ResourceProvider, **restructions: Callable[[Any], TypeGuard[Any]]) -> None:
+        self.providers.append(provider)
+        for restriction, value in restructions.items():
+            if restriction not in self.rules:
+                self.rules[restriction] = {}
+            if value not in self.rules[restriction]:
+                self.rules[restriction][value] = []
+            self.rules[restriction][value].append(provider)
 
-    def get_provider(
-        self,
-        resource: Resource | type[Resource],
-        *,
-        mainline_keypath: str | None = None,
-        platform: Base | None = None,
-    ) -> ResourceProvider | None:
-        resource_type = resource if isinstance(resource, type) else type(resource)
-        for prefix in self.providers:
-            if all((
-                prefix.resource_type is resource_type,
-                prefix.keypath == mainline_keypath if prefix.keypath is not None else True,
-                prefix.platform == platform if prefix.platform is not None else True
-            )):
-                return self.providers[prefix]
+    def get_provider(self, resource: Resource, /, **restrictions: Any) -> ResourceProvider:
+        restrictions["resource"] = resource
+
+        _set = None
+        for restriction, value in restrictions.items():
+            if restriction not in self.rules:
+                raise ValueError(f"Unknown restriction: {restriction}")
+            _i_set = [v for k, v in self.rules[restriction].items() if callable(k) and k(value)]
+            if not _i_set:
+                raise ValueError(f"No provider found for {restriction} applying {value}")
+            _i_set = set(_i_set[0]).intersection(*_i_set[1:])
+            if _set is None:
+                _set = _i_set
+                continue
+            _set.intersection_update(_i_set)
+        assert _set is not None, "No provider found for this target"
+        if len(_set) > 1:
+            raise ValueError("Multiple providers found, dichotomous conflict.")
+        return list(_set)[0]

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.metadata.model import Metadata, meta_field
@@ -34,6 +34,9 @@ class Contact(Metadata):
 class Member(Contact, Metadata):
     budget: str = meta_field("member.budget")
     muted: bool = meta_field("member.muted")
+    mute_period: timedelta | None = meta_field("self.mute_period")
+    grade: int = meta_field("member.grade")
+    grade_name: str = meta_field("member.grade_name")
     joined_at: datetime | None = meta_field("member.joined_at")
     last_active_at: datetime | None = meta_field("member.last_active_at")
 
@@ -43,9 +46,10 @@ class Member(Contact, Metadata):
 
 
 class Request(Metadata):
+    has_question: bool = meta_field("request.has_question")
+
     comment: str | None = meta_field("request.comment")
     reason: str | None = meta_field("request.reason")
-    has_question: bool = meta_field("request.has_question")
     questions: dict[int, str] | None = meta_field("request.questions")
     answers: dict[int, str] | None = meta_field("request.answers")
 
@@ -61,7 +65,9 @@ class Request(Metadata):
 
 class Self(Contact, Metadata):
     muted: bool = meta_field("self.muted")
-    mute_period: int | None = meta_field("self.mute_period")
+    mute_period: timedelta | None = meta_field("self.mute_period")
+    grade: int | None = meta_field("self.grade")
+    grade_name: str | None = meta_field("self.grade_name")
     budget: str = meta_field("self.budget")
     joined_at: datetime | None = meta_field("self.joined_at")
     last_active_at: datetime | None = meta_field("self.last_active_at")
