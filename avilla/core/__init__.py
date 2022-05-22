@@ -5,6 +5,7 @@ import re
 from contextlib import asynccontextmanager
 from inspect import cleandoc
 from typing import List, Optional
+from avilla.core.builtins import AvillaBuiltinDispatcher, execute_target_ensure
 
 from graia.amnesia.launch.manager import LaunchManager
 from graia.amnesia.launch.service import Service
@@ -20,6 +21,7 @@ from avilla.core.metadata.interface import MetadataInterface
 from avilla.core.protocol import BaseProtocol
 from avilla.core.relationship import Relationship
 from avilla.core.resource.interface import ResourceInterface
+from avilla.core.resource.local import LocalFileResource, LocalFileResourceProvider
 from avilla.core.typing import TExecutionMiddleware
 
 AVILLA_ASCII_LOGO = cleandoc(
@@ -82,46 +84,25 @@ class Avilla:
         if middlewares:
             self.exec_middlewares.extend(middlewares)
         self.launch_manager.update_services(services)
-        self.launch_manager.update_launch_components([i.launch_component for i in self.launch_manager.services])
+        self.launch_manager.update_launch_components(
+            [i.launch_component for i in self.launch_manager.services]
+        )
 
         for protocol in self.protocols:
             # Ensureable 用于注册各种东西, 包括 Service, ResourceProvider 等.
             # 相对的, 各个 Protocol 实例各维护/调用一个 Profile, 这个也算是 Config 相关的妥协
             protocol.ensure(self)
-    
+
         # TODO: Avilla Backend Service: 维护一些东西, 我还得再捋捋..
 
+        self.resource_interface.register(
+            LocalFileResourceProvider(), resource=lambda x: isinstance(x, LocalFileResource)
+        )
+
+        self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
-        class AvillaBuiltinDispatcher(BaseDispatcher):
-            @staticmethod
-            async def catch(interface: DispatcherInterface):
-                if interface.annotation is Avilla:
-                    return self
-                elif interface.annotation in self._protocol_map:
-                    return self._protocol_map[interface.annotation]
-
-        self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher)
-
-        @asynccontextmanager
-        async def _rs_target_ensure(rs: Relationship, exec: Execution):
-            if not exec.located:
-                if exec.locate_type == "mainline":
-                    exec.locate_target(rs.mainline)
-                elif exec.locate_type == "ctx":
-                    exec.locate_target(rs.ctx)
-                elif exec.locate_type == "via":
-                    if rs.via is None:
-                        logger.warning("relationship's via is None, skip locate")
-                        return
-                    exec.locate_target(rs.via)
-                elif exec.locate_type == "current":
-                    exec.locate_target(rs.current)
-                else:
-                    logger.warning(f"unknown locate_type: {exec} - {exec.locate_type}")
-            yield
-
-        self.exec_middlewares.append(_rs_target_ensure)
+        self.exec_middlewares.append(execute_target_ensure)
 
     @classmethod
     def current(cls) -> "Avilla":

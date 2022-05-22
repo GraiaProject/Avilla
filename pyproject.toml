@@ -6,17 +6,17 @@ authors = [
 ]
 dependencies = [
     "graia-broadcast>=0.16.1",
+    "graia-amnesia>=0.4.0",
     "loguru>=0.6.0",
     "pydantic>=1.9.0",
     "rich>=12.1.0",
     "yarl>=1.7.2",
-    "graia-amnesia>=0.4.0",
 ]
 description = ""
 license = {text = "MIT"}
 name = "avilla-core"
 readme = "README.md"
-requires-python = ">=3.8,<4.0"
+requires-python = ">=3.9"
 version = "1.0.0rc2"
 
 [project.urls]
@@ -36,11 +36,13 @@ uvicorn = ["uvicorn[standard]<1.0.0,>=0.17.1"]
 
 [tool.pdm.dev-dependencies]
 dev = [
-  "black<22.0,>=21.12b0",
-  "flake8<5.0.0,>=4.0.1",
-  "isort<6.0.0,>=5.10.1",
-  "typing-extensions<4.0.0,>=3.10.0",
-  "graia-scheduler<1.0.0,>=0.0.6",
+    "black<22.0,>=21.12b0",
+    "flake8<5.0.0,>=4.0.1",
+    "isort<6.0.0,>=5.10.1",
+    "typing-extensions<4.0.0,>=3.10.0",
+    "graia-scheduler<1.0.0,>=0.0.6",
+    "pdm-mina>=0.1.0",
+    "mina-build>=0.2.5",
 ]
 
 [build-system]

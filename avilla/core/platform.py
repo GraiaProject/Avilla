@@ -8,6 +8,8 @@ class PlatformDescription:
     name: str
     humanized_name: str
 
+    is_runtime: bool = False
+
 
 PD = TypeVar("PD", bound=PlatformDescription)
 

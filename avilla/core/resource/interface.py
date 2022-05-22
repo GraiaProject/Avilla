@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 class ResourceInterface:
     providers: list[ResourceProvider]
 
-    rules: dict[str, dict[Callable[[Any], TypeGuard[Any]], list[ResourceProvider]]]
+    rules: dict[str, dict[Callable[[Any], bool], list[ResourceProvider]]]
     # restriction, literal | typeguard, providers
 
     def __init__(self):
@@ -20,7 +20,7 @@ class ResourceInterface:
             "resource": {}
         }
 
-    def register(self, provider: ResourceProvider, **restructions: Callable[[Any], TypeGuard[Any]]) -> None:
+    def register(self, provider: ResourceProvider, **restructions: Callable[[Any], bool]) -> None:
         self.providers.append(provider)
         for restriction, value in restructions.items():
             if restriction not in self.rules:

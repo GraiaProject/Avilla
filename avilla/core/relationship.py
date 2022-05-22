@@ -61,6 +61,12 @@ class ExecutorWrapper:
         self.middlewares.append(middleware)
         return self
 
+class RelationshipQueryWarpper:
+    relationship: Relationship
+    pattern: ... # TODO: Selector Query Pattern
+
+    async def __aiter__(self):
+        ...
 
 M = TypeVar("M", entity_selector, mainline_selector, request_selector, Selector)
 
@@ -128,6 +134,10 @@ class Relationship(Generic[M]):
             if not provider:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
+
+    async def query(self, pattern: ...) -> RelationshipQueryWarpper:
+        ...
+        # TODO: rs.query to query entities which match the pattern.
 
     @overload
     async def meta(self, op: Type[_M]) -> _M:
