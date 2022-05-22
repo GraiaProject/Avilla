@@ -1,38 +1,16 @@
 [project]
 # PEP 621 project metadata
 # See https://www.python.org/dev/peps/pep-0621/
-authors = [
-  {name = "GreyElaina", email = "GreyElaina@outlook.com"},
-]
+name = "avilla-workspace"
 dependencies = [
     "graia-broadcast>=0.16.1",
     "graia-amnesia>=0.4.0",
     "loguru>=0.6.0",
-    "pydantic>=1.9.0",
-    "rich>=12.1.0",
     "yarl>=1.7.2",
+    "irc>=20.0.0",
 ]
-description = ""
-license = {text = "MIT"}
-name = "avilla-core"
-readme = "README.md"
+version = "0"
 requires-python = ">=3.9"
-version = "1.0.0rc2"
-
-[project.urls]
-homepage = "https://github.com/GraiaProject/Avilla"
-repository = "https://github.com/GraiaProject/Avilla"
-
-[tool.pdm]
-includes = ["avilla/core", "avilla/core/py.typed", "avilla/io", "avilla/onebot"]
-
-[project.optional-dependencies]
-aiohttp = ["aiohttp<4.0.0,>=3.8.1"]
-aioredis = ["aioredis<3.0.0,>=2.0.0"]
-aiosqlite = ["aiosqlite<1.0.0,>=0.17.0"]
-pyhocon = ["pyhocon<1.0.0,>=0.3.59"]
-starlette = ["starlette<1.0.0,>=0.17.1"]
-uvicorn = ["uvicorn[standard]<1.0.0,>=0.17.1"]
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -46,8 +24,11 @@ dev = [
 ]
 
 [build-system]
-build-backend = "pdm.pep517.api"
-requires = ["pdm-pep517"]
+requires = ["mina-build"]
+build-backend = "mina.backend"
+
+[tool.mina]
+enabled = false
 
 [tool.black]
 include = '\.pyi?$'
@@ -57,6 +38,48 @@ target-version = ['py38']
 [tool.isort]
 profile = "black"
 
-[tool.pyright]
-exclude = "./__pypackages__"
-ignore = "./__pypackages__"
+[tool.mina.packages.core]
+includes = ["avilla/core"]
+
+[tool.mina.packages.core.project]
+name = "avilla-core"
+version = "1.0.0rc2"
+authors = [
+  {name = "GreyElaina", email = "GreyElaina@outlook.com"},
+]
+dependencies = [
+    "graia-broadcast",
+    "graia-amnesia",
+    "loguru",
+    "yarl",
+]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.mina.packages.core.project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
+
+[tool.mina.packages.irc]
+includes = ["avilla/irc"]
+raw-dependencies = [
+  "avilla-core>=1.0.0rc3"
+]
+
+[tool.mina.packages.irc.project]
+name = "avilla-irc"
+version = "1.0.0rc3" # WIP for release.
+authors = [
+  {name = "GreyElaina", email = "GreyElaina@outlook.com"},
+]
+dependencies = ["irc"]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.mina.packages.irc.project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"

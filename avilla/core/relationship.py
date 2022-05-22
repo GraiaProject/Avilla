@@ -139,7 +139,7 @@ class Relationship(Generic[M]):
 
     async def query(self, pattern: ...) -> RelationshipQueryWarpper:
         ...
-        # TODO: rs.query to query entities which match the pattern.
+        # TODO: rs.query to query entities in mainline, which match the pattern.
 
     @overload
     async def meta(self, op: Type[_M]) -> _M:

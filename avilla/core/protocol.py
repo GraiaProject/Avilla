@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar
 
 from graia.amnesia.message import MessageChain
-from graia.broadcast import Dispatchable
 
 from avilla.core import specialist
 from avilla.core.platform import Base, Platform
@@ -19,17 +18,8 @@ if TYPE_CHECKING:
 
 
 class BaseProtocol(metaclass=ABCMeta):
-    avilla: "Avilla"
-
     platform_base: ClassVar[Base] = specialist.avilla_platform_base
     platform: ClassVar[Platform] = Platform(platform_base)
-
-    def __init__(self, avilla: "Avilla") -> None:
-        self.avilla = avilla
-        self.__post_init__()
-
-    def __post_init__(self) -> None:
-        pass
 
     @abstractmethod
     async def ensure_execution(self, execution: "Execution") -> Any:
@@ -44,15 +34,11 @@ class BaseProtocol(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def parse_event(self, data: Any) -> Dispatchable:
-        raise NotImplementedError
-
-    @abstractmethod
     async def get_relationship(self, ctx: Selector, current_self: entity_selector) -> "Relationship":
         raise NotImplementedError
 
     @abstractmethod
-    def ensure(self, interact: Avilla) -> Any:
+    def ensure(self, avilla: Avilla) -> Any:
         ...
 
     def complete_selector(self, selector: Selector) -> Selector:

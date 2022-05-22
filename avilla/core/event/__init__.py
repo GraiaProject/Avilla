@@ -1,6 +1,5 @@
 import typing
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass
 from datetime import datetime
 from types import TracebackType
 from typing import Any, Dict, Generic, List, Optional, TypeVar, Union
@@ -202,7 +201,7 @@ class ResourceUnavailable(AvillaEvent, Generic[R]):
         self.time = time or datetime.now()
 
 
-class MetadataChanged(AvillaEvent):
+class MetadataModified(AvillaEvent):
     ctx: Union[entity_selector, mainline_selector]
     modifies: MetadataModifies
     operator: Optional[entity_selector] = None
