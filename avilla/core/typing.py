@@ -25,6 +25,7 @@ TExecutionMiddleware = Callable[["Relationship", "Execution"], AsyncContextManag
 
 _T = TypeVar("_T", contravariant=True)
 
+
 @runtime_checkable
 class Ensureable(Protocol, Generic[_T]):
     def ensure(self, interact: _T) -> Any:

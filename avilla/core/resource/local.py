@@ -1,4 +1,3 @@
-
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional, Union
 
@@ -8,6 +7,7 @@ from avilla.core.resource import Resource, ResourceProvider
 if TYPE_CHECKING:
     from avilla.core.relationship import Relationship
 
+
 class LocalFileResource(Resource[bytes]):
     file: Path
 
@@ -15,6 +15,7 @@ class LocalFileResource(Resource[bytes]):
         if isinstance(file, str):
             file = Path(file)
         self.file = file
+
 
 class LocalFileResourceProvider(ResourceProvider):
     async def fetch(self, resource: LocalFileResource, relationship: Optional["Relationship"] = None):

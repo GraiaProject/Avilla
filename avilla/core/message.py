@@ -13,6 +13,7 @@ from avilla.core.selectors import message as message_selector
 if TYPE_CHECKING:
     from avilla.core.platform import Platform
 
+
 @dataclass
 class Message:
     id: str

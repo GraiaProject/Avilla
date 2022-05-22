@@ -16,9 +16,7 @@ class ResourceInterface:
 
     def __init__(self):
         self.providers = []
-        self.rules = {
-            "resource": {}
-        }
+        self.rules = {"resource": {}}
 
     def register(self, provider: ResourceProvider, **restructions: Callable[[Any], bool]) -> None:
         self.providers.append(provider)

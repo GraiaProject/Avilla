@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from avilla.core.execution import Execution
     from avilla.core.relationship import Relationship
 
+
 class AvillaBuiltinDispatcher(BaseDispatcher):
     avilla: Avilla
 

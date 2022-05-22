@@ -52,7 +52,7 @@ class RelationshipDispatcher(BaseDispatcher):
         if protocol is not None:
             rs = await protocol.get_relationship(interface.event.ctx, interface.event.self)
             token = ctx_relationship.set(rs)
-            interface.local_storage['relationship'] = rs
+            interface.local_storage["relationship"] = rs
             interface.local_storage["_ctxtoken_rs"] = token
 
     @staticmethod
@@ -154,7 +154,9 @@ class RequestIgnored(AvillaEvent):
         self.self = current_self
         self.time = time or datetime.now()
 
+
 R = TypeVar("R", bound=Resource)
+
 
 class ResourceAvailable(AvillaEvent, Generic[R]):
     resource: R

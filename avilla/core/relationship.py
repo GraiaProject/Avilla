@@ -61,12 +61,14 @@ class ExecutorWrapper:
         self.middlewares.append(middleware)
         return self
 
+
 class RelationshipQueryWarpper:
     relationship: Relationship
-    pattern: ... # TODO: Selector Query Pattern
+    pattern: ...  # TODO: Selector Query Pattern
 
     async def __aiter__(self):
         ...
+
 
 M = TypeVar("M", entity_selector, mainline_selector, request_selector, Selector)
 

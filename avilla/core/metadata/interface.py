@@ -8,6 +8,7 @@ from avilla.core.metadata.source import MetadataSource
 if TYPE_CHECKING:
     from typing_extensions import TypeGuard
 
+
 class MetadataInterface:
     sources: list[MetadataSource]
 
@@ -16,9 +17,7 @@ class MetadataInterface:
 
     def __init__(self):
         self.sources = []
-        self.rules = {
-            "target": {}
-        }
+        self.rules = {"target": {}}
 
     def register(self, source: MetadataSource, **restructions: Callable[[Any], TypeGuard[Any]]) -> None:
         self.sources.append(source)
@@ -34,12 +33,18 @@ class MetadataInterface:
         T_metamodel = TypeVar("T_metamodel", bound=Metadata)
 
         @overload
-        def get_source(self, target: T_target, metamodel: Type[T_metamodel]) -> MetadataSource[T_target, T_metamodel]: ...
+        def get_source(
+            self, target: T_target, metamodel: Type[T_metamodel]
+        ) -> MetadataSource[T_target, T_metamodel]:
+            ...
 
         @overload
-        def get_source(self, target: T_target, metamodel: Type[T_metamodel], *, **restrictions: Any) -> MetadataSource[T_target, T_metamodel]: ...
+        def get_source(
+            self, target: T_target, metamodel: Type[T_metamodel], **restrictions: Any
+        ) -> MetadataSource[T_target, T_metamodel]:
+            ...
 
-    def get_source(self, target: ..., metamodel: ..., *, **restrictions: Any):
+    def get_source(self, target: ..., metamodel: ..., **restrictions: Any):
         restrictions["target"] = target
         restrictions["metamodel"] = metamodel
 

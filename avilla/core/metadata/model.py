@@ -21,6 +21,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")  # 返回值
 
+
 @dataclass
 class MetadataModifies(Generic[T]):
     target: Any
@@ -38,22 +39,21 @@ class MetaField:
 
     def __init__(self, id: str) -> None:
         self.id = id
-    
+
     def __get__(self, instance: Metadata | None, owner) -> Any:
         # sourcery skip: assign-if-exp, reintroduce-else
         if instance is None:
             return self
         return instance._content[self.id]
-    
+
     def __set__(self, instance: Metadata, value: Any) -> None:
         if instance._modifies is None:
-            instance._modifies = MetadataModifies(
-                instance, instance.__class__, [], {}, {}
-            )
+            instance._modifies = MetadataModifies(instance, instance.__class__, [], {}, {})
         instance._modifies.modified.append(self.id)
         instance._modifies.past[self.id] = instance._content[self.id]
         instance._modifies.current[self.id] = value
         instance._content[self.id] = value
+
 
 def meta_field(id: str) -> Any:
     return MetaField(id)

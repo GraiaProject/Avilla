@@ -2,24 +2,19 @@ from __future__ import annotations
 
 import importlib.metadata
 import re
-from contextlib import asynccontextmanager
 from inspect import cleandoc
 from typing import List, Optional
-from avilla.core.builtins import AvillaBuiltinDispatcher, execute_target_ensure
 
 from graia.amnesia.launch.manager import LaunchManager
 from graia.amnesia.launch.service import Service
 from graia.broadcast import Broadcast
-from graia.broadcast.entities.dispatcher import BaseDispatcher
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from loguru import logger
 
+from avilla.core.builtins import AvillaBuiltinDispatcher, execute_target_ensure
 from avilla.core.context import get_current_avilla
 from avilla.core.event import RelationshipDispatcher
-from avilla.core.execution import Execution
 from avilla.core.metadata.interface import MetadataInterface
 from avilla.core.protocol import BaseProtocol
-from avilla.core.relationship import Relationship
 from avilla.core.resource.interface import ResourceInterface
 from avilla.core.resource.local import LocalFileResource, LocalFileResourceProvider
 from avilla.core.typing import TExecutionMiddleware
@@ -71,7 +66,7 @@ class Avilla:
         middlewares: Optional[List[TExecutionMiddleware]] = None,
         launch_manager: Optional[LaunchManager] = None,
     ):
-        if len(set(type(i) for i in protocols)) != len(protocols):
+        if len({type(i) for i in protocols}) != len(protocols):
             raise ValueError("protocol must be unique, and the config should be passed by config.")
 
         self.broadcast = broadcast

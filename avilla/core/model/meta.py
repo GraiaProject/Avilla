@@ -21,6 +21,7 @@ class Mainline(Metadata):
     def default_target_by_relationship(cls, relationship: Relationship):
         return relationship.mainline
 
+
 class Contact(Metadata):
     name: str = meta_field("contact.name")
     nickname: str = meta_field("contact.nickname")
@@ -62,6 +63,7 @@ class Request(Metadata):
     @classmethod
     def default_target_by_relationship(cls, relationship: Relationship):
         return relationship.ctx
+
 
 class Self(Contact, Metadata):
     muted: bool = meta_field("self.muted")
