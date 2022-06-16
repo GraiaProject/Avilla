@@ -54,7 +54,7 @@
     ],
     "python.sortImports.args": [
         "--profile",
-        "\"black\""
+        "black"
     ],
     "python.autoComplete.extraPaths": [
         "__pypackages__/3.9/lib"
