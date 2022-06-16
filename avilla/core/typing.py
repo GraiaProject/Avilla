@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
 
-TExecutionMiddleware = Callable[[Relationship[Any], "Execution"], AbstractAsyncContextManager[None]]
+TExecutionMiddleware = Callable[["Relationship", "Execution"], AbstractAsyncContextManager[None]]
 
 _T = TypeVar("_T", contravariant=True)
 

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import py_compile
 from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
