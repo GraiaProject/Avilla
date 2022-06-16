@@ -1,24 +1,26 @@
+from __future__ import annotations
+
 import functools
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from graia.broadcast.utilles import Ctx
 
 if TYPE_CHECKING:
     from graia.broadcast.entities.event import Dispatchable
 
-    from . import Avilla
-    from .protocol import BaseProtocol
-    from .relationship import Relationship
-
-ctx_avilla: "Ctx[Avilla]" = Ctx("avilla")
-ctx_protocol: "Ctx[BaseProtocol]" = Ctx("protocol")
-ctx_relationship: "Ctx[Relationship]" = Ctx("relationship")
-ctx_event: "Ctx[Dispatchable]" = Ctx("event")
-
-ctx_eventmeta: "Ctx[Dict[str, Any]]" = Ctx("eventmeta")
+    from avilla.core import Avilla
+    from avilla.core.protocol import BaseProtocol
+    from avilla.core.relationship import Relationship
 
 
-def get_current_avilla():
+ctx_avilla: Ctx[Avilla] = Ctx("avilla")
+ctx_protocol: Ctx[BaseProtocol] = Ctx("protocol")
+ctx_relationship: Ctx[Relationship] = Ctx("relationship")
+ctx_event: Ctx[Dispatchable] = Ctx("event")
+ctx_eventmeta: Ctx[dict[str, Any]] = Ctx("eventmeta")
+
+
+def get_current_avilla() -> Avilla:
     avilla = ctx_avilla.get()
     if avilla:
         return avilla
@@ -51,8 +53,7 @@ def get_current_relationship():
 def require_relationship(func):
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
-        relationship = ctx_relationship.get()
-        if relationship:
+        if ctx_relationship.get():
             return await func(*args, **kwargs)
         raise RuntimeError("no any current relationship")
 

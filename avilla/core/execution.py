@@ -1,14 +1,7 @@
-from typing import (
-    TYPE_CHECKING,
-    Generic,
-    Iterable,
-    List,
-    Literal,
-    Optional,
-    TypeVar,
-    Union,
-    cast,
-)
+from __future__ import annotations
+
+from collections.abc import Iterable
+from typing import Generic, Literal, TypeVar
 
 from graia.amnesia.message import Element, MessageChain
 
@@ -20,14 +13,12 @@ from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import message as message_selector
 from avilla.core.selectors import request as request_selector
 
-# if TYPE_CHECKING:
-
 
 class Execution:
     located: bool = False
     locate_type: Literal["mainline", "ctx", "via", "current"] = "mainline"
 
-    def locate_target(self, target: Union[mainline_selector, entity_selector]):
+    def locate_target(self, target: mainline_selector | entity_selector):
         self.located = True
 
 
@@ -39,27 +30,23 @@ class Result(Generic[R]):
 
 
 class MessageSend(Result[message_selector], Execution):
-    target: Union[entity_selector, mainline_selector]
+    target: entity_selector | mainline_selector
     message: MessageChain
-    reply: Optional[message_selector] = None
+    reply: message_selector | None = None
 
     def __init__(
         self,
-        message: Union[MessageChain, str, List[Union[str, Element]]],
+        message: MessageChain | str | Iterable[str | Element],
         *,
-        reply: Optional[Union["Message", message_selector, str]] = None,
+        reply: Message | message_selector | str | None = None,
     ):
         if isinstance(message, str):
             message = MessageChain([Text(message)])
-        if isinstance(message, MessageChain):
-            pass
-        elif isinstance(message, Iterable):
-            result = message.copy()
-            for i, element in enumerate(message):
-                if isinstance(element, str):
-                    result[i] = Text(element)
-
-            message = MessageChain(cast(List[Element], result))
+        elif not isinstance(message, MessageChain):
+            result = MessageChain([])
+            for element in message:
+                result.append(element)
+            message = result
         self.message = message
         if isinstance(reply, Message):
             reply = reply.to_selector()
@@ -71,7 +58,7 @@ class MessageSend(Result[message_selector], Execution):
                 reply = message_selector._[reply]
         self.reply = reply
 
-    def locate_target(self, target: Union[entity_selector, mainline_selector]):
+    def locate_target(self, target: entity_selector | mainline_selector):
         self.located = True
         self.target = target
 
@@ -92,14 +79,14 @@ class MessageEdit(Execution):
         self.to = to
 
 
-class MessageFetch(Result["Message"], Execution):
+class MessageFetch(Result[Message], Execution):
     message: message_selector
 
     def __init__(self, message: message_selector):
         self.message = message
 
 
-class RequestAccept(Result["None"], Execution):
+class RequestAccept(Result[None], Execution):
     request: request_selector
 
     def __init__(self, request: request_selector):

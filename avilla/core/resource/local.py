@@ -1,7 +1,8 @@
-from pathlib import Path
-from typing import TYPE_CHECKING, Optional, Union
+from __future__ import annotations
 
-from avilla.core.metadata.model import Metadata
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 from avilla.core.resource import Resource, ResourceProvider
 
 if TYPE_CHECKING:
@@ -11,13 +12,13 @@ if TYPE_CHECKING:
 class LocalFileResource(Resource[bytes]):
     file: Path
 
-    def __init__(self, file: Union[Path, str]):
+    def __init__(self, file: Path | str):
         if isinstance(file, str):
             file = Path(file)
         self.file = file
 
 
 class LocalFileResourceProvider(ResourceProvider):
-    async def fetch(self, resource: LocalFileResource, relationship: Optional["Relationship"] = None):
+    async def fetch(self, resource: LocalFileResource, relationship: Relationship | None = None):
         if isinstance(resource, LocalFileResource):
             return resource.file.read_bytes()

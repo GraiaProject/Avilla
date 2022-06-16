@@ -1,13 +1,15 @@
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Generic, Type, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-from avilla.core.execution import Execution
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from avilla.core.execution import Execution
 
 T = TypeVar("T")
-E = TypeVar("E", bound=Execution)
 
 
 class ExecutionHandler(Generic[T]):
-    handlers: Dict[Type[Execution], Callable[[T, Execution], Awaitable[Any]]] = {}
+    handlers: dict[type[Execution], Callable[[T, Execution], Awaitable[Any]]] = {}
 
     def __init_subclass__(cls, **kwargs):
         cls.handlers = {}

@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Dict, Generic, Type, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
-    from .model import Metadata, MetadataModifies
+    from avilla.core.metadata.model import Metadata, MetadataModifies
 
 
-M = TypeVar("M", bound=Metadata)
+M = TypeVar("M", bound="Metadata")
 T = TypeVar("T")
 
 
 class MetadataSource(Generic[T, M], metaclass=ABCMeta):
     @abstractmethod
-    async def fetch(self, target: T, model: Type[M]) -> M:
+    async def fetch(self, target: T, model: type[M]) -> M:
         ...
 
     @abstractmethod

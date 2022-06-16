@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any
 
 from avilla.core.resource import Resource, ResourceProvider
 
 if TYPE_CHECKING:
-    from typing_extensions import TypeGuard
+    from collections.abc import Callable
 
 
 class ResourceInterface:

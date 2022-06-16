@@ -1,16 +1,22 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Type, TypeVar, overload
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
-from avilla.core.metadata.model import Metadata
 from avilla.core.metadata.source import MetadataSource
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from typing_extensions import TypeGuard
+
+    from avilla.core.metadata.model import Metadata
+
+T_target = TypeVar("T_target")
+T_metamodel = TypeVar("T_metamodel", bound="Metadata")
 
 
 class MetadataInterface:
-    sources: list[MetadataSource]
+    sources: list[MetadataSource[Any, Metadata]]
 
     rules: dict[str, dict[Callable[[Any], TypeGuard[Any]], list[MetadataSource]]]
     # restriction, literal | typeguard, sources
@@ -28,23 +34,9 @@ class MetadataInterface:
                 self.rules[restriction][value] = []
             self.rules[restriction][value].append(source)
 
-    if TYPE_CHECKING:
-        T_target = TypeVar("T_target")
-        T_metamodel = TypeVar("T_metamodel", bound=Metadata)
-
-        @overload
-        def get_source(
-            self, target: T_target, metamodel: Type[T_metamodel]
-        ) -> MetadataSource[T_target, T_metamodel]:
-            ...
-
-        @overload
-        def get_source(
-            self, target: T_target, metamodel: Type[T_metamodel], **restrictions: Any
-        ) -> MetadataSource[T_target, T_metamodel]:
-            ...
-
-    def get_source(self, target: ..., metamodel: ..., **restrictions: Any):
+    def get_source(
+        self, target: T_target, metamodel: type[T_metamodel], **restrictions: Any
+    ) -> MetadataSource[T_target, T_metamodel]:
         restrictions["target"] = target
         restrictions["metamodel"] = metamodel
 
@@ -63,4 +55,4 @@ class MetadataInterface:
         assert _set is not None, "No source found for this target"
         if len(_set) > 1:
             raise ValueError("Multiple sources found, dichotomous conflict.")
-        return list(_set)[0]
+        return cast(MetadataSource[T_target, T_metamodel], list(_set)[0])

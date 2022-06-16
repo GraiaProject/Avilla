@@ -1,17 +1,6 @@
-from datetime import datetime, timedelta
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncContextManager,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Protocol,
-    TypeVar,
-    Union,
-    runtime_checkable,
-)
+from collections.abc import Callable
+from contextlib import AbstractAsyncContextManager
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, runtime_checkable
 
 if TYPE_CHECKING:
     from avilla.core.execution import Execution
@@ -21,7 +10,7 @@ if TYPE_CHECKING:
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
 
-TExecutionMiddleware = Callable[["Relationship", "Execution"], AsyncContextManager[None]]
+TExecutionMiddleware = Callable[[Relationship[Any], "Execution"], AbstractAsyncContextManager[None]]
 
 _T = TypeVar("_T", contravariant=True)
 

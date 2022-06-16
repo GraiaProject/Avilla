@@ -1,27 +1,20 @@
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    ClassVar,
-    Dict,
-    Generic,
-    Optional,
-    Set,
-    Type,
-    TypeVar,
-    Union,
-    cast,
-)
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, cast
+
+if TYPE_CHECKING:
+    from collections.abc import Set
 
 T = TypeVar("T")
 A = TypeVar("A")
 
 
 class SelectorKey(Generic[A, T]):
-    selector: "Type[Selector]"
+    selector: type[Selector]
     key: str
-    past: Dict[str, Any]
+    past: dict[str, Any]
 
-    def __init__(self, selector: "Type[Selector]", key: str, past: Optional[Dict[str, Any]] = None):
+    def __init__(self, selector: type[Selector], key: str, past: dict[str, Any] | None = None):
         self.selector = selector
         self.key = key
         self.past = past or {}
@@ -44,7 +37,7 @@ class SelectorMeta(type):
     if TYPE_CHECKING:
         scope: str
 
-    def __getattr__(cls: Type["Selector"], key: str) -> "SelectorKey":  # type: ignore
+    def __getattr__(cls: type[Selector], key: str) -> SelectorKey:  # type: ignore
         # sourcery skip: instance-method-first-arg-name
         return SelectorKey(cls, key)
 
@@ -54,9 +47,9 @@ S = TypeVar("S", bound=str)
 
 class Selector(Generic[S], metaclass=SelectorMeta):
     scope: S
-    path: Dict[str, Any]
+    path: dict[str, Any]
 
-    def __init__(self, path: Optional[Dict[str, Any]] = None) -> None:
+    def __init__(self, path: dict[str, Any] | None = None) -> None:
         self.path = path or {}
 
     def to_dict(self):
@@ -71,7 +64,7 @@ class Selector(Generic[S], metaclass=SelectorMeta):
     def __getitem__(self, value: str):
         return self.path[value]
 
-    def __getattr__(self, key: str) -> "Union[SelectorKey, Any]":
+    def __getattr__(self, key: str) -> SelectorKey:
         return SelectorKey(self.__class__, key, self.path)
 
     def __eq__(self, __o: object) -> bool:
@@ -89,8 +82,8 @@ class Selector(Generic[S], metaclass=SelectorMeta):
         return hash(tuple(self.path.items()))
 
 
-class DepthSelector(Selector):
-    _keypath_excludes: "ClassVar[frozenset[str]]" = frozenset()
+class DepthSelector(Selector[S]):
+    _keypath_excludes: ClassVar[frozenset[str]] = frozenset()
 
-    def keypath(self, exclude: Set[str] = frozenset()) -> str:  # type: ignore
+    def keypath(self, exclude: Set[str] = frozenset()) -> str:
         return ".".join([k for k in self.path.keys() if k not in set(*exclude, *self._keypath_excludes)])

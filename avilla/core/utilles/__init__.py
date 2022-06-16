@@ -4,25 +4,23 @@ import asyncio
 import random
 import string
 from collections import ChainMap
-from types import TracebackType
-from typing import (
-    Any,
+from collections.abc import (
     AsyncGenerator,
     Callable,
-    Dict,
     Generator,
     Iterable,
     Iterator,
-    List,
     Mapping,
-    Optional,
-    Tuple,
-    Type,
-    TypeVar,
 )
+from typing import TYPE_CHECKING, Any, TypeVar
 
-from graia.broadcast import BaseDispatcher, DispatcherInterface
+from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.utilles import Ctx, run_always_await_safely
+
+if TYPE_CHECKING:
+    from types import TracebackType
+
+    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 def random_string(k: int = 12):
@@ -37,13 +35,13 @@ def as_async(func):
 
 
 class Defer:
-    _ctx: Ctx[List[Callable[[], Any]] | None] = Ctx("defer")
+    _ctx: Ctx[list[Callable[[], Any]] | None] = Ctx("defer")
 
     @classmethod
     def current(cls):
         return cls(cls._ctx.get(None) or [])
 
-    def __init__(self, defers: List[Callable[[], Any]]) -> None:
+    def __init__(self, defers: list[Callable[[], Any]]) -> None:
         self.defers = defers
 
     def add(self, defer: Callable[[], Any]) -> None:
@@ -60,7 +58,7 @@ class DeferDispatcher(BaseDispatcher):
             return Defer(interface.local_storage["defers"])
 
     async def afterExecution(
-        self, interface: DispatcherInterface, exception: Optional[Exception], tb: Optional[TracebackType]
+        self, interface: DispatcherInterface, exception: Exception | None, tb: TracebackType | None
     ):
         await asyncio.gather(*[run_always_await_safely(defer) for defer in interface.local_storage["defers"]])
         Defer._ctx.reset(interface.local_storage["defers_ctxtoken"])
@@ -69,7 +67,7 @@ class DeferDispatcher(BaseDispatcher):
 T = TypeVar("T")
 
 
-class Registrar(Dict):
+class Registrar(dict):
     def register(self, key):
         def decorator(method):
             self[key] = method
@@ -78,7 +76,7 @@ class Registrar(Dict):
         return decorator
 
     def decorate(self, attr):
-        def decorator(cls: Type[T]) -> Type[T]:
+        def decorator(cls: type[T]) -> type[T]:
             getattr(cls, attr).update(self)
             return cls
 
@@ -100,7 +98,7 @@ _D = TypeVar("_D")
 
 
 class LayeredChain(Mapping[_K, _V]):
-    def __init__(self, *groups: Iterable[Dict[_K, _V]]):
+    def __init__(self, *groups: Iterable[dict[_K, _V]]):
         self.groups = groups
 
     def _floor_gen(self):
@@ -141,7 +139,7 @@ class LayeredChain(Mapping[_K, _V]):
                 return chain_map[__k]
         return default
 
-    def items(self) -> Iterator[Tuple[_K, _V]]:
+    def items(self) -> Iterator[tuple[_K, _V]]:
         for chain_map in self._iter_floor_chain():
             yield from chain_map.items()
 
