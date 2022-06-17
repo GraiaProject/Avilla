@@ -153,7 +153,7 @@ class Relationship(Generic[M]):
         with ctx_relationship.use(self):
             op, target = cast(
                 "tuple[type[_M] | MetadataModifies[_T], Any]",
-                (op_or_target, None if op is None else op_or_target, op),
+                (op_or_target, None if op is None else op, op_or_target),
             )
 
             if isinstance(op, type) and issubclass(op, Metadata):
