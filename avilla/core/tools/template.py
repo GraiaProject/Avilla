@@ -1,10 +1,16 @@
+from __future__ import annotations
+
 import re
-from typing import List, Sequence
+from typing import TYPE_CHECKING
 
 from graia.amnesia.message import MessageChain
-from graia.amnesia.message.element import Element
 
 from avilla.core.elements import Text
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from graia.amnesia.message.element import Element
 
 
 def list_get(seq: Sequence, index, default=None):
@@ -20,7 +26,7 @@ class Template:
     def __init__(self, template: str) -> None:
         self.template = template
 
-    def split_template(self) -> List[str]:
+    def split_template(self) -> list[str]:
         return _split.split(self.template)
 
     def render(self, *args: Element, **kwargs: Element) -> MessageChain:

@@ -3,11 +3,9 @@ from __future__ import annotations
 import importlib.metadata
 import re
 from inspect import cleandoc
-from typing import List, Optional
 
-from graia.amnesia.launch.manager import LaunchManager
-from graia.amnesia.launch.service import Service
 from graia.broadcast import Broadcast
+from launart import Launart, Service
 from loguru import logger
 
 from avilla.core.builtins import AvillaBuiltinDispatcher, execute_target_ensure
@@ -50,38 +48,35 @@ def _log_telemetry():
 class Avilla:
     broadcast: Broadcast
 
-    launch_manager: LaunchManager
+    launch_manager: Launart
     metadata_interface: MetadataInterface
     resource_interface: ResourceInterface
-    protocols: List[BaseProtocol]
+    protocols: list[BaseProtocol]
 
-    exec_middlewares: List[TExecutionMiddleware]
+    exec_middlewares: list[TExecutionMiddleware]
     # TODO: Better Config using Ensureable, Status(amnesia)
 
     def __init__(
         self,
         broadcast: Broadcast,
-        protocols: List[BaseProtocol],
-        services: List[Service],
-        middlewares: Optional[List[TExecutionMiddleware]] = None,
-        launch_manager: Optional[LaunchManager] = None,
+        protocols: list[BaseProtocol],
+        services: list[Service],
+        middlewares: list[TExecutionMiddleware] | None = None,
+        launch_manager: Launart | None = None,
     ):
         if len({type(i) for i in protocols}) != len(protocols):
             raise ValueError("protocol must be unique, and the config should be passed by config.")
 
         self.broadcast = broadcast
-        self.launch_manager = launch_manager or LaunchManager()
+        self.launch_manager = launch_manager or Launart()
         self.metadata_interface = MetadataInterface()
         self.resource_interface = ResourceInterface()
         self.protocols = protocols
         self._protocol_map = {type(i): i for i in protocols}
-        self.exec_middlewares = []
-        if middlewares:
-            self.exec_middlewares.extend(middlewares)
-        self.launch_manager.update_services(services)
-        self.launch_manager.update_launch_components(
-            [i.launch_component for i in self.launch_manager.services]
-        )
+        self.exec_middlewares = middlewares or []
+
+        for service in services:
+            self.launch_manager.add_service(service)
 
         for protocol in self.protocols:
             # Ensureable 用于注册各种东西, 包括 Service, ResourceProvider 等.

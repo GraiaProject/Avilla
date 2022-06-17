@@ -1,33 +1,36 @@
+from __future__ import annotations
+
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING
 
 from graia.amnesia.message import MessageChain
 from graia.broadcast.entities.dispatcher import BaseDispatcher
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
+from avilla.core.event import AvillaEvent
 from avilla.core.message import Message
-from avilla.core.selectors import entity
-from avilla.core.selectors import message as message_selector
-from avilla.core.utilles.selector import Selector
 
-from . import AvillaEvent
+if TYPE_CHECKING:
+    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
+    from avilla.core.selectors import entity
+    from avilla.core.selectors import message as message_selector
 
 
 class MessageReceived(AvillaEvent):
     message: Message
 
     @property
-    def ctx(self) -> Selector:
+    def ctx(self) -> entity:
         return self.message.sender
 
-    def __init__(self, message: Message, current_self: entity, time: Optional[datetime] = None) -> None:
+    def __init__(self, message: Message, current_self: entity, time: datetime | None = None) -> None:
         self.message = message
         self.self = current_self
         self.time = time or datetime.now()
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
-        async def catch(interface: "DispatcherInterface[MessageReceived]"):
+        async def catch(interface: DispatcherInterface["MessageReceived"]):
             if interface.annotation is Message:
                 return interface.event.message
             elif interface.annotation is MessageChain:
@@ -41,7 +44,7 @@ class MessageEdited(AvillaEvent):
     current: MessageChain
 
     @property
-    def ctx(self) -> Selector:
+    def ctx(self) -> entity:
         return self.operator
 
     def __init__(
@@ -51,7 +54,7 @@ class MessageEdited(AvillaEvent):
         past: MessageChain,
         current: MessageChain,
         current_self: entity,
-        time: Optional[datetime] = None,
+        time: datetime | None = None,
     ) -> None:
         self.message = message
         self.operator = operator
@@ -62,8 +65,8 @@ class MessageEdited(AvillaEvent):
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+        async def catch(interface: DispatcherInterface["MessageEdited"]):
+            pass  # TODO
 
 
 class MessageRevoked(AvillaEvent):
@@ -72,7 +75,7 @@ class MessageRevoked(AvillaEvent):
     operator: entity
 
     @property
-    def ctx(self) -> Selector:
+    def ctx(self) -> entity:
         return self.operator
 
     def __init__(
@@ -80,7 +83,7 @@ class MessageRevoked(AvillaEvent):
         message: message_selector,
         operator: entity,
         current_self: entity,
-        time: Optional[datetime] = None,
+        time: datetime | None = None,
     ) -> None:
         self.message = message
         self.operator = operator
@@ -89,5 +92,5 @@ class MessageRevoked(AvillaEvent):
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
-        async def catch(interface: "DispatcherInterface"):
-            pass
+        async def catch(interface: DispatcherInterface["MessageRevoked"]):
+            pass  # TODO

@@ -3,24 +3,26 @@
 # See https://www.python.org/dev/peps/pep-0621/
 name = "avilla-workspace"
 dependencies = [
-    "graia-broadcast>=0.16.1",
-    "graia-amnesia>=0.4.0",
+    "graia-broadcast>=0.17.5",
+    "graia-amnesia>=0.5.2",
     "loguru>=0.6.0",
     "yarl>=1.7.2",
     "irc>=20.0.0",
+    "launart>=0.4.2",
 ]
 version = "0"
 requires-python = ">=3.9"
+[project.optional-dependencies]
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "black<22.0,>=21.12b0",
-    "flake8<5.0.0,>=4.0.1",
-    "isort<6.0.0,>=5.10.1",
-    "typing-extensions<4.0.0,>=3.10.0",
-    "graia-scheduler<1.0.0,>=0.0.6",
-    "pdm-mina>=0.1.0",
-    "mina-build>=0.2.5",
+    "black>=22.3.0",
+    "flake8>=4.0.1",
+    "isort>=5.10.1",
+    "typing-extensions>=4.2.0",
+    "graia-scheduler>=0.0.8",
+    "pdm-mina>=0.2.0",
+    "mina-build>=0.2.6",
 ]
 
 [build-system]

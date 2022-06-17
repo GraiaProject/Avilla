@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.metadata.model import Metadata, meta_field
 
 if TYPE_CHECKING:
+    from datetime import datetime, timedelta
+
     from avilla.core.relationship import Relationship
     from avilla.core.resource import Resource
 

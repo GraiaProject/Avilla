@@ -1,19 +1,8 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Generic,
-    List,
-    Optional,
-    Type,
-    TypeVar,
-    Union,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
-from avilla.core import specialist
 from avilla.core.context import ctx_relationship
 from avilla.core.execution import Execution
 from avilla.core.metadata.model import Metadata, MetadataModifies
@@ -22,7 +11,6 @@ from avilla.core.selectors import entity as entity_selector
 from avilla.core.selectors import mainline as mainline_selector
 from avilla.core.selectors import request as request_selector
 from avilla.core.typing import TExecutionMiddleware
-from avilla.core.utilles import random_string
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -30,11 +18,11 @@ if TYPE_CHECKING:
 
 
 class ExecutorWrapper:
-    relationship: "Relationship"
-    execution: "Execution"
-    middlewares: List[TExecutionMiddleware]
+    relationship: Relationship
+    execution: Execution
+    middlewares: list[TExecutionMiddleware]
 
-    def __init__(self, relationship: "Relationship") -> None:
+    def __init__(self, relationship: Relationship) -> None:
         self.relationship = relationship
         self.middlewares = relationship.protocol.avilla.exec_middlewares.copy()
 
@@ -47,13 +35,13 @@ class ExecutorWrapper:
                 await stack.enter_async_context(middleware(self.relationship, self.execution))
             return await self.relationship.protocol.ensure_execution(self.execution)
 
-    def execute(self, execution: "Execution"):
+    def execute(self, execution: Execution):
         self.execution = execution
         return self
 
     __call__ = execute
 
-    def to(self, target: Union[entity_selector, mainline_selector]):
+    def to(self, target: entity_selector | mainline_selector):
         self.execution.locate_target(target)
         return self
 
@@ -80,11 +68,11 @@ class Relationship(Generic[M]):
     ctx: M
     mainline: mainline_selector
     current: entity_selector
-    via: Optional[Union[entity_selector, mainline_selector]]
+    via: entity_selector | mainline_selector | None
 
     protocol: "BaseProtocol"
 
-    _middlewares: List[TExecutionMiddleware]
+    _middlewares: list[TExecutionMiddleware]
 
     def __init__(
         self,
@@ -92,8 +80,8 @@ class Relationship(Generic[M]):
         ctx: M,
         mainline: mainline_selector,
         current: entity_selector,
-        via: Optional[Union[mainline_selector, entity_selector, None]] = None,
-        middlewares: Optional[List[TExecutionMiddleware]] = None,
+        via: mainline_selector | entity_selector | None = None,
+        middlewares: list[TExecutionMiddleware] | None = None,
     ) -> None:
         self.ctx = ctx
         self.mainline = mainline
@@ -142,64 +130,63 @@ class Relationship(Generic[M]):
         # TODO: rs.query to query entities in mainline, which match the pattern.
 
     @overload
-    async def meta(self, op: Type[_M]) -> _M:
+    async def meta(self, op_or_target: type[_M]) -> _M:
         ...
 
     @overload
-    async def meta(self, op: MetadataModifies[_T]) -> _T:
+    async def meta(self, op_or_target: MetadataModifies[_T]) -> _T:
         ...
 
     @overload
-    async def meta(self, target: Any, op: Type[_M]) -> _M:
+    async def meta(self, op_or_target: Any, op: type[_M]) -> _M:
         ...
 
     @overload
-    async def meta(self, target: Any, op: MetadataModifies[_T]) -> _T:
+    async def meta(self, op_or_target: Any, op: MetadataModifies[_T]) -> _T:
         ...
 
-    async def meta(self, arg1: Type[Metadata] | MetadataModifies | Selector | Any, arg2: Type[Metadata] | MetadataModifies | None = None) -> ...:  # type: ignore
+    async def meta(
+        self,
+        op_or_target: type[_M] | MetadataModifies[_T] | Any,
+        op: type[_M] | MetadataModifies[_T] | None = None,
+    ) -> _M | _T:
         with ctx_relationship.use(self):
-            if isinstance(arg1, type) and issubclass(arg1, Metadata) and arg2 is None:
-                # overload#1
-                target = arg1.default_target_by_relationship(self)
-                model = arg1
-                if target is None:
+            op, target = cast(
+                "tuple[type[_M] | MetadataModifies[_T], Any]",
+                (op_or_target, None if op is None else op, op_or_target),
+            )
+
+            if isinstance(op, type) and issubclass(op, Metadata):
+                modify = None
+                model = op
+            elif isinstance(op, MetadataModifies):
+                modify = op
+                model = op.model
+            else:
+                raise TypeError(f"{op_or_target} & {op} is not a supported metadata operation for rs.meta.")
+
+            target = target or model.default_target_by_relationship(cast(Relationship[Selector], self))
+
+            if target is None:
+                if modify is None:
                     raise ValueError(
-                        f"{arg1} is not a supported metadata for rs.meta, which requires a categorical target."
+                        f"{model} is not a supported metadata for rs.meta, which requires a categorical target."
                     )
-                source = self.avilla.metadata_interface.get_source(target, model)
-                if source is None:
+                raise ValueError(
+                    f"{model}'s modify is not a supported metadata for rs.meta, which requires a categorical target."
+                )
+
+            source = self.avilla.metadata_interface.get_source(target, model)
+
+            if source is None:
+                if modify is None:
                     raise ValueError(
-                        f"{arg1} is not a supported metadata at present, which not ordered by any source."
+                        f"{model} is not a supported metadata at present, which not ordered by any source."
                     )
+                raise ValueError(
+                    f"{model}'s modify is not a supported metadata at present, which not ordered by any source."
+                )
+
+            if modify is None:
                 return await source.fetch(target, model)
-            elif isinstance(arg1, MetadataModifies) and arg2 is None:
-                target = arg1.model.default_target_by_relationship(self)
-                if target is None:
-                    raise ValueError(
-                        f"{arg1.model}'s modify is not a supported metadata for rs.meta, which requires a categorical target."
-                    )
-                source = self.avilla.metadata_interface.get_source(target, arg1.model)
-                if source is None:
-                    raise ValueError(
-                        f"{arg1.model}'s modify is not a supported metadata at present, which not ordered by any source."
-                    )
-                return await source.modify(target, arg1)
-            elif arg2 is not None:
-                if isinstance(arg2, type) and issubclass(arg2, Metadata):
-                    target, model = arg1, arg2
-                    source = self.avilla.metadata_interface.get_source(target, model)
-                    if source is None:
-                        raise ValueError(
-                            f"{arg1} is not a supported metadata at present, which not ordered by any source."
-                        )
-                    return await source.fetch(target, model)
-                elif isinstance(arg2, MetadataModifies):
-                    target, model, modify = arg1, arg2.model, arg2
-                    source = self.avilla.metadata_interface.get_source(target, model)
-                    if source is None:
-                        raise ValueError(
-                            f"{model}'s modify is not a supported metadata at present, which not ordered by any source."
-                        )
-                    return await source.modify(target, modify)
-                raise TypeError(f"{arg1} & {arg2} is not a supported metadata operation for rs.meta.")
+            return cast(_T, await source.modify(target, cast(MetadataModifies[Selector], modify)))

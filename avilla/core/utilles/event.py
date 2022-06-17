@@ -1,15 +1,19 @@
-from abc import ABCMeta, abstractmethod
-from typing import Any, Awaitable, Callable, Dict, Generic, Optional, TypeVar
+from __future__ import annotations
 
-from graia.amnesia.message import Element
-from graia.broadcast import Dispatchable
+from abc import ABCMeta, abstractmethod
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
+
+if TYPE_CHECKING:
+    from collections.abc import Awaitable, Callable
+
+    from graia.broadcast.entities.event import Dispatchable
 
 T = TypeVar("T")
 P = TypeVar("P")
 
 
 class AbstractEventParser(Generic[T, P], metaclass=ABCMeta):
-    parsers: Dict[T, Callable[[P, Any], Awaitable[Any]]] = {}
+    parsers: dict[T, Callable[[P, Any], Awaitable[Any]]] = {}
 
     def __init_subclass__(cls, **kwargs):
         cls.parsers = {}
@@ -21,7 +25,7 @@ class AbstractEventParser(Generic[T, P], metaclass=ABCMeta):
     def key(self, token: Any) -> T:
         raise NotImplementedError
 
-    async def parse(self, protocol: P, raw_data: Any) -> Optional[Dispatchable]:
+    async def parse(self, protocol: P, raw_data: Any) -> Dispatchable | None:
         key = self.key(raw_data)
         for pattern, parser in self.parsers.items():
             if pattern == key:

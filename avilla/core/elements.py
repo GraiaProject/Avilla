@@ -1,5 +1,7 @@
+from __future__ import annotations
+
 from pathlib import Path
-from typing import Any, Union
+from typing import Any
 
 from graia.amnesia.message import Element
 from graia.amnesia.message.element import Text as Text
@@ -40,7 +42,7 @@ class NoticeAll(Element):
 class Image(Element):
     resource: Resource[bytes]
 
-    def __init__(self, resource: Union[Resource[bytes], Path, str]):
+    def __init__(self, resource: Resource[bytes] | Path | str):
         if isinstance(resource, Path):
             resource = LocalFileResource(resource)
         elif isinstance(resource, str):
@@ -54,7 +56,7 @@ class Image(Element):
 class Audio(Element):
     resource: Resource[bytes]
 
-    def __init__(self, resource: Union[Resource[bytes], Path, str]):
+    def __init__(self, resource: Resource[bytes] | Path | str):
         if isinstance(resource, Path):
             resource = LocalFileResource(resource)
         elif isinstance(resource, str):
@@ -68,7 +70,7 @@ class Audio(Element):
 class Video(Element):
     resource: Resource[bytes]
 
-    def __init__(self, resource: Union[Resource[bytes], Path, str]):
+    def __init__(self, resource: Resource[bytes] | Path | str):
         if isinstance(resource, Path):
             resource = LocalFileResource(resource)
         elif isinstance(resource, str):
