@@ -43,11 +43,9 @@ class MessageSend(Result[message_selector], Execution):
         if isinstance(message, str):
             message = MessageChain([Text(message)])
         elif not isinstance(message, MessageChain):
-            result = MessageChain([])
-            for element in message:
-                result.append(element)
-            message = result
+            message = MessageChain([]).extend(message)
         self.message = message
+
         if isinstance(reply, Message):
             reply = reply.to_selector()
         elif isinstance(reply, str):

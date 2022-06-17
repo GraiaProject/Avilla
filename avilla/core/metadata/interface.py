@@ -52,7 +52,7 @@ class MetadataInterface:
                 _set = _i_set
                 continue
             _set.intersection_update(_i_set)
-        assert _set is not None, "No source found for this target"
+        assert _set, "No source found for this target"
         if len(_set) > 1:
             raise ValueError("Multiple sources found, dichotomous conflict.")
-        return cast(MetadataSource[T_target, T_metamodel], list(_set)[0])
+        return cast(MetadataSource[T_target, T_metamodel], *_set)

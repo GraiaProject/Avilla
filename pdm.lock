@@ -184,9 +184,9 @@ dependencies = [
 
 [[package]]
 name = "launart"
-version = "0.4.1"
+version = "0.4.2"
 requires_python = ">=3.8"
-summary = "UNKNOWN"
+summary = ""
 dependencies = [
     "loguru>=0.6.0",
     "statv>=0.2.2",
@@ -420,7 +420,7 @@ dependencies = [
 
 [metadata]
 lock_version = "3.1"
-content_hash = "sha256:c0dda04b0ca7cda8409d5fe17a6c4384a24290e9c765b95abf13ce44a94916af"
+content_hash = "sha256:f1c4db8a810f2cca37f95aa06709ce9c89b14ed2f0645da253e0ed3da4ba0e91"
 
 [metadata.files]
 "black 22.3.0" = [
@@ -527,9 +527,9 @@ content_hash = "sha256:c0dda04b0ca7cda8409d5fe17a6c4384a24290e9c765b95abf13ce44a
     {file = "jaraco.text-3.8.0-py3-none-any.whl", hash = "sha256:76c9dd3a140c33e28809e39b05c07276fd97635ee4f4c1b006e40850eadb7570"},
     {file = "jaraco.text-3.8.0.tar.gz", hash = "sha256:3f050dc110ba596cf7f5ae9592b3d400e2ce2ba9ca4170616f250baa1e241b0a"},
 ]
-"launart 0.4.1" = [
-    {file = "launart-0.4.1-py3-none-any.whl", hash = "sha256:9b5d29c7c834c0b0276f17d21686696e79171380772dce8a18ba5a166b63fef2"},
-    {file = "launart-0.4.1.tar.gz", hash = "sha256:89386641b083e388ac1f31b0341692794755c3ce2c450dd9b6b02faa2f20afd2"},
+"launart 0.4.2" = [
+    {file = "launart-0.4.2-py3-none-any.whl", hash = "sha256:144184fbe5ac10d177bab1495cc12d7ec11784eb7112cbb5c5fe0a7f10753c51"},
+    {file = "launart-0.4.2.tar.gz", hash = "sha256:2077cc3c7c7f6c20ba6c5049e2e3a744acbcf0b0d27ba1bcfe16b3ebdb36e33d"},
 ]
 "loguru 0.6.0" = [
     {file = "loguru-0.6.0-py3-none-any.whl", hash = "sha256:4e2414d534a2ab57573365b3e6d0234dfb1d84b68b7f3b948e6fb743860a77c3"},
