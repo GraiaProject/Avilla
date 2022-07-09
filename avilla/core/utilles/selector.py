@@ -23,9 +23,11 @@ class Selector(Generic[P]):
     match_rule: MatchRule = "exact"
 
     pattern: dict[str, Pattern]
+    path_excludes: tuple[str]
 
-    def __init__(self, *, match_rule: MatchRule = "exact"):
+    def __init__(self, *, match_rule: MatchRule = "exact", path_excludes: tuple[str, ...] = ()):
         self.match_rule = match_rule
+        self.path_excludes = path_excludes
         self.pattern = {}
 
     def __getattr__(self, name: str):
@@ -49,7 +51,7 @@ class Selector(Generic[P]):
 
     @property
     def path(self) -> P | str:
-        return ".".join(self.pattern.keys())
+        return ".".join(k for k in self.pattern.keys() if k not in self.path_excludes)
 
     def match(self, another: Selector) -> bool:
         if self.match_rule == "exact":

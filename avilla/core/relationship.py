@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 from avilla.core.action import Action
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import Metadata, MetadataModifies
-from avilla.core.resource import Resource
+from avilla.core.resource import Resource, get_provider
 from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.selector import Selector, Summarizable
 
@@ -117,11 +117,7 @@ class Relationship:
     async def fetch(self, resource: Resource[_T]) -> _T:
         with ctx_relationship.use(self):
             target_ref = resource.to_selector()
-            provider = (
-                self.protocol.get_resource_provider(target_ref)
-                or self.avilla.get_resource_provider(target_ref)
-                or resource.get_default_provider()
-            )
+            provider = get_provider(resource, self)
             if provider is None:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
@@ -179,11 +175,7 @@ class Relationship:
 
             target_ref = target.to_selector()
             if isinstance(target, Resource):
-                provider = (
-                    self.protocol.get_resource_provider(target_ref)
-                    or self.avilla.get_resource_provider(target_ref)
-                    or target.get_default_provider()
-                )
+                provider = get_provider(target, self)
                 if provider is None:
                     raise ValueError(f"cannot find a valid provider for resource {target} to use rs.meta")
                 source = provider.get_metadata_source()

@@ -34,7 +34,7 @@ class Contact(Metadata):
 
 
 class Member(Contact, Metadata):
-    budget: str = meta_field("member.budget")
+    badge: str | None = meta_field("member.badge")
     muted: bool = meta_field("member.muted")
     mute_period: timedelta | None = meta_field("self.mute_period")
     grade: int = meta_field("member.grade")
@@ -71,7 +71,7 @@ class Self(Contact, Metadata):
     mute_period: timedelta | None = meta_field("self.mute_period")
     grade: int | None = meta_field("self.grade")
     grade_name: str | None = meta_field("self.grade_name")
-    budget: str = meta_field("self.budget")
+    badge: str | None = meta_field("self.badge")
     joined_at: datetime | None = meta_field("self.joined_at")
     last_active_at: datetime | None = meta_field("self.last_active_at")
 

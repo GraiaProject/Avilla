@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, cast
+from avilla.core.utilles.event_parser import AbstractEventParser
 
 from graia.amnesia.message import MessageChain
 
@@ -31,6 +32,7 @@ class BaseProtocol(metaclass=ABCMeta):
     completion_rules: ClassVar[dict[str, list[str]]] = cast(dict, MappingProxyType({}))
     action_middlewares: list[ActionMiddleware] = cast(list, ())
 
+    event_parser: ClassVar[AbstractEventParser]
     action_executors: ClassVar[list[type[ProtocolActionExecutor]]] = cast(list, ())
     # 顺序严格, 建议 full > exist long > exist short > any|none
     platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = cast(
@@ -65,10 +67,10 @@ class BaseProtocol(metaclass=ABCMeta):
                 return provider_class(self)
 
     async def parse_message(self, data: Any) -> MessageChain:
-        return MessageChain(await self.message_deserializer.parse_sentence(data))
+        return MessageChain(await self.message_deserializer.parse_sentence(self, data))
 
     async def serialize_message(self, message: MessageChain) -> Any:
-        return await self.message_serializer.serialize_chain(message)
+        return await self.message_serializer.serialize_chain(self, message)
 
     def get_metadata_provider(self, target: Selector) -> MetadataSource | None:
         for source in self.protocol_metadata_providers:

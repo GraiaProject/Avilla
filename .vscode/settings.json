@@ -77,5 +77,6 @@
     "files.watcherExclude": {
         "__pypackages__": true
     },
-    "python.analysis.diagnosticMode": "workspace"
+    "python.analysis.diagnosticMode": "workspace",
+    "isort.trace": "warn"
 }

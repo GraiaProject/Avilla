@@ -30,7 +30,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     meta: dict[str, Any] | None = None
 
     def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}: {' '.join([f'{k}={v.__repr__()}' for k, v in vars(self).items()])}>"
+        return f"<{self.__class__.__name__}: {' '.join([f'{k}={v!r}' for k, v in vars(self).items()])}>"
 
     @classmethod
     def get_ability_id(cls) -> str:

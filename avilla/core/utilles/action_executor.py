@@ -16,7 +16,7 @@ ActionHandler = Callable[["ActionExecutor", Action, Relationship], Any]
 
 
 def action(*action_types: type[Action]):
-    def decorator(func: ActionHandler):
+    def decorator(func):
         func.__supported_actions__ = action_types
         return func
 
