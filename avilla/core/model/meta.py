@@ -19,7 +19,7 @@ class Mainline(Metadata):
     current_count: int | None = meta_field("mainline.current_count")
 
     @classmethod
-    def default_target_by_relationship(cls, relationship: Relationship):
+    def get_default_target(cls, relationship: Relationship):
         return relationship.mainline
 
 
@@ -29,7 +29,7 @@ class Contact(Metadata):
     avatar: Resource = meta_field("contact.avatar")
 
     @classmethod
-    def default_target_by_relationship(cls, relationship: Relationship):
+    def get_default_target(cls, relationship: Relationship):
         return relationship.current
 
 
@@ -43,7 +43,7 @@ class Member(Contact, Metadata):
     last_active_at: datetime | None = meta_field("member.last_active_at")
 
     @classmethod
-    def default_target_by_relationship(cls, relationship: Relationship):
+    def get_default_target(cls, relationship: Relationship):
         return relationship.ctx
 
 
@@ -62,7 +62,7 @@ class Request(Metadata):
         return {question: self.answers[index] for index, question in self.questions.items()}
 
     @classmethod
-    def default_target_by_relationship(cls, relationship: Relationship):
+    def get_default_target(cls, relationship: Relationship):
         return relationship.ctx
 
 
@@ -76,5 +76,5 @@ class Self(Contact, Metadata):
     last_active_at: datetime | None = meta_field("self.last_active_at")
 
     @classmethod
-    def default_target_by_relationship(cls, relationship: Relationship):
+    def get_default_target(cls, relationship: Relationship):
         return relationship.current

@@ -1,9 +1,11 @@
 from __future__ import annotations
-from typing import List
-from graia.amnesia.launch.service import Service
-from graia.amnesia.launch import LaunchComponent, LaunchManager
 
+from typing import List
+
+from graia.amnesia.launch import LaunchComponent, LaunchManager
+from graia.amnesia.launch.service import Service
 from loguru import logger
+
 
 class IrcConnectionService(Service):
     supported_interface_types = set()

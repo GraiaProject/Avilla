@@ -9,6 +9,7 @@ dependencies = [
     "yarl>=1.7.2",
     "irc>=20.0.0",
     "launart>=0.4.2",
+    "statv>=0.2.2",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -41,7 +42,7 @@ target-version = ['py38']
 profile = "black"
 
 [tool.mina.packages.core]
-includes = ["avilla/core"]
+includes = ["avilla/core", "avilla/core/py.typed"]
 
 [tool.mina.packages.core.project]
 name = "avilla-core"

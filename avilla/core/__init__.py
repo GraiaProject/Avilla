@@ -3,19 +3,21 @@ from __future__ import annotations
 import importlib.metadata
 import re
 from inspect import cleandoc
+from typing import cast
 
 from graia.broadcast import Broadcast
 from launart import Launart, Service
 from loguru import logger
 
-from avilla.core.builtins import AvillaBuiltinDispatcher, execute_target_ensure
+from avilla.core.account import AbstractAccount, AccountSelector
+from avilla.core.builtins import AvillaBuiltinDispatcher
 from avilla.core.context import get_current_avilla
 from avilla.core.event import RelationshipDispatcher
-from avilla.core.metadata.interface import MetadataInterface
+from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
-from avilla.core.resource.interface import ResourceInterface
-from avilla.core.resource.local import LocalFileResource, LocalFileResourceProvider
-from avilla.core.typing import TExecutionMiddleware
+from avilla.core.resource import ResourceProvider
+from avilla.core.typing import ActionMiddleware
+from avilla.core.utilles.selector import Selector
 
 AVILLA_ASCII_LOGO = cleandoc(
     r"""
@@ -30,7 +32,17 @@ AVILLA_ASCII_LOGO = cleandoc(
 AVILLA_ASCII_RAW_LOGO = re.sub(r"\[.*?\]", "", AVILLA_ASCII_LOGO)
 
 
-GRAIA_PROJECT_REPOS = ["avilla-core", "graia-broadcast", "graia-saya", "graia-scheduler"]
+GRAIA_PROJECT_REPOS = [
+    "avilla-core",
+    "graia-broadcast",
+    "graia-saya",
+    "graia-scheduler",
+    "graia-ariadne" "statv",
+    "launart",
+    "creart",
+    "creart-graia",
+    "kayaku",
+]
 
 
 def _log_telemetry():
@@ -47,21 +59,18 @@ def _log_telemetry():
 
 class Avilla:
     broadcast: Broadcast
-
     launch_manager: Launart
-    metadata_interface: MetadataInterface
-    resource_interface: ResourceInterface
     protocols: list[BaseProtocol]
-
-    exec_middlewares: list[TExecutionMiddleware]
-    # TODO: Better Config using Ensureable, Status(amnesia)
-
+    action_middlewares: list[ActionMiddleware]
+    resource_providers: dict[str, ResourceProvider]
+    accounts: list[AbstractAccount]
+    # NOTE: configuration is done by kayaku.
     def __init__(
         self,
         broadcast: Broadcast,
         protocols: list[BaseProtocol],
         services: list[Service],
-        middlewares: list[TExecutionMiddleware] | None = None,
+        middlewares: list[ActionMiddleware] | None = None,
         launch_manager: Launart | None = None,
     ):
         if len({type(i) for i in protocols}) != len(protocols):
@@ -69,11 +78,11 @@ class Avilla:
 
         self.broadcast = broadcast
         self.launch_manager = launch_manager or Launart()
-        self.metadata_interface = MetadataInterface()
-        self.resource_interface = ResourceInterface()
         self.protocols = protocols
         self._protocol_map = {type(i): i for i in protocols}
-        self.exec_middlewares = middlewares or []
+        self.action_middlewares = middlewares or []
+        self.accounts = []
+        self.resource_providers = {}
 
         for service in services:
             self.launch_manager.add_service(service)
@@ -85,14 +94,8 @@ class Avilla:
 
         # TODO: Avilla Backend Service: 维护一些东西, 我还得再捋捋..
 
-        self.resource_interface.register(
-            LocalFileResourceProvider(), resource=lambda x: isinstance(x, LocalFileResource)
-        )
-
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
-
-        self.exec_middlewares.append(execute_target_ensure)
 
     @classmethod
     def current(cls) -> "Avilla":
@@ -101,6 +104,60 @@ class Avilla:
     @property
     def loop(self):
         return self.broadcast.loop
+
+    def add_action_middleware(self, middleware: ActionMiddleware):
+        self.action_middlewares.append(middleware)
+
+    def remove_action_middleware(self, middleware: ActionMiddleware):
+        self.action_middlewares.remove(middleware)
+
+    def get_resource_provider(self, resource: Selector) -> ResourceProvider | None:
+        return self.resource_providers.get(cast(str, resource.pattern["resource"].split(":")[0]))
+
+    def add_resource_provider(self, provider: ResourceProvider, *resource_types: str):
+        for resource_type in resource_types:
+            self.resource_providers[resource_type] = provider
+
+    def remove_resource_provider(self, provider: ResourceProvider):
+        for resource_type in self.resource_providers:
+            if self.resource_providers[resource_type] is provider:
+                del self.resource_providers[resource_type]
+
+    def add_account(self, account: AbstractAccount):
+        if account in self.accounts:
+            raise ValueError("account already exists.")
+        self.accounts.append(account)
+
+    def remove_account(self, account: AbstractAccount):
+        if account not in self.accounts:
+            raise ValueError("account not exists.")
+        self.accounts.remove(account)
+
+    def get_account(
+        self, account_id: str | None = None, selector: AccountSelector | None = None, land: Land | None = None
+    ) -> AbstractAccount | None:
+        for account in self.accounts:
+            if account_id is not None and account.id != account_id:
+                continue
+            if selector is not None and not selector.match(account.to_selector()):
+                continue
+            if land is not None and account.land != land:
+                continue
+            return account
+
+    def get_accounts(
+        self, account_id: str | None = None, selector: AccountSelector | None = None, land: Land | None = None
+    ) -> list[AbstractAccount]:
+        result = []
+        for account in self.accounts:
+            if account_id is not None and account.id != account_id:
+                continue
+            if selector is not None and not selector.match(account.to_selector()):
+                continue
+            if land is not None and account.land != land:
+                continue
+            result.append(account)
+        return result
 
     async def launch(self):
         logger.info(AVILLA_ASCII_RAW_LOGO, alt=AVILLA_ASCII_LOGO)

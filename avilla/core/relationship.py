@@ -1,52 +1,59 @@
 from __future__ import annotations
 
-from contextlib import AsyncExitStack
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
+from contextlib import AsyncExitStack, suppress
+from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 
+from avilla.core.action import Action
 from avilla.core.context import ctx_relationship
-from avilla.core.execution import Execution
 from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.resource import Resource
-from avilla.core.selectors import entity as entity_selector
-from avilla.core.selectors import mainline as mainline_selector
-from avilla.core.selectors import request as request_selector
-from avilla.core.typing import TExecutionMiddleware
-from avilla.core.utilles.selector import Selector
+from avilla.core.typing import ActionMiddleware
+from avilla.core.utilles.selector import Selector, Summarizable
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 
-class ExecutorWrapper:
+class RelationshipExecutor:
     relationship: Relationship
-    execution: Execution
-    middlewares: list[TExecutionMiddleware]
+    action: Action
+    middlewares: list[ActionMiddleware]
+
+    _target: Selector | None = None
 
     def __init__(self, relationship: Relationship) -> None:
         self.relationship = relationship
-        self.middlewares = relationship.protocol.avilla.exec_middlewares.copy()
+        self.middlewares = relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
 
     def __await__(self):
-        return self.ensure().__await__()
+        return self.__await_impl__().__await__()
 
-    async def ensure(self):
+    async def __await_impl__(self):
         async with AsyncExitStack() as stack:
             for middleware in reversed(self.middlewares):
-                await stack.enter_async_context(middleware(self.relationship, self.execution))
-            return await self.relationship.protocol.ensure_execution(self.execution)
+                await stack.enter_async_context(middleware(self))
+            for executor in self.relationship.protocol.action_executors:
+                # 需要注意: 我们直接从左往右迭代了, 所以建议 full > exist long > exist short > None
+                if executor.pattern is None:
+                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
+                elif self._target is not None and executor.pattern.match(self._target):
+                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
+            raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
 
-    def execute(self, execution: Execution):
-        self.execution = execution
+    def execute(self, action: Action):
+        self._target = action.set_default_target(self.relationship)
+        self.action = action
         return self
 
     __call__ = execute
 
-    def to(self, target: entity_selector | mainline_selector):
-        self.execution.locate_target(target)
+    def to(self, target: Selector):
+        self.action.set_target(target)
+        self._target = target
         return self
 
-    def use(self, middleware: TExecutionMiddleware):
-        self.middlewares.append(middleware)
+    def use(self, *middleware: ActionMiddleware):
+        self.middlewares.extend(middleware)
         return self
 
 
@@ -58,30 +65,28 @@ class RelationshipQueryWarpper:
         ...
 
 
-M = TypeVar("M", entity_selector, mainline_selector, request_selector, Selector)
-
 _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Metadata)
 
 
-class Relationship(Generic[M]):
-    ctx: M
-    mainline: mainline_selector
-    current: entity_selector
-    via: entity_selector | mainline_selector | None
+class Relationship:
+    ctx: Selector
+    mainline: Selector
+    current: Selector
+    via: Selector | None = None
 
     protocol: "BaseProtocol"
 
-    _middlewares: list[TExecutionMiddleware]
+    _middlewares: list[ActionMiddleware]
 
     def __init__(
         self,
         protocol: "BaseProtocol",
-        ctx: M,
-        mainline: mainline_selector,
-        current: entity_selector,
-        via: mainline_selector | entity_selector | None = None,
-        middlewares: list[TExecutionMiddleware] | None = None,
+        ctx: Selector,
+        mainline: Selector,
+        current: Selector,
+        via: Selector | None = None,
+        middlewares: list[ActionMiddleware] | None = None,
     ) -> None:
         self.ctx = ctx
         self.mainline = mainline
@@ -92,40 +97,36 @@ class Relationship(Generic[M]):
 
     @property
     def exec(self):
-        return ExecutorWrapper(self)
+        return RelationshipExecutor(self)
 
     @property
     def avilla(self):
         return self.protocol.avilla
 
-    @overload
-    async def complete(self, selector: mainline_selector) -> mainline_selector:
-        ...
-
-    @overload
-    async def complete(self, selector: entity_selector) -> entity_selector:
-        ...
-
-    async def complete(self, selector: ...) -> ...:
-        if isinstance(selector, mainline_selector):
-            tempdict = self.mainline.path.copy()
-            tempdict.update(selector.path)
-            return self.protocol.complete_selector(mainline_selector(tempdict))
-        elif isinstance(selector, entity_selector):
-            if "mainline" not in selector.path:
-                selector.path["mainline"] = self.mainline
-            return self.protocol.complete_selector(selector)
-        else:
-            raise TypeError(f"{selector} is not a supported selector for rs.complete.")
+    async def complete(self, selector: Selector):
+        rules = self.protocol.completion_rules.get(selector.path)
+        if rules is None:
+            return selector
+        for alternative in rules:
+            with suppress(ValueError):
+                return selector.mixin(
+                    alternative, self.ctx, self.mainline, *((self.via,) if self.via is not None else ())
+                )
+        return selector
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        with ctx_relationship.use(self):  # 可能在 provider 内部引用的组件有要用到的.
-            provider = self.avilla.resource_interface.get_provider(resource)
-            if not provider:
+        with ctx_relationship.use(self):
+            target_ref = resource.to_selector()
+            provider = (
+                self.protocol.get_resource_provider(target_ref)
+                or self.avilla.get_resource_provider(target_ref)
+                or resource.get_default_provider()
+            )
+            if provider is None:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
 
-    async def query(self, pattern: ...) -> RelationshipQueryWarpper:
+    async def query(self, pattern: Selector) -> RelationshipQueryWarpper:
         ...
         # TODO: rs.query to query entities in mainline, which match the pattern.
 
@@ -165,18 +166,29 @@ class Relationship(Generic[M]):
             else:
                 raise TypeError(f"{op_or_target} & {op} is not a supported metadata operation for rs.meta.")
 
-            target = target or model.default_target_by_relationship(cast(Relationship[Selector], self))
+            target = target or model.get_default_target(self)
 
             if target is None:
-                if modify is None:
-                    raise ValueError(
-                        f"{model} is not a supported metadata for rs.meta, which requires a categorical target."
-                    )
                 raise ValueError(
                     f"{model}'s modify is not a supported metadata for rs.meta, which requires a categorical target."
                 )
+            if not isinstance(target, Summarizable):
+                raise ValueError(
+                    f"{target} is not a supported target for rs.meta, which requires a summarizable trait."
+                )
 
-            source = self.avilla.metadata_interface.get_source(target, model)
+            target_ref = target.to_selector()
+            if isinstance(target, Resource):
+                provider = (
+                    self.protocol.get_resource_provider(target_ref)
+                    or self.avilla.get_resource_provider(target_ref)
+                    or target.get_default_provider()
+                )
+                if provider is None:
+                    raise ValueError(f"cannot find a valid provider for resource {target} to use rs.meta")
+                source = provider.get_metadata_source()
+            else:
+                source = self.protocol.get_metadata_provider(target_ref)
 
             if source is None:
                 if modify is None:

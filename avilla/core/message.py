@@ -1,32 +1,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from avilla.core.selectors import entity
-from avilla.core.selectors import mainline as mainline_selector
-from avilla.core.selectors import message as message_selector
+from avilla.core.platform import Land
+from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from datetime import datetime
 
     from graia.amnesia.message import MessageChain as MessageChain
 
-    from avilla.core.platform import Platform
-
 
 @dataclass
 class Message:
     id: str
-    mainline: mainline_selector
-    sender: entity
+    mainline: Selector
+    sender: Selector
     content: MessageChain
     time: datetime
-    reply: message_selector | None = None
+    reply: Selector | None = None
 
     @property
-    def platform(self) -> Platform | None:
-        return self.mainline.path.get("platform")
+    def land(self):
+        return Land(cast(str, self.mainline.pattern.get("land")))
 
-    def to_selector(self) -> message_selector:
-        return message_selector.mainline[self.mainline]._[self.id]
+    def to_selector(self) -> Selector:
+        return self.mainline.copy().message(self.id)

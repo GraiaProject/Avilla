@@ -17,8 +17,14 @@ class LocalFileResource(Resource[bytes]):
             file = Path(file)
         self.file = file
 
+    def get_default_provider(self):
+        return LOCAL_PROVIDER
+
 
 class LocalFileResourceProvider(ResourceProvider):
     async def fetch(self, resource: LocalFileResource, relationship: Relationship | None = None):
         if isinstance(resource, LocalFileResource):
             return resource.file.read_bytes()
+
+
+LOCAL_PROVIDER = LocalFileResourceProvider()

@@ -70,5 +70,5 @@ class Metadata(Generic[T], metaclass=ABCMeta):
         return f"{self.__class__.__name__}({values})"
 
     @classmethod
-    def default_target_by_relationship(cls, relationship: Relationship[Selector]) -> Selector | None:
+    def get_default_target(cls, relationship: Relationship) -> Selector | None:
         return relationship.ctx

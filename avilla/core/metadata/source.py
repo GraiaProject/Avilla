@@ -5,10 +5,11 @@ from typing import TYPE_CHECKING, Generic, TypeVar
 
 if TYPE_CHECKING:
     from avilla.core.metadata.model import Metadata, MetadataModifies
+    from avilla.core.utilles.selector import Selector
 
 
+T = TypeVar("T", bound="Selector")
 M = TypeVar("M", bound="Metadata")
-T = TypeVar("T")
 
 
 class MetadataSource(Generic[T, M], metaclass=ABCMeta):

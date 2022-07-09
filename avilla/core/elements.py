@@ -8,15 +8,15 @@ from graia.amnesia.message.element import Text as Text
 
 from avilla.core.resource import Resource
 from avilla.core.resource.local import LocalFileResource
-from avilla.core.selectors import entity as entity_selector
+from avilla.core.utilles.selector import Selector
 
 
 class Notice(Element):
     """该消息元素用于承载消息中用于提醒/呼唤特定用户的部分."""
 
-    target: entity_selector
+    target: Selector
 
-    def __init__(self, target: entity_selector) -> None:
+    def __init__(self, target: Selector) -> None:
         """实例化一个 Notice 消息元素, 用于承载消息中用于提醒/呼唤特定用户的部分.
 
         Args:

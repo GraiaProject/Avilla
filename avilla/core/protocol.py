@@ -1,55 +1,76 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, ClassVar
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core import specialist
-from avilla.core.execution import Execution
-from avilla.core.platform import Base, Platform
-from avilla.core.selectors import entity as entity_selector
-from avilla.core.selectors import request as request_selector
+from avilla.core.account import AbstractAccount, AccountSelector
+from avilla.core.action import Action
+from avilla.core.metadata.source import MetadataSource
+from avilla.core.platform import Abstract, Land, Platform
+from avilla.core.resource import PlatformResourceProvider, ResourceProvider
+from avilla.core.typing import ActionMiddleware
+from avilla.core.utilles.action_executor import ProtocolActionExecutor
+from avilla.core.utilles.message_deserializer import MessageDeserializer
+from avilla.core.utilles.message_serializer import MessageSerializer
+from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core import Avilla
-    from avilla.core.relationship import Relationship
 
 
 class BaseProtocol(metaclass=ABCMeta):
     avilla: Avilla
-    platform_base: ClassVar[Base] = specialist.avilla_platform_base
-    platform: ClassVar[Platform] = Platform(platform_base)
+    platform: ClassVar[Platform]
+    message_serializer: MessageSerializer
+    message_deserializer: MessageDeserializer
 
-    @abstractmethod
-    async def ensure_execution(self, execution: Execution) -> Any:
-        raise NotImplementedError
+    completion_rules: ClassVar[dict[str, list[str]]] = cast(dict, MappingProxyType({}))
+    action_middlewares: list[ActionMiddleware] = cast(list, ())
 
-    @abstractmethod
-    async def parse_message(self, data: Any) -> MessageChain:
-        raise NotImplementedError
+    action_executors: ClassVar[list[type[ProtocolActionExecutor]]] = cast(list, ())
+    # 顺序严格, 建议 full > exist long > exist short > any|none
+    platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = cast(
+        dict, MappingProxyType({})
+    )
+    protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = cast(list, ())
 
-    @abstractmethod
-    async def serialize_message(self, message: MessageChain) -> Any:
-        raise NotImplementedError
+    def __init__(self):
+        ...
 
-    @abstractmethod
-    async def get_relationship(self, ctx: Selector, current_self: entity_selector) -> Relationship:
-        raise NotImplementedError
+    @property
+    def land(self):
+        return self.platform[Land]
+
+    @property
+    def abstract(self):
+        return self.platform[Abstract]
 
     @abstractmethod
     def ensure(self, avilla: Avilla) -> Any:
         ...
 
-    def complete_selector(self, selector: Selector) -> Selector:
-        return selector
+    def get_accounts(self, selector: AccountSelector | None = None) -> list[AbstractAccount]:
+        return self.avilla.get_accounts(selector=selector, land=self.platform[Land])
 
-    async def accept_request(self, request: request_selector):
-        raise NotImplementedError
+    def get_account(self, selector: AccountSelector) -> AbstractAccount | None:
+        return self.avilla.get_account(selector=selector, land=self.platform[Land])
 
-    async def reject_request(self, request: request_selector):
-        raise NotImplementedError
+    def get_resource_provider(self, resource: Selector) -> ResourceProvider | None:
+        for pattern, provider_class in self.platform_resource_providers.items():
+            if pattern.match(resource):
+                return provider_class(self)
 
-    async def ignore_request(self, request: request_selector):
-        raise NotImplementedError
+    async def parse_message(self, data: Any) -> MessageChain:
+        return MessageChain(await self.message_deserializer.parse_sentence(data))
+
+    async def serialize_message(self, message: MessageChain) -> Any:
+        return await self.message_serializer.serialize_chain(message)
+
+    def get_metadata_provider(self, target: Selector) -> MetadataSource | None:
+        for source in self.protocol_metadata_providers:
+            if source.pattern.match(target):
+                return source(self)

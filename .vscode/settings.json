@@ -11,7 +11,7 @@
     "python.analysis.completeFunctionParens": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.extraPaths": [
-        "__pypackages__/3.9/lib",
+        "__pypackages__/3.10/lib"
     ],
     "python.sortImports.path": "isort",
     "cSpell.words": [
@@ -57,7 +57,7 @@
         "black"
     ],
     "python.autoComplete.extraPaths": [
-        "__pypackages__/3.9/lib"
+        "__pypackages__/3.10/lib"
     ],
     "python.linting.ignorePatterns": [
         "**/site-packages/**/*.py",

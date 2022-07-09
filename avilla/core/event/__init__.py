@@ -2,13 +2,16 @@ from __future__ import annotations
 
 import typing
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 
+from avilla.core.account import AccountSelector
 from avilla.core.context import ctx_protocol, ctx_relationship
 from avilla.core.relationship import Relationship
+from avilla.core.request import Request
+from avilla.core.resource import Resource
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -17,23 +20,17 @@ if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
     from avilla.core.metadata.model import MetadataModifies
-    from avilla.core.resource import Resource
-    from avilla.core.selectors import entity as entity_selector
-    from avilla.core.selectors import mainline as mainline_selector
-    from avilla.core.selectors import request as request_selector
     from avilla.core.utilles.selector import Selector
 
 
 class AvillaEvent(Dispatchable, metaclass=ABCMeta):
-    self: entity_selector
+    account: AccountSelector
     time: datetime
 
-    _event_meta: dict[str, Any] | None = None
+    meta: dict[str, Any] | None = None
 
     def __repr__(self) -> str:
-        return (
-            f"<{self.__class__.__name__}: {' '.join([f'{k}={v.__repr__()}' for k, v in vars(self).items()])}>"
-        )
+        return f"<{self.__class__.__name__}: {' '.join([f'{k}={v.__repr__()}' for k, v in vars(self).items()])}>"
 
     @classmethod
     def get_ability_id(cls) -> str:
@@ -54,7 +51,10 @@ class RelationshipDispatcher(BaseDispatcher):
     async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
         protocol = ctx_protocol.get()
         if protocol is not None:
-            rs = await protocol.get_relationship(interface.event.ctx, interface.event.self)
+            account = protocol.get_account(interface.event.account)
+            if account is None:
+                raise ValueError(f"Account {interface.event.account} not found")
+            rs = await account.get_relationship(interface.event.ctx)
             token = ctx_relationship.set(rs)
             interface.local_storage["relationship"] = rs
             interface.local_storage["_ctxtoken_rs"] = token
@@ -69,104 +69,121 @@ class RelationshipDispatcher(BaseDispatcher):
 
     @staticmethod
     async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if typing.get_origin(interface.annotation) is Relationship or interface.annotation is Relationship:
+        if interface.annotation is Relationship:
             return ctx_relationship.get()
 
 
 class RequestEvent(AvillaEvent):
-    request: request_selector
-
-    acceptable: bool = True
-    rejectable: bool = True
-    ignorable: bool = False
+    request: Request
 
     @property
     def mainline(self):
-        return self.request.get_mainline()
+        return self.request.mainline
 
     @property
-    def ctx(self) -> request_selector:
-        return self.request
+    def ctx(self):
+        return self.request.sender
 
     def __init__(
         self,
-        request: request_selector,
-        current_self: entity_selector,
+        request: Request,
         time: datetime | None = None,
-        acceptable: bool = True,
-        rejectable: bool = True,
-        ignorable: bool = False,
     ):
         self.request = request
-        self.acceptable = acceptable
-        self.rejectable = rejectable
-        self.ignorable = ignorable
-        self.self = current_self
-        self.time = time or datetime.now()
+        self.account = request.account
+        self.time = time or request.time
 
 
 class RequestAccepted(AvillaEvent):
-    request: request_selector
+    request: Request
 
     @property
-    def ctx(self) -> request_selector:
-        return self.request
+    def ctx(self):
+        return self.request.sender
 
     def __init__(
-        self, request: request_selector, current_self: entity_selector, time: datetime | None = None
+        self,
+        request: Request,
+        time: datetime | None = None,
     ):
         self.request = request
-        self.self = current_self
-        self.time = time or datetime.now()
+        self.account = request.account
+        self.time = time or request.time
 
 
 class RequestRejected(AvillaEvent):
-    request: request_selector
+    request: Request
 
     @property
-    def ctx(self) -> request_selector:
-        return self.request
+    def ctx(self):
+        return self.request.sender
 
     def __init__(
-        self, request: request_selector, current_self: entity_selector, time: datetime | None = None
+        self,
+        request: Request,
+        time: datetime | None = None,
     ):
         self.request = request
-        self.self = current_self
-        self.time = time or datetime.now()
+        self.account = request.account
+        self.time = time or request.time
 
 
 class RequestIgnored(AvillaEvent):
-    request: request_selector
+    request: Request
 
     @property
-    def ctx(self) -> request_selector:
-        return self.request
+    def ctx(self):
+        return self.request.sender
 
     def __init__(
-        self, request: request_selector, current_self: entity_selector, time: datetime | None = None
+        self,
+        request: Request,
+        time: datetime | None = None,
     ):
         self.request = request
-        self.self = current_self
-        self.time = time or datetime.now()
+        self.account = request.account
+        self.time = time or request.time
 
 
-R = TypeVar("R", bound="Resource")
+class RequestCancelled(AvillaEvent):
+    request: Request
+
+    @property
+    def ctx(self):
+        return self.request.sender
+
+    def __init__(
+        self,
+        request: Request,
+        time: datetime | None = None,
+    ):
+        self.request = request
+        self.account = request.account
+        self.time = time or request.time
+
+
+R = TypeVar("R", bound=Resource)
 
 
 class ResourceAvailable(AvillaEvent, Generic[R]):
     resource: R
 
     @property
-    def ctx(self) -> R:
-        return self.resource
+    def ctx(self):
+        return self.resource.to_selector().set_referent(self.resource)
 
     @property
     def mainline(self):
         return self.resource.mainline
 
-    def __init__(self, resource: R, current_self: entity_selector, time: datetime | None = None):
+    def __init__(
+        self,
+        resource: R,
+        account: AccountSelector,
+        time: datetime | None = None,
+    ):
         self.resource = resource
-        self.self = current_self
+        self.account = account
         self.time = time or datetime.now()
 
 
@@ -174,70 +191,75 @@ class ResourceUnavailable(AvillaEvent, Generic[R]):
     resource: R
 
     @property
-    def ctx(self) -> R:
-        return self.resource
+    def ctx(self):
+        return self.resource.to_selector().set_referent(self.resource)
 
     @property
     def mainline(self):
         return self.resource.mainline
 
-    def __init__(self, resource: R, current_self: entity_selector, time: datetime | None = None):
+    def __init__(
+        self,
+        resource: R,
+        account: AccountSelector,
+        time: datetime | None = None,
+    ):
         self.resource = resource
-        self.self = current_self
+        self.account = account
         self.time = time or datetime.now()
 
 
 class MetadataModified(AvillaEvent):
-    ctx: entity_selector | mainline_selector
+    ctx: Selector
     modifies: MetadataModifies
-    operator: entity_selector | None = None
+    operator: Selector | None = None
 
     def __init__(
         self,
-        ctx: entity_selector | mainline_selector,
+        ctx: Selector,
         modifies: MetadataModifies,
-        current_self: entity_selector,
-        operator: entity_selector | None = None,
+        account: AccountSelector,
+        operator: Selector | None = None,
         time: datetime | None = None,
     ):
         self.ctx = ctx
         self.modifies = modifies
         self.operator = operator
-        self.self = current_self
+        self.account = account
         self.time = time or datetime.now()
 
 
 class RelationshipCreated(AvillaEvent):
-    ctx: mainline_selector | entity_selector
-    via: mainline_selector | entity_selector | None
+    ctx: Selector
+    via: Selector | None
     # 用 via 同时表示两个方向的关系.(自发行为和被动行为)
     # 自发行为就是 None, 被动行为反之
 
     def __init__(
         self,
-        ctx: mainline_selector | entity_selector,
-        current_self: entity_selector,
+        ctx: Selector,
+        account: AccountSelector,
         time: datetime | None = None,
-        via: mainline_selector | entity_selector | None = None,
+        via: Selector | None = None,
     ):
         self.ctx = ctx
         self.via = via
-        self.self = current_self
+        self.account = account
         self.time = time or datetime.now()
 
 
 class RelationshipDestroyed(AvillaEvent):
-    ctx: mainline_selector | entity_selector
-    via: mainline_selector | entity_selector | None
+    ctx: Selector
+    via: Selector | None
 
     def __init__(
         self,
-        ctx: mainline_selector | entity_selector,
-        current_self: entity_selector,
+        ctx: Selector,
+        account: AccountSelector,
         time: datetime | None = None,
-        via: mainline_selector | entity_selector | None = None,
+        via: Selector | None = None,
     ):
         self.ctx = ctx
         self.via = via
-        self.self = current_self
+        self.account = account
         self.time = time or datetime.now()

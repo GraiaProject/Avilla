@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TypeVar
+from dataclasses import dataclass, field
+from typing import TypedDict, TypeVar
 
 
 @dataclass
 class PlatformDescription:
-    supplier: str  # 供应商
-    name: str
-    humanized_name: str
-
-    is_runtime: bool = False
+    ...
 
 
 PD = TypeVar("PD", bound=PlatformDescription)
@@ -20,29 +16,38 @@ PD = TypeVar("PD", bound=PlatformDescription)
 class Platform:
     description: dict[type[PlatformDescription], PlatformDescription]
 
-    def __init__(self, *description: PlatformDescription) -> None:
+    def __init__(self, land: Land, abstract: Abstract, *description: PlatformDescription) -> None:
         self.description = {type(i): i for i in description}
+        self.description[Land] = land
+        self.description[Abstract] = abstract
 
     def __getitem__(self, item: type[PD]) -> PD:
         return self.description[item]  # type: ignore
 
 
-@dataclass
-class Base(PlatformDescription):
-    version: str | None = None
+class Maintainer(TypedDict):
+    name: str
 
 
 @dataclass
-class Medium(PlatformDescription):
-    generation: str | None = None
-    version: str | None = None
+class Land(PlatformDescription):
+    name: str
+    maintainers: list[Maintainer] = field(default_factory=list)
+    humanized_name: str | None = None
 
 
 @dataclass
-class Adapter(PlatformDescription):
-    version: str | None = None
+class Abstract(PlatformDescription):
+    protocol: str
+    maintainers: list[Maintainer] = field(default_factory=list)
+    humanized_name: str | None = None
 
 
 @dataclass
-class MediumDistribution(PlatformDescription):
-    pass
+class Branch(PlatformDescription):
+    value: str
+
+
+@dataclass
+class Version(PlatformDescription):
+    components: dict[str, str]
