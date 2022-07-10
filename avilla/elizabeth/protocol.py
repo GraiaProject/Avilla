@@ -1,8 +1,9 @@
 from __future__ import annotations
+
 from typing import ClassVar
+
 from avilla.core import Avilla
 from avilla.core.platform import Abstract, Land, Platform
-
 from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import PlatformResourceProvider
 from avilla.core.utilles.metadata_source import ProtocolMetadataSource
@@ -24,18 +25,14 @@ class ElizabethProtocol(BaseProtocol):
             protocol="mirai-api-http",
             maintainers=[{"name": "royii"}],
             humanized_name="mirai-api-http protocol",
-        )
+        ),
     )
     event_parser = ElizabethEventParser()
     message_serializer = ElizabethMessageSerializer()
     message_deserializer = ElizabethMessageDeserializer()
 
-    platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = {
-        
-    }
-    protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = [
-        
-    ]
+    platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = {}
+    protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
 
     # 鉴于你 mah 乃至 mirai 还没支持频道, 这里就直接.
     completion_rules: ClassVar[dict[str, list[str]]] = {
@@ -50,11 +47,18 @@ class ElizabethProtocol(BaseProtocol):
 
     def ensure(self, avilla: Avilla):
         from .connection.ws import WebsocketClientConnection, WebsocketClientInfo
+
         self.avilla = avilla
         self.service = ElizabethService(self)
-        self.service.ensure_manager(avilla.launch_manager)
         avilla.launch_manager.add_service(self.service)
-        # DEBUG
-        self.service.ensure_config(WebsocketClientConnection(self, WebsocketClientInfo(
-            1779309090, "testafafv4fv34v34g3y45", "localhost"
-        )))
+        self.service.ensure_config(
+            WebsocketClientConnection(
+                self, WebsocketClientInfo(403808242, "ProjectArgon", "http://localhost:8080")
+            )
+        )
+        for connection in self.service.connections:
+            avilla.launch_manager.add_launchable(connection)
+
+        self.service.ensure_config(
+            WebsocketClientConnection(self, WebsocketClientInfo(-1, "test", "http://localhost:8080"))
+        )

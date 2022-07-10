@@ -3,14 +3,25 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import importlib.metadata
-from typing import TYPE_CHECKING, Coroutine, Dict, Iterable, List, Optional, Tuple, Type, overload
+from typing import (
+    TYPE_CHECKING,
+    Coroutine,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    overload,
+)
 
 from aiohttp import ClientSession
-from avilla.elizabeth.account import ElizabethAccount
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.broadcast import Broadcast
 from launart import Launart, Service
 from loguru import logger
+
+from avilla.elizabeth.account import ElizabethAccount
 
 from .connection import (
     CONFIG_MAP,
@@ -40,13 +51,10 @@ class ElizabethService(Service):
     # DEBUG 用.
     def ensure_config(self, connection: ElizabethConnection):
         self.connections.append(connection)
-        assert self.manager is not None
-        connection.ensure_manager(self.manager)
-        self.manager.add_launchable(connection)
         self.protocol.avilla.add_account(
             ElizabethAccount(str(connection.config.account), self.protocol.land, self.protocol)
         )
-    
+
     def get_conn(self, account_id: int):
         for conn in self.connections:
             if conn.config.account == account_id:
@@ -62,7 +70,9 @@ class ElizabethService(Service):
             if self.connections:
                 await asyncio.wait(
                     [
-                        conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished")
+                        conn.status.wait_for(
+                            "blocking-completed", "waiting-for-cleanup", "cleanup", "finished"
+                        )
                         for conn in self.connections
                     ]
                 )

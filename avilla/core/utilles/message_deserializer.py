@@ -2,7 +2,16 @@ from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Coroutine, Generic, Iterable, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    Generic,
+    Iterable,
+    TypeVar,
+)
 
 from graia.amnesia.message.element import Element
 from graia.broadcast.utilles import run_always_await
@@ -11,14 +20,17 @@ from typing_extensions import Self
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
+
 def deserializer(element_type: str):
     def wrapper(func):
         func.__element_deserializer__ = element_type
         return func
+
     return wrapper
 
 
 _P = TypeVar("_P", bound="BaseProtocol")
+
 
 class MessageDeserializer(ABC, Generic[_P]):
     element_deserializer: dict[str, Callable[[Self, _P, dict], Element | Coroutine[None, None, Element]]] = {}
@@ -49,4 +61,8 @@ class MessageDeserializer(ABC, Generic[_P]):
         return await run_always_await(deserializer, self, protocol, raw)  # type: ignore
 
     async def parse_sentence(self, protocol: _P, data: list) -> list[Any]:
-        return [await self.parse_element(protocol, raw) for raw in self.split_message(data)]
+        return [
+            await self.parse_element(protocol, raw)
+            for raw in self.split_message(data)
+            if raw["type"] not in {"Source", "Quote"}
+        ]

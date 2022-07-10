@@ -18,6 +18,8 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
         self.avilla = avilla
 
     async def catch(self, interface: DispatcherInterface[AvillaEvent]):
+        from avilla.core import Avilla
+
         if interface.annotation is Avilla:
             return self.avilla
         elif interface.annotation in self.avilla._protocol_map:

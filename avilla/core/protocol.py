@@ -29,7 +29,7 @@ class BaseProtocol(metaclass=ABCMeta):
     message_deserializer: MessageDeserializer
 
     completion_rules: ClassVar[dict[str, list[str]]] = cast(dict, MappingProxyType({}))
-    action_middlewares: list[ActionMiddleware] = cast(list, ())
+    action_middlewares: list[ActionMiddleware] = []
 
     event_parser: ClassVar[AbstractEventParser]
     action_executors: ClassVar[list[type[ProtocolActionExecutor]]] = cast(list, ())

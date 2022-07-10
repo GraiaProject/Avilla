@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 import asyncio
 import secrets
 from typing import TYPE_CHECKING, Any, Dict, MutableMapping, Optional
 from weakref import WeakValueDictionary
-from avilla.core.account import AccountSelector
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.transport import Transport
@@ -25,7 +25,10 @@ from launart.utilles import wait_fut
 from loguru import logger
 from yarl import URL
 
-from . import ElizabethConnection, ConnectionStatus
+from avilla.core.account import AccountSelector
+from avilla.core.utilles.selector import Selector
+
+from . import ConnectionStatus, ElizabethConnection
 from ._info import WebsocketClientInfo, WebsocketServerInfo
 from .http import HttpClientConnection
 from .util import CallMethod, get_router, validate_response
@@ -71,10 +74,9 @@ class WebsocketConnectionMixin(Transport):
             self.futures[sync_id].set_result(data)
         elif "type" in data:
             self.status.alive = True
-            # event = build_event(data)
             event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
-            self.protocol.avilla.broadcast.postEvent(event)
-            # await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
+            if event:
+                self.protocol.avilla.broadcast.postEvent(event)
         else:
             logger.warning(f"Got unknown data: {raw}")
 
