@@ -17,7 +17,7 @@ class ElizabethProtocol(BaseProtocol):
     platform = Platform(
         Land(
             "elizabeth",
-            [{"name": "GreyElaina"}],
+            [{"name": "GraiaProject"}],
             humanized_name="Elizabeth - mirai-api-http for avilla",
         ),
         Abstract(
@@ -49,5 +49,12 @@ class ElizabethProtocol(BaseProtocol):
     service: ElizabethService
 
     def ensure(self, avilla: Avilla):
+        from .connection.ws import WebsocketClientConnection, WebsocketClientInfo
+        self.avilla = avilla
         self.service = ElizabethService(self)
-        ...
+        self.service.ensure_manager(avilla.launch_manager)
+        avilla.launch_manager.add_service(self.service)
+        # DEBUG
+        self.service.ensure_config(WebsocketClientConnection(self, WebsocketClientInfo(
+            1779309090, "testafafv4fv34v34g3y45", "localhost"
+        )))

@@ -89,7 +89,6 @@ class Avilla:
 
         for protocol in self.protocols:
             # Ensureable 用于注册各种东西, 包括 Service, ResourceProvider 等.
-            # 相对的, 各个 Protocol 实例各维护/调用一个 Profile, 这个也算是 Config 相关的妥协
             protocol.ensure(self)
 
         # TODO: Avilla Backend Service: 维护一些东西, 我还得再捋捋..

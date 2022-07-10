@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -10,6 +11,7 @@ from typing import (
     Set,
     Type,
 )
+from avilla.core.account import AccountSelector
 
 from graia.amnesia.transport.common.status import (
     ConnectionStatus as BaseConnectionStatus,
@@ -29,6 +31,7 @@ from ._info import (
 from .util import CallMethod, camel_to_snake
 
 if TYPE_CHECKING:
+    from ..protocol import ElizabethProtocol
     from ..service import ElizabethService
 
 
@@ -67,12 +70,17 @@ class ConnectionStatus(BaseConnectionStatus, LaunchableStatus):
         )
 
 
-class ConnectionMixin(Launchable, Generic[T_Info]):
+class ElizabethConnection(Launchable, Generic[T_Info]):
     status: ConnectionStatus
+    protocol: ElizabethProtocol
     config: T_Info
     dependencies: Set[str]
 
     fallback: Optional["HttpClientConnection"]
+
+    @property
+    def account(self) -> AccountSelector:
+        return Selector().land(self.protocol.land.name).account(str(self.config.account))  # type: ignore
 
     @property
     def required(self) -> Set[str]:
@@ -82,7 +90,7 @@ class ConnectionMixin(Launchable, Generic[T_Info]):
     def stages(self):
         return {}
 
-    def __init__(self, config: T_Info) -> None:
+    def __init__(self, protocol: ElizabethProtocol, config: T_Info) -> None:
         self.id = ".".join(
             [
                 "elizabeth",
@@ -91,6 +99,7 @@ class ConnectionMixin(Launchable, Generic[T_Info]):
                 camel_to_snake(self.__class__.__qualname__),
             ]
         )
+        self.protocol = protocol
         self.config = config
         self.fallback = None
         self.status = ConnectionStatus()
@@ -106,7 +115,7 @@ class ConnectionMixin(Launchable, Generic[T_Info]):
 from .http import HttpClientConnection, HttpServerConnection  # noqa: E402
 from .ws import WebsocketClientConnection, WebsocketServerConnection  # noqa: E402
 
-CONFIG_MAP: Dict[Type[U_Info], Type[ConnectionMixin]] = {
+CONFIG_MAP: Dict[Type[U_Info], Type[ElizabethConnection]] = {
     HttpClientInfo: HttpClientConnection,
     HttpServerInfo: HttpServerConnection,
     WebsocketClientInfo: WebsocketClientConnection,
@@ -118,7 +127,7 @@ class ConnectionInterface(ExportInterface["ElizabethService"]):
     """Elizabeth 连接接口"""
 
     service: "ElizabethService"
-    connection: Optional[ConnectionMixin]
+    connection: Optional[ElizabethConnection]
 
     def __init__(self, service: "ElizabethService", account: Optional[int] = None) -> None:
         self.service = service
@@ -144,7 +153,7 @@ class ConnectionInterface(ExportInterface["ElizabethService"]):
     ) -> Any:
         connection = self.connection
         if account is not None:
-            connection = self.service.connections.get(account)
+            connection = self.service.get_conn(account)
         if connection is None:
             raise ValueError(f"Unable to find connection to execute {command}")
         return await connection.call(command, method, params)

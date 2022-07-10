@@ -1,7 +1,9 @@
+from __future__ import annotations
 import asyncio
 import secrets
-from typing import Any, Awaitable, Callable, Dict, List, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, MutableMapping, Optional
 from weakref import WeakValueDictionary
+from avilla.core.account import AccountSelector
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.transport import Transport
@@ -23,10 +25,13 @@ from launart.utilles import wait_fut
 from loguru import logger
 from yarl import URL
 
-from . import ConnectionMixin, ConnectionStatus
+from . import ElizabethConnection, ConnectionStatus
 from ._info import WebsocketClientInfo, WebsocketServerInfo
 from .http import HttpClientConnection
 from .util import CallMethod, get_router, validate_response
+
+if TYPE_CHECKING:
+    from avilla.elizabeth.protocol import ElizabethProtocol
 
 t = TransportRegistrar()
 
@@ -37,6 +42,12 @@ class WebsocketConnectionMixin(Transport):
     futures: MutableMapping[str, asyncio.Future]
     status: ConnectionStatus
     fallback: Optional["HttpClientConnection"]
+    protocol: ElizabethProtocol
+    config: WebsocketClientInfo | WebsocketServerInfo
+
+    @property
+    def account(self) -> AccountSelector:
+        return Selector().land(self.protocol.land.name).account(str(self.config.account))  # type: ignore
 
     @t.on(WebsocketReceivedEvent)
     @data_type(str)
@@ -60,10 +71,10 @@ class WebsocketConnectionMixin(Transport):
             self.futures[sync_id].set_result(data)
         elif "type" in data:
             self.status.alive = True
-            #event = build_event(data)
-            # TODO: event -> protocol parse
-            # TODO: core util: event parser
-            #await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
+            # event = build_event(data)
+            event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
+            self.protocol.avilla.broadcast.postEvent(event)
+            # await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
         else:
             logger.warning(f"Got unknown data: {raw}")
 
@@ -106,13 +117,15 @@ t = TransportRegistrar()
 
 
 @t.apply
-class WebsocketServerConnection(WebsocketConnectionMixin, ConnectionMixin[WebsocketServerInfo]):
+class WebsocketServerConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketServerInfo]):
     """Websocket 服务器连接"""
 
     dependencies = {"http.universal_server"}
 
-    def __init__(self, config: WebsocketServerInfo) -> None:
-        ConnectionMixin.__init__(self, config)
+    config: WebsocketServerInfo
+
+    def __init__(self, protocol: ElizabethProtocol, config: WebsocketServerInfo) -> None:
+        ElizabethConnection.__init__(self, protocol, config)
         self.declares.append(WebsocketEndpoint(self.config.path))
         self.futures = WeakValueDictionary()
 
@@ -149,18 +162,19 @@ t = TransportRegistrar()
 
 
 @t.apply
-class WebsocketClientConnection(WebsocketConnectionMixin, ConnectionMixin[WebsocketClientInfo]):
+class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketClientInfo]):
     """Websocket 客户端连接"""
 
     dependencies = {"http.universal_client"}
     http_interface: AiohttpClientInterface
+    config: WebsocketClientInfo
 
     @property
     def stages(self):
         return {"blocking"}
 
-    def __init__(self, config: WebsocketClientInfo) -> None:
-        ConnectionMixin.__init__(self, config)
+    def __init__(self, protocol: ElizabethProtocol, config: WebsocketClientInfo) -> None:
+        ElizabethConnection.__init__(self, protocol, config)
         self.futures = WeakValueDictionary()
 
     async def launch(self, mgr: Launart) -> None:

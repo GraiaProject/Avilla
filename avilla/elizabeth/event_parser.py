@@ -32,8 +32,8 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
     def get_event_type(self, raw: dict) -> str:
         return raw['type']
 
-    @event("FriendMessage")
-    async def friend_message(self, protocol: ElizabethProtocol, account: AccountSelector, raw: dict):
+    @event("GroupMessage")
+    async def group_message(self, protocol: ElizabethProtocol, account: AccountSelector, raw: dict):
         message_chain = raw['messageChain']
         source = None
         quote = None

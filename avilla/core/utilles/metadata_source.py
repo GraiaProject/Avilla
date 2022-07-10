@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Callable, ClassVar, Coroutine, Generic, TypeVar
+from typing import TYPE_CHECKING, Callable, ClassVar, Coroutine, Generic, TypeVar, cast
 
 from typing_extensions import Self
 
@@ -44,10 +44,10 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
     pattern: ClassVar[Selector] = Selector(match_rule="any")
     fetchers: ClassVar[
         dict[type[Metadata], Callable[[Self, Selector, type[Metadata]], Coroutine[None, None, Metadata]]]
-    ]
+    ] = {}
     modifiers: ClassVar[
         dict[type[Metadata], Callable[[Self, Selector, MetadataModifies], Coroutine[None, None, Metadata]]]
-    ]
+    ] = {}
 
     def __init_subclass__(cls, pattern: Selector) -> None:
         super().__init_subclass__()

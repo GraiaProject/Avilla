@@ -1,7 +1,10 @@
+from __future__ import annotations
 import asyncio
-from typing import Any, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 from aiohttp import FormData
+from avilla.core.account import AccountSelector
+from avilla.core.utilles.selector import Selector
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.json import Json
 from graia.amnesia.transport import Transport
@@ -12,18 +15,20 @@ from launart.utilles import wait_fut
 from loguru import logger
 
 from ..exception import InvalidSession
-from . import ConnectionMixin
+from . import ElizabethConnection
 from ._info import HttpClientInfo, HttpServerInfo
 from .util import CallMethod, get_router, validate_response
 
+if TYPE_CHECKING:
+    from avilla.elizabeth.protocol import ElizabethProtocol
 
-class HttpServerConnection(ConnectionMixin[HttpServerInfo], Transport):
+class HttpServerConnection(ElizabethConnection[HttpServerInfo], Transport):
     """HTTP 服务器连接"""
 
     dependencies = {"http.universal_server"}
 
-    def __init__(self, config: HttpServerInfo) -> None:
-        super().__init__(config)
+    def __init__(self, protocol: ElizabethProtocol, config: HttpServerInfo) -> None:
+        super().__init__(protocol, config)
         self.handlers[HttpEndpoint(self.config.path, ["POST"])] = self.__class__.handle_request
 
     async def handle_request(self, io: AbstractServerRequestIO):
@@ -37,8 +42,8 @@ class HttpServerConnection(ConnectionMixin[HttpServerInfo], Transport):
         assert isinstance(data, dict)
         self.status.connected = True
         self.status.alive = True
-        # TODO: event -> protocol
-        # await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
+        event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
+        self.protocol.avilla.broadcast.postEvent(event)
         return {"command": "", "data": {}}
 
     async def launch(self, mgr: Launart) -> None:
@@ -46,14 +51,14 @@ class HttpServerConnection(ConnectionMixin[HttpServerInfo], Transport):
         router.use(self)
 
 
-class HttpClientConnection(ConnectionMixin[HttpClientInfo]):
+class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
     """HTTP 客户端连接"""
 
     dependencies = {"http.universal_client"}
     http_interface: AiohttpClientInterface
 
-    def __init__(self, config: HttpClientInfo) -> None:
-        super().__init__(config)
+    def __init__(self, protocol: ElizabethProtocol, config: HttpClientInfo) -> None:
+        super().__init__(protocol, config)
         self.is_hook: bool = False
 
     async def request(
@@ -134,9 +139,11 @@ class HttpClientConnection(ConnectionMixin[HttpClientInfo]):
                 assert isinstance(data, list)
                 for event_data in data:
                     # TODO: event -> protocol
-                    #event = build_event(event_data)
-                    #await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
+                    # event = build_event(event_data)
+                    # await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
                     ...
+                    event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
+                    self.protocol.avilla.broadcast.postEvent(event)
                 await wait_fut(
                     [asyncio.sleep(0.5), self.wait_for("finished", "elizabeth.service")],
                     return_when=asyncio.FIRST_COMPLETED,

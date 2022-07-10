@@ -39,4 +39,4 @@ class HttpServerInfo:
 
 U_Info = Union[HttpClientInfo, WebsocketClientInfo, WebsocketServerInfo, HttpServerInfo]
 
-T_Info = TypeVar("T_Info", bound=U_Info)
+T_Info = TypeVar("T_Info", HttpClientInfo, WebsocketClientInfo, WebsocketServerInfo, HttpServerInfo)

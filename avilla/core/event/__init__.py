@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typing
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
+from datetime import datetime
+from typing import TYPE_CHECKING
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
@@ -10,11 +10,8 @@ from graia.broadcast.entities.event import Dispatchable
 from avilla.core.account import AccountSelector
 from avilla.core.context import ctx_protocol, ctx_relationship
 from avilla.core.relationship import Relationship
-from avilla.core.request import Request
-from avilla.core.resource import Resource
 
 if TYPE_CHECKING:
-    from datetime import datetime
     from types import TracebackType
 
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -27,23 +24,12 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     account: AccountSelector
     time: datetime
 
-    meta: dict[str, Any] | None = None
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__}: {' '.join([f'{k}={v!r}' for k, v in vars(self).items()])}>"
-
-    @classmethod
-    def get_ability_id(cls) -> str:
-        return f"event::{cls.__name__}"
-
     @property
     @abstractmethod
     def ctx(self) -> Selector:
         ...
 
-    def with_meta(self, meta: dict[str, Any]):
-        self._event_meta = meta
-        return self
+    # TODO: Metadata in Event
 
 
 class RelationshipDispatcher(BaseDispatcher):
@@ -71,142 +57,6 @@ class RelationshipDispatcher(BaseDispatcher):
     async def catch(interface: DispatcherInterface[AvillaEvent]):
         if interface.annotation is Relationship:
             return ctx_relationship.get()
-
-
-class RequestEvent(AvillaEvent):
-    request: Request
-
-    @property
-    def mainline(self):
-        return self.request.mainline
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
-
-
-class RequestAccepted(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
-
-
-class RequestRejected(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
-
-
-class RequestIgnored(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
-
-
-class RequestCancelled(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
-
-
-R = TypeVar("R", bound=Resource)
-
-
-class ResourceAvailable(AvillaEvent, Generic[R]):
-    resource: R
-
-    @property
-    def ctx(self):
-        return self.resource.to_selector().set_referent(self.resource)
-
-    @property
-    def mainline(self):
-        return self.resource.mainline
-
-    def __init__(
-        self,
-        resource: R,
-        account: AccountSelector,
-        time: datetime | None = None,
-    ):
-        self.resource = resource
-        self.account = account
-        self.time = time or datetime.now()
-
-
-class ResourceUnavailable(AvillaEvent, Generic[R]):
-    resource: R
-
-    @property
-    def ctx(self):
-        return self.resource.to_selector().set_referent(self.resource)
-
-    @property
-    def mainline(self):
-        return self.resource.mainline
-
-    def __init__(
-        self,
-        resource: R,
-        account: AccountSelector,
-        time: datetime | None = None,
-    ):
-        self.resource = resource
-        self.account = account
-        self.time = time or datetime.now()
 
 
 class MetadataModified(AvillaEvent):
