@@ -13,8 +13,8 @@ if TYPE_CHECKING:
     from .protocol import ElizabethProtocol
 
 
-class ElizabethFriendActionExecutor(
-    ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(match_rule="exist").friend(lambda _: True)
+class ElizabethGroupActionExecutor(
+    ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(match_rule="exist").group("*")
 ):
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):

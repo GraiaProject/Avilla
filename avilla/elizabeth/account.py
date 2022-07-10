@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from avilla.core.account import AbstractAccount
@@ -30,4 +31,3 @@ class ElizabethAccount(AbstractAccount):
     @property
     def available(self) -> bool:
         ...  # TODO: lookup in service, use status
-

@@ -14,26 +14,19 @@ from avilla.elizabeth.element import FlashImage
 if TYPE_CHECKING:
     from .protocol import ElizabethProtocol
 
+
 class ElizabethMessageSerializer(MessageSerializer["ElizabethProtocol"]):
     @element(Text)
     def plain(self, protocol: "ElizabethProtocol", element: Text):
-        return {
-            'type': 'Plain',
-            'text': element.text
-        }
-    
+        return {"type": "Plain", "text": element.text}
+
     @element(Notice)
     def at(self, protocol: "ElizabethProtocol", element: Notice):
-        return {
-            'type': 'At',
-            'target': element.target.id
-        }
-    
+        return {"type": "At", "target": element.target.id}
+
     @element(NoticeAll)
     def at_all(self, protocol: "ElizabethProtocol", element: NoticeAll):
-        return {
-            'type': 'AtAll'
-        }
+        return {"type": "AtAll"}
 
     @element(Image)
     async def image(self, protocol: "ElizabethProtocol", element: Image):
@@ -42,8 +35,8 @@ class ElizabethMessageSerializer(MessageSerializer["ElizabethProtocol"]):
             raise ValueError(f"No provider found for resource: {element.resource}")
         raw = await provider.fetch(element.resource, ctx_relationship.get())
         return {
-            'type': 'Image',
-            'base64': base64.b64encode(raw).decode('utf-8'),
+            "type": "Image",
+            "base64": base64.b64encode(raw).decode("utf-8"),
         }
 
     @element(FlashImage)
@@ -53,17 +46,14 @@ class ElizabethMessageSerializer(MessageSerializer["ElizabethProtocol"]):
             raise ValueError(f"No provider found for resource: {element.resource}")
         raw = await provider.fetch(element.resource, ctx_relationship.get())
         return {
-            'type': 'FlashImage',
-            'base64': base64.b64encode(raw).decode('utf-8'),
+            "type": "FlashImage",
+            "base64": base64.b64encode(raw).decode("utf-8"),
         }
-    
+
     @element(Audio)
     async def voice(self, protocol: "ElizabethProtocol", element: Audio):
         provider = get_provider(element.resource, protocol=protocol)
         if provider is None:
             raise ValueError(f"No provider found for resource: {element.resource}")
         raw = await provider.fetch(element.resource, ctx_relationship.get())
-        return {
-            'type': 'Voice',
-            'base64': base64.b64encode(raw).decode('utf-8')
-        }
+        return {"type": "Voice", "base64": base64.b64encode(raw).decode("utf-8")}

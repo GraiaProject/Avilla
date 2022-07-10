@@ -13,6 +13,7 @@ class HttpClientInfo:
     def get_url(self, route: str) -> str:
         return str((URL(self.host) / route))
 
+
 @dataclass
 class WebsocketClientInfo:
     account: int
@@ -22,6 +23,7 @@ class WebsocketClientInfo:
     def get_url(self, route: str) -> str:
         return str((URL(self.host) / route))
 
+
 @dataclass
 class WebsocketServerInfo:
     account: int
@@ -29,6 +31,7 @@ class WebsocketServerInfo:
     path: str
     params: Dict[str, str]
     headers: Dict[str, str]
+
 
 @dataclass
 class HttpServerInfo:

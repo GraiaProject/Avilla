@@ -52,5 +52,3 @@ class ResourceUnavailable(AvillaEvent, Generic[R]):
         self.resource = resource
         self.account = account
         self.time = time or datetime.now()
-
-

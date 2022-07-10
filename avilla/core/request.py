@@ -6,8 +6,10 @@ from typing import TYPE_CHECKING
 
 from avilla.core.platform import Land
 from avilla.core.utilles.selector import Selector
+
 if TYPE_CHECKING:
     from avilla.core.account import AccountSelector
+
 
 @dataclass
 class Request:

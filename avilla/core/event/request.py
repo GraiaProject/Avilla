@@ -12,6 +12,7 @@ from . import AvillaEvent
 if TYPE_CHECKING:
     from datetime import datetime
 
+
 class RequestEvent(AvillaEvent):
     request: Request
 
@@ -31,7 +32,7 @@ class RequestEvent(AvillaEvent):
         self.request = request
         self.account = request.account
         self.time = time or request.time
-    
+
     class Dispatcher(BaseDispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface[RequestEvent]):

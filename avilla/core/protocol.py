@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from contextlib import ExitStack
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from graia.amnesia.message import MessageChain
 
 from avilla.core.account import AbstractAccount, AccountSelector
+from avilla.core.context import ctx_avilla, ctx_protocol
+from avilla.core.event import AvillaEvent
 from avilla.core.metadata.source import MetadataSource
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import PlatformResourceProvider, ResourceProvider
@@ -75,3 +78,9 @@ class BaseProtocol(metaclass=ABCMeta):
         for source in self.protocol_metadata_providers:
             if source.pattern.match(target):
                 return source(self)
+
+    def post_event(self, event: AvillaEvent):
+        with ExitStack() as stack:
+            stack.enter_context(ctx_avilla.use(self.avilla))
+            stack.enter_context(ctx_protocol.use(self))
+            self.avilla.broadcast.postEvent(event)

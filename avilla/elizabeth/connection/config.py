@@ -89,7 +89,9 @@ def config(account: int, verify_key: str, *configs: Union[Type[U_Config], U_Conf
         infos.append(_CFG_INFO_MAP[type(cfg)](account, verify_key, *cfg))
     return infos
 
+
 DictStrAny = dict[str, Any]
+
 
 class ConfigTypedDict(TypedDict):
     account: Required[int]

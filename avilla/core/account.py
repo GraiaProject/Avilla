@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
-from avilla.core.relationship import Relationship
 from avilla.core.platform import Land
+from avilla.core.relationship import Relationship
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:

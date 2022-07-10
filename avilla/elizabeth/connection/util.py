@@ -97,6 +97,7 @@ class UploadMethod(str, Enum):
     def __str__(self) -> str:
         return self.value
 
+
 def camel_to_snake(name: str) -> str:
     if "_" in name:
         return name

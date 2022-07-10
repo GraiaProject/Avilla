@@ -34,6 +34,7 @@ _P = TypeVar("_P", bound="BaseProtocol")
 
 class MessageDeserializer(ABC, Generic[_P]):
     element_deserializer: dict[str, Callable[[Self, _P, dict], Element | Coroutine[None, None, Element]]] = {}
+    ignored_types: set[str] = set()
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -64,5 +65,5 @@ class MessageDeserializer(ABC, Generic[_P]):
         return [
             await self.parse_element(protocol, raw)
             for raw in self.split_message(data)
-            if raw["type"] not in {"Source", "Quote"}
+            if self.get_element_type(raw) not in self.ignored_types
         ]

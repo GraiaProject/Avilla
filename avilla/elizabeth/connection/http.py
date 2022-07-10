@@ -1,10 +1,9 @@
 from __future__ import annotations
+
 import asyncio
 from typing import TYPE_CHECKING, Any, Optional
 
 from aiohttp import FormData
-from avilla.core.account import AccountSelector
-from avilla.core.utilles.selector import Selector
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.json import Json
 from graia.amnesia.transport import Transport
@@ -21,6 +20,7 @@ from .util import CallMethod, get_router, validate_response
 
 if TYPE_CHECKING:
     from avilla.elizabeth.protocol import ElizabethProtocol
+
 
 class HttpServerConnection(ElizabethConnection[HttpServerInfo], Transport):
     """HTTP 服务器连接"""
@@ -43,7 +43,8 @@ class HttpServerConnection(ElizabethConnection[HttpServerInfo], Transport):
         self.status.connected = True
         self.status.alive = True
         event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
-        self.protocol.avilla.broadcast.postEvent(event)
+        if event is not None:
+            self.protocol.post_event(event)
         return {"command": "", "data": {}}
 
     async def launch(self, mgr: Launart) -> None:
@@ -143,7 +144,8 @@ class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
                     # await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
                     ...
                     event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
-                    self.protocol.avilla.broadcast.postEvent(event)
+                    if event is not None:
+                        self.protocol.post_event(event)
                 await wait_fut(
                     [asyncio.sleep(0.5), self.wait_for("finished", "elizabeth.service")],
                     return_when=asyncio.FIRST_COMPLETED,

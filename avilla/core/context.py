@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 ctx_avilla: Ctx[Avilla] = Ctx("avilla")
 ctx_protocol: Ctx[BaseProtocol] = Ctx("protocol")
 ctx_relationship: Ctx[Relationship] = Ctx("relationship")
-ctx_event: Ctx[Dispatchable] = Ctx("event")
 ctx_eventmeta: Ctx[dict[str, Any]] = Ctx("eventmeta")
 
 

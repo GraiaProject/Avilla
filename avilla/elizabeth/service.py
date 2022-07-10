@@ -60,6 +60,15 @@ class ElizabethService(Service):
             if conn.config.account == account_id:
                 return conn
 
+    def has_account(self, account_id: int):
+        return any(conn.config.account == account_id for conn in self.connections)
+
+    def get_account(self, account_id: int):
+        for conn in self.connections:
+            if conn.config.account == account_id:
+                return conn
+        raise ValueError(f"Account {account_id} not found")
+
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
             # TODO: lifecycle event for account
@@ -70,9 +79,7 @@ class ElizabethService(Service):
             if self.connections:
                 await asyncio.wait(
                     [
-                        conn.status.wait_for(
-                            "blocking-completed", "waiting-for-cleanup", "cleanup", "finished"
-                        )
+                        conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished")
                         for conn in self.connections
                     ]
                 )

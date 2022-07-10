@@ -55,8 +55,9 @@ class RelationshipDispatcher(BaseDispatcher):
 
     @staticmethod
     async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if interface.annotation is Relationship:
-            return ctx_relationship.get()
+        if isinstance(interface.event, AvillaEvent):
+            if interface.annotation is Relationship:
+                return interface.local_storage["relationship"]
 
 
 class MetadataModified(AvillaEvent):

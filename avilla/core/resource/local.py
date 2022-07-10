@@ -12,6 +12,10 @@ if TYPE_CHECKING:
 class LocalFileResource(Resource[bytes]):
     file: Path
 
+    @property
+    def id(self):
+        return self.file.name
+
     def __init__(self, file: Path | str):
         if isinstance(file, str):
             file = Path(file)

@@ -14,13 +14,14 @@ if TYPE_CHECKING:
 
 def element(element_type: type[Element]):
     def wrapper(func: Callable):
-        func.__element_deserializer__ = element_type
+        func.__element_serializer__ = element_type
         return func
 
     return wrapper
 
 
 _P = TypeVar("_P", bound="BaseProtocol")
+
 
 class MessageSerializer(Generic[_P]):
     element_serializer: dict[type[Element], Callable[[Self, _P, Any], dict | Coroutine[None, None, dict]]] = {}

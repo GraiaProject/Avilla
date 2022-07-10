@@ -1,17 +1,6 @@
 from __future__ import annotations
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    Dict,
-    Generic,
-    List,
-    Optional,
-    Set,
-    Type,
-)
-from avilla.core.account import AccountSelector
+
+from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Set, Type
 
 from graia.amnesia.transport.common.status import (
     ConnectionStatus as BaseConnectionStatus,
@@ -19,6 +8,8 @@ from graia.amnesia.transport.common.status import (
 from launart import ExportInterface, Launchable, LaunchableStatus
 from statv import Stats
 from typing_extensions import Self
+
+from avilla.core.account import AccountSelector
 
 from ._info import (
     HttpClientInfo,
@@ -133,9 +124,9 @@ class ConnectionInterface(ExportInterface["ElizabethService"]):
         self.service = service
         self.connection = None
         if account:
-            if account not in service.connections:
+            if not service.has_account(account):
                 raise ValueError(f"Account {account} not found")
-            self.connection = service.connections[account]
+            self.connection = service.get_account(account)
 
     def bind(self, account: int) -> Self:
         """绑定账号, 返回一个新实例
@@ -148,9 +139,7 @@ class ConnectionInterface(ExportInterface["ElizabethService"]):
         """
         return ConnectionInterface(self.service, account)
 
-    async def _call(
-        self, command: str, method: CallMethod, params: dict, *, account: Optional[int] = None
-    ) -> Any:
+    async def _call(self, command: str, method: CallMethod, params: dict, *, account: Optional[int] = None) -> Any:
         connection = self.connection
         if account is not None:
             connection = self.service.get_conn(account)

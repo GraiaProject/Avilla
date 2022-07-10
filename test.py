@@ -1,4 +1,7 @@
 import sys
+from avilla.core.elements import Image
+from avilla.core.resource.local import LocalFileResource
+from avilla.core.utilles.selector import Selector
 
 from creart import create
 from graia.amnesia.builtins.aiohttp import AiohttpService
@@ -30,8 +33,12 @@ avilla = Avilla(broadcast, [protocol], [AiohttpService()])
 
 
 @broadcast.receiver(MessageReceived)
-async def on_message_received(event: MessageReceived):
-    print(event.message)
+async def on_message_received(event: MessageReceived, rs: Relationship):
+    print(event, rs, rs.ctx.pattern, Selector(match_rule="exist").member(lambda x: x == "1846913566").match(rs.ctx))
+    if Selector.exist().member("1846913566").match(rs.ctx):
+        await rs.exec(MessageSend([
+            "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
+        ]))
 
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

@@ -9,14 +9,16 @@ from typing import (
     Protocol,
     TypeVar,
     Union,
-    cast,
     runtime_checkable,
 )
+
+from typing_extensions import LiteralString
 
 MatchRule = Literal["exact", "exist", "any"]
 Pattern = Union[str, Callable[[str], bool]]
 
 P = TypeVar("P", bound=str)
+TLiteral = TypeVar("TLiteral", bound=LiteralString)
 
 
 class Selector(Generic[P]):
@@ -31,7 +33,9 @@ class Selector(Generic[P]):
         self.pattern = {}
 
     def __getattr__(self, name: str):
-        def wrapper(content: Pattern):
+        def wrapper(content: Pattern | Literal["*"]):
+            if content == "*":
+                content = lambda _: True
             self.pattern[name] = content
             return self
 
@@ -53,27 +57,44 @@ class Selector(Generic[P]):
     def path(self) -> P | str:
         return ".".join(k for k in self.pattern.keys() if k not in self.path_excludes)
 
+    @classmethod
+    def exist(cls):
+        return cls(match_rule="exist")
+
+    @classmethod
+    def way(cls, path: TLiteral) -> Selector[TLiteral]:
+        instance = cls()
+        instance.pattern = {i: lambda _: True for i in path.split(".")}
+        return instance  # type: ignore
+
     def match(self, another: Selector) -> bool:
         if self.match_rule == "exact":
             if self.constant:
                 return another.constant and self.path == another.path and self.pattern == another.pattern
             if not another.constant:
                 raise TypeError("Can't match dynamic selector with another dynamic selector")
-            return self.path == another.path and all(
-                v(cast(str, another.pattern[k])) if callable(v) else v == another.pattern[k]
-                for k, v in self.pattern.items()
-            )
+            for k, v1 in self.pattern.items():
+                v2 = another.pattern[k]
+                if v1 != v2:
+                    return False
+            return True
         elif self.match_rule == "exist":
             subset = set(self.pattern.keys()).issubset(another.pattern.keys())
-            if self.constant:
-                return subset and all(v == another.pattern[k] for k, v in self.pattern.items() if k in another.pattern)
+            if not subset:
+                return False
             if not another.constant and any(callable(v) for k, v in another.pattern.items() if k in self.pattern):
                 raise TypeError("Can't partially match dynamic selector with another dynamic selector")
-            return subset and all(
-                v(cast(str, another.pattern[k])) if callable(v) else v == another.pattern[k]
-                for k, v in self.pattern.items()
-                if k in another.pattern
-            )
+            for k, v1 in self.pattern.items():
+                if k in another.pattern:
+                    v2 = another.pattern[k]
+                    if callable(v1):
+                        if callable(v2):
+                            raise TypeError("Can't partially match dynamic selector with another dynamic selector")
+                        if not v1(v2):
+                            return False
+                    elif v1 != v2:
+                        return False
+            return True
         elif self.match_rule == "any":
             return True
         else:

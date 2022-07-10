@@ -11,10 +11,11 @@ from avilla.core.utilles.selector import Selector
 if TYPE_CHECKING:
     from avilla.core.relationship import Relationship
 
+
 class LaunartHttpResourceProvider(ResourceProvider):
     def __init__(self, launart: Launart):
         self.client = launart.get_interface(AiohttpClientInterface)
-    
+
     async def fetch(self, resource: ElizabethResource, relationship: Relationship | None = None):
         if resource.url is None:
             raise ValueError("required url")
@@ -23,20 +24,29 @@ class LaunartHttpResourceProvider(ResourceProvider):
     def get_metadata_source(self):
         raise NotImplementedError()
 
+
 class ElizabethResource(Resource[bytes]):
     url: str | None = None
     path: str | None = None
     base64: str | None = None
 
-    def __init__(self, id: str, url: str | None = None, path: str | None = None, base64: str | None = None, mainline: Selector | None = None) -> None:
+    def __init__(
+        self,
+        id: str,
+        url: str | None = None,
+        path: str | None = None,
+        base64: str | None = None,
+        mainline: Selector | None = None,
+    ) -> None:
         self.id = id
         self.url = url
         self.path = path
         self.base64 = base64
         self.mainline = mainline
-    
+
     def get_default_provider(self):
         return LaunartHttpResourceProvider(Launart.current())
+
 
 class ElizabethImageResource(ElizabethResource):
     @property
@@ -48,10 +58,19 @@ class ElizabethImageResource(ElizabethResource):
                 return "friend_image"
         return "image"
 
+
 class ElizabethAudioResource(ElizabethResource):
     length: int | None = None
 
-    def __init__(self, id: str, url: str | None = None, path: str | None = None, base64: str | None = None, mainline: Selector | None = None, length: int | None = None) -> None:
+    def __init__(
+        self,
+        id: str,
+        url: str | None = None,
+        path: str | None = None,
+        base64: str | None = None,
+        mainline: Selector | None = None,
+        length: int | None = None,
+    ) -> None:
         super().__init__(id, url, path, base64, mainline)
         self.length = length
 

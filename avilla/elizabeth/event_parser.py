@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from graia.amnesia.message import MessageChain
 
@@ -50,18 +50,16 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
         return MessageReceived(
             message=Message(
                 id=str(source.id),
-                mainline=Selector().land(protocol.land.name).group(raw["sender"]["group"]["id"]),
+                mainline=Selector().land(protocol.land.name).group(str(raw["sender"]["group"]["id"])),
                 sender=Selector()
                 .land(protocol.land.name)
-                .group(raw["sender"]["group"]["id"])
-                .member(raw["sender"]["id"]),
-                content=MessageChain(
-                    await protocol.message_deserializer.parse_sentence(protocol, message_chain)
-                ),
+                .group(str(raw["sender"]["group"]["id"]))
+                .member(str(raw["sender"]["id"])),
+                content=MessageChain(await protocol.message_deserializer.parse_sentence(protocol, message_chain)),
                 time=datetime.fromtimestamp(source.time),
                 reply=Selector()
                 .land(protocol.land.name)
-                .group(raw["sender"]["group"]["id"])
+                .group(str(raw["sender"]["group"]["id"]))
                 .message(str(quote.id))
                 if quote is not None
                 else None,
