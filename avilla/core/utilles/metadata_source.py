@@ -13,7 +13,9 @@ if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 Fetcher = Callable[["DispatachingMetadataSource", Selector, type[Metadata]], Coroutine[None, None, Metadata]]
-Modifier = Callable[["DispatachingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]]
+Modifier = Callable[
+    ["DispatachingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]
+]
 
 
 def fetch(*model_types: type[Metadata]):
@@ -41,7 +43,7 @@ def modify(*model_types: type[Metadata]):
 
 
 class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
-    pattern: ClassVar[Selector] = Selector(match_rule="any")
+    pattern: ClassVar[Selector] = Selector(mode="any")
     fetchers: ClassVar[
         dict[type[Metadata], Callable[[Self, Selector, type[Metadata]], Coroutine[None, None, Metadata]]]
     ] = {}
@@ -86,7 +88,7 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
 _P = TypeVar("_P", bound="BaseProtocol")
 
 
-class ProtocolMetadataSource(DispatachingMetadataSource, Generic[_P], pattern=Selector(match_rule="any")):
+class ProtocolMetadataSource(DispatachingMetadataSource, Generic[_P], pattern=Selector(mode="any")):
     protocol: _P
 
     def __init_subclass__(cls, pattern: Selector) -> None:

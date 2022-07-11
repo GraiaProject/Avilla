@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Generic, TypeVar
+from typing import TYPE_CHECKING, AsyncIterable, Generic, TypeVar
 
 from graia.amnesia.message import Element, MessageChain
 
@@ -123,4 +123,12 @@ class MemberRemove(Action):
         self.member = member
 
 
-# TODO: 迭代(Async Iterator) Mainline 内的成员用的 Action.
+class IterateMembers(Action, Result[AsyncIterable[Selector]]):
+    mainline: Selector
+
+    def set_target(self, target: Selector):
+        self.mainline = target
+    
+    def set_default_target(self, relationship: Relationship):
+        self.mainline = relationship.mainline
+        return relationship.mainline

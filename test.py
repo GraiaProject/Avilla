@@ -8,7 +8,7 @@ from graia.amnesia.builtins.aiohttp import AiohttpService
 from graia.broadcast import Broadcast
 
 from avilla.core import Avilla
-from avilla.core.action import MessageSend
+from avilla.core.action import IterateMembers, MessageSend
 from avilla.core.event.message import MessageReceived
 from avilla.core.relationship import Relationship
 from avilla.elizabeth.protocol import ElizabethProtocol
@@ -34,11 +34,13 @@ avilla = Avilla(broadcast, [protocol], [AiohttpService()])
 
 @broadcast.receiver(MessageReceived)
 async def on_message_received(event: MessageReceived, rs: Relationship):
-    print(event, rs, rs.ctx.pattern, Selector(match_rule="exist").member(lambda x: x == "1846913566").match(rs.ctx))
-    if Selector.exist().friend("1846913566").match(rs.ctx):
-        await rs.exec(MessageSend([
-            "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
-        ]))
+    print(event, rs, rs.ctx.pattern, Selector(mode="exist").member(lambda x: x == "1846913566").match(rs.ctx))
+    if Selector.fragment().group("*").member("1846913566").match(rs.ctx):
+        # await rs.exec(MessageSend([
+        #    "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
+        # ]))
+        async for i in await rs.exec(IterateMembers()):
+            print(i)
 
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

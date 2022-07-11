@@ -83,9 +83,7 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
             message=Message(
                 id=str(source.id),
                 mainline=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
-                sender=Selector()
-                    .land(protocol.land.name)
-                    .friend(str(raw["sender"]["id"])),
+                sender=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
                 content=MessageChain(await protocol.message_deserializer.parse_sentence(protocol, message_chain)),
                 time=datetime.fromtimestamp(source.time),
                 reply=Selector()

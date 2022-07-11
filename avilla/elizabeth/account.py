@@ -14,6 +14,9 @@ class ElizabethAccount(AbstractAccount):
     protocol: ElizabethProtocol
 
     async def get_relationship(self, target: Selector) -> Relationship:
+        # TODO: 对象存在性检查
+        if "land" not in target:
+            target = Selector().mixin("land." + target.path, target)
         if target.path == "land.group":
             return Relationship(self.protocol, target, target, self.to_selector())
         elif target.path == "land.group.member":

@@ -7,6 +7,7 @@ from typing import (
     Generic,
     Literal,
     Protocol,
+    TypeGuard,
     TypeVar,
     Union,
     runtime_checkable,
@@ -22,13 +23,13 @@ TLiteral = TypeVar("TLiteral", bound=LiteralString)
 
 
 class Selector(Generic[P]):
-    match_rule: MatchRule = "exact"
+    mode: MatchRule = "exact"
 
     pattern: dict[str, Pattern]
     path_excludes: tuple[str]
 
-    def __init__(self, *, match_rule: MatchRule = "exact", path_excludes: tuple[str, ...] = ()):
-        self.match_rule = match_rule
+    def __init__(self, *, mode: MatchRule = "exact", path_excludes: tuple[str, ...] = ()):
+        self.mode = mode
         self.path_excludes = path_excludes
         self.pattern = {}
 
@@ -49,6 +50,11 @@ class Selector(Generic[P]):
     def __getitem__(self, key: str) -> Pattern:
         return self.pattern[key]
 
+    def __repr__(self) -> str:
+        return f"Selector(mode={self.mode})" + ("." + ".".join([
+            f"{k}({v})" for k, v in self.pattern.items()
+        ]) if self.pattern else "")
+
     @property
     def constant(self) -> bool:
         return all(not callable(v) for v in self.pattern.values())
@@ -63,11 +69,15 @@ class Selector(Generic[P]):
 
     @classmethod
     def exist(cls):
-        return cls(match_rule="exist")
+        return cls(mode="exist")
 
     @classmethod
     def any(cls):
-        return cls(match_rule="any")
+        return cls(mode="any")
+
+    @classmethod
+    def fragment(cls, *path_excludes: str) -> Selector:
+        return cls(mode="fragment", path_excludes=path_excludes)
 
     @classmethod
     def way(cls, path: TLiteral) -> Selector[TLiteral]:
@@ -75,9 +85,12 @@ class Selector(Generic[P]):
         instance.pattern = {i: lambda _: True for i in path.split(".")}
         return instance  # type: ignore
 
+    def assert_constant(self: Selector) -> TypeGuard[ConstantSelector]:
+        return self.constant
+
     def match(self, another: Selector) -> bool:
         # sourcery skip: low-code-quality
-        if self.match_rule == "exact":
+        if self.mode == "exact":
             if self.constant:
                 return another.constant and self.path == another.path and self.pattern == another.pattern
             if not another.constant:
@@ -87,7 +100,7 @@ class Selector(Generic[P]):
                 if v1 != v2:
                     return False
             return True
-        elif self.match_rule == "exist":
+        elif self.mode == "exist":
             subset = set(self.pattern.keys()).issubset(another.pattern.keys())
             if not subset:
                 return False
@@ -104,7 +117,7 @@ class Selector(Generic[P]):
                     elif v1 != v2:
                         return False
             return True
-        elif self.match_rule == "fragment":
+        elif self.mode == "fragment":
             if self.empty:
                 return True
             fragment = list(self.pattern.keys())
@@ -129,15 +142,15 @@ class Selector(Generic[P]):
                 elif v1 != v2:
                     return False
             return True
-        elif self.match_rule == "any":
+        elif self.mode == "any":
             return True
         else:
-            raise ValueError(f"Unknown match rule: {self.match_rule}")
+            raise ValueError(f"Unknown match rule: {self.mode}")
 
     def mix(self, path: str, **env: Pattern) -> Selector:
         env = self.pattern.copy() | env
         instance = super().__new__(self.__class__)
-        instance.match_rule = self.match_rule
+        instance.mode = self.mode
         if not set(env).issuperset(path.split(".")):
             raise ValueError(f"given information cannot mix with {path}")
         instance.pattern = {each: env[each] for each in path.split(".")}
@@ -148,7 +161,7 @@ class Selector(Generic[P]):
 
     def copy(self) -> Selector:
         instance = super().__new__(self.__class__)
-        instance.match_rule = self.match_rule
+        instance.mode = self.mode
         instance.pattern = self.pattern.copy()
         return instance
 
@@ -163,3 +176,7 @@ class Selector(Generic[P]):
 class Summarizable(Protocol):
     def to_selector(self) -> Selector:
         ...
+
+# 似乎没啥用...
+class ConstantSelector(Selector):
+    pattern: dict[str, str]
