@@ -6,16 +6,19 @@ from typing import Any, Dict, Literal, Type, Union, overload
 from graia.amnesia.builtins.aiohttp import AiohttpRouter
 from launart import Launart
 
-from ..exception import (
+from avilla.core.exceptions import (
     AccountMuted,
-    AccountNotFound,
-    InvalidArgument,
-    InvalidSession,
-    InvalidVerifyKey,
-    MessageTooLong,
-    RemoteException,
+    InvalidOperation,
+    NetworkError,
+    TooLongMessage,
     UnknownError,
     UnknownTarget,
+)
+
+from ..exception import (
+    AccountNotFound,
+    InvalidSession,
+    InvalidVerifyKey,
     UnVerifiedSession,
 )
 
@@ -46,9 +49,9 @@ code_exceptions_mapping: Dict[int, Type[Exception]] = {
     6: FileNotFoundError,
     10: PermissionError,
     20: AccountMuted,
-    30: MessageTooLong,
-    400: InvalidArgument,
-    500: RemoteException,
+    30: TooLongMessage,
+    400: InvalidOperation,
+    500: NetworkError,
 }
 
 

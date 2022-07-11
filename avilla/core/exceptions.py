@@ -2,11 +2,11 @@ class InaccessibleInterface(Exception):
     pass
 
 
-class NetworkException(Exception):
+class NetworkError(Exception):
     pass
 
 
-class HttpRequestException(NetworkException):
+class HttpRequestError(NetworkError):
     status: int
     reason: str
 
@@ -22,11 +22,7 @@ class ParserException(Exception):  # 解析器错误..我希望你永远不会�
     pass
 
 
-class ExecutionException(Exception):
-    pass
-
-
-class OperationFailed(ExecutionException):
+class ActionFailed(Exception):
     pass
 
 
@@ -34,7 +30,11 @@ class InvalidAuthentication(Exception):
     pass
 
 
-class UnsupportedOperation(Exception):
+class UnsupportedOperation(ActionFailed):
+    pass
+
+
+class InvalidOperation(ActionFailed):
     pass
 
 
@@ -54,5 +54,16 @@ class UnknownTarget(Exception):
     pass
 
 
-class ContextException(Exception):
+class ContextError(Exception):
     pass
+
+class RemoteError(Exception):
+    pass
+
+
+class UnknownError(Exception):
+    """其他错误"""
+
+
+class DeprecatedError(Exception):
+    """该接口已弃用."""
