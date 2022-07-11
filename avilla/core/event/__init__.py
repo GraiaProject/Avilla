@@ -32,34 +32,6 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     # TODO: Metadata in Event
 
 
-class RelationshipDispatcher(BaseDispatcher):
-    @staticmethod
-    async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
-        protocol = ctx_protocol.get()
-        if protocol is not None:
-            account = protocol.get_account(interface.event.account)
-            if account is None:
-                raise ValueError(f"Account {interface.event.account} not found")
-            rs = await account.get_relationship(interface.event.ctx)
-            token = ctx_relationship.set(rs)
-            interface.local_storage["relationship"] = rs
-            interface.local_storage["_ctxtoken_rs"] = token
-
-    @staticmethod
-    async def afterExecution(
-        interface: DispatcherInterface[AvillaEvent],
-        exception: Exception | None,
-        tb: TracebackType | None,
-    ):
-        ctx_relationship.reset(interface.local_storage["_ctxtoken_rs"])
-
-    @staticmethod
-    async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if isinstance(interface.event, AvillaEvent):
-            if interface.annotation is Relationship:
-                return interface.local_storage["relationship"]
-
-
 class MetadataModified(AvillaEvent):
     ctx: Selector
     modifies: MetadataModifies

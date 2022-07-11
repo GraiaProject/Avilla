@@ -21,7 +21,6 @@ class ElizabethGroupActionExecutor(
         message = await self.protocol.serialize_message(action.message)
         interface = relationship.protocol.avilla.launch_manager.get_interface(ConnectionInterface)
         interface = interface.bind(int(relationship.current.pattern["account"]))
-        # TODO: action.target dispatch
         result = await interface.call(
             "sendGroupMessage",
             CallMethod.POST,
@@ -41,7 +40,6 @@ class ElizabethFriendActionExecutor(
         message = await self.protocol.serialize_message(action.message)
         interface = relationship.protocol.avilla.launch_manager.get_interface(ConnectionInterface)
         interface = interface.bind(int(relationship.current.pattern["account"]))
-        # TODO: action.target dispatch
         result = await interface.call(
             "sendFriendMessage",
             CallMethod.POST,
@@ -52,3 +50,23 @@ class ElizabethFriendActionExecutor(
             },
         )
         return action.target.mix("land.friend.message", message=result["messageId"])
+
+class ElizabethGroupMemberActionExecutor(
+    ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(match_rule="fragment").group("*").member("*")
+):
+    @action(MessageSend)
+    async def send_message(self, action: MessageSend, relationship: Relationship):
+        message = await self.protocol.serialize_message(action.message)
+        interface = relationship.protocol.avilla.launch_manager.get_interface(ConnectionInterface)
+        interface = interface.bind(int(relationship.current.pattern["account"]))
+        result = await interface.call(
+            "sendTempMessage",
+            CallMethod.POST,
+            {
+                "target": int(action.target.pattern["group"]),
+                "qq": int(action.target.pattern["member"]),
+                "messageChain": message,
+                **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
+            },
+        )
+        return action.target.mix("land.group.member.message", message=result["messageId"])

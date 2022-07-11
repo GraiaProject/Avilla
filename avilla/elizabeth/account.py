@@ -30,4 +30,4 @@ class ElizabethAccount(AbstractAccount):
 
     @property
     def available(self) -> bool:
-        ...  # TODO: lookup in service, use status
+        return self.protocol.service.get_account(int(self.id)).status.available

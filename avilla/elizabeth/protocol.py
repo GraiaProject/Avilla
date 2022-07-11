@@ -11,6 +11,7 @@ from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.action_executor import (
     ElizabethFriendActionExecutor,
     ElizabethGroupActionExecutor,
+    ElizabethGroupMemberActionExecutor,
 )
 from avilla.elizabeth.event_parser import ElizabethEventParser
 from avilla.elizabeth.message_deserializer import ElizabethMessageDeserializer
@@ -36,7 +37,8 @@ class ElizabethProtocol(BaseProtocol):
     message_deserializer = ElizabethMessageDeserializer()
     action_executors = [
         ElizabethGroupActionExecutor,
-        ElizabethFriendActionExecutor
+        ElizabethFriendActionExecutor,
+        ElizabethGroupMemberActionExecutor
     ]
 
     platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = {}
