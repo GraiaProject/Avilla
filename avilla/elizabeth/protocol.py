@@ -38,7 +38,7 @@ class ElizabethProtocol(BaseProtocol):
     action_executors = [
         ElizabethGroupActionExecutor,
         ElizabethFriendActionExecutor,
-        ElizabethGroupMemberActionExecutor
+        ElizabethGroupMemberActionExecutor,
     ]
 
     platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = {}

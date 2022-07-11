@@ -79,7 +79,9 @@ class ElizabethService(Service):
             if self.connections:
                 await asyncio.wait(
                     [
-                        conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished")
+                        conn.status.wait_for(
+                            "blocking-completed", "waiting-for-cleanup", "cleanup", "finished"
+                        )
                         for conn in self.connections
                     ]
                 )

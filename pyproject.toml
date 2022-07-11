@@ -27,6 +27,7 @@ dev = [
     "graia-scheduler>=0.0.8",
     "pdm-mina>=0.2.0",
     "mina-build>=0.2.6",
+    "pre-commit>=2.20.0",
 ]
 
 [build-system]

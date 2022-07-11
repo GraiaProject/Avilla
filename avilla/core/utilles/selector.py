@@ -24,6 +24,7 @@ TLiteral = TypeVar("TLiteral", bound=LiteralString)
 
 # TODO: 大概就是默认只接受 str 而不是 callable... 然后提供一个 DynamicSelector 实现.
 
+
 class Selector(Generic[P]):
     mode: MatchRule = "exact"
 
@@ -53,9 +54,9 @@ class Selector(Generic[P]):
         return self.pattern[key]
 
     def __repr__(self) -> str:
-        return f"Selector(mode={self.mode})" + ("." + ".".join([
-            f"{k}({v})" for k, v in self.pattern.items()
-        ]) if self.pattern else "")
+        return f"Selector(mode={self.mode})" + (
+            "." + ".".join([f"{k}({v})" for k, v in self.pattern.items()]) if self.pattern else ""
+        )
 
     @property
     def constant(self) -> bool:
@@ -106,14 +107,18 @@ class Selector(Generic[P]):
             subset = set(self.pattern.keys()).issubset(another.pattern.keys())
             if not subset:
                 return False
-            if not another.constant and any(callable(v) for k, v in another.pattern.items() if k in self.pattern):
+            if not another.constant and any(
+                callable(v) for k, v in another.pattern.items() if k in self.pattern
+            ):
                 raise TypeError("Can't partially match dynamic selector with another dynamic selector")
             for k, v1 in self.pattern.items():
                 if k in another.pattern:
                     v2 = another.pattern[k]
                     if callable(v1):
                         if callable(v2):
-                            raise TypeError("Can't partially match dynamic selector with another dynamic selector")
+                            raise TypeError(
+                                "Can't partially match dynamic selector with another dynamic selector"
+                            )
                         if not v1(v2):
                             return False
                     elif v1 != v2:
@@ -128,7 +133,7 @@ class Selector(Generic[P]):
                 start = full.index(fragment[0])
             except IndexError:
                 return False
-            sub = full[start:start+len(fragment)]
+            sub = full[start : start + len(fragment)]
             if len(sub) != len(fragment):
                 return False
             for k1, k2 in zip(fragment, sub):
@@ -138,7 +143,9 @@ class Selector(Generic[P]):
                 v2 = another.pattern[k2]
                 if callable(v1):
                     if callable(v2):
-                        raise TypeError("Can't partially match dynamic selector with another dynamic selector")
+                        raise TypeError(
+                            "Can't partially match dynamic selector with another dynamic selector"
+                        )
                     if not v1(v2):
                         return False
                 elif v1 != v2:
@@ -178,6 +185,7 @@ class Selector(Generic[P]):
 class Summarizable(Protocol):
     def to_selector(self) -> Selector:
         ...
+
 
 # 似乎没啥用...
 class ConstantSelector(Selector):

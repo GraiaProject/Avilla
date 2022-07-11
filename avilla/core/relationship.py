@@ -23,7 +23,9 @@ class RelationshipExecutor:
 
     def __init__(self, relationship: Relationship) -> None:
         self.relationship = relationship
-        self.middlewares = relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
+        self.middlewares = (
+            relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
+        )
 
     def __await__(self):
         return self.__await_impl__().__await__()
@@ -39,7 +41,9 @@ class RelationshipExecutor:
                 elif self._target is not None and executor.pattern.match(self._target):
                     return await executor(self.relationship.protocol).execute(self.relationship, self.action)
             if self._target is not None:
-                raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}, target for {self._target.path}")
+                raise NotImplementedError(
+                    f"No action executor found for {self.action.__class__.__name__}, target for {self._target.path}"
+                )
             else:
                 raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
 
@@ -60,7 +64,7 @@ class RelationshipExecutor:
         return self
 
 
-class RelationshipQueryWarpper:
+class RelationshipQueryWrapper:
     relationship: Relationship
     pattern: ...  # TODO: Selector Query Pattern
 
@@ -125,7 +129,7 @@ class Relationship:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
 
-    async def query(self, pattern: Selector) -> RelationshipQueryWarpper:
+    async def query(self, pattern: Selector) -> RelationshipQueryWrapper:
         ...
         # TODO: rs.query to query entities in mainline, which match the pattern.
 

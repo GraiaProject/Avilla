@@ -2,7 +2,7 @@
 
 # Avilla
 
-_The next-gen framework for IM development._ 
+_The next-gen framework for IM development._
 
 > 即刻动身, 踏上寻找第二个故乡的旅程.
 
@@ -19,8 +19,8 @@ _The next-gen framework for IM development._
 
 </p>
 
-Avilla 是 `Graia Project` 的 "下一代" 框架实现, 
-通过对 [ `OneBot` ](https://github.com/botuniverse/onebot), [ `Telegram Bot API` ](https://core.telegram.org/bots) 及其他的基于不同即时通讯软件实现的各式对接接口, 
+Avilla 是 `Graia Project` 的 "下一代" 框架实现,
+通过对 [ `OneBot` ](https://github.com/botuniverse/onebot), [ `Telegram Bot API` ](https://core.telegram.org/bots) 及其他的基于不同即时通讯软件实现的各式对接接口,
 以及其他具有相应概念的 "异步消息流" 实例进行总结, 抽象其中最为基本的各式模型, 构造了一个理论上可以实现零成本切换对接平台的框架.
 
 **该框架目前处于快速迭代状态, API 可能会发生 _剧烈_ 变化, 可能还不适合进行生产性的开发与运维**
@@ -37,7 +37,7 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
       - [ ] `StarletteServer (http & websocket server)`
       - [ ] `UvicornService (powerful ASGI server)`
       - `CacheManager (cache)`
-        - [x] `MemcacheService`: 内置并默认启用的简易缓存系统, 同时具有性能与开箱即用特性. 
+        - [x] `MemcacheService`: 内置并默认启用的简易缓存系统, 同时具有性能与开箱即用特性.
         - [ ] `RedisService (cache based on aioredis)`
     - [x] `Launch API`: 程序生命周期管理, 提供准备(`prepare`), 主线(`mainline`) 与 清理(`cleanup`) 三个时间节点; 支持依赖编排.
     - [x] `Config`: 基于 `pydantic`, 支持作用域机制的配置系统.
@@ -58,15 +58,15 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 
 ## 我们的愿景
 
-创造出比这之前还要更加具有潜力和创造性的作品, 借此有力促进社区的发展, 
+创造出比这之前还要更加具有潜力和创造性的作品, 借此有力促进社区的发展,
 助力社区的艺术家们 (Developers & Artists) 以更高的效率, 基于更完善的底层, 创作出更加精彩的作品.
 
 ## 相关项目
 
 <div align="center">
 
-星座的光芒是由一个个星点共同组成的, 任何优秀的作品都绝不会是一个人的功绩.  
-而若是没有这些项目, Avilla 的实现就无从谈起.  
+星座的光芒是由一个个星点共同组成的, 任何优秀的作品都绝不会是一个人的功绩.
+而若是没有这些项目, Avilla 的实现就无从谈起.
 排名不分顺序, 可能有许遗漏, 这里仅列出部分较为重要的项目.
 
 </div>

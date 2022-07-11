@@ -184,7 +184,11 @@ class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[We
         config = self.config
         async with self.stage("blocking"):
             rider = self.http_interface.websocket(
-                str((URL(config.host) / "all").with_query({"qq": config.account, "verifyKey": config.verify_key}))
+                str(
+                    (URL(config.host) / "all").with_query(
+                        {"qq": config.account, "verifyKey": config.verify_key}
+                    )
+                )
             )
             await wait_fut(
                 [rider.use(self), self.wait_for("finished", "elizabeth.service")],

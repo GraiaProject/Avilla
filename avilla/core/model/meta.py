@@ -46,6 +46,7 @@ class Member(Contact, Metadata):
     def get_default_target(cls, relationship: Relationship):
         return relationship.ctx
 
+
 # TODO: Request Metamodel 重写/派生为多种, 有必要的话是需要一大堆 Mixin
 class Request(Metadata):
     has_question: bool = meta_field("request.has_question")

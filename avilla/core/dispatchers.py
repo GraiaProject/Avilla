@@ -33,8 +33,9 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
             return self.avilla._protocol_map[interface.annotation]
         elif isinstance(interface.event, AvillaEvent):
             if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
-                rs: Relationship = interface.local_storage['relationship']
+                rs: Relationship = interface.local_storage["relationship"]
                 return rs.avilla.get_account(selector=interface.event.account)
+
 
 class RelationshipDispatcher(BaseDispatcher):
     @staticmethod
@@ -62,6 +63,7 @@ class RelationshipDispatcher(BaseDispatcher):
         if isinstance(interface.event, AvillaEvent):
             if interface.annotation is Relationship:
                 return interface.local_storage["relationship"]
+
 
 class MetadataDispatcher(BaseDispatcher):
     @staticmethod

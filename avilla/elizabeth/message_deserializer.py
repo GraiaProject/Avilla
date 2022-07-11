@@ -43,6 +43,8 @@ class ElizabethMessageDeserializer(MessageDeserializer["ElizabethProtocol"]):
 
     @deserializer("Voice")
     def voice(self, protocol: "ElizabethProtocol", raw: dict):
-        return Audio(ElizabethAudioResource(raw["voiceId"], raw["url"], raw["path"], raw["base64"], raw["length"]))
+        return Audio(
+            ElizabethAudioResource(raw["voiceId"], raw["url"], raw["path"], raw["base64"], raw["length"])
+        )
 
     # TODO: 更多的消息元素支持
