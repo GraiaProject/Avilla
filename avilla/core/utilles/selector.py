@@ -22,15 +22,17 @@ P = TypeVar("P", bound=str)
 TLiteral = TypeVar("TLiteral", bound=LiteralString)
 
 
+# TODO: 大概就是默认只接受 str 而不是 callable... 然后提供一个 DynamicSelector 实现.
+
 class Selector(Generic[P]):
     mode: MatchRule = "exact"
 
     pattern: dict[str, Pattern]
-    path_excludes: tuple[str]
+    path_excludes: tuple[str, ...]
 
-    def __init__(self, *, mode: MatchRule = "exact", path_excludes: tuple[str, ...] = ()):
+    def __init__(self, *, mode: MatchRule = "exact", path_excludes: tuple[str, ...] | None = None):
         self.mode = mode
-        self.path_excludes = path_excludes
+        self.path_excludes = path_excludes or ()
         self.pattern = {}
 
     def __getattr__(self, name: str):
@@ -150,7 +152,7 @@ class Selector(Generic[P]):
     def mix(self, path: str, **env: Pattern) -> Selector:
         env = self.pattern.copy() | env
         instance = super().__new__(self.__class__)
-        instance.mode = self.mode
+        instance.__init__(mode=self.mode, path_excludes=self.path_excludes)
         if not set(env).issuperset(path.split(".")):
             raise ValueError(f"given information cannot mix with {path}")
         instance.pattern = {each: env[each] for each in path.split(".")}

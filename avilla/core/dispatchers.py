@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from inspect import isclass
 from types import TracebackType
 from typing import TYPE_CHECKING
-from avilla.core.metadata.model import Metadata
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 
+from avilla.core.account import AbstractAccount
 from avilla.core.context import ctx_protocol, ctx_relationship
-from avilla.core.relationship import Relationship
-
 from avilla.core.event import AvillaEvent
+from avilla.core.metadata.model import Metadata
+from avilla.core.relationship import Relationship
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -30,6 +31,10 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
             return self.avilla
         elif interface.annotation in self.avilla._protocol_map:
             return self.avilla._protocol_map[interface.annotation]
+        elif isinstance(interface.event, AvillaEvent):
+            if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
+                rs: Relationship = interface.local_storage['relationship']
+                return rs.avilla.get_account(selector=interface.event.account)
 
 class RelationshipDispatcher(BaseDispatcher):
     @staticmethod

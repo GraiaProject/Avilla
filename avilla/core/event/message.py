@@ -65,7 +65,10 @@ class MessageEdited(AvillaEvent):
     class Dispatcher(BaseDispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageEdited"]):
-            pass  # TODO
+            if interface.annotation is Message:
+                return interface.event.message
+            elif interface.annotation is MessageChain:
+                return interface.event.current
 
 
 class MessageRevoked(AvillaEvent):
@@ -91,4 +94,4 @@ class MessageRevoked(AvillaEvent):
     class Dispatcher(BaseDispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageRevoked"]):
-            pass  # TODO
+            ...

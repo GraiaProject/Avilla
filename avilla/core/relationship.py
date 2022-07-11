@@ -106,7 +106,7 @@ class Relationship:
     def avilla(self):
         return self.protocol.avilla
 
-    async def complete(self, selector: Selector):
+    def complete(self, selector: Selector):
         rules = self.protocol.completion_rules.get(selector.path)
         if rules is None:
             return selector
