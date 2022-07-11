@@ -14,7 +14,7 @@ from typing import (
 
 from typing_extensions import LiteralString
 
-MatchRule = Literal["exact", "exist", "any"]
+MatchRule = Literal["exact", "exist", "any", "fragment"]
 Pattern = Union[str, Callable[[str], bool]]
 
 P = TypeVar("P", bound=str)
@@ -54,6 +54,10 @@ class Selector(Generic[P]):
         return all(not callable(v) for v in self.pattern.values())
 
     @property
+    def empty(self) -> bool:
+        return not self.pattern
+
+    @property
     def path(self) -> P | str:
         return ".".join(k for k in self.pattern.keys() if k not in self.path_excludes)
 
@@ -62,12 +66,17 @@ class Selector(Generic[P]):
         return cls(match_rule="exist")
 
     @classmethod
+    def any(cls):
+        return cls(match_rule="any")
+
+    @classmethod
     def way(cls, path: TLiteral) -> Selector[TLiteral]:
         instance = cls()
         instance.pattern = {i: lambda _: True for i in path.split(".")}
         return instance  # type: ignore
 
     def match(self, another: Selector) -> bool:
+        # sourcery skip: low-code-quality
         if self.match_rule == "exact":
             if self.constant:
                 return another.constant and self.path == another.path and self.pattern == another.pattern
@@ -95,13 +104,38 @@ class Selector(Generic[P]):
                     elif v1 != v2:
                         return False
             return True
+        elif self.match_rule == "fragment":
+            if self.empty:
+                return True
+            fragment = list(self.pattern.keys())
+            full = list(another.pattern.keys())
+            try:
+                start = full.index(fragment[0])
+            except IndexError:
+                return False
+            sub = full[start:start+len(fragment)]
+            if len(sub) != len(fragment):
+                return False
+            for k1, k2 in zip(fragment, sub):
+                if k1 != k2:
+                    return False
+                v1 = self.pattern[k1]
+                v2 = another.pattern[k2]
+                if callable(v1):
+                    if callable(v2):
+                        raise TypeError("Can't partially match dynamic selector with another dynamic selector")
+                    if not v1(v2):
+                        return False
+                elif v1 != v2:
+                    return False
+            return True
         elif self.match_rule == "any":
             return True
         else:
             raise ValueError(f"Unknown match rule: {self.match_rule}")
 
     def mix(self, path: str, **env: Pattern) -> Selector:
-        env.update(self.pattern)
+        env = self.pattern.copy() | env
         instance = super().__new__(self.__class__)
         instance.match_rule = self.match_rule
         if not set(env).issuperset(path.split(".")):

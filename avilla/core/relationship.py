@@ -38,7 +38,10 @@ class RelationshipExecutor:
                     return await executor(self.relationship.protocol).execute(self.relationship, self.action)
                 elif self._target is not None and executor.pattern.match(self._target):
                     return await executor(self.relationship.protocol).execute(self.relationship, self.action)
-            raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
+            if self._target is not None:
+                raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}, target for {self._target.path}")
+            else:
+                raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
 
     def execute(self, action: Action):
         self._target = action.set_default_target(self.relationship)

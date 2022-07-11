@@ -8,7 +8,10 @@ from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import PlatformResourceProvider
 from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
-from avilla.elizabeth.action_executor import ElizabethGroupActionExecutor
+from avilla.elizabeth.action_executor import (
+    ElizabethFriendActionExecutor,
+    ElizabethGroupActionExecutor,
+)
 from avilla.elizabeth.event_parser import ElizabethEventParser
 from avilla.elizabeth.message_deserializer import ElizabethMessageDeserializer
 from avilla.elizabeth.message_serializer import ElizabethMessageSerializer
@@ -31,7 +34,10 @@ class ElizabethProtocol(BaseProtocol):
     event_parser = ElizabethEventParser()
     message_serializer = ElizabethMessageSerializer()
     message_deserializer = ElizabethMessageDeserializer()
-    action_executors = [ElizabethGroupActionExecutor]
+    action_executors = [
+        ElizabethGroupActionExecutor,
+        ElizabethFriendActionExecutor
+    ]
 
     platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = {}
     protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
@@ -60,8 +66,3 @@ class ElizabethProtocol(BaseProtocol):
         )
         for connection in self.service.connections:
             avilla.launch_manager.add_launchable(connection)
-
-        """
-        self.service.ensure_config(
-            WebsocketClientConnection(self, WebsocketClientInfo(-1, "test", "http://localhost:8080"))
-        )"""
