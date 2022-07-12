@@ -64,17 +64,6 @@ class RelationshipExecutor:
         return self
 
 
-<<<<<<< HEAD
-=======
-class RelationshipQueryWrapper:
-    relationship: Relationship
-    pattern: ...  # TODO: Selector Query Pattern
-
-    async def __aiter__(self):
-        ...
-
-
->>>>>>> d9ae2abef8b24783dd889b174ce74e0c3db442c8
 _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Metadata)
 

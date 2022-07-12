@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.action import IterateMembers, MessageSend
 from avilla.core.relationship import Relationship
 from avilla.core.utilles.action_executor import ProtocolActionExecutor, action
-from avilla.core.utilles.selector import Selector
+from avilla.core.utilles.selector import DynamicSelector
 from avilla.elizabeth.connection import ConnectionInterface
 from avilla.elizabeth.connection.util import CallMethod
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class ElizabethGroupActionExecutor(
-    ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(mode="exist").group("*")
+    ProtocolActionExecutor["ElizabethProtocol"], pattern=DynamicSelector.fragment().group("*")
 ):
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
@@ -50,7 +50,7 @@ class ElizabethGroupActionExecutor(
 
 
 class ElizabethFriendActionExecutor(
-    ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(mode="fragment").friend("*")
+    ProtocolActionExecutor["ElizabethProtocol"], pattern=DynamicSelector.fragment().friend("*")
 ):
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
@@ -70,7 +70,7 @@ class ElizabethFriendActionExecutor(
 
 
 class ElizabethGroupMemberActionExecutor(
-    ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(mode="fragment").group("*").member("*")
+    ProtocolActionExecutor["ElizabethProtocol"], pattern=DynamicSelector.fragment().group("*").member("*")
 ):
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
