@@ -71,9 +71,7 @@ class Selector:
         return match(other)
 
     def _match_exact(self, other: Selector) -> bool:
-        if type(other) is Selector:
-            return self.path == self.path and self.pattern == other.pattern
-        return other._match_exact(self)
+        return type(other) is Selector and self.path == self.path and self.pattern == other.pattern
 
     def _match_exist(self, other: Selector) -> bool:
         return set(self.pattern.items()).issubset(other.pattern.items())
@@ -84,7 +82,9 @@ class Selector:
 
         try:
             start = full.index(fragment[0])
-        except (IndexError, ValueError):  # IndexError有必要吗？自身没有pattern时应该为真（？
+        except IndexError:
+            return True
+        except ValueError:
             return False
 
         return full[start : start + len(fragment)] == fragment
@@ -160,7 +160,9 @@ class DynamicSelector(Selector):
 
         try:
             start = full.index(fragment[0])
-        except (IndexError, ValueError):  # IndexError有必要吗？自身没有pattern时应该为真（？
+        except IndexError:
+            return True
+        except ValueError:
             return False
 
         full = full[start : start + len(fragment)]
