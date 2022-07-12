@@ -132,7 +132,7 @@ dmypy.json
 # Docs node_modules
 docs/node_modules
 
-# PDM 
+# PDM
 .pdm.toml
 
 development

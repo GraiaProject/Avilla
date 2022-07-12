@@ -37,7 +37,9 @@ _P = TypeVar("_P", bound="BaseProtocol")
 
 
 class AbstractEventParser(ABC, Generic[_P]):
-    event_parser: dict[str, Callable[[Self, _P, AccountSelector, dict], Element | Coroutine[None, None, Element]]] = {}
+    event_parser: dict[
+        str, Callable[[Self, _P, AccountSelector, dict], Element | Coroutine[None, None, Element]]
+    ] = {}
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()

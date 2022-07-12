@@ -143,7 +143,9 @@ class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
                     # event = build_event(event_data)
                     # await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
                     ...
-                    event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
+                    event = await self.protocol.event_parser.parse_event(
+                        self.protocol, self.account, event_data
+                    )
                     if event is not None:
                         self.protocol.post_event(event)
                 await wait_fut(

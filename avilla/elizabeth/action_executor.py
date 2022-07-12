@@ -41,10 +41,13 @@ class ElizabethGroupActionExecutor(
             CallMethod.GET,
             {"target": int(action.mainline.pattern["group"])},
         )
+
         async def member_iterate():
             for i in result:
-                yield action.mainline.mix("land.group.member", member=i['id'])
+                yield action.mainline.mix("land.group.member", member=i["id"])
+
         return member_iterate()
+
 
 class ElizabethFriendActionExecutor(
     ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(mode="fragment").friend("*")
@@ -64,6 +67,7 @@ class ElizabethFriendActionExecutor(
             },
         )
         return action.target.mix("land.friend.message", message=result["messageId"])
+
 
 class ElizabethGroupMemberActionExecutor(
     ProtocolActionExecutor["ElizabethProtocol"], pattern=Selector(mode="fragment").group("*").member("*")

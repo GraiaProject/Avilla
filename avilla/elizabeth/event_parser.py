@@ -55,7 +55,9 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
                 .land(protocol.land.name)
                 .group(str(raw["sender"]["group"]["id"]))
                 .member(str(raw["sender"]["id"])),
-                content=MessageChain(await protocol.message_deserializer.parse_sentence(protocol, message_chain)),
+                content=MessageChain(
+                    await protocol.message_deserializer.parse_sentence(protocol, message_chain)
+                ),
                 time=datetime.fromtimestamp(source.time),
                 reply=Selector()
                 .land(protocol.land.name)
@@ -84,12 +86,52 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
                 id=str(source.id),
                 mainline=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
                 sender=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
-                content=MessageChain(await protocol.message_deserializer.parse_sentence(protocol, message_chain)),
+                content=MessageChain(
+                    await protocol.message_deserializer.parse_sentence(protocol, message_chain)
+                ),
                 time=datetime.fromtimestamp(source.time),
                 reply=Selector()
-                    .land(protocol.land.name)
-                    .friend(str(raw["sender"]["id"]))
-                    .message(str(quote.id))
+                .land(protocol.land.name)
+                .friend(str(raw["sender"]["id"]))
+                .message(str(quote.id))
+                if quote is not None
+                else None,
+            ),
+            account=account,
+        )
+
+    @event("TempMessage")
+    async def temp_message(self, protocol: ElizabethProtocol, account: AccountSelector, raw: dict):
+        message_chain = raw["messageChain"]
+        source = None
+        quote = None
+        for i in message_chain:
+            if i["type"] == "Source":
+                source = _Source(i["id"], i["time"])
+            elif i["type"] == "Quote":
+                quote = _Quote(i["id"], i["groupId"], i["senderId"], i["targetId"], i["origin"])
+        if source is None:
+            raise ValueError("Source not found.")
+        return MessageReceived(
+            message=Message(
+                id=str(source.id),
+                mainline=Selector()
+                .land(protocol.land.name)
+                .group(str(raw["sender"]["group"]["id"]))
+                .member(str(raw["sender"]["id"])),
+                sender=Selector()
+                .land(protocol.land.name)
+                .group(str(raw["sender"]["group"]["id"]))
+                .member(str(raw["sender"]["id"])),
+                content=MessageChain(
+                    await protocol.message_deserializer.parse_sentence(protocol, message_chain)
+                ),
+                time=datetime.fromtimestamp(source.time),
+                reply=Selector()
+                .land(protocol.land.name)
+                .group(str(raw["sender"]["group"]["id"]))
+                .member(str(raw["sender"]["id"]))
+                .message(str(quote.id))
                 if quote is not None
                 else None,
             ),

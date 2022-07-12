@@ -139,7 +139,9 @@ class ConnectionInterface(ExportInterface["ElizabethService"]):
         """
         return ConnectionInterface(self.service, account)
 
-    async def _call(self, command: str, method: CallMethod, params: dict, *, account: Optional[int] = None) -> Any:
+    async def _call(
+        self, command: str, method: CallMethod, params: dict, *, account: Optional[int] = None
+    ) -> Any:
         connection = self.connection
         if account is not None:
             connection = self.service.get_conn(account)

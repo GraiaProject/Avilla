@@ -128,7 +128,7 @@ class IterateMembers(Action, Result[AsyncIterable[Selector]]):
 
     def set_target(self, target: Selector):
         self.mainline = target
-    
+
     def set_default_target(self, relationship: Relationship):
         self.mainline = relationship.mainline
         return relationship.mainline
