@@ -9,7 +9,7 @@ from graia.broadcast import Broadcast
 from launart import Launart, Service
 from loguru import logger
 
-from avilla.core.account import AbstractAccount, AccountSelector
+from avilla.core.account import AbstractAccount
 from avilla.core.context import get_current_avilla
 from avilla.core.dispatchers import (
     AvillaBuiltinDispatcher,
@@ -137,7 +137,7 @@ class Avilla:
         self.accounts.remove(account)
 
     def get_account(
-        self, account_id: str | None = None, selector: AccountSelector | None = None, land: Land | None = None
+        self, account_id: str | None = None, selector: Selector | None = None, land: Land | None = None
     ) -> AbstractAccount | None:
         for account in self.accounts:
             if account_id is not None and account.id != account_id:
@@ -149,7 +149,7 @@ class Avilla:
             return account
 
     def get_accounts(
-        self, account_id: str | None = None, selector: AccountSelector | None = None, land: Land | None = None
+        self, account_id: str | None = None, selector: Selector | None = None, land: Land | None = None
     ) -> list[AbstractAccount]:
         result = []
         for account in self.accounts:

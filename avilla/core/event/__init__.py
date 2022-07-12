@@ -4,24 +4,15 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 
-from avilla.core.account import AccountSelector
-from avilla.core.context import ctx_protocol, ctx_relationship
-from avilla.core.relationship import Relationship
-
 if TYPE_CHECKING:
-    from types import TracebackType
-
-    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-
     from avilla.core.metadata.model import MetadataModifies
     from avilla.core.utilles.selector import Selector
 
 
 class AvillaEvent(Dispatchable, metaclass=ABCMeta):
-    account: AccountSelector
+    account: Selector
     time: datetime
 
     @property
@@ -41,7 +32,7 @@ class MetadataModified(AvillaEvent):
         self,
         ctx: Selector,
         modifies: MetadataModifies,
-        account: AccountSelector,
+        account: Selector,
         operator: Selector | None = None,
         time: datetime | None = None,
     ):
@@ -61,7 +52,7 @@ class RelationshipCreated(AvillaEvent):
     def __init__(
         self,
         ctx: Selector,
-        account: AccountSelector,
+        account: Selector,
         time: datetime | None = None,
         via: Selector | None = None,
     ):
@@ -78,7 +69,7 @@ class RelationshipDestroyed(AvillaEvent):
     def __init__(
         self,
         ctx: Selector,
-        account: AccountSelector,
+        account: Selector,
         time: datetime | None = None,
         via: Selector | None = None,
     ):

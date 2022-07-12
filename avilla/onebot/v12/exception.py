@@ -11,8 +11,10 @@ class AriadneConfigurationError(ValueError):
 class InvalidArgument(InvalidOperation):
     """应在所提到的参数之中至少传入/使用一个"""
 
+
 class UnsupportedArgument(UnsupportedOperation):
     """不支持的参数"""
+
 
 ERRORS: dict[int, type[Exception]] = {
     # 1xxxx: Request Error
@@ -23,11 +25,11 @@ ERRORS: dict[int, type[Exception]] = {
     10005: NotImplementedError,
     10006: InvalidArgument,
     10007: InvalidArgument,
-
     # 2xxxx: HandlerError
     20001: RemoteError,
     20002: RemoteError,
 }
+
 
 def get_error(retcode: int):
     if retcode == 0:

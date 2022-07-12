@@ -38,5 +38,3 @@ class MissingNecessaryArgument(InvalidOperation):
 
 class ConflictItem(InvalidOperation):
     """项冲突/其中一项被重复定义"""
-
-

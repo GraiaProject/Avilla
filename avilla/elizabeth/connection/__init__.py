@@ -9,7 +9,7 @@ from launart import ExportInterface, Launchable, LaunchableStatus
 from statv import Stats
 from typing_extensions import Self
 
-from avilla.core.account import AccountSelector
+from avilla.core.utilles.selector import Selector
 
 from ._info import (
     HttpClientInfo,
@@ -70,7 +70,7 @@ class ElizabethConnection(Launchable, Generic[T_Info]):
     fallback: Optional["HttpClientConnection"]
 
     @property
-    def account(self) -> AccountSelector:
+    def account(self) -> Selector:
         return Selector().land(self.protocol.land.name).account(str(self.config.account))  # type: ignore
 
     @property
@@ -139,9 +139,7 @@ class ConnectionInterface(ExportInterface["ElizabethService"]):
         """
         return ConnectionInterface(self.service, account)
 
-    async def _call(
-        self, command: str, method: CallMethod, params: dict, *, account: Optional[int] = None
-    ) -> Any:
+    async def _call(self, command: str, method: CallMethod, params: dict, *, account: Optional[int] = None) -> Any:
         connection = self.connection
         if account is not None:
             connection = self.service.get_conn(account)

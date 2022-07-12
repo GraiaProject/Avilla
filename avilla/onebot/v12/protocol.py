@@ -9,6 +9,7 @@ from avilla.core.resource import PlatformResourceProvider
 from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
 
+
 class OneBot12Protocol(BaseProtocol):
     platform = Platform(
         Land(
@@ -21,7 +22,9 @@ class OneBot12Protocol(BaseProtocol):
             maintainers=[{"name": "howmanybots"}],
             humanized_name="OneBot",
         ),
-        Version({
-            "onebot_spec": "v12",
-        })
+        Version(
+            {
+                "onebot_spec": "v12",
+            }
+        ),
     )

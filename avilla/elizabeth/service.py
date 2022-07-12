@@ -51,9 +51,7 @@ class ElizabethService(Service):
     # DEBUG 用.
     def ensure_config(self, connection: ElizabethConnection):
         self.connections.append(connection)
-        self.protocol.avilla.add_account(
-            ElizabethAccount(str(connection.config.account), self.protocol)
-        )
+        self.protocol.avilla.add_account(ElizabethAccount(str(connection.config.account), self.protocol))
 
     def get_conn(self, account_id: int):
         for conn in self.connections:
@@ -79,9 +77,7 @@ class ElizabethService(Service):
             if self.connections:
                 await asyncio.wait(
                     [
-                        conn.status.wait_for(
-                            "blocking-completed", "waiting-for-cleanup", "cleanup", "finished"
-                        )
+                        conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished")
                         for conn in self.connections
                     ]
                 )

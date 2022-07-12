@@ -23,9 +23,7 @@ class RelationshipExecutor:
 
     def __init__(self, relationship: Relationship) -> None:
         self.relationship = relationship
-        self.middlewares = (
-            relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
-        )
+        self.middlewares = relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
 
     def __await__(self):
         return self.__await_impl__().__await__()
@@ -126,6 +124,7 @@ class Relationship:
             async for i in await self.exec(IterateMembers()):
                 if pattern.match(i):
                     yield i
+
         return iterator()
 
     @overload

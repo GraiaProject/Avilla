@@ -1,17 +1,15 @@
 from __future__ import annotations
+
 from abc import abstractmethod
-
 from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Set, Type
-from avilla.onebot.v12.connect.config import OneBotConfig
 
-from graia.amnesia.transport.common.status import (
-    ConnectionStatus,
-)
+from graia.amnesia.transport.common.status import ConnectionStatus
 from launart import ExportInterface, Launchable, LaunchableStatus
 from statv import Stats
 from typing_extensions import Self
 
-from avilla.core.account import AccountSelector
+from avilla.core.utilles.selector import Selector
+from avilla.onebot.v12.connect.config import OneBotConfig
 
 if TYPE_CHECKING:
     from ..protocol import OneBot12Protocol

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 from avilla.core.platform import Land
 from avilla.core.relationship import Relationship
@@ -41,6 +41,3 @@ class AbstractAccount(ABC):
 
     def is_anonymous(self) -> bool:
         return self.id == "anonymous"
-
-
-AccountSelector = Selector[Literal["land.account"]]

@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from graia.amnesia.message import MessageChain
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 
-from avilla.core.account import AccountSelector
 from avilla.core.event import AvillaEvent
 from avilla.core.message import Message
 from avilla.core.utilles.selector import Selector
@@ -22,7 +21,7 @@ class MessageReceived(AvillaEvent):
     def ctx(self) -> Selector:
         return self.message.sender
 
-    def __init__(self, message: Message, account: AccountSelector, time: datetime | None = None) -> None:
+    def __init__(self, message: Message, account: Selector, time: datetime | None = None) -> None:
         self.message = message
         self.account = account
         self.time = time or datetime.now()
@@ -52,7 +51,7 @@ class MessageEdited(AvillaEvent):
         operator: Selector,
         past: MessageChain,
         current: MessageChain,
-        account: AccountSelector,
+        account: Selector,
         time: datetime | None = None,
     ) -> None:
         self.message = message
@@ -83,7 +82,7 @@ class MessageRevoked(AvillaEvent):
         self,
         message: Selector,
         operator: Selector,
-        account: AccountSelector,
+        account: Selector,
         time: datetime | None = None,
     ) -> None:
         self.message = message

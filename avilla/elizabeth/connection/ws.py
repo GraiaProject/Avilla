@@ -25,7 +25,6 @@ from launart.utilles import wait_fut
 from loguru import logger
 from yarl import URL
 
-from avilla.core.account import AccountSelector
 from avilla.core.utilles.selector import Selector
 
 from . import ConnectionStatus, ElizabethConnection
@@ -49,7 +48,7 @@ class WebsocketConnectionMixin(Transport):
     config: WebsocketClientInfo | WebsocketServerInfo
 
     @property
-    def account(self) -> AccountSelector:
+    def account(self) -> Selector:
         return Selector().land(self.protocol.land.name).account(str(self.config.account))  # type: ignore
 
     @t.on(WebsocketReceivedEvent)
@@ -184,11 +183,7 @@ class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[We
         config = self.config
         async with self.stage("blocking"):
             rider = self.http_interface.websocket(
-                str(
-                    (URL(config.host) / "all").with_query(
-                        {"qq": config.account, "verifyKey": config.verify_key}
-                    )
-                )
+                str((URL(config.host) / "all").with_query({"qq": config.account, "verifyKey": config.verify_key}))
             )
             await wait_fut(
                 [rider.use(self), self.wait_for("finished", "elizabeth.service")],

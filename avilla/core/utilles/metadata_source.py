@@ -13,9 +13,7 @@ if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 Fetcher = Callable[["DispatachingMetadataSource", Selector, type[Metadata]], Coroutine[None, None, Metadata]]
-Modifier = Callable[
-    ["DispatachingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]
-]
+Modifier = Callable[["DispatachingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]]
 
 
 def fetch(*model_types: type[Metadata]):

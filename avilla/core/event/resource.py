@@ -3,9 +3,9 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Generic, TypeVar
 
-from avilla.core.account import AccountSelector
 from avilla.core.event import AvillaEvent
 from avilla.core.resource import Resource
+from avilla.core.utilles.selector import Selector
 
 R = TypeVar("R", bound=Resource)
 
@@ -24,7 +24,7 @@ class ResourceAvailable(AvillaEvent, Generic[R]):
     def __init__(
         self,
         resource: R,
-        account: AccountSelector,
+        account: Selector,
         time: datetime | None = None,
     ):
         self.resource = resource
@@ -46,7 +46,7 @@ class ResourceUnavailable(AvillaEvent, Generic[R]):
     def __init__(
         self,
         resource: R,
-        account: AccountSelector,
+        account: Selector,
         time: datetime | None = None,
     ):
         self.resource = resource

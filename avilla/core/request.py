@@ -5,10 +5,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.platform import Land
-from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.account import AccountSelector
+    from avilla.core.utilles.selector import Selector
 
 
 @dataclass
@@ -17,7 +16,7 @@ class Request:
     land: Land
     mainline: Selector
     sender: Selector
-    account: AccountSelector
+    account: Selector
     time: datetime
 
     request_type: str | None = None

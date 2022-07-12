@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core.account import AbstractAccount, AccountSelector
+from avilla.core.account import AbstractAccount
 from avilla.core.context import ctx_avilla, ctx_protocol
 from avilla.core.event import AvillaEvent
 from avilla.core.metadata.source import MetadataSource
@@ -57,10 +57,10 @@ class BaseProtocol(metaclass=ABCMeta):
     def ensure(self, avilla: Avilla) -> Any:
         ...
 
-    def get_accounts(self, selector: AccountSelector | None = None) -> list[AbstractAccount]:
+    def get_accounts(self, selector: Selector | None = None) -> list[AbstractAccount]:
         return self.avilla.get_accounts(selector=selector, land=self.platform[Land])
 
-    def get_account(self, selector: AccountSelector) -> AbstractAccount | None:
+    def get_account(self, selector: Selector) -> AbstractAccount | None:
         return self.avilla.get_account(selector=selector, land=self.platform[Land])
 
     def get_resource_provider(self, resource: Selector) -> ResourceProvider | None:

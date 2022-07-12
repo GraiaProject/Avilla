@@ -24,9 +24,7 @@ _P = TypeVar("_P", bound="BaseProtocol")
 
 
 class MessageSerializer(Generic[_P]):
-    element_serializer: dict[
-        type[Element], Callable[[Self, _P, Any], dict | Coroutine[None, None, dict]]
-    ] = {}
+    element_serializer: dict[type[Element], Callable[[Self, _P, Any], dict | Coroutine[None, None, dict]]] = {}
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
