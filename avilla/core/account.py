@@ -18,6 +18,11 @@ class AbstractAccount(ABC):
     land: Land
     protocol: BaseProtocol
 
+    def __init__(self, id: str, protocol: BaseProtocol, land: Land | None = None):
+        self.id = id
+        self.land = land or protocol.land
+        self.protocol = protocol
+
     @abstractmethod
     async def get_relationship(self, target: Selector) -> Relationship:
         ...

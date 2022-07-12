@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import AsyncExitStack, suppress
 from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 
-from avilla.core.action import Action
+from avilla.core.action import Action, IterateMembers
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.resource import Resource, get_provider
@@ -58,14 +58,6 @@ class RelationshipExecutor:
     def use(self, *middleware: ActionMiddleware):
         self.middlewares.extend(middleware)
         return self
-
-
-class RelationshipQueryWarpper:
-    relationship: Relationship
-    pattern: ...  # TODO: Selector Query Pattern
-
-    async def __aiter__(self):
-        ...
 
 
 _T = TypeVar("_T")
@@ -125,9 +117,12 @@ class Relationship:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
 
-    async def query(self, pattern: Selector) -> RelationshipQueryWarpper:
-        ...
-        # TODO: rs.query to query entities in mainline, which match the pattern.
+    async def query(self, pattern: Selector):
+        async def iterator():
+            async for i in await self.exec(IterateMembers()):
+                if pattern.match(i):
+                    yield i
+        return iterator()
 
     @overload
     async def meta(self, op_or_target: type[_M]) -> _M:

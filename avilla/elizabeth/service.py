@@ -52,7 +52,7 @@ class ElizabethService(Service):
     def ensure_config(self, connection: ElizabethConnection):
         self.connections.append(connection)
         self.protocol.avilla.add_account(
-            ElizabethAccount(str(connection.config.account), self.protocol.land, self.protocol)
+            ElizabethAccount(str(connection.config.account), self.protocol)
         )
 
     def get_conn(self, account_id: int):
