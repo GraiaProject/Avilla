@@ -16,20 +16,29 @@ class OneBot12Account(AbstractAccount):
     async def get_relationship(self, target: Selector) -> Relationship:
         # TODO: 对象存在性检查
         if "land" not in target:
-            target = Selector().mixin("land." + target.path, target)
-        if target.path == "land.group":
+            target = Selector().mixin(f"land.{target.path}", target)
+        path = target.path
+        if path in {"land.group", "land.friend", "land.guild.channel"}:
             return Relationship(self.protocol, target, target, self.to_selector())
-        elif target.path == "land.group.member":
+        elif path == "land.group.member":
             return Relationship(
                 self.protocol,
                 target,
                 Selector().land(self.land.name).group(target.pattern["group"]),
                 self.to_selector(),
             )
-        elif target.path == "land.friend":
-            return Relationship(self.protocol, target, target, self.to_selector())
+        elif path == "land.guild.channel.member":  # 应该怎么称呼成员？会不会与群员冲突了？
+            return Relationship(
+                self.protocol,
+                target,
+                Selector()
+                .land(self.land.name)
+                .guild(target.pattern["group"])
+                .channel(target.pattern["channel"]),
+                self.to_selector(),
+            )
         else:
-            raise NotImplementedError()
+            raise NotImplementedError
 
     @property
     def available(self) -> bool:

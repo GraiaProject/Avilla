@@ -21,29 +21,29 @@ from graia.broadcast import Broadcast
 from launart import Launart, Service
 from loguru import logger
 
-from avilla.elizabeth.account import ElizabethAccount
+from .account import OneBot12Account
 
 if TYPE_CHECKING:
-    from .protocol import ElizabethProtocol
+    from .protocol import OneBot12Protocol
 
 
-class ElizabethService(Service):
-    id = "elizabeth.service"
+class OneBot12Service(Service):
+    id = "OneBot12.service"
     supported_interface_types = {ConnectionInterface}
 
-    protocol: ElizabethProtocol
-    connections: list[ElizabethConnection]
+    protocol: OneBot12Protocol
+    connections: list[OneBot12Connection]
 
-    def __init__(self, protocol: ElizabethProtocol):
+    def __init__(self, protocol: OneBot12Protocol):
         self.protocol = protocol
         self.connections = []
         super().__init__()
 
     # DEBUG 用.
-    def ensure_config(self, connection: ElizabethConnection):
+    def ensure_config(self, connection: OneBot12Connection):
         self.connections.append(connection)
         self.protocol.avilla.add_account(
-            ElizabethAccount(str(connection.config.account), self.protocol.land, self.protocol)
+            OneBot12Account(str(connection.config.account), self.protocol.land, self.protocol)
         )
 
     def get_conn(self, account_id: int):
@@ -70,7 +70,9 @@ class ElizabethService(Service):
             if self.connections:
                 await asyncio.wait(
                     [
-                        conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished")
+                        conn.status.wait_for(
+                            "blocking-completed", "waiting-for-cleanup", "cleanup", "finished"
+                        )
                         for conn in self.connections
                     ]
                 )
