@@ -21,6 +21,9 @@ from graia.broadcast import Broadcast
 from launart import Launart, Service
 from loguru import logger
 
+from avilla.onebot.v12.connection import OneBot12Connection
+from avilla.onebot.v12.connection.config import OneBot12Config
+
 from .account import OneBot12Account
 
 if TYPE_CHECKING:
@@ -32,33 +35,12 @@ class OneBot12Service(Service):
     supported_interface_types = {ConnectionInterface}
 
     protocol: OneBot12Protocol
-    connections: list[OneBot12Connection]
+    connections: dict[OneBot12Account, OneBot12Connection]
 
     def __init__(self, protocol: OneBot12Protocol):
         self.protocol = protocol
-        self.connections = []
+        self.connections = {}
         super().__init__()
-
-    # DEBUG 用.
-    def ensure_config(self, connection: OneBot12Connection):
-        self.connections.append(connection)
-        self.protocol.avilla.add_account(
-            OneBot12Account(str(connection.config.account), self.protocol.land, self.protocol)
-        )
-
-    def get_conn(self, account_id: int):
-        for conn in self.connections:
-            if conn.config.account == account_id:
-                return conn
-
-    def has_account(self, account_id: int):
-        return any(conn.config.account == account_id for conn in self.connections)
-
-    def get_account(self, account_id: int):
-        for conn in self.connections:
-            if conn.config.account == account_id:
-                return conn
-        raise ValueError(f"Account {account_id} not found")
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
@@ -68,13 +50,9 @@ class OneBot12Service(Service):
 
         async with self.stage("blocking"):
             if self.connections:
-                await asyncio.wait(
-                    [
-                        conn.status.wait_for(
-                            "blocking-completed", "waiting-for-cleanup", "cleanup", "finished"
-                        )
-                        for conn in self.connections
-                    ]
+                await asyncio.gather(
+                    conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished")
+                    for conn in self.connections.values()   
                 )
 
         async with self.stage("cleanup"):

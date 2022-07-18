@@ -42,4 +42,4 @@ class OneBot12Account(AbstractAccount):
 
     @property
     def available(self) -> bool:
-        return self.protocol.service.get_account(int(self.id)).status.available
+        return self.protocol.service.connections[self].status.available
