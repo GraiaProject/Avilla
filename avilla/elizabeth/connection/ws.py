@@ -28,7 +28,7 @@ from yarl import URL
 from avilla.core.utilles.selector import Selector
 
 from . import ConnectionStatus, ElizabethConnection
-from ._info import WebsocketClientInfo, WebsocketServerInfo
+from .config import WebsocketClientConfig, WebsocketServerConfig
 from .http import HttpClientConnection
 from .util import CallMethod, get_router, validate_response
 
@@ -43,9 +43,9 @@ class WebsocketConnectionMixin(Transport):
     ws_io: Optional[AbstractWebsocketIO]
     futures: MutableMapping[str, asyncio.Future]
     status: ConnectionStatus
-    fallback: Optional["HttpClientConnection"]
+    http_conn: HttpClientConnection | None
     protocol: ElizabethProtocol
-    config: WebsocketClientInfo | WebsocketServerInfo
+    config: WebsocketClientConfig | WebsocketServerConfig
 
     @property
     def account(self) -> Selector:
@@ -97,13 +97,13 @@ class WebsocketConnectionMixin(Transport):
         sync_id: str = secrets.token_urlsafe(12)
         fut = asyncio.get_running_loop().create_future()
         content: Dict[str, Any] = {"syncId": sync_id, "command": command, "content": params or {}}
-        if method == CallMethod.RESTGET:
+        if method == CallMethod.GET_REST:
             content["subCommand"] = "get"
-        elif method == CallMethod.RESTPOST:
+        elif method == CallMethod.POST_REST:
             content["subCommand"] = "update"
         elif method == CallMethod.MULTIPART:
-            if self.fallback:
-                return await self.fallback.call(command, method, params)
+            if self.http_conn:
+                return await self.http_conn.call(command, method, params)
             raise NotImplementedError(
                 f"Connection {self} can't perform {command!r}, consider configuring a HttpClientConnection?"
             )
@@ -118,14 +118,14 @@ t = TransportRegistrar()
 
 
 @t.apply
-class WebsocketServerConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketServerInfo]):
+class WebsocketServerConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketServerConfig]):
     """Websocket 服务器连接"""
 
-    dependencies = {"http.universal_server"}
+    dependencies = frozenset(["http.universal_server"])
 
-    config: WebsocketServerInfo
+    config: WebsocketServerConfig
 
-    def __init__(self, protocol: ElizabethProtocol, config: WebsocketServerInfo) -> None:
+    def __init__(self, protocol: ElizabethProtocol, config: WebsocketServerConfig) -> None:
         ElizabethConnection.__init__(self, protocol, config)
         self.declares.append(WebsocketEndpoint(self.config.path))
         self.futures = WeakValueDictionary()
@@ -137,10 +137,10 @@ class WebsocketServerConnection(WebsocketConnectionMixin, ElizabethConnection[We
     @t.on(WebsocketConnectEvent)
     async def _(self, io: AbstractWebsocketIO) -> None:
         req: HttpRequest = await io.extra(HttpRequest)
-        for k, v in self.config.headers:
+        for k, v in self.config.headers.items():
             if req.headers.get(k) != v:
                 return await io.extra(WSConnectionClose)
-        for k, v in self.config.params:
+        for k, v in self.config.params.items():
             if req.query_params.get(k) != v:
                 return await io.extra(WSConnectionClose)
         await io.extra(WSConnectionAccept)
@@ -163,18 +163,18 @@ t = TransportRegistrar()
 
 
 @t.apply
-class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketClientInfo]):
+class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketClientConfig]):
     """Websocket 客户端连接"""
 
-    dependencies = {"http.universal_client"}
+    dependencies = frozenset(["http.universal_client"])
     http_interface: AiohttpClientInterface
-    config: WebsocketClientInfo
+    config: WebsocketClientConfig
 
     @property
     def stages(self):
         return {"blocking"}
 
-    def __init__(self, protocol: ElizabethProtocol, config: WebsocketClientInfo) -> None:
+    def __init__(self, protocol: ElizabethProtocol, config: WebsocketClientConfig) -> None:
         ElizabethConnection.__init__(self, protocol, config)
         self.futures = WeakValueDictionary()
 
@@ -183,7 +183,11 @@ class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[We
         config = self.config
         async with self.stage("blocking"):
             rider = self.http_interface.websocket(
-                str((URL(config.host) / "all").with_query({"qq": config.account, "verifyKey": config.verify_key}))
+                str(
+                    URL(config.get_url("all")).with_query(
+                        {"qq": config.account, "verifyKey": config.verify_key}
+                    )
+                )
             )
             await wait_fut(
                 [rider.use(self), self.wait_for("finished", "elizabeth.service")],

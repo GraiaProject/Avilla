@@ -6,7 +6,7 @@ from avilla.core.action import IterateMembers, MessageSend
 from avilla.core.relationship import Relationship
 from avilla.core.utilles.action_executor import ProtocolActionExecutor, action
 from avilla.core.utilles.selector import DynamicSelector
-from avilla.elizabeth.connection import ConnectionInterface
+from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.connection.util import CallMethod
 
 if TYPE_CHECKING:
@@ -19,9 +19,9 @@ class ElizabethGroupActionExecutor(
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
         message = await self.protocol.serialize_message(action.message)
-        interface = relationship.protocol.avilla.launch_manager.get_interface(ConnectionInterface)
-        interface = interface.bind(int(relationship.current.pattern["account"]))
-        result = await interface.call(
+        account = relationship.avilla.get_account(selector=relationship.current)
+        assert isinstance(account, ElizabethAccount)
+        result = await account.call(
             "sendGroupMessage",
             CallMethod.POST,
             {
@@ -34,9 +34,9 @@ class ElizabethGroupActionExecutor(
 
     @action(IterateMembers)
     async def iterate_members(self, action: IterateMembers, relationship: Relationship):
-        interface = relationship.protocol.avilla.launch_manager.get_interface(ConnectionInterface)
-        interface = interface.bind(int(relationship.current.pattern["account"]))
-        result: list[dict] = await interface.call(
+        account = relationship.avilla.get_account(selector=relationship.current)
+        assert isinstance(account, ElizabethAccount)
+        result: list[dict] = await account.call(
             "memberList",
             CallMethod.GET,
             {"target": int(action.mainline.pattern["group"])},
@@ -55,9 +55,9 @@ class ElizabethFriendActionExecutor(
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
         message = await self.protocol.serialize_message(action.message)
-        interface = relationship.protocol.avilla.launch_manager.get_interface(ConnectionInterface)
-        interface = interface.bind(int(relationship.current.pattern["account"]))
-        result = await interface.call(
+        account = relationship.avilla.get_account(selector=relationship.current)
+        assert isinstance(account, ElizabethAccount)
+        result = await account.call(
             "sendFriendMessage",
             CallMethod.POST,
             {
@@ -75,9 +75,9 @@ class ElizabethGroupMemberActionExecutor(
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
         message = await self.protocol.serialize_message(action.message)
-        interface = relationship.protocol.avilla.launch_manager.get_interface(ConnectionInterface)
-        interface = interface.bind(int(relationship.current.pattern["account"]))
-        result = await interface.call(
+        account = relationship.avilla.get_account(selector=relationship.current)
+        assert isinstance(account, ElizabethAccount)
+        result = await account.call(
             "sendTempMessage",
             CallMethod.POST,
             {

@@ -168,6 +168,9 @@ class Avilla:
 
         for protocol in self.protocols:
             if protocol.__class__.platform is not BaseProtocol.platform:
-                logger.info(f"using platform: {protocol.__class__.platform}")
+                logger.info(
+                    f"Using platform: {protocol.__class__.platform}",
+                    alt=f"[magenta]Using platform: [/][dark_orange]{protocol.__class__.platform}[/]",
+                )
 
         await self.launch_manager.launch()
