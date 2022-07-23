@@ -74,7 +74,7 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
 
     @property
     def stages(self):
-        return {}
+        return set()
 
     def __init__(self, protocol: ElizabethProtocol, config: T_Config) -> None:
         from .http import HttpClientConnection

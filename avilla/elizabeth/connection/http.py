@@ -114,7 +114,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
 
     @property
     def stages(self):
-        return {} if self.is_hook else {"blocking"}
+        return set() if self.is_hook else {"blocking"}
 
     async def launch(self, mgr: Launart) -> None:
         self.http_interface = mgr.get_interface(AiohttpClientInterface)
