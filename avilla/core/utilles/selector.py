@@ -9,7 +9,7 @@ from typing_extensions import Self
 if TYPE_CHECKING:
     from avilla.core.platform import Land
 
-MatchRule = Literal["exact", "exist", "any", "fragment"]
+MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = str | Callable[[str], bool]
 
 
@@ -69,15 +69,19 @@ class Selector:
     def match(self, other: Selector) -> bool:
         try:
             match = {
+                "any": self._match_any,
                 "exact": self._match_exact,
                 "exist": self._match_exist,
-                "any": self._match_any,
                 "fragment": self._match_fragment,
+                "startswith": self._match_startswith,
             }[self.mode]
         except KeyError:
             raise ValueError(f"Unknown match rule: {self.mode}") from None
 
         return match(other)
+
+    def _match_any(self, other: Selector) -> bool:
+        return True
 
     def _match_exact(self, other: Selector) -> bool:
         return type(other) is Selector and self.path == self.path and self.pattern == other.pattern
@@ -98,8 +102,11 @@ class Selector:
 
         return full[start : start + len(fragment)] == fragment
 
-    def _match_any(self, other: Selector) -> bool:
-        return True
+    def _match_startswith(self, other: Selector) -> bool:
+        fragment = list(self.pattern.items())
+        full = list(other.pattern.items())
+
+        return all(fragment[i] == full[i] for i in range(len(fragment)))
 
     def mix(self, path: str, **pattern: str) -> Self:
         pattern = self.pattern | pattern
@@ -179,6 +186,21 @@ class DynamicSelector(Selector):
             return False
 
         for a, b in ((self.pattern[path], other.pattern[path]) for path in fragment):
+            if callable(a):
+                if callable(b):
+                    raise TypeError("Can't partially match dynamic selector with another dynamic selector")
+                elif not a(b):
+                    return False
+            elif a != b:
+                return False
+
+        return True
+
+    def _match_startswith(self, other: Selector) -> bool:
+        if not other.path.startswith(self.path):
+            return False
+
+        for a, b in ((self.pattern[path], other.pattern[path]) for path in self.pattern):
             if callable(a):
                 if callable(b):
                     raise TypeError("Can't partially match dynamic selector with another dynamic selector")
