@@ -2,9 +2,12 @@ from __future__ import annotations
 
 from collections import ChainMap
 from itertools import filterfalse
-from typing import Any, Callable, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, runtime_checkable
 
 from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from avilla.core.platform import Land
 
 MatchRule = Literal["exact", "exist", "any", "fragment"]
 Pattern = str | Callable[[str], bool]
@@ -56,6 +59,12 @@ class Selector:
     @classmethod
     def fragment(cls, *path_excludes: str) -> Self:
         return cls(mode="fragment", path_excludes=frozenset(path_excludes))
+
+    def land(self, land: Land | str):
+        if isinstance(land, Land):
+            land = land.name
+        self.pattern["land"] = land
+        return self
 
     def match(self, other: Selector) -> bool:
         try:
