@@ -30,31 +30,27 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 ## Roadmap
 
 * `Avilla Protocol` : 对各式常见的行为进行抽象, 并通过可扩展的模型, 实现尽可能的功能可迁移性.
-  + 特色
-    - [x] `Service`: 向程序中其他部分提供经过通用抽象过的资源, 并对其加以维护, 使各部分稳定性增强, 耦合度降低.
-    - [ ] `Transport (avilla.io)`: 统一的网络通信接口, 与 `Service` 配合; 取材自 `anyio.abc.Stream`.
-      - [ ] `AiohttpClient (http & websocket client)`
-      - [ ] `StarletteServer (http & websocket server)`
-      - [ ] `UvicornService (powerful ASGI server)`
-      - `CacheManager (cache)`
-        - [x] `MemcacheService`: 内置并默认启用的简易缓存系统, 同时具有性能与开箱即用特性.
-        - [ ] `RedisService (cache based on aioredis)`
-    - [x] `Launch API`: 程序生命周期管理, 提供准备(`prepare`), 主线(`mainline`) 与 清理(`cleanup`) 三个时间节点; 支持依赖编排.
-    - [x] `Config`: 基于 `pydantic`, 支持作用域机制的配置系统.
-    - [x] `Commander`: 优雅的指令系统
-    - [ ] `Permission`: 以低侵入度的方式提供简洁强大的权限管理能力
-      - [ ] `Syr`: 简易的权限系统指令集, 基于 `Commander`
-  + 杂项部分
-    - [x] `Selector`: 实现了扁平化处理 "个体"(`Entity`) 与 "主线"(`Mainline`) 的能力.
-    - [x] `Stream API`: 用于简化对获得的二进制信息处理.
-    - [x] `Platform API`: 通过与 `Protocol` 协作, 扩展 Avilla Protocol, 使其能用于平台的特有特性.
-  + 实现支持
-    - [ ] `Avilla for OneBot` : 对  [ `OneBot` ](https://github.com/botuniverse/onebot) 的协议实现.
-      - [ ] `Avilla for go-cqhttp` : 对 [ `go-cqhttp` ](https://github.com/Mrs4s/go-cqhttp) 的扩展 API 支持.
-    - [ ] `Avilla for Telegram` : 对 [ `Telegram Bot API` ](https://core.telegram.org/bots) 的协议实现.
-    - [ ] `Avilla for Discord` : 对 [ `Discord Bot` ](https://docs.botsfordiscord.com/) 的协议实现.
-    - [ ] `Avilla for mirai-api-http` : 对 [ `mirai-api-http` ](https://github.com/project-mirai/mirai-api-http) 的支持.
+  - 使用 [Launart](https://github.com/GraiaProject/Launart) 调度启动任务与应用实例的生命周期;
+  - 创新性的 Relationship 模型, 携带有进行任意操作所需的基本信息, 规范化行为模式与实现的编写;
+  - 使用 `Selector`, 实现了信息与对象本身的解耦, 减少平台实现的负担;
+  - 规范化的 `Resource` 抽象优化了对不同资源与资源类型的操作, 尤其是其内容的获取与其元信息的操作;
+  - 规范各式请求为 `Request`;
+  - 将元信息的获取与操作细粒度降至字段等级, 并使用技术方法尽可能的优化了字段缺失所带来的不便;
+  - 使用各式如 `Broadcast Control` 的注入入口, 极大简化了接口的使用;
+  - 复用来自 `Amnesia` 的通用接口;
 * And more...
+
+
+## 部件发布情况
+
+|   代号    |       协议       | 开发进度  |                           PyPI                            |                  来源                  |  维护者  |
+| :-------: | :--------------: | :-------: | :-------------------------------------------------------: | :------------------------------------: | :------: |
+|   Core    |        -         | **Alpha** |    ![image](https://img.shields.io/pypi/v/avilla-core)    |       [avilla/core](avilla/core)       | Official |
+| Elizabeth | `mirai-api-http` |  **WIP**  | ![image](https://img.shields.io/pypi/v/avilla-elizabeth)  |  [avilla/elizabeth](avilla/elizabeth)  | Official |
+|     -     |   `OneBot v11`   |  **WIP**  | ![image](https://img.shields.io/pypi/v/avilla-onebot-v11) | [avilla/onebot/v11](avilla/onebot/v11) | Official |
+|     -     |   `OneBot v12`   | **Draft** | ![image](https://img.shields.io/pypi/v/avilla-onebot-v12) | [avilla/onebot/v12](avilla/onebot/v12) | Official |
+|     -     |    `Telegram`    | **Draft** |  ![image](https://img.shields.io/pypi/v/avilla-telegram)  |   [avilla/telegram](avilla/telegram)   |    -     |
+| Nightcord |  `Discord Bots`  |  **WIP**  | ![image](https://img.shields.io/pypi/v/avilla-nightcord)  |  [avilla/nightcord](avilla/nightcord)  | Official |
 
 ## 我们的愿景
 
@@ -88,4 +84,4 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 
 ## 开源协议
 
-若非特殊说明, Avilla 及其子包默认使用 MIT 作为开源协议, 但如果你若引用到了使用 GPL/AGPL/LGPL 等具有传染性开源协议的项目, 仍需要遵循相关规则.
+若非特殊说明, Avilla 及其子包默认使用 MIT 作为开源协议, 但如果你若引用到了使用 GPL/AGPL/LGPL 等具有传染性开源协议的项目, 无论是对 Avilla 实现或是使用了相应 Avilla 实现的项目仍需要遵循相关规则.
