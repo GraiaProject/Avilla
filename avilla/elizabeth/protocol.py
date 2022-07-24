@@ -71,5 +71,4 @@ class ElizabethProtocol(BaseProtocol):
             self.service.connections.append(connection)
             avilla.launch_manager.add_launchable(connection)
 
-            # TODO: hot registration of account
-            avilla.add_account(ElizabethAccount(config.account, self))
+            # LINK: see avilla.elizabeth.connection.{http|ws} for hot registration

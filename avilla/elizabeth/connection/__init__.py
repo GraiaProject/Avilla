@@ -6,8 +6,8 @@ from graia.amnesia.transport.common.status import (
     ConnectionStatus as BaseConnectionStatus,
 )
 from launart import Launchable, LaunchableStatus
+from loguru import logger
 from statv import Stats
-from typing_extensions import Self
 
 from avilla.core.utilles.selector import Selector
 
@@ -75,6 +75,20 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
     @property
     def stages(self):
         return set()
+
+    def register_account(self):
+        # NOTE: for hot registration
+        # FIXME: require testing
+        from avilla.elizabeth.account import ElizabethAccount
+
+        account: ElizabethAccount = ElizabethAccount(self.config.account, self.protocol)
+
+        if account not in self.protocol.avilla.accounts:
+            self.protocol.avilla.add_account(account)
+            logger.success(
+                f"Registered account: {self.config.account}",
+                alt=f"[green]Registered account: [magenta]{self.config.account}[/]",
+            )
 
     def __init__(self, protocol: ElizabethProtocol, config: T_Config) -> None:
         from .http import HttpClientConnection

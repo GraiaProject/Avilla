@@ -41,3 +41,11 @@ class AbstractAccount(ABC):
 
     def is_anonymous(self) -> bool:
         return self.id == "anonymous"
+
+    def __eq__(self, other: AbstractAccount):
+        return (
+            self.__class__ is other.__class__
+            and self.id == other.id
+            and self.land == other.land
+            and self.protocol == other.protocol
+        )

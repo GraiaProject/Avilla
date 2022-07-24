@@ -49,7 +49,9 @@ class WebsocketConnectionMixin(Transport):
 
     @property
     def account(self) -> Selector:
-        return Selector().land(self.protocol.land.name).account(str(self.config.account))  # type: ignore
+        return Selector().land(self.protocol.land.name).account(str(self.config.account))
+
+    register_account = ElizabethConnection.register_account
 
     @t.on(WebsocketReceivedEvent)
     @data_type(str)
@@ -68,6 +70,7 @@ class WebsocketConnectionMixin(Transport):
         if "session" in data:
             self.status.session_key = data["session"]
             logger.success("Successfully got session key", style="green bold")
+            self.register_account()  # LINK: hot registration
             return
         if sync_id in self.futures:
             self.futures[sync_id].set_result(data)

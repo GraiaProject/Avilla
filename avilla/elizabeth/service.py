@@ -26,10 +26,10 @@ class ElizabethService(Service):
         self.connections = []
         super().__init__()
 
-    def has_account(self, account_id: str):
+    def has_connection(self, account_id: str):
         return any(conn.config.account == account_id for conn in self.connections)
 
-    def get_account(self, account_id: str):
+    def get_connection(self, account_id: str):
         for conn in self.connections:
             if conn.config.account == account_id:
                 return conn

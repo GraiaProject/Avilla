@@ -42,6 +42,7 @@ class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
         assert isinstance(data, dict)
         self.status.connected = True
         self.status.alive = True
+        self.register_account()  # LINK: hot registration
         event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
         if event is not None:
             self.protocol.post_event(event)
@@ -126,6 +127,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                     if not self.status.session_key:
                         logger.info("HttpClient: authenticate", style="dark_orange")
                         await self.http_auth()
+                    self.register_account()  # LINK: hot registration
                     data = await self.request(
                         "GET",
                         self.config.get_url("fetchMessage"),

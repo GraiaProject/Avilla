@@ -33,19 +33,11 @@ class ElizabethAccount(AbstractAccount):
 
     @property
     def connection(self) -> ElizabethConnection:
-        return self.protocol.service.get_account(self.id)
+        return self.protocol.service.get_connection(self.id)
 
     @property
     def available(self) -> bool:
         return self.connection.status.available
-
-    async def _call(
-        self,
-        command: str,
-        method: CallMethod,
-        params: dict,
-    ) -> Any:
-        return await self.connection.call(command, method, params)
 
     async def call(
         self,
@@ -70,4 +62,4 @@ class ElizabethAccount(AbstractAccount):
             await self.connection.status.wait_for_available()  # wait until session_key is present
             session_key = self.connection.status.session_key
             params["sessionKey"] = session_key
-        return await self._call(command, method, params)
+        return await self.connection.call(command, method, params)
