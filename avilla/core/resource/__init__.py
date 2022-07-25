@@ -25,13 +25,16 @@ class Resource(Generic[T]):
         ...
 
     @property
-    def resource_type(self) -> str | None:
+    @abstractmethod
+    def resource_type(self) -> str:
         pass
 
     def to_selector(self) -> Selector:
-        resource_type = self.resource_type
-        res = self.id if resource_type is None else f"{resource_type}:{self.id}"
-        return self.mainline.copy().resource(res) if self.mainline is not None else Selector().resource(res)
+        return (
+            self.mainline.copy().resource_type(self.resource_type).resource_id(self.id)
+            if self.mainline is not None
+            else Selector().resource_type(self.resource_type).resource_id(self.id)
+        )
 
 
 R = TypeVar("R", bound=Resource)
