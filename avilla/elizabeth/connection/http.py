@@ -15,19 +15,19 @@ from loguru import logger
 
 from ..exception import InvalidSession
 from . import ElizabethConnection
-from ._info import HttpClientInfo, HttpServerInfo
+from .config import HttpClientConfig, HttpServerConfig
 from .util import CallMethod, get_router, validate_response
 
 if TYPE_CHECKING:
     from avilla.elizabeth.protocol import ElizabethProtocol
 
 
-class HttpServerConnection(ElizabethConnection[HttpServerInfo], Transport):
+class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
     """HTTP 服务器连接"""
 
-    dependencies = {"http.universal_server"}
+    dependencies = frozenset(["http.universal_server"])
 
-    def __init__(self, protocol: ElizabethProtocol, config: HttpServerInfo) -> None:
+    def __init__(self, protocol: ElizabethProtocol, config: HttpServerConfig) -> None:
         super().__init__(protocol, config)
         self.handlers[HttpEndpoint(self.config.path, ["POST"])] = self.__class__.handle_request
 
@@ -35,13 +35,14 @@ class HttpServerConnection(ElizabethConnection[HttpServerInfo], Transport):
         req: HttpRequest = await io.extra(HttpRequest)
         if req.headers.get("qq") != str(self.config.account):
             return
-        for k, v in self.config.headers:
+        for k, v in self.config.headers.items():
             if req.headers.get(k) != v:
                 return "Authorization failed", {"status": 401}
         data = Json.deserialize((await io.read()).decode("utf-8"))
         assert isinstance(data, dict)
         self.status.connected = True
         self.status.alive = True
+        self.register_account()  # LINK: hot registration
         event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
         if event is not None:
             self.protocol.post_event(event)
@@ -52,13 +53,13 @@ class HttpServerConnection(ElizabethConnection[HttpServerInfo], Transport):
         router.use(self)
 
 
-class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
+class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
     """HTTP 客户端连接"""
 
-    dependencies = {"http.universal_client"}
+    dependencies = frozenset(["http.universal_client"])
     http_interface: AiohttpClientInterface
 
-    def __init__(self, protocol: ElizabethProtocol, config: HttpClientInfo) -> None:
+    def __init__(self, protocol: ElizabethProtocol, config: HttpClientConfig) -> None:
         super().__init__(protocol, config)
         self.is_hook: bool = False
 
@@ -102,9 +103,9 @@ class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
         if not self.status.session_key:
             await self.http_auth()
         try:
-            if method in (CallMethod.GET, CallMethod.RESTGET):
+            if method in (CallMethod.GET, CallMethod.GET_REST):
                 return await self.request("GET", self.config.get_url(command), params=params)
-            elif method in (CallMethod.POST, CallMethod.RESTPOST):
+            elif method in (CallMethod.POST, CallMethod.POST_REST):
                 return await self.request("POST", self.config.get_url(command), json=params)
             elif method == CallMethod.MULTIPART:
                 return await self.request("POST", self.config.get_url(command), data=params)
@@ -114,7 +115,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
 
     @property
     def stages(self):
-        return {} if self.is_hook else {"blocking"}
+        return set() if self.is_hook else {"blocking"}
 
     async def launch(self, mgr: Launart) -> None:
         self.http_interface = mgr.get_interface(AiohttpClientInterface)
@@ -126,6 +127,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
                     if not self.status.session_key:
                         logger.info("HttpClient: authenticate", style="dark_orange")
                         await self.http_auth()
+                    self.register_account()  # LINK: hot registration
                     data = await self.request(
                         "GET",
                         self.config.get_url("fetchMessage"),
@@ -140,10 +142,9 @@ class HttpClientConnection(ElizabethConnection[HttpClientInfo]):
                 assert isinstance(data, list)
                 for event_data in data:
                     # TODO: event -> protocol
-                    # event = build_event(event_data)
-                    # await asyncio.gather(*(callback(event) for callback in self.event_callbacks))
-                    ...
-                    event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
+                    event = await self.protocol.event_parser.parse_event(
+                        self.protocol, self.account, event_data
+                    )
                     if event is not None:
                         self.protocol.post_event(event)
                 await wait_fut(

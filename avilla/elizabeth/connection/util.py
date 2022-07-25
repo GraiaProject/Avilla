@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Any, Dict, Literal, Type, Union, overload
+from typing import Any, Literal, overload
 
 from graia.amnesia.builtins.aiohttp import AiohttpRouter
 from launart import Launart
@@ -25,7 +25,7 @@ from ..exception import (
 try:
     from graia.amnesia.builtins.starlette import StarletteRouter
 
-    def get_router(mgr: Launart) -> Union[AiohttpRouter, StarletteRouter]:
+    def get_router(mgr: Launart) -> AiohttpRouter | StarletteRouter:
         if AiohttpRouter in mgr._service_bind:
             return mgr.get_interface(AiohttpRouter)
         if StarletteRouter in mgr._service_bind:
@@ -34,13 +34,13 @@ try:
 
 except ImportError:
 
-    def get_router(mgr: Launart) -> Union[AiohttpRouter, StarletteRouter]:
+    def get_router(mgr: Launart) -> AiohttpRouter | StarletteRouter:
         if AiohttpRouter in mgr._service_bind:
             return mgr.get_interface(AiohttpRouter)
         raise ValueError("No router found")
 
 
-code_exceptions_mapping: Dict[int, Type[Exception]] = {
+code_exceptions_mapping: dict[int, type[Exception]] = {
     1: InvalidVerifyKey,
     2: AccountNotFound,
     3: InvalidSession,
@@ -56,7 +56,7 @@ code_exceptions_mapping: Dict[int, Type[Exception]] = {
 
 
 @overload
-def validate_response(data: Any, raising: Literal[False]) -> Union[Any, Exception]:
+def validate_response(data: Any, raising: Literal[False]) -> Any | Exception:
     ...
 
 
@@ -80,8 +80,8 @@ class CallMethod(str, Enum):
 
     GET = "GET"
     POST = "POST"
-    RESTGET = "get"
-    RESTPOST = "update"
+    GET_REST = "get"
+    POST_REST = "update"
     MULTIPART = "multipart"
 
 
