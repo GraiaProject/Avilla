@@ -4,6 +4,7 @@ from abc import ABCMeta, abstractmethod
 from contextlib import ExitStack
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, cast
+from avilla.core.querier import ProtocolAbstractQueryHandler
 
 from graia.amnesia.message import MessageChain
 
@@ -22,7 +23,7 @@ from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core import Avilla
+    from avilla.core.application import Avilla
 
 
 class BaseProtocol(metaclass=ABCMeta):
@@ -41,6 +42,7 @@ class BaseProtocol(metaclass=ABCMeta):
         dict, MappingProxyType({})
     )
     protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = cast(list, ())
+    protocol_query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = cast(list, ())
 
     def __init__(self):
         ...

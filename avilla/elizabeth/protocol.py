@@ -18,6 +18,7 @@ from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.event_parser import ElizabethEventParser
 from avilla.elizabeth.message_deserializer import ElizabethMessageDeserializer
 from avilla.elizabeth.message_serializer import ElizabethMessageSerializer
+from avilla.elizabeth.query import ElizabethGroupQuery, ElizabethRootQuery
 from avilla.elizabeth.service import ElizabethService
 
 
@@ -46,7 +47,8 @@ class ElizabethProtocol(BaseProtocol):
     platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = {}
     protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
     protocol_query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
-
+        ElizabethGroupQuery,
+        ElizabethRootQuery
     ]
 
     # 鉴于你 mah 乃至 mirai 还没支持频道, 这里就直接.

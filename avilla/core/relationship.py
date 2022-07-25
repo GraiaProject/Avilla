@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, suppress
-from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
+from inspect import isfunction
+from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, TypeVar, cast, overload
 
-from avilla.core.action import Action, IterateMembers
 from avilla.core.context import ctx_relationship
-from avilla.core.metadata.model import Metadata, MetadataModifies
+from avilla.core.metadata.model import Metadata, Modify
 from avilla.core.resource import Resource, get_provider
 from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.selector import Selector, Summarizable
@@ -66,6 +66,10 @@ _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Metadata)
 
 
+async def _as_asynciter(iterable: Iterable[_T]) -> AsyncIterator[_T]:
+    for i in iterable:
+        yield i
+
 class Relationship:
     ctx: Selector
     mainline: Selector
@@ -100,6 +104,16 @@ class Relationship:
     def avilla(self):
         return self.protocol.avilla
 
+    @property
+    def land(self):
+        return self.protocol.land
+    
+    @property
+    def account(self):
+        account = self.avilla.get_account(selector=self.current)
+        assert account is not None
+        return account
+
     def complete(self, selector: Selector):
         rules = self.protocol.completion_rules.get(selector.path)
         if rules is None:
@@ -113,26 +127,44 @@ class Relationship:
 
     async def fetch(self, resource: Resource[_T]) -> _T:
         with ctx_relationship.use(self):
-            target_ref = resource.to_selector()
             provider = get_provider(resource, self)
             if provider is None:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
 
-    async def query(self, pattern: Selector):
-        async def iterator():
-            async for i in await self.exec(IterateMembers()):
-                if pattern.match(i):
-                    yield i
-
-        return iterator()
+    async def query(self, selector: Selector):
+        current: dict[str, str] = {}
+        stack = [_as_asynciter([selector])]
+        for key, value in selector.pattern.items():
+            if key == "land":
+                continue
+            depth = selector.mixin(".".join(current.keys()) + key, Selector.from_dict({**current, key: value}))  # NEED TO FIX
+            for i in self.protocol.protocol_query_handlers:
+                with suppress(TypeError):
+                    if i.prefix.match(depth):
+                        querier_type = i
+                        break
+            else:                
+                raise ValueError(f"No query handler found for {depth.path}")
+            querier = querier_type(self.protocol)
+            if key not in querier.queriers:
+                raise ValueError(f"No querier found for {current}, which need to apply {key}")
+            async def gen(a):
+                async for prefix in a:
+                    print(depth, depth.pattern)
+                    async for i in querier.queriers[key](querier, self, prefix, depth.match):
+                        yield i
+            stack.append(gen(stack[-1]))
+            current = {**current, key: value}
+        async for i in stack[-1]:
+            yield i
 
     @overload
     async def meta(self, op_or_target: type[_M]) -> _M:
         ...
 
     @overload
-    async def meta(self, op_or_target: MetadataModifies[_T]) -> _T:
+    async def meta(self, op_or_target: list[Modify[_T]]) -> _T:
         ...
 
     @overload
@@ -140,7 +172,7 @@ class Relationship:
         ...
 
     @overload
-    async def meta(self, op_or_target: Any, op: MetadataModifies[_T]) -> _T:
+    async def meta(self, op_or_target: Any, op: list[Modify]) -> _T:
         ...
 
     async def meta(

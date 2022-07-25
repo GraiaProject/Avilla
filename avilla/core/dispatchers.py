@@ -15,7 +15,7 @@ from avilla.core.relationship import Relationship
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-    from avilla.core import Avilla
+    from avilla.core.application import Avilla
 
 
 class AvillaBuiltinDispatcher(BaseDispatcher):
@@ -25,7 +25,7 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
         self.avilla = avilla
 
     async def catch(self, interface: DispatcherInterface[AvillaEvent]):
-        from avilla.core import Avilla
+        from avilla.core.application import Avilla
 
         if interface.annotation is Avilla:
             return self.avilla

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
-from avilla.core import Avilla
+from avilla.core.application import Avilla
 from avilla.core.account import AbstractAccount
 from avilla.core.platform import Abstract, Land, Platform, Version
 from avilla.core.protocol import BaseProtocol

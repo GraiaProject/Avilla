@@ -5,9 +5,10 @@ from itertools import filterfalse
 from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, runtime_checkable
 
 from typing_extensions import Self
+from avilla.core.platform import Land
 
 if TYPE_CHECKING:
-    from avilla.core.platform import Land
+    ...
 
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = str | Callable[[str], bool]
@@ -59,6 +60,13 @@ class Selector:
     @classmethod
     def fragment(cls, *path_excludes: str) -> Self:
         return cls(mode="fragment", path_excludes=frozenset(path_excludes))
+
+    @classmethod
+    def from_dict(cls, pattern: dict) -> Self:
+        instance = cls()
+        instance.pattern = pattern
+        return instance
+
 
     def land(self, land: Land | str):
         if isinstance(land, Land):

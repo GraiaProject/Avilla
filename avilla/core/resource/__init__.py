@@ -8,7 +8,7 @@ from avilla.core.metadata.source import MetadataSource
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core import Avilla
+    from avilla.core.application import Avilla
     from avilla.core.protocol import BaseProtocol
     from avilla.core.relationship import Relationship
 
