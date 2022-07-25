@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import ClassVar, Literal
 
 from launart import Launart, Service
-from launart.service import Service
 
 from avilla.onebot.v11.connection import (
     OneBot11Connection,
