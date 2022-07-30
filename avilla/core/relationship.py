@@ -146,8 +146,13 @@ class Relationship:
             return real_generator
 
         async def generate_from_upper(depth: Selector, upper: AsyncIterator[Selector] | None = None):
-            current = list(depth.pattern.keys())[-1]
-            past = ".".join(list(depth.pattern.keys())[:-1])
+            depth_keys = list(depth.pattern.keys())
+            if not depth_keys:
+                return
+            current = depth_keys[-1]
+            past = ".".join(depth_keys[:-1])
+            if depth_keys[0] != "land":
+                depth.pattern = {"land": self.land.name, **depth.pattern}
             for querier in self.protocol.query_handlers:
                 if querier.prefix is None or querier.prefix == past:
                     querier = querier(self.protocol)
@@ -156,8 +161,6 @@ class Relationship:
                 raise NotImplementedError(f"No query handler found for {past}")
             if current not in querier.queriers:
                 raise NotImplementedError(f"No querier found for {past}, {current} unimplemented")
-            if depth.pattern and list(depth.pattern.keys())[0] != "land":
-                depth.pattern = {"land": self.land.name, **depth.pattern}
             if upper is None:
                 async for current_value in querier.queriers[current](
                     querier, self, Selector().land(self.land), depth.match
