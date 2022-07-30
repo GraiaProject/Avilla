@@ -52,12 +52,17 @@ class ElizabethProtocol(BaseProtocol):
     ]
 
     # 鉴于你 mah 乃至 mirai 还没支持频道, 这里就直接.
-    completion_rules: ClassVar[dict[str, list[str]]] = {
-        "group": ["land.group"],
-        "friend": ["land.friend"],
-        "member": ["land.group.member"],
-        "contact": ["land.group.member"],  # Notice.target
-        "group.member": ["land.group.member"],
+    completion_rules = {
+        "land.group": {
+            "group": "land.group",
+            "member": "land.group.member",
+            "group.member": "land.group.member",
+        },
+        "land.friend": {"friend": "land.friend"},
+        "land.contact": {"contact": "land.contact"},
+        "land": {
+            "contact": "land.contact",
+        }
         # TODO
     }
 

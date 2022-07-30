@@ -113,14 +113,11 @@ class Relationship:
         return self.protocol.land
 
     def complete(self, selector: Selector):
-        rules = self.protocol.completion_rules.get(selector.path)
+        rules = self.protocol.completion_rules.get(self.mainline.path)
         if rules is None:
             return selector
-        for alternative in rules:
-            with suppress(ValueError):
-                return selector.mixin(
-                    alternative, self.ctx, self.mainline, *((self.via,) if self.via is not None else ())
-                )
+        if selector.path in rules:
+            return selector.mixin(rules[selector.path], self.mainline, self.ctx, *((self.via,) if self.via else ()))
         return selector
 
     async def fetch(self, resource: Resource[_T]) -> _T:
