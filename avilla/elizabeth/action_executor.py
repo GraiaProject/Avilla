@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.action import MessageSend
+from avilla.core.action import MessageRevoke, MessageSend
 from avilla.core.relationship import Relationship
 from avilla.core.utilles.action_executor import ProtocolActionExecutor, action
 from avilla.core.utilles.selector import DynamicSelector
@@ -23,14 +23,21 @@ class ElizabethGroupActionExecutor(
         assert isinstance(account, ElizabethAccount)
         result = await account.call(
             "sendGroupMessage",
-            CallMethod.POST,
             {
+                "__method__": CallMethod.POST,
                 "target": int(action.target.pattern["group"]),
                 "messageChain": message,
                 **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
             },
         )
         return action.target.mix("land.group.message", message=result["messageId"])
+
+    @action(MessageRevoke)
+    async def revoke_message(self, action: MessageRevoke, relationship: Relationship):
+        target_id: int = int(action.message.pattern["message"])
+        account = relationship.current
+        assert isinstance(account, ElizabethAccount)
+        await account.call("recall", {"__method__": CallMethod.POST, "target": target_id})
 
 
 class ElizabethFriendActionExecutor(
@@ -43,8 +50,8 @@ class ElizabethFriendActionExecutor(
         assert isinstance(account, ElizabethAccount)
         result = await account.call(
             "sendFriendMessage",
-            CallMethod.POST,
             {
+                "__method__": CallMethod.POST,
                 "target": int(action.target.pattern["friend"]),
                 "messageChain": message,
                 **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
@@ -63,8 +70,8 @@ class ElizabethGroupMemberActionExecutor(
         assert isinstance(account, ElizabethAccount)
         result = await account.call(
             "sendTempMessage",
-            CallMethod.POST,
             {
+                "__method__": CallMethod.POST,
                 "target": int(action.target.pattern["group"]),
                 "qq": int(action.target.pattern["member"]),
                 "messageChain": message,

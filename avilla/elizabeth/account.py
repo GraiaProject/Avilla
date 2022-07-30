@@ -39,27 +39,11 @@ class ElizabethAccount(AbstractAccount):
     def available(self) -> bool:
         return self.connection.status.available
 
-    async def call(
-        self,
-        command: str,
-        method: CallMethod,
-        params: dict,
-        *,
-        in_session: bool = True,
-    ) -> Any:
-        """发起一个调用
-
-        Args:
-            command (str): 调用命令
-            method (CallMethod): 调用方法
-            params (dict): 调用参数
-            in_session (bool, optional): 是否在会话中. Defaults to True.
-
-        Returns:
-            Any: 调用结果
-        """
-        if in_session:
+    async def call(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
+        params = params or {}
+        method: CallMethod = params.pop("__method__")
+        if params.pop("__use_session__", True):
             await self.connection.status.wait_for_available()  # wait until session_key is present
             session_key = self.connection.status.session_key
             params["sessionKey"] = session_key
-        return await self.connection.call(command, method, params)
+        return await self.connection.call(endpoint, method, params)

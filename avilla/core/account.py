@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from avilla.core.platform import Land
 from avilla.core.relationship import Relationship
@@ -27,10 +27,12 @@ class AbstractAccount(ABC):
     async def get_relationship(self, target: Selector) -> Relationship:
         ...
 
+    @abstractmethod
+    async def call(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
+        ...
+
     def get_self_relationship(self):
-        return Relationship(
-            self.protocol, self.to_selector(), Selector().land(self.land.name), self
-        )
+        return Relationship(self.protocol, self.to_selector(), Selector().land(self.land.name), self)
 
     @property
     def available(self) -> bool:
