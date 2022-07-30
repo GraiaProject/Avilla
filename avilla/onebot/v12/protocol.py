@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import ClassVar
 
-from avilla.core import Avilla
+from avilla.core.application import Avilla
 from avilla.core.platform import Abstract, Land, Platform, Version
 from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import PlatformResourceProvider

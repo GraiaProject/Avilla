@@ -12,6 +12,7 @@ from avilla.core.context import ctx_avilla, ctx_protocol
 from avilla.core.event import AvillaEvent
 from avilla.core.metadata.source import MetadataSource
 from avilla.core.platform import Abstract, Land, Platform
+from avilla.core.querier import ProtocolAbstractQueryHandler
 from avilla.core.resource import PlatformResourceProvider, ResourceProvider
 from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.action_executor import ProtocolActionExecutor
@@ -22,7 +23,7 @@ from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core import Avilla
+    from avilla.core.application import Avilla
 
 
 class BaseProtocol(metaclass=ABCMeta):
@@ -41,6 +42,7 @@ class BaseProtocol(metaclass=ABCMeta):
         dict, MappingProxyType({})
     )
     protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = cast(list, ())
+    protocol_query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = cast(list, ())
 
     def __init__(self):
         ...

@@ -3,7 +3,9 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import TYPE_CHECKING, Any, Dict, Generic, Optional, Set, Type
 
-from graia.amnesia.transport.common.status import ConnectionStatus as BaseConnectionStatus
+from graia.amnesia.transport.common.status import (
+    ConnectionStatus as BaseConnectionStatus,
+)
 from launart import ExportInterface, Launchable, LaunchableStatus
 from statv import Stats
 from typing_extensions import Self
@@ -32,6 +34,7 @@ class ConnectionStatus(BaseConnectionStatus, LaunchableStatus):
                 ]
             )
         )
+
 
 class OneBot12Connection(Launchable):
     status: ConnectionStatus

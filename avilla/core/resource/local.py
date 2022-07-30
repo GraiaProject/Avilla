@@ -24,6 +24,10 @@ class LocalFileResource(Resource[bytes]):
     def get_default_provider(self):
         return LOCAL_PROVIDER
 
+    @property
+    def get_resource_type(self):
+        return "local_file"
+
 
 class LocalFileResourceProvider(ResourceProvider):
     async def fetch(self, resource: LocalFileResource, relationship: Relationship | None = None):

@@ -3,9 +3,9 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Any, MutableMapping
 from weakref import WeakValueDictionary
-from avilla.core.utilles.selector import Selector
 
 from graia.amnesia.transport import Transport
+from graia.amnesia.transport.common.http import AbstractClientInterface
 from graia.amnesia.transport.common.websocket import (
     AbstractWebsocketIO,
     WebsocketCloseEvent,
@@ -15,15 +15,15 @@ from graia.amnesia.transport.common.websocket import (
 )
 from graia.amnesia.transport.common.websocket.shortcut import data_type, json_require
 from graia.amnesia.transport.utilles import TransportRegistrar
-from graia.amnesia.transport.common.http import AbstractClientInterface
+from launart import Launart
 from loguru import logger
 
 from avilla.core.exceptions import RemoteError
+from avilla.core.utilles.selector import Selector
 from avilla.onebot.v12.account import OneBot12Account
 from avilla.onebot.v12.connect import OneBot12Connection
 from avilla.onebot.v12.connect.config import OneBot12WebsocketClientConfig
 from avilla.onebot.v12.exception import get_error
-from launart import Launart
 
 if TYPE_CHECKING:
     from avilla.onebot.v12.protocol import OneBot12Protocol
@@ -39,7 +39,7 @@ class OneBot12WebsocketClientConnection(OneBot12Connection, Transport):
 
     io: AbstractWebsocketIO | None = None
     requests: MutableMapping[str, asyncio.Future]
-    account: OneBot12Account | None = None 
+    account: OneBot12Account | None = None
 
     def __init__(self, protocol: OneBot12Protocol, config: OneBot12WebsocketClientConfig) -> None:
         super().__init__(protocol, config)
@@ -112,4 +112,3 @@ class OneBot12WebsocketClientConnection(OneBot12Connection, Transport):
         interface = manager.get_interface(AbstractClientInterface)
         if interface is None:
             raise RuntimeError("No http.universal_client interface found")
-        
