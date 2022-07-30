@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import secrets
-from typing import TYPE_CHECKING, Any, Dict, MutableMapping, Optional
+from typing import TYPE_CHECKING, Any, Dict, MutableMapping, Optional, TypeVar
 from weakref import WeakValueDictionary
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
@@ -27,9 +27,8 @@ from yarl import URL
 
 from avilla.core.utilles.selector import Selector
 
-from . import ConnectionStatus, ElizabethConnection
+from . import ElizabethConnection
 from .config import WebsocketClientConfig, WebsocketServerConfig
-from .http import HttpClientConnection
 from .util import CallMethod, get_router, validate_response
 
 if TYPE_CHECKING:
@@ -37,21 +36,18 @@ if TYPE_CHECKING:
 
 t = TransportRegistrar()
 
+T_WebsocketConfig = TypeVar("T_WebsocketConfig", WebsocketClientConfig, WebsocketServerConfig)
+
 
 @t.apply
-class WebsocketConnectionMixin(Transport):
+class BaseWebsocketConnection(Transport, ElizabethConnection[T_WebsocketConfig]):
     ws_io: Optional[AbstractWebsocketIO]
     futures: MutableMapping[str, asyncio.Future]
-    status: ConnectionStatus
-    http_conn: HttpClientConnection | None
-    protocol: ElizabethProtocol
-    config: WebsocketClientConfig | WebsocketServerConfig
+    config: T_WebsocketConfig
 
-    @property
-    def account(self) -> Selector:
-        return Selector().land(self.protocol.land.name).account(str(self.config.account))
-
-    register_account = ElizabethConnection.register_account
+    def __init__(self, protocol: ElizabethProtocol, config: T_WebsocketConfig) -> None:
+        super().__init__(protocol, config)
+        self.futures = WeakValueDictionary()
 
     @t.on(WebsocketReceivedEvent)
     @data_type(str)
@@ -121,7 +117,7 @@ t = TransportRegistrar()
 
 
 @t.apply
-class WebsocketServerConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketServerConfig]):
+class WebsocketServerConnection(BaseWebsocketConnection[WebsocketServerConfig]):
     """Websocket 服务器连接"""
 
     dependencies = frozenset(["http.universal_server"])
@@ -129,9 +125,8 @@ class WebsocketServerConnection(WebsocketConnectionMixin, ElizabethConnection[We
     config: WebsocketServerConfig
 
     def __init__(self, protocol: ElizabethProtocol, config: WebsocketServerConfig) -> None:
-        ElizabethConnection.__init__(self, protocol, config)
+        super().__init__(protocol, config)
         self.declares.append(WebsocketEndpoint(self.config.path))
-        self.futures = WeakValueDictionary()
 
     async def launch(self, mgr: Launart) -> None:
         router = get_router(mgr)
@@ -166,7 +161,7 @@ t = TransportRegistrar()
 
 
 @t.apply
-class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[WebsocketClientConfig]):
+class WebsocketClientConnection(BaseWebsocketConnection[WebsocketClientConfig]):
     """Websocket 客户端连接"""
 
     dependencies = frozenset(["http.universal_client"])
@@ -177,16 +172,16 @@ class WebsocketClientConnection(WebsocketConnectionMixin, ElizabethConnection[We
     def stages(self):
         return {"blocking"}
 
-    def __init__(self, protocol: ElizabethProtocol, config: WebsocketClientConfig) -> None:
-        ElizabethConnection.__init__(self, protocol, config)
-        self.futures = WeakValueDictionary()
-
     async def launch(self, mgr: Launart) -> None:
         self.http_interface = mgr.get_interface(AiohttpClientInterface)
         config = self.config
         async with self.stage("blocking"):
             rider = self.http_interface.websocket(
-                str(URL(config.get_url("all")).with_query({"qq": config.account, "verifyKey": config.verify_key}))
+                str(
+                    URL(config.get_url("all")).with_query(
+                        {"qq": config.account, "verifyKey": config.verify_key}
+                    )
+                )
             )
             await wait_fut(
                 [rider.use(self), self.wait_for("finished", "elizabeth.service")],
