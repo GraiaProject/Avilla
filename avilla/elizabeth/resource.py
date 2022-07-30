@@ -25,6 +25,7 @@ class LaunartHttpResourceProvider(ResourceProvider):
         raise NotImplementedError()
 
 
+
 class ElizabethResource(Resource[bytes]):
     url: str | None = None
     path: str | None = None
@@ -50,13 +51,13 @@ class ElizabethResource(Resource[bytes]):
 
 class ElizabethImageResource(ElizabethResource):
     @property
-    def resource_type(self) -> str | None:
+    def resource_type(self):
         if self.mainline is not None:
             if self.mainline.path == "land.group":
-                return "group_image"
+                return "elizabeth:image:group"
             elif self.mainline.path == "land.friend":
-                return "friend_image"
-        return "image"
+                return "elizabeth:image:friend"
+        return "elizabeth:image"
 
 
 class ElizabethAudioResource(ElizabethResource):
@@ -75,5 +76,5 @@ class ElizabethAudioResource(ElizabethResource):
         self.length = length
 
     @property
-    def resource_type(self) -> str | None:
-        return "audio"
+    def resource_type(self):
+        return "elizabeth:audio"

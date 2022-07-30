@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from collections import ChainMap
 from itertools import filterfalse
-from typing import Any, Callable, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, runtime_checkable
 
 from typing_extensions import Self
+from avilla.core.platform import Land
 
-MatchRule = Literal["exact", "exist", "any", "fragment"]
+if TYPE_CHECKING:
+    ...
+
+MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = str | Callable[[str], bool]
 
 
@@ -57,18 +61,35 @@ class Selector:
     def fragment(cls, *path_excludes: str) -> Self:
         return cls(mode="fragment", path_excludes=frozenset(path_excludes))
 
+    @classmethod
+    def from_dict(cls, pattern: dict) -> Self:
+        instance = cls()
+        instance.pattern = pattern
+        return instance
+
+
+    def land(self, land: Land | str):
+        if isinstance(land, Land):
+            land = land.name
+        self.pattern["land"] = land
+        return self
+
     def match(self, other: Selector) -> bool:
         try:
             match = {
+                "any": self._match_any,
                 "exact": self._match_exact,
                 "exist": self._match_exist,
-                "any": self._match_any,
                 "fragment": self._match_fragment,
+                "startswith": self._match_startswith,
             }[self.mode]
         except KeyError:
             raise ValueError(f"Unknown match rule: {self.mode}") from None
 
         return match(other)
+
+    def _match_any(self, other: Selector) -> bool:
+        return True
 
     def _match_exact(self, other: Selector) -> bool:
         return type(other) is Selector and self.path == self.path and self.pattern == other.pattern
@@ -89,8 +110,11 @@ class Selector:
 
         return full[start : start + len(fragment)] == fragment
 
-    def _match_any(self, other: Selector) -> bool:
-        return True
+    def _match_startswith(self, other: Selector) -> bool:
+        fragment = list(self.pattern.items())
+        full = list(other.pattern.items())
+
+        return all(fragment[i] == full[i] for i in range(len(fragment)))
 
     def mix(self, path: str, **pattern: str) -> Self:
         pattern = self.pattern | pattern
@@ -170,6 +194,21 @@ class DynamicSelector(Selector):
             return False
 
         for a, b in ((self.pattern[path], other.pattern[path]) for path in fragment):
+            if callable(a):
+                if callable(b):
+                    raise TypeError("Can't partially match dynamic selector with another dynamic selector")
+                elif not a(b):
+                    return False
+            elif a != b:
+                return False
+
+        return True
+
+    def _match_startswith(self, other: Selector) -> bool:
+        if not other.path.startswith(self.path):
+            return False
+
+        for a, b in ((self.pattern[path], other.pattern[path]) for path in self.pattern):
             if callable(a):
                 if callable(b):
                     raise TypeError("Can't partially match dynamic selector with another dynamic selector")

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Callable, ClassVar, Coroutine, Generic, TypeVa
 
 from typing_extensions import Self
 
-from avilla.core.metadata.model import Metadata, MetadataModifies
+from avilla.core.metadata.model import Metadata, Modify
 from avilla.core.metadata.source import MetadataSource
 from avilla.core.utilles.selector import Selector
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 Fetcher = Callable[["DispatachingMetadataSource", Selector, type[Metadata]], Coroutine[None, None, Metadata]]
-Modifier = Callable[["DispatachingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]]
+Modifier = Callable[["DispatachingMetadataSource", Selector, list[Modify]], Coroutine[None, None, Metadata]]
 
 
 def fetch(*model_types: type[Metadata]):
@@ -40,13 +40,13 @@ def modify(*model_types: type[Metadata]):
 # 第一步的对比由 Protocol.get_metadata_source 完成, Source 仅提供 Target Pattern.
 
 
-class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
+class DispatachingMetadataSource(MetadataSource[Selector]):
     pattern: ClassVar[Selector] = Selector(mode="any")
     fetchers: ClassVar[
         dict[type[Metadata], Callable[[Self, Selector, type[Metadata]], Coroutine[None, None, Metadata]]]
     ] = {}
     modifiers: ClassVar[
-        dict[type[Metadata], Callable[[Self, Selector, MetadataModifies], Coroutine[None, None, Metadata]]]
+        dict[type[Metadata], Callable[[Self, Selector, list[Modify]], Coroutine[None, None, Metadata]]]
     ] = {}
 
     def __init_subclass__(cls, pattern: Selector) -> None:
@@ -74,7 +74,7 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
             raise NotImplementedError(f"Fetcher for {model} is not implemented.")
         return await fetcher(self, target, model)
 
-    async def modify(self, target: Selector, modifies: MetadataModifies):
+    async def modify(self, target: Selector, modifies: list[Modify]):
         if not self.pattern.match(target):
             raise ValueError(f"Target {target} does not match {self.pattern}.")
         modifier = self.modifiers.get(modifies.model)

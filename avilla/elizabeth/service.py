@@ -1,36 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
-import importlib.metadata
-from typing import (
-    TYPE_CHECKING,
-    Coroutine,
-    Dict,
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-    Type,
-    overload,
-)
+from typing import TYPE_CHECKING
 
-from aiohttp import ClientSession
-from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
-from graia.broadcast import Broadcast
 from launart import Launart, Service
-from loguru import logger
 
 from avilla.elizabeth.account import ElizabethAccount
 
-from .connection import (
-    CONFIG_MAP,
-    ConnectionInterface,
-    ElizabethConnection,
-    HttpClientConnection,
-)
-from .connection._info import HttpClientInfo, U_Info
-from .exception import AriadneConfigurationError
+from .connection import ElizabethConnection
+from .connection.config import U_Config
 
 if TYPE_CHECKING:
     from .protocol import ElizabethProtocol
@@ -38,30 +16,20 @@ if TYPE_CHECKING:
 
 class ElizabethService(Service):
     id = "elizabeth.service"
-    supported_interface_types = {ConnectionInterface}
+    supported_interface_types = set()
 
     protocol: ElizabethProtocol
-    connections: list[ElizabethConnection]
+    connections: list[ElizabethConnection[U_Config]]
 
     def __init__(self, protocol: ElizabethProtocol):
         self.protocol = protocol
         self.connections = []
         super().__init__()
 
-    # DEBUG 用.
-    def ensure_config(self, connection: ElizabethConnection):
-        self.connections.append(connection)
-        self.protocol.avilla.add_account(ElizabethAccount(str(connection.config.account), self.protocol))
-
-    def get_conn(self, account_id: int):
-        for conn in self.connections:
-            if conn.config.account == account_id:
-                return conn
-
-    def has_account(self, account_id: int):
+    def has_connection(self, account_id: str):
         return any(conn.config.account == account_id for conn in self.connections)
 
-    def get_account(self, account_id: int):
+    def get_connection(self, account_id: str):
         for conn in self.connections:
             if conn.config.account == account_id:
                 return conn
@@ -77,7 +45,9 @@ class ElizabethService(Service):
             if self.connections:
                 await asyncio.wait(
                     [
-                        conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished")
+                        conn.status.wait_for(
+                            "blocking-completed", "waiting-for-cleanup", "cleanup", "finished"
+                        )
                         for conn in self.connections
                     ]
                 )
@@ -93,14 +63,5 @@ class ElizabethService(Service):
     def stages(self):
         return {"preparing", "blocking", "cleanup"}
 
-    @overload
-    def get_interface(self, interface_type: Type[ConnectionInterface]) -> ConnectionInterface:
-        ...
-
-    @overload
-    def get_interface(self, interface_type: type) -> None:
-        ...
-
-    def get_interface(self, interface_type: type):
-        if interface_type is ConnectionInterface:
-            return ConnectionInterface(self)
+    def get_interface(self, _):
+        return None

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
-from typing import Literal, Union
+from dataclasses import dataclass
+from typing import Union
 
 from yarl import URL
 
@@ -10,14 +10,13 @@ from yarl import URL
 class OneBot12WebsocketClientConfig:
     endpoint: URL
     access_token: str | None = None
-    accounts: list[str] | None = None  # none 表示接受所有的账号类型.
-    extra: Literal["allow", "warn", "close"] = "warn"
+    account: str | None = None  # none 表示接受所有的账号类型.
 
 
 @dataclass
 class OneBot12WebsocketServerConfig:
     endpoint: str
     access_token: str | None = None
-
+    account: str | None = None  # none 表示接受所有的账号类型.
 
 OneBotConfig = Union[OneBot12WebsocketClientConfig, OneBot12WebsocketServerConfig]

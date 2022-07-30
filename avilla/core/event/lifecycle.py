@@ -1,30 +1,44 @@
-"""Ariadne, Adapter 生命周期相关事件"""
-from typing import TYPE_CHECKING
+from __future__ import annotations
 from dataclasses import dataclass
-from graia.broadcast.entities.event import Dispatchable
+from typing import TYPE_CHECKING
+
 from graia.broadcast.entities.dispatcher import BaseDispatcher
+from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 if TYPE_CHECKING:
     from ..account import AbstractAccount
+    from ..application import Avilla
 
 
 class AvillaLifecycleEvent(Dispatchable):
     """指示有关应用 (Avilla) 的事件."""
 
+    avilla: Avilla
 
-# CleanUp
-class AvillaStopping(AvillaLifecycleEvent):
+    def __init__(self, avilla: Avilla):
+        self.avilla = avilla
+    
+    class Dispatcher(BaseDispatcher):
+        @classmethod
+        async def catch(cls, interface: 'DispatcherInterface[AvillaLifecycleEvent]'):
+            from ..application import Avilla
+            if interface.annotation is Avilla:
+                return interface.event.avilla
+
+
+class ApplicationClosing(AvillaLifecycleEvent):
     """指示 Avilla 正在关闭."""
 
 
-# Finished
-class AvillaFinish(AvillaLifecycleEvent):
+class ApplicationClosed(AvillaLifecycleEvent):
     """指示 Avilla 已经关闭."""
 
 
-# Blocking
-class AvillaReady(AvillaLifecycleEvent):
+class ApplicationPreparing(AvillaLifecycleEvent):
+    """指示 Avilla 正在准备."""
+
+class ApplicationReady(AvillaLifecycleEvent):
     """指示 Avilla 已准备完毕."""
 
 
