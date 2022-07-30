@@ -5,7 +5,10 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
+from typing_extensions import TypeVarTuple, Unpack
+
 if TYPE_CHECKING:
+    from avilla.core.metadata.source import MetadataSource
     from avilla.core.relationship import Relationship
     from avilla.core.utilles.selector import Selector
 
@@ -51,10 +54,14 @@ def meta_field(id: str) -> Any:
 
 
 class Metadata(Generic[T], metaclass=ABCMeta):
+    _target: Any
+    _source: MetadataSource
     _content: dict[str, Any]
     _modifies: MetadataModifies[T] | None = None
 
-    def __init__(self, *, content: dict[str, Any] | None = None) -> None:
+    def __init__(self, *, target: Any, source: MetadataSource, content: dict[str, Any] | None = None) -> None:
+        self._target = target
+        self._source = source
         self._content = content or {}
 
     @abstractmethod
@@ -72,3 +79,12 @@ class Metadata(Generic[T], metaclass=ABCMeta):
     @classmethod
     def get_default_target(cls, relationship: Relationship) -> Selector | None:
         return relationship.ctx
+
+
+TVT = TypeVarTuple("TVT")
+
+class CellCompose(Generic[Unpack[TVT]]):
+    cells: tuple[Unpack[TVT]]
+
+    def __init__(self, *cells: Unpack[TVT]) -> None:
+        self.cells = cells

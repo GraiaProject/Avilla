@@ -20,13 +20,13 @@ class ElizabethAccount(AbstractAccount):
         if "land" not in target:
             target = Selector().mixin(f"land.{target.path}", target)
         if target.path in {"land.group", "land.friend"}:
-            return Relationship(self.protocol, target, target, self.to_selector())
+            return Relationship(self.protocol, target, target, self)
         elif target.path == "land.group.member":
             return Relationship(
                 self.protocol,
                 target,
                 Selector().land(self.land.name).group(target.pattern["group"]),
-                self.to_selector(),
+                self,
             )
         else:
             raise NotImplementedError()

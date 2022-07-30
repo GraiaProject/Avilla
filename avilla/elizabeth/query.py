@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class ElizabethRootQuery(ProtocolAbstractQueryHandler):
     @query("group")
     async def query_group(self, rs: Relationship, prefix: Selector, checker: Callable[[Selector], bool]):
-        account = rs.avilla.get_account(selector=rs.current)
+        account = rs.current
         assert isinstance(account, ElizabethAccount)
         result: list[dict] = await account.call("groupList", CallMethod.GET, {})
         for i in result:
@@ -26,7 +26,7 @@ class ElizabethRootQuery(ProtocolAbstractQueryHandler):
 class ElizabethGroupQuery(ProtocolAbstractQueryHandler, prefix="group"):
     @query("member")
     async def query_member(self, rs: Relationship, prefix: Selector, checker: Callable[[Selector], bool]):
-        account = rs.avilla.get_account(selector=rs.current)
+        account = rs.current
         assert isinstance(account, ElizabethAccount)
         result: list[dict] = await account.call("memberList", CallMethod.GET, {"target": int(prefix.pattern["group"])})
         for i in result:

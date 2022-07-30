@@ -29,7 +29,7 @@ class AbstractAccount(ABC):
 
     def get_self_relationship(self):
         return Relationship(
-            self.protocol, self.to_selector(), Selector().land(self.land.name), Selector().account(self.id)
+            self.protocol, self.to_selector(), Selector().land(self.land.name), self
         )
 
     @property

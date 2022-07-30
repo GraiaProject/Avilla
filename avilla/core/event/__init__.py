@@ -2,25 +2,31 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from graia.broadcast.entities.event import Dispatchable
 
 if TYPE_CHECKING:
+    from avilla.core.account import AbstractAccount
     from avilla.core.metadata.model import MetadataModifies
     from avilla.core.utilles.selector import Selector
 
 
 class AvillaEvent(Dispatchable, metaclass=ABCMeta):
-    account: Selector
+    account: AbstractAccount
     time: datetime
+    
+    extra: dict[Any, Any]
+
+    def __init__(self, account: AbstractAccount, *, extra: dict[Any, Any] | None = None, time: datetime | None = None) -> None:
+        self.account = account
+        self.extra = extra or {}
+        self.time = time or datetime.now()
 
     @property
     @abstractmethod
     def ctx(self) -> Selector:
         ...
-
-    # TODO: Metadata in Event
 
 
 class MetadataModified(AvillaEvent):
@@ -32,15 +38,15 @@ class MetadataModified(AvillaEvent):
         self,
         ctx: Selector,
         modifies: MetadataModifies,
-        account: Selector,
+        account: AbstractAccount,
         operator: Selector | None = None,
         time: datetime | None = None,
+        extra: dict[Any, Any] | None = None
     ):
         self.ctx = ctx
         self.modifies = modifies
         self.operator = operator
-        self.account = account
-        self.time = time or datetime.now()
+        super().__init__(account, time=time, extra=extra)
 
 
 class RelationshipCreated(AvillaEvent):
@@ -52,14 +58,13 @@ class RelationshipCreated(AvillaEvent):
     def __init__(
         self,
         ctx: Selector,
-        account: Selector,
+        account: AbstractAccount,
         time: datetime | None = None,
         via: Selector | None = None,
     ):
         self.ctx = ctx
         self.via = via
-        self.account = account
-        self.time = time or datetime.now()
+        super().__init__(account, time=time)
 
 
 class RelationshipDestroyed(AvillaEvent):
@@ -69,11 +74,10 @@ class RelationshipDestroyed(AvillaEvent):
     def __init__(
         self,
         ctx: Selector,
-        account: Selector,
+        account: AbstractAccount,
         time: datetime | None = None,
         via: Selector | None = None,
     ):
         self.ctx = ctx
         self.via = via
-        self.account = account
-        self.time = time or datetime.now()
+        super().__init__(account, time=time)

@@ -30,8 +30,7 @@ class RequestEvent(AvillaEvent):
         time: datetime | None = None,
     ):
         self.request = request
-        self.account = request.account
-        self.time = time or request.time
+        super().__init__(request.account, time=time)
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
@@ -40,69 +39,17 @@ class RequestEvent(AvillaEvent):
                 return interface.event.request
 
 
-class RequestAccepted(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
+class RequestAccepted(RequestEvent):
+    pass
 
 
-class RequestRejected(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
+class RequestRejected(RequestEvent):
+    pass
 
 
-class RequestIgnored(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
+class RequestIgnored(RequestEvent):
+    pass
 
 
-class RequestCancelled(AvillaEvent):
-    request: Request
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        self.account = request.account
-        self.time = time or request.time
+class RequestCancelled(RequestEvent):
+    pass

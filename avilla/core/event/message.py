@@ -13,6 +13,8 @@ from avilla.core.utilles.selector import Selector
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
+    from avilla.core.account import AbstractAccount
+
 
 class MessageReceived(AvillaEvent):
     message: Message
@@ -21,10 +23,9 @@ class MessageReceived(AvillaEvent):
     def ctx(self) -> Selector:
         return self.message.sender
 
-    def __init__(self, message: Message, account: Selector, time: datetime | None = None) -> None:
+    def __init__(self, message: Message, account: AbstractAccount, time: datetime | None = None) -> None:
         self.message = message
-        self.account = account
-        self.time = time or datetime.now()
+        super().__init__(account, time=time)
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
@@ -51,15 +52,14 @@ class MessageEdited(AvillaEvent):
         operator: Selector,
         past: MessageChain,
         current: MessageChain,
-        account: Selector,
+        account: AbstractAccount,
         time: datetime | None = None,
     ) -> None:
         self.message = message
         self.operator = operator
         self.past = past
         self.current = current
-        self.account = account
-        self.time = time or datetime.now()
+        super().__init__(account, time=time)
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
@@ -82,13 +82,12 @@ class MessageRevoked(AvillaEvent):
         self,
         message: Selector,
         operator: Selector,
-        account: Selector,
+        account: AbstractAccount,
         time: datetime | None = None,
     ) -> None:
         self.message = message
         self.operator = operator
-        self.account = account
-        self.time = time or datetime.now()
+        super().__init__(account, time=time)
 
     class Dispatcher(BaseDispatcher):
         @staticmethod

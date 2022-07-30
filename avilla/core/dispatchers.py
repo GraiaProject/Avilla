@@ -34,7 +34,7 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
         elif isinstance(interface.event, AvillaEvent):
             if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
                 rs: Relationship = interface.local_storage["relationship"]
-                return rs.avilla.get_account(selector=interface.event.account)
+                return interface.event.account
 
 
 class RelationshipDispatcher(BaseDispatcher):
@@ -42,10 +42,7 @@ class RelationshipDispatcher(BaseDispatcher):
     async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
         protocol = ctx_protocol.get()
         if protocol is not None:
-            account = protocol.get_account(interface.event.account)
-            if account is None:
-                raise ValueError(f"Account {interface.event.account} not found")
-            rs = await account.get_relationship(interface.event.ctx)
+            rs = await interface.event.account.get_relationship(interface.event.ctx)
             token = ctx_relationship.set(rs)
             interface.local_storage["relationship"] = rs
             interface.local_storage["_ctxtoken_rs"] = token

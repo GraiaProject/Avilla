@@ -9,11 +9,12 @@ from graia.broadcast.utilles import run_always_await
 from loguru import logger
 from typing_extensions import Self
 
+from avilla.core.account import AbstractAccount
 from avilla.core.event import AvillaEvent
-from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
+    from avilla.core.account import AbstractAccount
 
 
 def event(event_type: str):
@@ -28,7 +29,9 @@ _P = TypeVar("_P", bound="BaseProtocol")
 
 
 class AbstractEventParser(ABC, Generic[_P]):
-    event_parser: dict[str, Callable[[Self, _P, Selector, dict], Element | Coroutine[None, None, Element]]] = {}
+    event_parser: dict[
+        str, Callable[[Self, _P, AbstractAccount, dict], Element | Coroutine[None, None, Element]]
+    ] = {}
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -46,7 +49,7 @@ class AbstractEventParser(ABC, Generic[_P]):
         ...
 
     async def parse_event(
-        self, protocol: _P, account: Selector, raw: dict, *, error: bool = False
+        self, protocol: _P, account: AbstractAccount, raw: dict, *, error: bool = False
     ) -> AvillaEvent | None:
         event_type = self.get_event_type(raw)
         deserializer = self.event_parser.get(event_type)

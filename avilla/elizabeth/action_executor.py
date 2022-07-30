@@ -19,7 +19,7 @@ class ElizabethGroupActionExecutor(
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
         message = await self.protocol.serialize_message(action.message)
-        account = relationship.avilla.get_account(selector=relationship.current)
+        account = relationship.current
         assert isinstance(account, ElizabethAccount)
         result = await account.call(
             "sendGroupMessage",
@@ -39,7 +39,7 @@ class ElizabethFriendActionExecutor(
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
         message = await self.protocol.serialize_message(action.message)
-        account = relationship.avilla.get_account(selector=relationship.current)
+        account = relationship.current
         assert isinstance(account, ElizabethAccount)
         result = await account.call(
             "sendFriendMessage",
@@ -59,7 +59,7 @@ class ElizabethGroupMemberActionExecutor(
     @action(MessageSend)
     async def send_message(self, action: MessageSend, relationship: Relationship):
         message = await self.protocol.serialize_message(action.message)
-        account = relationship.avilla.get_account(selector=relationship.current)
+        account = relationship.current
         assert isinstance(account, ElizabethAccount)
         result = await account.call(
             "sendTempMessage",

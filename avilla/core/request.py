@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from avilla.core.platform import Land
 
 if TYPE_CHECKING:
+    from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
 
@@ -16,7 +17,7 @@ class Request:
     land: Land
     mainline: Selector
     sender: Selector
-    account: Selector
+    account: AbstractAccount
     time: datetime
 
     request_type: str | None = None

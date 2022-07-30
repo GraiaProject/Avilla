@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, suppress
-from inspect import isfunction
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, TypeVar, cast, overload
 
-from avilla.core.action import Action  # ?
+from avilla.core.account import AbstractAccount
+from avilla.core.action import Action
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.resource import Resource, get_provider
@@ -75,7 +75,7 @@ async def _as_asynciter(iterable: Iterable[_T]) -> AsyncIterator[_T]:
 class Relationship:
     ctx: Selector
     mainline: Selector
-    current: Selector
+    current: AbstractAccount
     via: Selector | None = None
 
     protocol: "BaseProtocol"
@@ -87,7 +87,7 @@ class Relationship:
         protocol: "BaseProtocol",
         ctx: Selector,
         mainline: Selector,
-        current: Selector,
+        current: AbstractAccount,
         via: Selector | None = None,
         middlewares: list[ActionMiddleware] | None = None,
     ) -> None:
@@ -109,12 +109,6 @@ class Relationship:
     @property
     def land(self):
         return self.protocol.land
-
-    @property
-    def account(self):
-        account = self.avilla.get_account(selector=self.current)
-        assert account is not None
-        return account
 
     def complete(self, selector: Selector):
         rules = self.protocol.completion_rules.get(selector.path)
