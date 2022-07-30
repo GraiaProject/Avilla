@@ -4,8 +4,9 @@ from contextlib import AsyncExitStack, suppress
 from inspect import isfunction
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, TypeVar, cast, overload
 
+from avilla.core.action import Action  # ?
 from avilla.core.context import ctx_relationship
-from avilla.core.metadata.model import Metadata, Modify
+from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.resource import Resource, get_provider
 from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.selector import Selector, Summarizable
@@ -164,7 +165,7 @@ class Relationship:
         ...
 
     @overload
-    async def meta(self, op_or_target: list[Modify[_T]]) -> _T:
+    async def meta(self, op_or_target: MetadataModifies[_T]) -> _T:
         ...
 
     @overload
@@ -172,7 +173,7 @@ class Relationship:
         ...
 
     @overload
-    async def meta(self, op_or_target: Any, op: list[Modify]) -> _T:
+    async def meta(self, op_or_target: Any, op: MetadataModifies[_T]) -> _T:
         ...
 
     async def meta(
