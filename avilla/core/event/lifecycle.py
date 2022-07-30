@@ -18,7 +18,7 @@ class AvillaLifecycleEvent(Dispatchable):
 
     def __init__(self, avilla: Avilla):
         self.avilla = avilla
-    
+
     class Dispatcher(BaseDispatcher):
         @classmethod
         async def catch(cls, interface: 'DispatcherInterface[AvillaLifecycleEvent]'):
@@ -37,6 +37,7 @@ class ApplicationClosed(AvillaLifecycleEvent):
 
 class ApplicationPreparing(AvillaLifecycleEvent):
     """指示 Avilla 正在准备."""
+
 
 class ApplicationReady(AvillaLifecycleEvent):
     """指示 Avilla 已准备完毕."""
