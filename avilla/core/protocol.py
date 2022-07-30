@@ -38,11 +38,11 @@ class BaseProtocol(metaclass=ABCMeta):
     event_parser: ClassVar[AbstractEventParser]
     action_executors: ClassVar[list[type[ProtocolActionExecutor]]] = cast(list, ())
     # 顺序严格, 建议 full > exist long > exist short > any|none
-    platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = cast(
+    resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = cast(
         dict, MappingProxyType({})
     )
-    protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = cast(list, ())
-    protocol_query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = cast(list, ())
+    metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = cast(list, ())
+    query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = cast(list, ())
 
     def __init__(self):
         ...
@@ -66,7 +66,7 @@ class BaseProtocol(metaclass=ABCMeta):
         return self.avilla.get_account(selector=selector, land=self.platform[Land])
 
     def get_resource_provider(self, resource: Selector) -> ResourceProvider | None:
-        for pattern, provider_class in self.platform_resource_providers.items():
+        for pattern, provider_class in self.resource_providers.items():
             if pattern.match(resource):
                 return provider_class(self)
 
@@ -77,7 +77,7 @@ class BaseProtocol(metaclass=ABCMeta):
         return await self.message_serializer.serialize_chain(self, message)
 
     def get_metadata_provider(self, target: Selector) -> MetadataSource | None:
-        for source in self.protocol_metadata_providers:
+        for source in self.metadata_providers:
             if source.pattern.match(target):
                 return source(self)
 

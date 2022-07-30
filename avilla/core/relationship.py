@@ -24,7 +24,9 @@ class RelationshipExecutor:
 
     def __init__(self, relationship: Relationship) -> None:
         self.relationship = relationship
-        self.middlewares = relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
+        self.middlewares = (
+            relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
+        )
 
     def __await__(self):
         return self.__await_impl__().__await__()
@@ -149,7 +151,7 @@ class Relationship:
         async def generate_from_upper(depth: Selector, upper: AsyncIterator[Selector] | None = None):
             current = list(depth.pattern.keys())[-1]
             past = ".".join(list(depth.pattern.keys())[:-1])
-            for querier in self.protocol.protocol_query_handlers:
+            for querier in self.protocol.query_handlers:
                 if querier.prefix is None or querier.prefix == past:
                     querier = querier(self.protocol)
                     break
