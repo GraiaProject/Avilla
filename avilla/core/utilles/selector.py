@@ -5,6 +5,7 @@ from itertools import filterfalse
 from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, runtime_checkable
 
 from typing_extensions import Self
+
 from avilla.core.platform import Land
 
 if TYPE_CHECKING:
@@ -39,7 +40,7 @@ class Selector:
         return self.pattern[key]
 
     def __repr__(self) -> str:
-        return f"Selector(mode={self.mode}).{'.'.join(f'{k}({v})' for k, v in self.pattern.items())}"
+        return f"{self.__class__.__name__}(mode={self.mode}).{'.'.join(f'{k}({v})' for k, v in self.pattern.items())}"
 
     @property
     def empty(self) -> bool:
@@ -67,7 +68,6 @@ class Selector:
         instance.pattern = pattern
         return instance
 
-
     def land(self, land: Land | str):
         if isinstance(land, Land):
             land = land.name
@@ -75,6 +75,8 @@ class Selector:
         return self
 
     def match(self, other: Selector) -> bool:
+        if not isinstance(other, Selector):
+            return False
         try:
             match = {
                 "any": self._match_any,
@@ -164,7 +166,18 @@ class DynamicSelector(Selector):
     def _match_exact(self, other: Selector) -> bool:
         if isinstance(other, DynamicSelector):
             raise TypeError("Can't match dynamic selector with another dynamic selector")
-        return set(other.pattern.items()).issubset(self.pattern.items())
+        for k in other.pattern:
+            if k not in self.pattern:
+                return False
+            own_pattern = self.pattern[k]
+            if (
+                callable(own_pattern)
+                and not own_pattern(other.pattern[k])
+                or not callable(own_pattern)
+                and own_pattern != other.pattern[k]
+            ):
+                return False
+        return True
 
     def _match_exist(self, other: Selector) -> bool:
         for a, b in ((self.pattern[path], other.pattern[path]) for path in self.pattern):

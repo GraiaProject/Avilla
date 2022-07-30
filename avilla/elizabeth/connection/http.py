@@ -142,9 +142,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                 assert isinstance(data, list)
                 for event_data in data:
                     # TODO: event -> protocol
-                    event = await self.protocol.event_parser.parse_event(
-                        self.protocol, self.account, event_data
-                    )
+                    event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
                     if event is not None:
                         self.protocol.post_event(event)
                 await wait_fut(

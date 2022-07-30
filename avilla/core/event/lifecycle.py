@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -21,8 +22,9 @@ class AvillaLifecycleEvent(Dispatchable):
 
     class Dispatcher(BaseDispatcher):
         @classmethod
-        async def catch(cls, interface: 'DispatcherInterface[AvillaLifecycleEvent]'):
+        async def catch(cls, interface: "DispatcherInterface[AvillaLifecycleEvent]"):
             from ..application import Avilla
+
             if interface.annotation is Avilla:
                 return interface.event.avilla
 
@@ -46,12 +48,14 @@ class ApplicationReady(AvillaLifecycleEvent):
 @dataclass
 class AccountStatusChanged(AvillaLifecycleEvent):
     """指示当前账号 (Account) 状态发生改变的事件"""
-    account: 'AbstractAccount'
+
+    account: "AbstractAccount"
 
     class Dispatcher(BaseDispatcher):
         @classmethod
-        async def catch(cls, interface: 'DispatcherInterface[AccountStatusChanged]'):
+        async def catch(cls, interface: "DispatcherInterface[AccountStatusChanged]"):
             from ..account import AbstractAccount
+
             if issubclass(interface.annotation, AbstractAccount):
                 return interface.event.account
 

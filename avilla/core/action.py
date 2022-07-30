@@ -121,4 +121,3 @@ class MemberRemove(Action):
 
     def __init__(self, member: Selector):
         self.member = member
-

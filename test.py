@@ -51,6 +51,7 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         #    )
         #)
         print(rs.complete(DynamicSelector().group("*")))
-        print([i async for i in rs.query(DynamicSelector.fragment().group("*"))])
+        async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
+            print(i)
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

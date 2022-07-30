@@ -25,7 +25,6 @@ class LaunartHttpResourceProvider(ResourceProvider):
         raise NotImplementedError()
 
 
-
 class ElizabethResource(Resource[bytes]):
     url: str | None = None
     path: str | None = None

@@ -16,13 +16,13 @@ from typing import (
 )
 
 from aiohttp import ClientSession
-from avilla.onebot.v12.connect import OneBot12Connection
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.broadcast import Broadcast
 from launart import Launart, Service
 from loguru import logger
 
 from avilla.elizabeth.account import ElizabethAccount
+from avilla.onebot.v12.connect import OneBot12Connection
 
 if TYPE_CHECKING:
     from .protocol import OneBot12Protocol

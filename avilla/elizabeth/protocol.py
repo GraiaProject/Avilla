@@ -48,7 +48,7 @@ class ElizabethProtocol(BaseProtocol):
     protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
     protocol_query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
         ElizabethGroupQuery,
-        ElizabethRootQuery
+        ElizabethRootQuery,
     ]
 
     # 鉴于你 mah 乃至 mirai 还没支持频道, 这里就直接.

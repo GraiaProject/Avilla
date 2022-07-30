@@ -9,7 +9,7 @@ from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import Metadata, MetadataModifies
 from avilla.core.resource import Resource, get_provider
 from avilla.core.typing import ActionMiddleware
-from avilla.core.utilles.selector import Selector, Summarizable
+from avilla.core.utilles.selector import DynamicSelector, Selector, Summarizable
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -71,6 +71,7 @@ async def _as_asynciter(iterable: Iterable[_T]) -> AsyncIterator[_T]:
     for i in iterable:
         yield i
 
+
 class Relationship:
     ctx: Selector
     mainline: Selector
@@ -108,7 +109,7 @@ class Relationship:
     @property
     def land(self):
         return self.protocol.land
-    
+
     @property
     def account(self):
         account = self.avilla.get_account(selector=self.current)
@@ -134,29 +135,58 @@ class Relationship:
             return await provider.fetch(resource, self)
 
     async def query(self, selector: Selector):
-        current: dict[str, str] = {}
-        stack = [_as_asynciter([selector])]
+        if selector.empty:
+            raise ValueError("Selector is empty.")
+        past = {}
+        stack: list[AsyncIterator[Selector]] = []
+
+        def generate_with_specified(k, v):
+            async def real_generator(upper: AsyncIterator[Selector] | None = None):
+                if upper is None:
+                    yield Selector().from_dict({k: v})
+                    return
+                async for upper_value in upper:
+                    a = upper_value.copy()
+                    a.pattern[k] = v
+                    yield a
+
+            return real_generator
+
+        async def generate_from_upper(depth: Selector, upper: AsyncIterator[Selector] | None = None):
+            current = list(depth.pattern.keys())[-1]
+            past = ".".join(list(depth.pattern.keys())[:-1])
+            for querier in self.protocol.protocol_query_handlers:
+                if querier.prefix is None or querier.prefix == past:
+                    querier = querier(self.protocol)
+                    break
+            else:
+                raise NotImplementedError(f"No query handler found for {past}")
+            if current not in querier.queriers:
+                raise NotImplementedError(f"No querier found for {past}, {current} unimplemented")
+            if depth.pattern and list(depth.pattern.keys())[0] != "land":
+                depth.pattern = {"land": self.land.name, **depth.pattern}
+            if upper is None:
+                async for current_value in querier.queriers[current](
+                    querier, self, Selector().land(self.land), depth.match
+                ):
+                    yield current_value
+                return
+            async for upper_value in upper:
+                async for current_value in querier.queriers[current](querier, self, upper_value, depth.match):
+                    yield current_value
+
         for key, value in selector.pattern.items():
             if key == "land":
                 continue
-            depth = selector.mixin(".".join(current.keys()) + key, Selector.from_dict({**current, key: value}))  # NEED TO FIX
-            for i in self.protocol.protocol_query_handlers:
-                with suppress(TypeError):
-                    if i.prefix.match(depth):
-                        querier_type = i
-                        break
-            else:                
-                raise ValueError(f"No query handler found for {depth.path}")
-            querier = querier_type(self.protocol)
-            if key not in querier.queriers:
-                raise ValueError(f"No querier found for {current}, which need to apply {key}")
-            async def gen(a):
-                async for prefix in a:
-                    print(depth, depth.pattern)
-                    async for i in querier.queriers[key](querier, self, prefix, depth.match):
-                        yield i
-            stack.append(gen(stack[-1]))
-            current = {**current, key: value}
+            past[key] = value
+            current_pattern = DynamicSelector()
+            current_pattern.pattern = past.copy()
+            if isinstance(value, str):
+                # 当前层级是明确的, 那么就只需要给 upper 上每个值加上当前层级.
+                # 如果 past 为空, 则直接返回.
+                stack.append(generate_with_specified(key, value)(stack[-1] if stack else None))
+            else:
+                stack.append(generate_from_upper(current_pattern, stack[-1] if stack else None))
         async for i in stack[-1]:
             yield i
 
