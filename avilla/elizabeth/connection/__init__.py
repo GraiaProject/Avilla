@@ -65,10 +65,6 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
     http_conn: Optional["HttpClientConnection"]
 
     @property
-    def account(self) -> Selector:
-        return Selector().land(self.protocol.land.name).account(str(self.config.account))  # type: ignore
-
-    @property
     def required(self) -> Set[str]:
         return set(self.dependencies)
 
@@ -79,18 +75,17 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
     def register_account(self):
         # NOTE: for hot registration
         # FIXME: require testing
-        from avilla.elizabeth.account import ElizabethAccount
 
-        account: ElizabethAccount = ElizabethAccount(self.config.account, self.protocol)
-
-        if account not in self.protocol.avilla.accounts:
-            self.protocol.avilla.add_account(account)
+        if self.account not in self.protocol.avilla.accounts:
+            self.protocol.avilla.add_account(self.account)
             logger.success(
                 f"Registered account: {self.config.account}",
                 alt=f"[green]Registered account: [magenta]{self.config.account}[/]",
             )
 
     def __init__(self, protocol: ElizabethProtocol, config: T_Config) -> None:
+        from avilla.elizabeth.account import ElizabethAccount
+
         from .http import HttpClientConnection
 
         self.id = ".".join(
@@ -111,6 +106,7 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
             self.dependencies |= self.http_conn.dependencies
         else:
             self.http_conn = None
+        self.account = ElizabethAccount(self.config.account, self.protocol)
 
     async def call(self, command: str, method: CallMethod, params: Optional[dict] = None) -> Any:
         if self.http_conn:
