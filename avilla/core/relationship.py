@@ -130,6 +130,26 @@ class Relationship:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
 
+    @overload
+    async def check(self) -> None:
+        # 检查 Relationship 的存在性.
+        # 如 Relationship 的存在性无法被验证为真, 则 Relationship 不成立, 抛出错误.
+        ...
+
+    @overload
+    async def check(self, target: Selector, strict: bool = False) -> bool:
+        # 检查 target 相对于当前关系 Relationship 的存在性.
+        # 注意, 这里是 "相对于当前关系", 如 Github 的项目若为 Private, 则对于外界/Amonymous来说是不存在的, 即使他从客观上是存在的.
+        # 注意, target 不仅需要相对于当前关系是存在的, 由于关系本身处在一个 mainline 之中,
+        # mainline 相当于工作目录或者是 docker 那样的应用容器, 后者是更严谨的比喻,
+        # 因为有些操作**只能**在处于一个特定的 mainline 中才能完成, 这其中包含了访问并操作某些 target.
+        # 在 strict 模式下, target 被视作包含 "仅在当前 mainline 中才能完成的操作" 的集合中,
+        # 表示其访问或是操作必须以当前 mainline 甚至是 current(account) 为基础.
+        ...
+
+    async def check(self, target: Selector | None = None, strict: bool = False) -> bool | None:
+        ...
+
     @property
     def is_resource(self) -> bool:
         return self.ctx.path_without_land in self.protocol.resource_labels
