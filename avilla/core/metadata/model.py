@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, overload
 
 from typing_extensions import TypeVarTuple, Unpack
 
@@ -53,7 +53,29 @@ def meta_field(id: str) -> Any:
     return MetaField(id)
 
 
-class Metadata(Generic[T], metaclass=ABCMeta):
+_Meta_A = TypeVar("_Meta_A", bound="MetadataMCS")
+
+_Meta_B = TypeVar("_Meta_B", bound="MetadataMCS")
+
+
+TVT = TypeVarTuple("TVT")
+
+
+class MetadataMCS(ABCMeta):
+    @overload
+    def __rshift__(cls: _Meta_A, other: _Meta_B) -> CellCompose[_Meta_A, _Meta_B]:
+        ...
+
+    @overload
+    def __rshift__(cls: _Meta_A, other: CellCompose[Unpack[TVT]]) -> CellCompose[_Meta_A, Unpack[TVT]]:
+        ...
+
+    def __rshift__(cls, other: MetadataMCS | CellCompose) -> CellCompose:
+        cells = (cls, other) if isinstance(other, MetadataMCS) else (cls, *other.cells)
+        return CellCompose(cells)
+
+
+class Metadata(Generic[T], metaclass=MetadataMCS):
     _target: Any
     _source: MetadataSource
     _content: dict[str, Any]
@@ -81,10 +103,25 @@ class Metadata(Generic[T], metaclass=ABCMeta):
         return relationship.ctx
 
 
-TVT = TypeVarTuple("TVT")
+Ts = TypeVarTuple("Ts")
+
 
 class CellCompose(Generic[Unpack[TVT]]):
     cells: tuple[Unpack[TVT]]
 
-    def __init__(self, *cells: Unpack[TVT]) -> None:
+    def __init__(self, cells: tuple[Unpack[TVT]]) -> None:
         self.cells = cells
+
+    @overload
+    def __rshift__(self: CellCompose[Unpack[TVT]], other: _Meta_A) -> CellCompose[Unpack[TVT], _Meta_A]:
+        ...
+
+    @overload
+    def __rshift__(
+        self: CellCompose[Unpack[TVT]], other: CellCompose[Unpack[Ts]]
+    ) -> CellCompose[Unpack[TVT], Unpack[Ts]]:
+        ...
+
+    def __rshift__(self, other: MetadataMCS | CellCompose) -> CellCompose:
+        cells = (*self.cells, other) if isinstance(other, MetadataMCS) else (*self.cells, *other.cells)
+        return CellCompose(cells)
