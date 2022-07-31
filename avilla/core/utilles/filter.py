@@ -248,4 +248,4 @@ class Filter(BaseDispatcher, Generic[T]):
                 result = await result
 
     async def catch(self, interface: DispatcherInterface):
-        return interface.local_storage.setdefault("__filter_fetch__", {}).get(interface.annotation)
+        return interface.local_storage.get("__filter_fetch__", {}).get(interface.annotation)
