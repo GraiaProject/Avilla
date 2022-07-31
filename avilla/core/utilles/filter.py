@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Container, Iterable
 from functools import partial
 from inspect import _empty, isawaitable
-from operator import contains, eq, is_, is_not, ne
+from operator import contains, eq, is_, is_not, ne, not_
 from typing import Any, Awaitable, Generic, ParamSpec, TypeVar, overload
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
@@ -20,13 +20,13 @@ P = ParamSpec("P")
 
 class Filter(BaseDispatcher, Generic[T]):
     middlewares: list[Callable[[Any], Awaitable[Any] | Any]]
-    params: dict[type, Any]
 
     def fetch(self, annotation: type[R]) -> Filter[R]:
         @self.middlewares.append
         async def _(_) -> R:
-            result = await DispatcherInterface.ctx.get().lookup_param("__filter_fetch__", annotation, None)
-            self.params[annotation] = result
+            interface = DispatcherInterface.ctx.get()
+            result = await interface.lookup_param("__filter_fetch__", annotation, None)
+            interface.local_storage.setdefault("__filter_fetch__", {})[annotation] = result
             return result
 
         return self  # type: ignore
@@ -35,7 +35,7 @@ class Filter(BaseDispatcher, Generic[T]):
         self.middlewares.append(func)
         return self  # type: ignore
 
-    def assert_(self, func: Callable[[T], Any] | None = None) -> Self:
+    def assert_true(self, func: Callable[[T], Any] | None = None) -> Self:
         if func is None:
 
             def inner(result: T) -> T:
@@ -52,6 +52,9 @@ class Filter(BaseDispatcher, Generic[T]):
 
         return self.step(inner)
 
+    def assert_false(self, func: Callable[[T], bool] | None = None) -> Self:
+        return self.assert_true(not_) if func is None else self.assert_true(lambda result: not func(result))
+
     @overload
     def assert_equal(self, value: Any, /) -> Self:
         ...
@@ -62,9 +65,9 @@ class Filter(BaseDispatcher, Generic[T]):
 
     def assert_equal(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
         return (
-            self.assert_(partial(eq, func_or_value))
+            self.assert_true(partial(eq, func_or_value))
             if value is _empty
-            else self.assert_(lambda result: func_or_value(result) == value)
+            else self.assert_true(lambda result: func_or_value(result) == value)
         )
 
     @overload
@@ -77,16 +80,10 @@ class Filter(BaseDispatcher, Generic[T]):
 
     def assert_not_equal(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
         return (
-            self.assert_(partial(ne, func_or_value))
+            self.assert_true(partial(ne, func_or_value))
             if value is _empty
-            else self.assert_(lambda result: func_or_value(result) != value)
+            else self.assert_true(lambda result: func_or_value(result) != value)
         )
-
-    def assert_true(self, func: Callable[[T], bool] | None = None) -> Self:
-        return self.assert_is(True) if func is None else self.assert_is(func, True)
-
-    def assert_false(self, func: Callable[[T], bool] | None = None) -> Self:
-        return self.assert_is(False) if func is None else self.assert_is(func, False)
 
     @overload
     def assert_is(self, value: Any, /) -> Self:
@@ -98,9 +95,9 @@ class Filter(BaseDispatcher, Generic[T]):
 
     def assert_is(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
         return (
-            self.assert_(partial(is_, func_or_value))
+            self.assert_true(partial(is_, func_or_value))
             if value is _empty
-            else self.assert_(lambda result: func_or_value(result) is value)
+            else self.assert_true(lambda result: func_or_value(result) is value)
         )
 
     @overload
@@ -113,9 +110,9 @@ class Filter(BaseDispatcher, Generic[T]):
 
     def assert_is_not(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
         return (
-            self.assert_(partial(is_not, func_or_value))
+            self.assert_true(partial(is_not, func_or_value))
             if value is _empty
-            else self.assert_(lambda result: func_or_value(result) is not value)
+            else self.assert_true(lambda result: func_or_value(result) is not value)
         )
 
     def assert_is_none(self, func: Callable[[T], Any] | None = None) -> Self:
@@ -139,9 +136,9 @@ class Filter(BaseDispatcher, Generic[T]):
         /,
     ) -> Self:
         return (
-            self.assert_(partial(contains, func_or_container))  # type: ignore
+            self.assert_true(partial(contains, func_or_container))  # type: ignore
             if container is None
-            else self.assert_(lambda result: func_or_container(result) in container)  # type: ignore
+            else self.assert_true(lambda result: func_or_container(result) in container)  # type: ignore
         )
 
     @overload
@@ -159,9 +156,9 @@ class Filter(BaseDispatcher, Generic[T]):
         /,
     ) -> Self:
         return (
-            self.assert_(lambda result: result not in func_or_container)  # type: ignore
+            self.assert_true(lambda result: result not in func_or_container)  # type: ignore
             if container is None
-            else self.assert_(lambda result: func_or_container(result) not in container)  # type: ignore
+            else self.assert_true(lambda result: func_or_container(result) not in container)  # type: ignore
         )
 
     @overload
@@ -176,9 +173,9 @@ class Filter(BaseDispatcher, Generic[T]):
         self, func_or_cls: Callable[[T], Any] | type[Any], cls: type[Any] | None = None, /
     ) -> Self:
         return (
-            self.assert_(lambda result: isinstance(result, func_or_cls))  # type: ignore
+            self.assert_true(lambda result: isinstance(result, func_or_cls))  # type: ignore
             if cls is None
-            else self.assert_(lambda result: isinstance(func_or_cls(result), cls))
+            else self.assert_true(lambda result: isinstance(func_or_cls(result), cls))
         )
 
     @overload
@@ -193,9 +190,9 @@ class Filter(BaseDispatcher, Generic[T]):
         self, func_or_cls: Callable[[T], Any] | type[Any], cls: type[Any] | None = None, /
     ) -> Self:
         return (
-            self.assert_(lambda result: not isinstance(result, func_or_cls))  # type: ignore
+            self.assert_true(lambda result: not isinstance(result, func_or_cls))  # type: ignore
             if cls is None
-            else self.assert_(lambda result: not isinstance(func_or_cls(result), cls))
+            else self.assert_true(lambda result: not isinstance(func_or_cls(result), cls))
         )
 
     def any(self, funcs: Iterable[Callable[[T], bool]]) -> Self:
@@ -225,29 +222,24 @@ class Filter(BaseDispatcher, Generic[T]):
         return self.all(lambda result: not result.match(pattern) for pattern in patterns)
 
     @classmethod
-    @property
     def rs(cls) -> Filter[Relationship]:
         return cls().fetch(Relationship)
 
     @classmethod
-    @property
     def ctx(cls) -> Filter[Selector]:
-        return cls.rs.step(lambda rs: rs.ctx)
+        return cls.rs().step(lambda rs: rs.ctx)
 
     @classmethod
-    @property
     def mainline(cls) -> Filter[Selector]:
-        return cls.rs.step(lambda rs: rs.mainline)
+        return cls.rs().step(lambda rs: rs.mainline)
 
     @classmethod
-    @property
     def current(cls) -> Filter[AbstractAccount]:
-        return cls.rs.step(lambda rs: rs.current)
+        return cls.rs().step(lambda rs: rs.current)
 
     @classmethod
-    @property
     def via(cls) -> Filter[Selector | None]:
-        return cls.rs.step(lambda rs: rs.via)
+        return cls.rs().step(lambda rs: rs.via)
 
     async def beforeExecution(self, interface: DispatcherInterface):
         result: Awaitable[Any] | Any = interface  # type: ignore
@@ -256,4 +248,4 @@ class Filter(BaseDispatcher, Generic[T]):
                 result = await result
 
     async def catch(self, interface: DispatcherInterface):
-        return self.params.get(interface.annotation)
+        return interface.local_storage.setdefault("__filter_fetch__", {}).get(interface.annotation)
