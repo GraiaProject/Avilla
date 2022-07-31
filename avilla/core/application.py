@@ -100,8 +100,6 @@ class Avilla:
             # Ensureable 用于注册各种东西, 包括 Service, ResourceProvider 等.
             protocol.ensure(self)
 
-        # TODO: Avilla Backend Service: 维护一些东西, 我还得再捋捋..
-
         self.broadcast.finale_dispatchers.append(MetadataDispatcher())
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())

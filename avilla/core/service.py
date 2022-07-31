@@ -38,7 +38,7 @@ class AvillaService(Service):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            self.avilla.broadcast.postEvent(ApplicationPreparing(self.avilla))
+            await self.avilla.broadcast.postEvent(ApplicationPreparing(self.avilla))
 
         self.avilla.broadcast.postEvent(ApplicationReady(self.avilla))
 
