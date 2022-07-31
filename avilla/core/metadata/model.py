@@ -105,6 +105,8 @@ class Metadata(Generic[T], metaclass=MetadataMCS):
 
 Ts = TypeVarTuple("Ts")
 
+_M = TypeVar("_M", bound=Metadata)
+
 
 class CellCompose(Generic[Unpack[TVT]]):
     cells: tuple[Unpack[TVT]]
@@ -125,3 +127,8 @@ class CellCompose(Generic[Unpack[TVT]]):
     def __rshift__(self, other: MetadataMCS | CellCompose) -> CellCompose:
         cells = (*self.cells, other) if isinstance(other, MetadataMCS) else (*self.cells, *other.cells)
         return CellCompose(cells)
+
+    def get_default_target(
+        self: CellCompose[type[_M], Unpack[TVT]], relationship: Relationship
+    ) -> Selector | None:
+        return self.cells[0].get_default_target(relationship)

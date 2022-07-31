@@ -242,6 +242,6 @@ class DynamicSelector(Selector):
 
 
 @runtime_checkable
-class Summarizable(Protocol):
+class Selectable(Protocol):
     def to_selector(self) -> Selector:
         ...

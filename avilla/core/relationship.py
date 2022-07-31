@@ -11,7 +11,7 @@ from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import CellCompose, Metadata, MetadataModifies
 from avilla.core.resource import Resource, get_provider
 from avilla.core.typing import ActionMiddleware
-from avilla.core.utilles.selector import DynamicSelector, Selector, Summarizable
+from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -120,7 +120,9 @@ class Relationship:
         if rules is None:
             return selector
         if selector.path in rules:
-            return selector.mixin(rules[selector.path], self.mainline, self.ctx, *((self.via,) if self.via else ()))
+            return selector.mixin(
+                rules[selector.path], self.mainline, self.ctx, *((self.via,) if self.via else ())
+            )
         return selector
 
     async def fetch(self, resource: Resource[_T]) -> _T:
@@ -214,49 +216,51 @@ class Relationship:
             yield i
 
     @overload
-    async def meta(self, op_or_target: type[_M]) -> _M:
+    async def meta(self, operator: type[_M], /) -> _M:
         ...
 
     @overload
-    async def meta(self, op_or_target: MetadataModifies[_T]) -> _T:
+    async def meta(self, operator: MetadataModifies[_T], /) -> _T:
         ...
 
     @overload
-    async def meta(self, op_or_target: Any, op: type[_M]) -> _M:
+    async def meta(self, target: Any, operator: type[_M], /) -> _M:
         ...
 
     @overload
-    async def meta(self, op_or_target: Any, op: MetadataModifies[_T]) -> _T:
+    async def meta(self, target: Any, operator: MetadataModifies[_T], /) -> _T:
         ...
 
     @overload
-    async def meta(self, op_or_target: CellCompose[Unpack[_TVT]]) -> tuple[Unpack[_TVT]]:
+    async def meta(self, operator: CellCompose[Unpack[tuple[Any, ...]], type[_M]], /) -> _M:
         ...
-    
+
     @overload
-    async def meta(self, op_or_target: Any, op: CellCompose[Unpack[_TVT]]) -> tuple[Unpack[_TVT]]:
+    async def meta(self, target: Any, operator: CellCompose[Unpack[tuple[Any, ...]], type[_M]], /) -> _M:
         ...
 
     async def meta(
         self,
-        op_or_target: type[_M] | MetadataModifies[_T] | CellCompose[Unpack[_TVT]] | Any,
-        op: type[_M] | MetadataModifies[_T] | CellCompose[Unpack[_TVT]] | None = None,
-    ) -> _M | _T | tuple[Unpack[_TVT]]:
+        op_or_target: Any,
+        maybe_op: Any = None,
+        /,
+    ) -> Any:
         # TODO: read AvillaEvent.extras['meta'][target][op] => Model
+        op, target = cast(
+            tuple["type[_M] | MetadataModifies[_T] | CellCompose[Unpack[tuple[Any, ...]], type[_M]]", Any],
+            (op_or_target, None) if maybe_op is None else (maybe_op, op_or_target),
+        )
         with ctx_relationship.use(self):
-            op, target = cast(
-                "tuple[type[_M] | MetadataModifies[_T], Any]",
-                (op_or_target, None if op is None else op, op_or_target),
-            )
-
-            if isinstance(op, type) and issubclass(op, (Metadata, CellCompose)):
+            if isinstance(op, CellCompose) or isinstance(op, type) and issubclass(op, Metadata):
                 modify = None
                 model = op
             elif isinstance(op, MetadataModifies):
                 modify = op
                 model = op.model
             else:
-                raise TypeError(f"{op_or_target} & {op} is not a supported metadata operation for rs.meta.")
+                raise TypeError(
+                    f"{op_or_target} & {maybe_op} is not a supported metadata operation for rs.meta."
+                )
 
             target = target or model.get_default_target(self)
 
@@ -264,12 +268,14 @@ class Relationship:
                 raise ValueError(
                     f"{model}'s modify is not a supported metadata for rs.meta, which requires a categorical target."
                 )
-            if not isinstance(target, Summarizable):
+            if isinstance(target, Selector):
+                target_ref = target
+            elif not isinstance(target, Selectable):
                 raise ValueError(
-                    f"{target} is not a supported target for rs.meta, which requires a summarizable trait."
+                    f"{target} is not a supported target for rs.meta, which requires to be selectable."
                 )
-
-            target_ref = target.to_selector()
+            else:
+                target_ref = target.to_selector()
             if isinstance(target, Resource):
                 provider = get_provider(target, self)
                 if provider is None:
@@ -288,5 +294,7 @@ class Relationship:
                 )
 
             if modify is None:
+                if isinstance(model, CellCompose):
+                    ...  # TODO:  lookup
                 return await source.fetch(target, model)
             return cast(_T, await source.modify(target, cast(MetadataModifies[Selector], modify)))
