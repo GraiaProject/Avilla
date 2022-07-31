@@ -5,10 +5,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from avilla.core.platform import Land
-from avilla.core.relationship import Relationship
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
+    from avilla.core.relationship import Relationship
     from avilla.core.protocol import BaseProtocol
 
 

@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 ctx_avilla: Ctx[Avilla] = Ctx("avilla")
 ctx_protocol: Ctx[BaseProtocol] = Ctx("protocol")
 ctx_relationship: Ctx[Relationship] = Ctx("relationship")
-ctx_eventmeta: Ctx[dict[str, Any]] = Ctx("eventmeta")
 
 
 def get_current_avilla() -> Avilla:

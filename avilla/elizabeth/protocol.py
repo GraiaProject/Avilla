@@ -44,9 +44,9 @@ class ElizabethProtocol(BaseProtocol):
         ElizabethGroupMemberActionExecutor,
     ]
 
-    platform_resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = {}
-    protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
-    protocol_query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
+    resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = {}
+    metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
+    query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
         ElizabethGroupQuery,
         ElizabethRootQuery,
     ]

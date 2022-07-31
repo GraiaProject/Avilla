@@ -13,8 +13,8 @@ from avilla.core.account import AbstractAccount
 from avilla.core.event import AvillaEvent
 
 if TYPE_CHECKING:
-    from avilla.core.protocol import BaseProtocol
     from avilla.core.account import AbstractAccount
+    from avilla.core.protocol import BaseProtocol
 
 
 def event(event_type: str):

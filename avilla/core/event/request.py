@@ -39,6 +39,9 @@ class RequestEvent(AvillaEvent):
                 return interface.event.request
 
 
+class RequestReceived(RequestEvent):
+    pass
+
 class RequestAccepted(RequestEvent):
     pass
 
