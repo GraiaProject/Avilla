@@ -16,7 +16,7 @@ class ElizabethRootQuery(ProtocolAbstractQueryHandler):
     async def query_group(self, rs: Relationship, prefix: Selector, checker: Callable[[Selector], bool]):
         account = rs.current
         assert isinstance(account, ElizabethAccount)
-        result: list[dict] = await account.call("groupList", CallMethod.GET, {})
+        result: list[dict] = await account.call("groupList", {"__method__": CallMethod.GET})
         for i in result:
             group = Selector().land(rs.land).group(str(i["id"]))
             if checker(group):
@@ -28,7 +28,9 @@ class ElizabethGroupQuery(ProtocolAbstractQueryHandler, prefix="group"):
     async def query_member(self, rs: Relationship, prefix: Selector, checker: Callable[[Selector], bool]):
         account = rs.current
         assert isinstance(account, ElizabethAccount)
-        result: list[dict] = await account.call("memberList", CallMethod.GET, {"target": int(prefix.pattern["group"])})
+        result: list[dict] = await account.call(
+            "memberList", {"__method__": CallMethod.GET, "target": int(prefix.pattern["group"])}
+        )
         for i in result:
             member = Selector().land(rs.land).group(str(i["group"]["id"])).member(str(i["id"]))
             if checker(member):
