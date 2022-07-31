@@ -6,7 +6,7 @@ from avilla.core.application import Avilla
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.querier import ProtocolAbstractQueryHandler
-from avilla.core.resource import PlatformResourceProvider
+from avilla.core.resource import ProtocolResourceProvider
 from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.action_executor import (
@@ -44,7 +44,7 @@ class ElizabethProtocol(BaseProtocol):
         ElizabethGroupMemberActionExecutor,
     ]
 
-    platform_resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = {}
+    platform_resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = {}
     protocol_metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
     protocol_query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
         ElizabethGroupQuery,

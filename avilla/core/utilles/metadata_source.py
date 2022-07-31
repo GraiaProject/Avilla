@@ -41,7 +41,7 @@ def modify(*model_types: type[Metadata]):
 
 
 class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
-    pattern: ClassVar[Selector] = Selector(mode="any")
+    pattern: ClassVar[str | None] = None
     fetchers: ClassVar[
         dict[type[Metadata], Callable[[Self, Selector, type[Metadata]], Coroutine[None, None, Metadata]]]
     ] = {}
@@ -49,7 +49,7 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
         dict[type[Metadata], Callable[[Self, Selector, MetadataModifies], Coroutine[None, None, Metadata]]]
     ] = {}
 
-    def __init_subclass__(cls, pattern: Selector) -> None:
+    def __init_subclass__(cls, pattern: str | None = None) -> None:
         super().__init_subclass__()
         cls.pattern = pattern
         cls.fetchers = {}
@@ -67,16 +67,12 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
                     cls.modifiers[model_type] = member
 
     async def fetch(self, target: Selector, model: type[Metadata]):
-        if not self.pattern.match(target):
-            raise ValueError(f"Target {target} does not match {self.pattern}.")
         fetcher = self.fetchers.get(model)
         if fetcher is None:
             raise NotImplementedError(f"Fetcher for {model} is not implemented.")
         return await fetcher(self, target, model)
 
     async def modify(self, target: Selector, modifies: MetadataModifies):
-        if not self.pattern.match(target):
-            raise ValueError(f"Target {target} does not match {self.pattern}.")
         modifier = self.modifiers.get(modifies.model)
         if modifier is None:
             raise NotImplementedError(f"Modifier for {modifies.model} is not implemented.")
@@ -86,11 +82,8 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
 _P = TypeVar("_P", bound="BaseProtocol")
 
 
-class ProtocolMetadataSource(DispatachingMetadataSource, Generic[_P], pattern=Selector(mode="any")):
+class ProtocolMetadataSource(DispatachingMetadataSource, Generic[_P]):
     protocol: _P
-
-    def __init_subclass__(cls, pattern: Selector) -> None:
-        return super().__init_subclass__(pattern)
 
     def __init__(self, protocol: _P):
         self.protocol = protocol

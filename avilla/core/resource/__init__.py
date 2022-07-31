@@ -31,9 +31,9 @@ class Resource(Generic[T]):
 
     def to_selector(self) -> Selector:
         return (
-            self.mainline.copy().resource_type(self.resource_type).resource_id(self.id)
+            self.mainline.copy().appendix(self.resource_type, self.id)
             if self.mainline is not None
-            else Selector().resource_type(self.resource_type).resource_id(self.id)
+            else Selector().appendix(self.resource_type, self.id)
         )
 
 
@@ -53,7 +53,7 @@ class ResourceProvider(metaclass=ABCMeta):
 _P = TypeVar("_P", bound="BaseProtocol")
 
 
-class PlatformResourceProvider(Generic[_P], ResourceProvider):
+class ProtocolResourceProvider(Generic[_P], ResourceProvider):
     protocol: _P
 
     def __init__(self, protocol: _P):
@@ -69,7 +69,7 @@ class PlatformResourceProvider(Generic[_P], ResourceProvider):
 
     def get_metadata_resource(self):
         return self.protocol.get_metadata_provider(
-            Selector().land(self.protocol.land.name).resource(self.get_resource_type())
+            Selector().land(self.protocol.land.name).resource_type(self.get_resource_type())
         )
 
 

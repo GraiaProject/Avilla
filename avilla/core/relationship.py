@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from contextlib import AsyncExitStack, suppress
+from contextlib import AsyncExitStack
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, TypeVar, cast, overload
+
+from typing_extensions import TypeVarTuple, Unpack
 
 from avilla.core.account import AbstractAccount
 from avilla.core.action import Action
 from avilla.core.context import ctx_relationship
-from avilla.core.metadata.model import Metadata, MetadataModifies
+from avilla.core.metadata.model import CellCompose, Metadata, MetadataModifies
 from avilla.core.resource import Resource, get_provider
 from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.selector import DynamicSelector, Selector, Summarizable
@@ -66,6 +68,7 @@ class RelationshipExecutor:
 
 
 _T = TypeVar("_T")
+_TVT = TypeVarTuple("_TVT")
 _M = TypeVar("_M", bound=Metadata)
 
 
@@ -126,6 +129,10 @@ class Relationship:
             if provider is None:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
+
+    @property
+    def is_resource(self) -> bool:
+        return self.ctx.path_without_land in self.protocol.resource_labels
 
     async def query(self, selector: Selector):
         if selector.empty:
@@ -202,18 +209,27 @@ class Relationship:
     async def meta(self, op_or_target: Any, op: MetadataModifies[_T]) -> _T:
         ...
 
+    @overload
+    async def meta(self, op_or_target: CellCompose[Unpack[_TVT]]) -> tuple[Unpack[_TVT]]:
+        ...
+    
+    @overload
+    async def meta(self, op_or_target: Any, op: CellCompose[Unpack[_TVT]]) -> tuple[Unpack[_TVT]]:
+        ...
+
     async def meta(
         self,
-        op_or_target: type[_M] | MetadataModifies[_T] | Any,
-        op: type[_M] | MetadataModifies[_T] | None = None,
-    ) -> _M | _T:
+        op_or_target: type[_M] | MetadataModifies[_T] | CellCompose[Unpack[_TVT]] | Any,
+        op: type[_M] | MetadataModifies[_T] | CellCompose[Unpack[_TVT]] | None = None,
+    ) -> _M | _T | tuple[Unpack[_TVT]]:
+        # TODO: read AvillaEvent.extras['meta'][target][op] => Model
         with ctx_relationship.use(self):
             op, target = cast(
                 "tuple[type[_M] | MetadataModifies[_T], Any]",
                 (op_or_target, None if op is None else op, op_or_target),
             )
 
-            if isinstance(op, type) and issubclass(op, Metadata):
+            if isinstance(op, type) and issubclass(op, (Metadata, CellCompose)):
                 modify = None
                 model = op
             elif isinstance(op, MetadataModifies):

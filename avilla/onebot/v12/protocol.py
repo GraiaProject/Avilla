@@ -5,7 +5,7 @@ from typing import ClassVar
 from avilla.core.application import Avilla
 from avilla.core.platform import Abstract, Land, Platform, Version
 from avilla.core.protocol import BaseProtocol
-from avilla.core.resource import PlatformResourceProvider
+from avilla.core.resource import ProtocolResourceProvider
 from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
 

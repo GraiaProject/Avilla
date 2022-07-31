@@ -13,7 +13,7 @@ from avilla.core.event import AvillaEvent
 from avilla.core.metadata.source import MetadataSource
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.querier import ProtocolAbstractQueryHandler
-from avilla.core.resource import PlatformResourceProvider, ResourceProvider
+from avilla.core.resource import ProtocolResourceProvider, ResourceProvider
 from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.action_executor import ProtocolActionExecutor
 from avilla.core.utilles.event_parser import AbstractEventParser
@@ -38,7 +38,7 @@ class BaseProtocol(metaclass=ABCMeta):
     event_parser: ClassVar[AbstractEventParser]
     action_executors: ClassVar[list[type[ProtocolActionExecutor]]] = cast(list, ())
     # 顺序严格, 建议 full > exist long > exist short > any|none
-    resource_providers: ClassVar[dict[Selector, type[PlatformResourceProvider]]] = cast(
+    resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = cast(
         dict, MappingProxyType({})
     )
     metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = cast(list, ())
@@ -54,6 +54,10 @@ class BaseProtocol(metaclass=ABCMeta):
     @property
     def abstract(self):
         return self.platform[Abstract]
+
+    @property
+    def resource_labels(self) -> set[str]:
+        return {pattern.path_without_land for pattern in self.resource_providers.keys()}
 
     @abstractmethod
     def ensure(self, avilla: Avilla) -> Any:
@@ -78,7 +82,7 @@ class BaseProtocol(metaclass=ABCMeta):
 
     def get_metadata_provider(self, target: Selector) -> MetadataSource | None:
         for source in self.metadata_providers:
-            if source.pattern.match(target):
+            if source.pattern == target.path_without_land:
                 return source(self)
 
     def post_event(self, event: AvillaEvent):

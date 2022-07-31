@@ -50,6 +50,10 @@ class Selector:
     def path(self) -> str:
         return ".".join(filterfalse(self.path_excludes.__contains__, self.pattern))
 
+    @property
+    def path_without_land(self) -> str:
+        return ".".join(filterfalse((self.path_excludes | {"land"}).__contains__, self.pattern))
+
     @classmethod
     def exist(cls) -> Self:
         return cls(mode="exist")
@@ -131,6 +135,10 @@ class Selector:
 
     def mixin(self, path: str, *selectors: Self) -> Self:
         return self.mix(path, **ChainMap(*(x.pattern for x in selectors)))
+
+    def appendix(self, key: str, value: str) -> Self:
+        self.pattern[key] = value
+        return self
 
     def copy(self) -> Self:
         instance = self.__class__(mode=self.mode, path_excludes=self.path_excludes)
