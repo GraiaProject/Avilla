@@ -10,7 +10,7 @@ from avilla.core.action import Action
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import (
     CellCompose,
-    DerivedCell,
+    CellOf,
     Metadata,
     MetadataModifies,
     Ts,
@@ -238,11 +238,11 @@ class Relationship:
         ...
 
     @overload
-    async def meta(self, operator: DerivedCell[Unpack[tuple[Any, ...]], _M], /) -> _M:
+    async def meta(self, operator: CellOf[Unpack[tuple[Any, ...]], _M], /) -> _M:
         ...
 
     @overload
-    async def meta(self, target: Any, operator: DerivedCell[Unpack[tuple[Any, ...]], _M], /) -> _M:
+    async def meta(self, target: Any, operator: CellOf[Unpack[tuple[Any, ...]], _M], /) -> _M:
         ...
 
     @overload
@@ -257,11 +257,11 @@ class Relationship:
     ) -> Any:
         # TODO: read AvillaEvent.extras['meta'][target][op] => Model
         op, target = cast(
-            tuple["type[_M] | MetadataModifies[_T] | DerivedCell[Unpack[tuple[Any, ...]], _M]", Any],
+            tuple["type[_M] | MetadataModifies[_T] | CellOf[Unpack[tuple[Any, ...]], _M]", Any],
             (op_or_target, None) if maybe_op is None else (maybe_op, op_or_target),
         )
         with ctx_relationship.use(self):
-            if isinstance(op, DerivedCell) or isinstance(op, type) and issubclass(op, Metadata):
+            if isinstance(op, CellOf) or isinstance(op, type) and issubclass(op, Metadata):
                 modify = None
                 model = op
             elif isinstance(op, MetadataModifies):
@@ -304,7 +304,7 @@ class Relationship:
                 )
 
             if modify is None:
-                if isinstance(model, DerivedCell):
+                if isinstance(model, CellOf):
                     ...  # TODO:  lookup
                 return await source.fetch(target, model)
             return cast(_T, await source.modify(target, cast(MetadataModifies[Selector], modify)))
