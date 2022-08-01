@@ -12,8 +12,10 @@ from avilla.core.utilles.selector import Selector
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
-Fetcher = Callable[["DispatachingMetadataSource", Selector, type[Metadata]], Coroutine[None, None, Metadata]]
-Modifier = Callable[["DispatachingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]]
+Fetcher = Callable[["DispatchingMetadataSource", Selector, type[Metadata]], Coroutine[None, None, Metadata]]
+Modifier = Callable[
+    ["DispatchingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]
+]
 
 
 def fetch(*model_types: type[Metadata]):
@@ -40,7 +42,7 @@ def modify(*model_types: type[Metadata]):
 # 第一步的对比由 Protocol.get_metadata_source 完成, Source 仅提供 Target Pattern.
 
 
-class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
+class DispatchingMetadataSource(MetadataSource[Selector, Metadata]):
     pattern: ClassVar[str | None] = None
     fetchers: ClassVar[
         dict[type[Metadata], Callable[[Self, Selector, type[Metadata]], Coroutine[None, None, Metadata]]]
@@ -55,7 +57,7 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
         cls.fetchers = {}
         cls.modifiers = {}
         for mro in reversed(inspect.getmro(cls)):
-            if issubclass(mro, DispatachingMetadataSource):
+            if issubclass(mro, DispatchingMetadataSource):
                 cls.fetchers.update(mro.fetchers)
                 cls.modifiers.update(mro.modifiers)
         for _, member in inspect.getmembers(cls):
@@ -82,7 +84,7 @@ class DispatachingMetadataSource(MetadataSource[Selector, Metadata]):
 _P = TypeVar("_P", bound="BaseProtocol")
 
 
-class ProtocolMetadataSource(DispatachingMetadataSource, Generic[_P]):
+class ProtocolMetadataSource(DispatchingMetadataSource, Generic[_P]):
     protocol: _P
 
     def __init__(self, protocol: _P):

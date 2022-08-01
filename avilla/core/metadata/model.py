@@ -5,7 +5,7 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, overload
 
-from typing_extensions import TypeVarTuple, Unpack
+from typing_extensions import Self, TypeVarTuple, Unpack
 
 if TYPE_CHECKING:
     from avilla.core.metadata.source import MetadataSource
@@ -53,9 +53,9 @@ def meta_field(id: str) -> Any:
     return MetaField(id)
 
 
-_Meta_A = TypeVar("_Meta_A", bound="MetadataMCS")
+_Meta_A = TypeVar("_Meta_A", bound="Metadata")
 
-_Meta_B = TypeVar("_Meta_B", bound="MetadataMCS")
+_Meta_B = TypeVar("_Meta_B", bound="Metadata")
 
 
 TVT = TypeVarTuple("TVT")
@@ -63,16 +63,37 @@ TVT = TypeVarTuple("TVT")
 
 class MetadataMCS(ABCMeta):
     @overload
-    def __rshift__(cls: _Meta_A, other: _Meta_B) -> CellCompose[_Meta_A, _Meta_B]:
+    def __rshift__(cls: type[_Meta_A], other: type[_Meta_B]) -> DerivedCell[_Meta_A, _Meta_B]:
         ...
 
     @overload
-    def __rshift__(cls: _Meta_A, other: CellCompose[Unpack[TVT]]) -> CellCompose[_Meta_A, Unpack[TVT]]:
+    def __rshift__(cls: type[_Meta_A], other: DerivedCell[Unpack[TVT]]) -> DerivedCell[_Meta_A, Unpack[TVT]]:
         ...
 
-    def __rshift__(cls, other: MetadataMCS | CellCompose) -> CellCompose:
-        cells = (cls, other) if isinstance(other, MetadataMCS) else (cls, *other.cells)
+    def __rshift__(cls: Any, other: type[Metadata] | DerivedCell) -> DerivedCell:
+        cells = (cls, other) if isinstance(other, type) else (cls, *other.cells)
+        return DerivedCell(cells)
+
+    @overload
+    def __add__(cls: type[_Meta_A], other: type[_M]) -> CellCompose[_Meta_A, _M]:
+        ...
+
+    @overload
+    def __add__(cls: type[_Meta_A], other: _DeriveBack[_M_k]) -> CellCompose[_Meta_A, _M_k]:
+        ...
+
+    @overload
+    def __add__(cls: type[_Meta_A], other: CellCompose[Unpack[Ts]]) -> CellCompose[_Meta_A, Unpack[Ts]]:
+        ...
+
+    def __add__(cls: Any, other: type[Metadata] | DerivedCell | CellCompose) -> CellCompose:
+        cells: tuple[type[Metadata] | DerivedCell, ...] = (
+            (cls, other) if isinstance(other, (type, DerivedCell)) else (cls, *other.cells)
+        )
         return CellCompose(cells)
+
+    def __repr__(cls) -> str:
+        return cls.__name__
 
 
 class Metadata(Generic[T], metaclass=MetadataMCS):
@@ -107,28 +128,84 @@ Ts = TypeVarTuple("Ts")
 
 _M = TypeVar("_M", bound=Metadata)
 
+_M_k = TypeVar("_M_k", bound=Metadata)
 
-class CellCompose(Generic[Unpack[TVT]]):
-    cells: tuple[Unpack[TVT]]
 
-    def __init__(self, cells: tuple[Unpack[TVT]]) -> None:
+class DerivedCell(Generic[Unpack[TVT]]):
+    cells: tuple[type[Metadata], ...]
+
+    def __init__(self, cells: tuple[type[Metadata], ...]) -> None:
         self.cells = cells
 
+    def get_default_target(self, relationship: Relationship) -> Selector | None:
+        return self.cells[0].get_default_target(relationship)
+
     @overload
-    def __rshift__(self: CellCompose[Unpack[TVT]], other: _Meta_A) -> CellCompose[Unpack[TVT], _Meta_A]:
+    def __rshift__(self: DerivedCell[Unpack[TVT]], other: type[_M]) -> DerivedCell[Unpack[TVT], _M]:
         ...
 
     @overload
     def __rshift__(
-        self: CellCompose[Unpack[TVT]], other: CellCompose[Unpack[Ts]]
-    ) -> CellCompose[Unpack[TVT], Unpack[Ts]]:
+        self: DerivedCell[Unpack[TVT]], other: DerivedCell[Unpack[Ts]]
+    ) -> DerivedCell[Unpack[TVT], Unpack[Ts]]:
         ...
 
-    def __rshift__(self, other: MetadataMCS | CellCompose) -> CellCompose:
-        cells = (*self.cells, other) if isinstance(other, MetadataMCS) else (*self.cells, *other.cells)
+    def __rshift__(self, other: type[Metadata] | DerivedCell) -> DerivedCell:
+        if not isinstance(other, (type, DerivedCell)):
+            raise TypeError(f"{other.__class__} is not allowed to derive from DerivedCell.")
+        cells = (*self.cells, other) if isinstance(other, type) else (*self.cells, *other.cells)
+        return DerivedCell(cells)
+
+    @overload
+    def __add__(self: _DeriveBack[_M_k], other: type[_M]) -> CellCompose[_M_k, _M]:
+        ...
+
+    @overload
+    def __add__(self: _DeriveBack[_M_k], other: _DeriveBack[_M]) -> CellCompose[_M_k, _M]:
+        ...
+
+    @overload
+    def __add__(self: _DeriveBack[_M_k], other: CellCompose[Unpack[Ts]]) -> CellCompose[_M_k, Unpack[Ts]]:
+        ...
+
+    def __add__(self, other: type[Metadata] | DerivedCell | CellCompose) -> CellCompose:
+        cells: tuple[type[Metadata] | DerivedCell, ...] = (
+            (self, other) if isinstance(other, (type, DerivedCell)) else (self, *other.cells)
+        )
         return CellCompose(cells)
 
-    def get_default_target(
-        self: CellCompose[type[_M], Unpack[TVT]], relationship: Relationship
-    ) -> Selector | None:
-        return self.cells[0].get_default_target(relationship)
+    def __repr__(self) -> str:
+        cells_repr = ", ".join(repr(cell) for cell in self.cells)
+        return f"DerivedCell[{cells_repr}]"
+
+
+_DeriveBack = DerivedCell[Unpack[tuple[Any, ...]], _M_k]
+
+
+class CellCompose(Generic[Unpack[TVT]]):
+    cells: tuple[type[Metadata] | DerivedCell, ...]
+
+    def __init__(self, cells: tuple[type[Metadata] | DerivedCell, ...]) -> None:
+        self.cells = cells
+
+    @overload
+    def __add__(self, other: type[_M]) -> CellCompose[Unpack[TVT], _M]:
+        ...
+
+    @overload
+    def __add__(self, other: _DeriveBack[_M]) -> CellCompose[Unpack[TVT], _M]:
+        ...
+
+    @overload
+    def __add__(self, other: CellCompose[Unpack[Ts]]) -> CellCompose[Unpack[TVT], Unpack[Ts]]:
+        ...
+
+    def __add__(self, other: type[Metadata] | DerivedCell | CellCompose) -> CellCompose:
+        cells: tuple[type[Metadata] | DerivedCell, ...] = (
+            (*self.cells, other) if isinstance(other, (type, DerivedCell)) else (*self.cells, *other.cells)
+        )
+        return CellCompose(cells)
+
+    def __repr__(self) -> str:
+        cells_repr = ", ".join(repr(cell) for cell in self.cells)
+        return f"CellCompose[{cells_repr}]"
