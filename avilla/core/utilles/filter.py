@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Callable, Container, Iterable
 from functools import partial
-from inspect import _empty, isawaitable
-from operator import contains, eq, is_, is_not, ne, not_
-from typing import Any, Awaitable, Generic, ParamSpec, TypeVar, overload
+from inspect import isawaitable
+from operator import contains, eq, is_, is_not, ne
+from typing import Any, Awaitable, Generic, ParamSpec, TypeVar
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 from typing_extensions import Self
@@ -35,171 +35,53 @@ class Filter(BaseDispatcher, Generic[T]):
         self.middlewares.append(func)
         return self  # type: ignore
 
-    def assert_true(self, func: Callable[[T], Any] | None = None) -> Self:
-        if func is None:
+    def assert_true(self, func: Callable[[T], Any]) -> Self:
+        @self.step
+        def _(result: T) -> T:
+            if func(result):
+                return result
+            raise ExecutionStop
 
-            def inner(result: T) -> T:
-                if result:
-                    return result
-                raise ExecutionStop
+        return self
 
-        else:
+    def assert_false(self, func: Callable[[T], Any]) -> Self:
+        return self.assert_true(lambda result: not func(result))
 
-            def inner(result: T) -> T:
-                if func(result):
-                    return result
-                raise ExecutionStop
+    def assert_equal(self, value: R) -> R:
+        return self.assert_true(partial(eq, value))  # type: ignore
 
-        return self.step(inner)
+    def assert_not_equal(self, value: Any) -> Self:
+        return self.assert_true(partial(ne, value))
 
-    def assert_false(self, func: Callable[[T], bool] | None = None) -> Self:
-        return self.assert_true(not_) if func is None else self.assert_true(lambda result: not func(result))
+    def assert_is(self, value: R) -> Filter[R]:
+        return self.assert_true(partial(is_, value))  # type: ignore
 
-    @overload
-    def assert_equal(self, value: Any, /) -> Self:
-        ...
+    def assert_is_not(self, value: Any) -> Self:
+        return self.assert_true(partial(is_not, value))
 
-    @overload
-    def assert_equal(self, func: Callable[[T], Any], value: Any, /) -> Self:
-        ...
+    def assert_is_none(self) -> Filter[None]:
+        return self.assert_is(None)
 
-    def assert_equal(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
-        return (
-            self.assert_true(partial(eq, func_or_value))
-            if value is _empty
-            else self.assert_true(lambda result: func_or_value(result) == value)
-        )
+    def assert_is_not_none(self) -> Self:  # 实际上类型是 Filter[T - None]
+        return self.assert_is_not(None)
 
-    @overload
-    def assert_not_equal(self, value: Any, /) -> Self:
-        ...
+    def assert_in(self, container: Container[R]) -> Filter[R]:
+        return self.assert_true(partial(contains, container))  # type: ignore
 
-    @overload
-    def assert_not_equal(self, func: Callable[[T], Any], value: Any, /) -> Self:
-        ...
+    def assert_not_in(self, container: Container) -> Self:
+        return self.assert_true(lambda result: result not in container)
 
-    def assert_not_equal(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
-        return (
-            self.assert_true(partial(ne, func_or_value))
-            if value is _empty
-            else self.assert_true(lambda result: func_or_value(result) != value)
-        )
+    def assert_is_instance(self, cls: type[R]) -> Filter[R]:
+        return self.assert_true(lambda result: isinstance(result, cls))  # type: ignore
 
-    @overload
-    def assert_is(self, value: Any, /) -> Self:
-        ...
+    def assert_not_is_instance(self, cls: type) -> Self:
+        return self.assert_true(lambda result: not isinstance(result, cls))
 
-    @overload
-    def assert_is(self, func: Callable[[T], Any], value: Any, /) -> Self:
-        ...
-
-    def assert_is(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
-        return (
-            self.assert_true(partial(is_, func_or_value))
-            if value is _empty
-            else self.assert_true(lambda result: func_or_value(result) is value)
-        )
-
-    @overload
-    def assert_is_not(self, value: Any, /) -> Self:
-        ...
-
-    @overload
-    def assert_is_not(self, func: Callable[[T], Any], value: Any, /) -> Self:
-        ...
-
-    def assert_is_not(self, func_or_value: Callable[[T], Any] | Any, value: Any = _empty, /) -> Self:
-        return (
-            self.assert_true(partial(is_not, func_or_value))
-            if value is _empty
-            else self.assert_true(lambda result: func_or_value(result) is not value)
-        )
-
-    def assert_is_none(self, func: Callable[[T], Any] | None = None) -> Self:
-        return self.assert_is(None) if func is None else self.assert_is(func, None)
-
-    def assert_is_not_none(self, func: Callable[[T], Any] | None = None) -> Self:
-        return self.assert_is_not(None) if func is None else self.assert_is_not(func, None)
-
-    @overload
-    def assert_in(self, container: Container, /) -> Self:
-        ...
-
-    @overload
-    def assert_in(self, func: Callable[[T], Any], container: Container, /) -> Self:
-        ...
-
-    def assert_in(
-        self,
-        func_or_container: Callable[[T], Any] | Container,
-        container: Container | None = None,
-        /,
-    ) -> Self:
-        return (
-            self.assert_true(partial(contains, func_or_container))  # type: ignore
-            if container is None
-            else self.assert_true(lambda result: func_or_container(result) in container)  # type: ignore
-        )
-
-    @overload
-    def assert_not_in(self, container: Container, /) -> Self:
-        ...
-
-    @overload
-    def assert_not_in(self, func: Callable[[T], Any], container: Container, /) -> Self:
-        ...
-
-    def assert_not_in(
-        self,
-        func_or_container: Callable[[T], Any] | Container,
-        container: Container | None = None,
-        /,
-    ) -> Self:
-        return (
-            self.assert_true(lambda result: result not in func_or_container)  # type: ignore
-            if container is None
-            else self.assert_true(lambda result: func_or_container(result) not in container)  # type: ignore
-        )
-
-    @overload
-    def assert_is_instance(self, cls: type[Any], /) -> Self:
-        ...
-
-    @overload
-    def assert_is_instance(self, func: Callable[[T], Any], cls: type[Any], /) -> Self:
-        ...
-
-    def assert_is_instance(
-        self, func_or_cls: Callable[[T], Any] | type[Any], cls: type[Any] | None = None, /
-    ) -> Self:
-        return (
-            self.assert_true(lambda result: isinstance(result, func_or_cls))  # type: ignore
-            if cls is None
-            else self.assert_true(lambda result: isinstance(func_or_cls(result), cls))
-        )
-
-    @overload
-    def assert_not_is_instance(self, cls: type[Any], /) -> Self:
-        ...
-
-    @overload
-    def assert_not_is_instance(self, func: Callable[[T], Any], cls: type[Any], /) -> Self:
-        ...
-
-    def assert_not_is_instance(
-        self, func_or_cls: Callable[[T], Any] | type[Any], cls: type[Any] | None = None, /
-    ) -> Self:
-        return (
-            self.assert_true(lambda result: not isinstance(result, func_or_cls))  # type: ignore
-            if cls is None
-            else self.assert_true(lambda result: not isinstance(func_or_cls(result), cls))
-        )
-
-    def any(self, funcs: Iterable[Callable[[T], bool]]) -> Self:
+    def any(self, funcs: Iterable[Callable[[T], Any]]) -> Self:
         funcs = frozenset(funcs)
         return self.assert_true(lambda result: any(func(result) for func in funcs))
 
-    def all(self, funcs: Iterable[Callable[[T], bool]]) -> Self:
+    def all(self, funcs: Iterable[Callable[[T], Any]]) -> Self:
         funcs = frozenset(funcs)
         return self.assert_true(lambda result: all(func(result) for func in funcs))
 
