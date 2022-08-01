@@ -256,6 +256,7 @@ class Relationship:
         /,
     ) -> Any:
         # TODO: read AvillaEvent.extras['meta'][target][op] => Model
+        # TODO: CellCompose implementation
         op, target = cast(
             tuple["type[_M] | MetadataModifies[_T] | CellOf[Unpack[tuple[Any, ...]], _M]", Any],
             (op_or_target, None) if maybe_op is None else (maybe_op, op_or_target),
@@ -304,7 +305,5 @@ class Relationship:
                 )
 
             if modify is None:
-                if isinstance(model, CellOf):
-                    ...  # TODO:  lookup
                 return await source.fetch(target, model)
             return cast(_T, await source.modify(target, cast(MetadataModifies[Selector], modify)))

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Callable, ClassVar, Coroutine, Generic, TypeVa
 
 from typing_extensions import Self
 
-from avilla.core.metadata.model import Metadata, MetadataModifies
+from avilla.core.metadata.model import CellOf, Metadata, MetadataModifies
 from avilla.core.metadata.source import MetadataSource
 from avilla.core.utilles.selector import Selector
 
@@ -18,7 +18,7 @@ Modifier = Callable[
 ]
 
 
-def fetch(*model_types: type[Metadata]):
+def fetch(*model_types: type[Metadata] | CellOf):
     def decorator(func: Fetcher):
         if not hasattr(func, "__fetch_metadata_types__"):
             func.__fetch_metadata_types__ = []
@@ -45,7 +45,10 @@ def modify(*model_types: type[Metadata]):
 class DispatchingMetadataSource(MetadataSource[Selector, Metadata]):
     pattern: ClassVar[str | None] = None
     fetchers: ClassVar[
-        dict[type[Metadata], Callable[[Self, Selector, type[Metadata]], Coroutine[None, None, Metadata]]]
+        dict[
+            type[Metadata] | CellOf,
+            Callable[[Self, Selector, type[Metadata] | CellOf], Coroutine[None, None, Metadata]],
+        ]
     ] = {}
     modifiers: ClassVar[
         dict[type[Metadata], Callable[[Self, Selector, MetadataModifies], Coroutine[None, None, Metadata]]]
@@ -68,7 +71,7 @@ class DispatchingMetadataSource(MetadataSource[Selector, Metadata]):
                 for model_type in member.__modify_metadata_types__:
                     cls.modifiers[model_type] = member
 
-    async def fetch(self, target: Selector, model: type[Metadata]):
+    async def fetch(self, target: Selector, model: type[Metadata] | CellOf):
         fetcher = self.fetchers.get(model)
         if fetcher is None:
             raise NotImplementedError(f"Fetcher for {model} is not implemented.")

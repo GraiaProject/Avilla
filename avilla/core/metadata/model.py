@@ -174,7 +174,7 @@ class CellOf(Generic[Unpack[TVT]]):
 
     def __repr__(self) -> str:
         cells_repr = ", ".join(repr(cell) for cell in self.cells)
-        return f"DerivedCell[{cells_repr}]"
+        return f"CellOf[{cells_repr}]"
 
 
 _DeriveBack = CellOf[Unpack[tuple[Any, ...]], _M_k]
