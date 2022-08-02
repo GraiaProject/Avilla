@@ -204,6 +204,12 @@ class CellCompose(Generic[Unpack[TVT]]):
         )
         return CellCompose(cells)
 
+    def get_default_target(self, relationship: Relationship) -> Selector | None:
+        return self.cells[0].get_default_target(relationship)
+
     def __repr__(self) -> str:
         cells_repr = ", ".join(repr(cell) for cell in self.cells)
         return f"CellCompose[{cells_repr}]"
+
+
+# TODO: __hash__ and __eq__ for CellOf and CellCompose

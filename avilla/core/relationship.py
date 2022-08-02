@@ -249,6 +249,10 @@ class Relationship:
     async def meta(self, operator: CellCompose[Unpack[Ts]], /) -> tuple[Unpack[Ts]]:
         ...
 
+    @overload
+    async def meta(self, target: Any, operator: CellCompose[Unpack[Ts]], /) -> tuple[Unpack[Ts]]:
+        ...
+
     async def meta(
         self,
         op_or_target: Any,
@@ -256,13 +260,12 @@ class Relationship:
         /,
     ) -> Any:
         # TODO: read AvillaEvent.extras['meta'][target][op] => Model
-        # TODO: CellCompose implementation
         op, target = cast(
             tuple["type[_M] | MetadataModifies[_T] | CellOf[Unpack[tuple[Any, ...]], _M]", Any],
             (op_or_target, None) if maybe_op is None else (maybe_op, op_or_target),
         )
         with ctx_relationship.use(self):
-            if isinstance(op, CellOf) or isinstance(op, type) and issubclass(op, Metadata):
+            if isinstance(op, (CellOf, CellCompose)) or isinstance(op, type) and issubclass(op, Metadata):
                 modify = None
                 model = op
             elif isinstance(op, MetadataModifies):

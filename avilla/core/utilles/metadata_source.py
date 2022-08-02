@@ -5,20 +5,23 @@ from typing import TYPE_CHECKING, Callable, ClassVar, Coroutine, Generic, TypeVa
 
 from typing_extensions import Self
 
-from avilla.core.metadata.model import CellOf, Metadata, MetadataModifies
+from avilla.core.metadata.model import CellCompose, CellOf, Metadata, MetadataModifies
 from avilla.core.metadata.source import MetadataSource
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
-Fetcher = Callable[["DispatchingMetadataSource", Selector, type[Metadata]], Coroutine[None, None, Metadata]]
+Fetcher = Callable[
+    ["DispatchingMetadataSource", Selector, type[Metadata] | CellOf | CellCompose],
+    Coroutine[None, None, Metadata | tuple[Metadata, ...]],
+]
 Modifier = Callable[
     ["DispatchingMetadataSource", Selector, MetadataModifies], Coroutine[None, None, Metadata]
 ]
 
 
-def fetch(*model_types: type[Metadata] | CellOf):
+def fetch(*model_types: type[Metadata] | CellOf | CellCompose):
     def decorator(func: Fetcher):
         if not hasattr(func, "__fetch_metadata_types__"):
             func.__fetch_metadata_types__ = []
@@ -46,8 +49,11 @@ class DispatchingMetadataSource(MetadataSource[Selector, Metadata]):
     pattern: ClassVar[str | None] = None
     fetchers: ClassVar[
         dict[
-            type[Metadata] | CellOf,
-            Callable[[Self, Selector, type[Metadata] | CellOf], Coroutine[None, None, Metadata]],
+            type[Metadata] | CellOf | CellCompose,
+            Callable[
+                [Self, Selector, type[Metadata] | CellOf | CellCompose],
+                Coroutine[None, None, Metadata | tuple[Metadata, ...]],
+            ],
         ]
     ] = {}
     modifiers: ClassVar[
@@ -71,7 +77,7 @@ class DispatchingMetadataSource(MetadataSource[Selector, Metadata]):
                 for model_type in member.__modify_metadata_types__:
                     cls.modifiers[model_type] = member
 
-    async def fetch(self, target: Selector, model: type[Metadata] | CellOf):
+    async def fetch(self, target: Selector, model: type[Metadata] | CellOf | CellCompose):
         fetcher = self.fetchers.get(model)
         if fetcher is None:
             raise NotImplementedError(f"Fetcher for {model} is not implemented.")
