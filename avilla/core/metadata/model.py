@@ -176,6 +176,12 @@ class CellOf(Generic[Unpack[TVT]]):
         cells_repr = ", ".join(repr(cell) for cell in self.cells)
         return f"CellOf[{cells_repr}]"
 
+    def __hash__(self) -> int:
+        return hash(self.cells) + hash("CellOf")
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, CellOf) and o.cells == self.cells
+
 
 _DeriveBack = CellOf[Unpack[tuple[Any, ...]], _M_k]
 
@@ -211,5 +217,8 @@ class CellCompose(Generic[Unpack[TVT]]):
         cells_repr = ", ".join(repr(cell) for cell in self.cells)
         return f"CellCompose[{cells_repr}]"
 
+    def __hash__(self) -> int:
+        return hash(self.cells) + hash("CellCompose")
 
-# TODO: __hash__ and __eq__ for CellOf and CellCompose
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, CellCompose) and o.cells == self.cells
