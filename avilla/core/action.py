@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, AsyncIterable, Generic, TypeVar
+from typing import TYPE_CHECKING, AsyncIterable, Generic, TypeVar, Any, ClassVar
 
 from graia.amnesia.message import Element, MessageChain
 
@@ -12,7 +12,7 @@ from avilla.core.request import Request
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Relationship, RelationshipExecutor
 
 
 class Action:
@@ -121,3 +121,11 @@ class MemberRemove(Action):
 
     def __init__(self, member: Selector):
         self.member = member
+
+
+class StandardActionExecutor:
+    endpoint: ClassVar[str]
+
+    @staticmethod
+    async def get_execute_params(exec_: RelationshipExecutor) -> dict[str, Any]:
+        ...
