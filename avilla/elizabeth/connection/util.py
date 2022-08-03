@@ -76,13 +76,7 @@ def validate_response(data: Any, raising: bool = True):
     return exc
 
 
-class CallMethod(str, Enum):
-
-    GET = "GET"
-    POST = "POST"
-    GET_REST = "get"
-    POST_REST = "update"
-    MULTIPART = "multipart"
+CallMethod = Literal["get", "post", "fetch", "update", "multipart"]
 
 
 class UploadMethod(str, Enum):

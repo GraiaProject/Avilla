@@ -17,6 +17,8 @@ from graia.amnesia.message.element import Element
 from graia.broadcast.utilles import run_always_await
 from typing_extensions import Self
 
+from avilla.core.elements import Unknown
+
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
@@ -58,7 +60,7 @@ class MessageDeserializer(ABC, Generic[_P]):
         element_type = self.get_element_type(raw)
         deserializer = self.element_deserializer.get(element_type)
         if deserializer is None:
-            raise NotImplementedError(f"Element type {element_type} is not supported.")
+            return Unknown(type=element_type, raw_data=raw)
         return await run_always_await(deserializer, self, protocol, raw)  # type: ignore
 
     async def parse_sentence(self, protocol: _P, data: list) -> list[Any]:

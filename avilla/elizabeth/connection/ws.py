@@ -25,8 +25,6 @@ from launart.utilles import wait_fut
 from loguru import logger
 from yarl import URL
 
-from avilla.core.utilles.selector import Selector
-
 from . import ElizabethConnection
 from .config import WebsocketClientConfig, WebsocketServerConfig
 from .util import CallMethod, get_router, validate_response
@@ -96,11 +94,11 @@ class BaseWebsocketConnection(Transport, ElizabethConnection[T_WebsocketConfig])
         sync_id: str = secrets.token_urlsafe(12)
         fut = asyncio.get_running_loop().create_future()
         content: Dict[str, Any] = {"syncId": sync_id, "command": command, "content": params or {}}
-        if method == CallMethod.GET_REST:
+        if method == "fetch":
             content["subCommand"] = "get"
-        elif method == CallMethod.POST_REST:
+        elif method == "update":
             content["subCommand"] = "update"
-        elif method == CallMethod.MULTIPART:
+        elif method == "multipart":
             if self.http_conn:
                 return await self.http_conn.call(command, method, params)
             raise NotImplementedError(

@@ -7,7 +7,6 @@ from avilla.core.relationship import Relationship
 from avilla.core.utilles.action_executor import ProtocolActionExecutor, action
 from avilla.core.utilles.selector import DynamicSelector
 from avilla.elizabeth.account import ElizabethAccount
-from avilla.elizabeth.connection.util import CallMethod
 
 if TYPE_CHECKING:
     from .protocol import ElizabethProtocol
@@ -24,7 +23,7 @@ class ElizabethGroupActionExecutor(
         result = await account.call(
             "sendGroupMessage",
             {
-                "__method__": CallMethod.POST,
+                "__method__": "post",
                 "target": int(action.target.pattern["group"]),
                 "messageChain": message,
                 **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
@@ -37,7 +36,7 @@ class ElizabethGroupActionExecutor(
         target_id: int = int(action.message.pattern["message"])
         account = relationship.current
         assert isinstance(account, ElizabethAccount)
-        await account.call("recall", {"__method__": CallMethod.POST, "target": target_id})
+        await account.call("recall", {"__method__": "post", "target": target_id})
 
 
 class ElizabethFriendActionExecutor(
@@ -51,7 +50,7 @@ class ElizabethFriendActionExecutor(
         result = await account.call(
             "sendFriendMessage",
             {
-                "__method__": CallMethod.POST,
+                "__method__": "post",
                 "target": int(action.target.pattern["friend"]),
                 "messageChain": message,
                 **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
@@ -71,7 +70,7 @@ class ElizabethGroupMemberActionExecutor(
         result = await account.call(
             "sendTempMessage",
             {
-                "__method__": CallMethod.POST,
+                "__method__": "post",
                 "target": int(action.target.pattern["group"]),
                 "qq": int(action.target.pattern["member"]),
                 "messageChain": message,

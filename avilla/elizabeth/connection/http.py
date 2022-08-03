@@ -103,11 +103,11 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
         if not self.status.session_key:
             await self.http_auth()
         try:
-            if method in (CallMethod.GET, CallMethod.GET_REST):
+            if method in ("get", "fetch"):
                 return await self.request("GET", self.config.get_url(command), params=params)
-            elif method in (CallMethod.POST, CallMethod.POST_REST):
+            elif method in ("post", "update"):
                 return await self.request("POST", self.config.get_url(command), json=params)
-            elif method == CallMethod.MULTIPART:
+            elif method == "multipart":
                 return await self.request("POST", self.config.get_url(command), data=params)
         except InvalidSession:
             self.status.session_key = None
@@ -141,7 +141,9 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                     continue
                 assert isinstance(data, list)
                 for event_data in data:
-                    event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
+                    event = await self.protocol.event_parser.parse_event(
+                        self.protocol, self.account, event_data
+                    )
                     if event is not None:
                         self.protocol.post_event(event)
                 await wait_fut(

@@ -14,8 +14,7 @@ from avilla.core.utilles.selector import Selector
 from .config import HttpClientConfig, HttpServerConfig, T_Config
 from .config import U_Config as U_Config
 from .config import WebsocketClientConfig, WebsocketServerConfig
-from .util import CallMethod as CallMethod
-from .util import camel_to_snake
+from .util import CallMethod, camel_to_snake
 
 if TYPE_CHECKING:
     from ..protocol import ElizabethProtocol
