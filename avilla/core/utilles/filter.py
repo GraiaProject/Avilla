@@ -104,24 +104,29 @@ class Filter(BaseDispatcher, Generic[T]):
         return self.all(lambda result: not result.match(pattern) for pattern in patterns)
 
     @classmethod
+    @property
     def rs(cls) -> Filter[Relationship]:
         return cls().fetch(Relationship)
 
     @classmethod
+    @property
     def ctx(cls) -> Filter[Selector]:
-        return cls.rs().step(lambda rs: rs.ctx)
+        return cls.rs.step(lambda rs: rs.ctx)
 
     @classmethod
+    @property
     def mainline(cls) -> Filter[Selector]:
-        return cls.rs().step(lambda rs: rs.mainline)
+        return cls.rs.step(lambda rs: rs.mainline)
 
     @classmethod
+    @property
     def current(cls) -> Filter[AbstractAccount]:
-        return cls.rs().step(lambda rs: rs.current)
+        return cls.rs.step(lambda rs: rs.current)
 
     @classmethod
+    @property
     def via(cls) -> Filter[Selector | None]:
-        return cls.rs().step(lambda rs: rs.via)
+        return cls.rs.step(lambda rs: rs.via)
 
     async def beforeExecution(self, interface: DispatcherInterface):
         result: Awaitable[Any] | Any = interface  # type: ignore
