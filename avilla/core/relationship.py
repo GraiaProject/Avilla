@@ -87,6 +87,7 @@ class Relationship:
     ctx: Selector
     mainline: Selector
     current: AbstractAccount
+    cache: dict[str, Any]
     via: Selector | None = None
 
     protocol: "BaseProtocol"
@@ -108,6 +109,7 @@ class Relationship:
         self.current = current
         self.protocol = protocol
         self._middlewares = middlewares or []
+        self.cache = {}
 
     @property
     def exec(self):
@@ -222,15 +224,7 @@ class Relationship:
             yield i
 
     @overload
-    async def meta(self, operator: type[_M], /) -> _M:
-        ...
-
-    @overload
     async def meta(self, operator: MetadataModifies[_T], /) -> _T:
-        ...
-
-    @overload
-    async def meta(self, target: Any, operator: type[_M], /) -> _M:
         ...
 
     @overload
@@ -238,28 +232,34 @@ class Relationship:
         ...
 
     @overload
-    async def meta(self, operator: CellOf[Unpack[tuple[Any, ...]], _M], /) -> _M:
+    async def meta(self, operator: type[_M], /, *, flush: bool = False) -> _M:
         ...
 
     @overload
-    async def meta(self, target: Any, operator: CellOf[Unpack[tuple[Any, ...]], _M], /) -> _M:
+    async def meta(self, target: Any, operator: type[_M], /, *, flush: bool = False) -> _M:
         ...
 
     @overload
-    async def meta(self, operator: CellCompose[Unpack[Ts]], /) -> tuple[Unpack[Ts]]:
+    async def meta(self, operator: CellOf[Unpack[tuple[Any, ...]], _M], /, *, flush: bool = False) -> _M:
         ...
 
     @overload
-    async def meta(self, target: Any, operator: CellCompose[Unpack[Ts]], /) -> tuple[Unpack[Ts]]:
-        ...
-
     async def meta(
-        self,
-        op_or_target: Any,
-        maybe_op: Any = None,
-        /,
-    ) -> Any:
-        # TODO: read AvillaEvent.extras['meta'][target][op] => Model
+        self, target: Any, operator: CellOf[Unpack[tuple[Any, ...]], _M], /, *, flush: bool = False
+    ) -> _M:
+        ...
+
+    @overload
+    async def meta(self, operator: CellCompose[Unpack[Ts]], /, *, flush: bool = False) -> tuple[Unpack[Ts]]:
+        ...
+
+    @overload
+    async def meta(
+        self, target: Any, operator: CellCompose[Unpack[Ts]], /, *, flush: bool = False
+    ) -> tuple[Unpack[Ts]]:
+        ...
+
+    async def meta(self, op_or_target: Any, maybe_op: Any = None, /, *, flush: bool = False) -> Any:
         op, target = cast(
             tuple["type[_M] | MetadataModifies[_T] | CellOf[Unpack[tuple[Any, ...]], _M]", Any],
             (op_or_target, None) if maybe_op is None else (maybe_op, op_or_target),
@@ -282,7 +282,14 @@ class Relationship:
                 raise ValueError(
                     f"{model}'s modify is not a supported metadata for rs.meta, which requires a categorical target."
                 )
+            if model := self.cache.get("meta", {}).get(target, {}).get(op, None):
+                if flush:
+                    del self.cache["meta"][target][op]
+                else:
+                    return model
             if isinstance(target, Selector):
+                if isinstance(target, DynamicSelector):
+                    raise TypeError(f"Use rs.query for dynamic selector {target}!")
                 target_ref = target
             elif not isinstance(target, Selectable):
                 raise ValueError(
@@ -308,5 +315,7 @@ class Relationship:
                 )
 
             if modify is None:
-                return await source.fetch(target, model)
+                result = await source.fetch(target, model)
+                self.cache.setdefault("meta", {}).setdefault(target, {})[op] = result
+                return result
             return cast(_T, await source.modify(target, cast(MetadataModifies[Selector], modify)))

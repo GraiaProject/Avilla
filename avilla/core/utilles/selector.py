@@ -33,6 +33,12 @@ class Selector:
 
         return wrapper
 
+    def __hash__(self) -> int:
+        return hash("Selector") + hash(tuple(self.pattern.items()))
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, Selector) and o.pattern == self.pattern
+
     def __contains__(self, key: str) -> bool:
         return key in self.pattern
 
@@ -162,6 +168,9 @@ class DynamicSelector(Selector):
             return self
 
         return wrapper
+
+    def __hash__(self) -> int:
+        raise TypeError("Dynamic Selector is unhashable.")
 
     __getitem__: Callable[[str], Pattern]
 

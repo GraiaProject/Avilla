@@ -44,6 +44,7 @@ class RelationshipDispatcher(BaseDispatcher):
         if protocol is not None:
             rs = await interface.event.account.get_relationship(interface.event.ctx)
             token = ctx_relationship.set(rs)
+            # TODO: map AvillaEvent.extras["meta"] => rs.cache["meta"]
             interface.local_storage["relationship"] = rs
             interface.local_storage["_ctxtoken_rs"] = token
 
