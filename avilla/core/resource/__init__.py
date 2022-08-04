@@ -30,10 +30,9 @@ class Resource(Generic[T]):
         pass
 
     def to_selector(self) -> Selector:
-        return (
-            self.mainline.copy().appendix(self.resource_type, self.id)
-            if self.mainline is not None
-            else Selector().appendix(self.resource_type, self.id)
+        base_selector = self.mainline.copy() if self.mainline is not None else Selector()
+        return base_selector.appendix("resource_type", self.resource_type).appendix(
+            self.resource_type, self.id
         )
 
 

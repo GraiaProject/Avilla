@@ -25,7 +25,7 @@ class LocalFileResource(Resource[bytes]):
         return LOCAL_PROVIDER
 
     @property
-    def get_resource_type(self):
+    def resource_type(self):
         return "local_file"
 
 
