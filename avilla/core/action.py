@@ -123,7 +123,7 @@ class MemberRemove(Action):
         self.member = member
 
 
-class StandardActionExecutor:
+class StandardActionImpl:
     endpoint: ClassVar[str]
 
     @staticmethod

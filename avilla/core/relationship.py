@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, TypeVar, cast, o
 from typing_extensions import TypeVarTuple, Unpack
 
 from avilla.core.account import AbstractAccount
-from avilla.core.action import Action
+from avilla.core.action import Action, StandardActionImpl
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import (
     CellCompose,
@@ -43,11 +43,15 @@ class RelationshipExecutor:
         async with AsyncExitStack() as stack:
             for middleware in reversed(self.middlewares):
                 await stack.enter_async_context(middleware(self))
-            account = self.relationship.current
             for executor in self.relationship.protocol.action_executors:
+                for standard_action in executor.standard_actions:
+                    if result := await self._call(standard_action):
+                        return result
                 # 需要注意: 我们直接从左往右迭代了, 所以建议 full > exist long > exist short > None
-                if result := (await account.call(executor.endpoint, (await executor.get_execute_params(self)))):
-                    return result 
+                if executor.pattern is None:
+                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
+                elif self._target is not None and executor.pattern.match(self._target):
+                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
             if self._target is not None:
                 raise NotImplementedError(
                     f"No action executor found for {self.action.__class__.__name__}, target for {self._target.path}"
@@ -71,6 +75,14 @@ class RelationshipExecutor:
         self.middlewares.extend(middleware)
         return self
 
+    async def _call(self, action: StandardActionImpl):
+        account = self.relationship.current
+        if result := (
+            await account.call(
+                action.endpoint, (await action.get_execute_params(self))
+            )
+        ):
+            return result
 
 _T = TypeVar("_T")
 _TVT = TypeVarTuple("_TVT")

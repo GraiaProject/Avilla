@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 from graia.amnesia.message import MessageChain
 
 from avilla.core.account import AbstractAccount
-from avilla.core.action import StandardActionExecutor
+from avilla.core.action import StandardActionImpl
 from avilla.core.context import ctx_avilla, ctx_protocol
 from avilla.core.event import AvillaEvent
 from avilla.core.metadata.source import MetadataSource
@@ -17,6 +17,7 @@ from avilla.core.querier import ProtocolAbstractQueryHandler
 from avilla.core.resource import ProtocolResourceProvider, ResourceProvider
 from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.event_parser import AbstractEventParser
+from avilla.core.utilles.action_executor import ProtocolActionExecutor
 from avilla.core.utilles.message_deserializer import MessageDeserializer
 from avilla.core.utilles.message_serializer import MessageSerializer
 from avilla.core.utilles.metadata_source import ProtocolMetadataSource
@@ -36,7 +37,7 @@ class BaseProtocol(metaclass=ABCMeta):
     action_middlewares: list[ActionMiddleware] = []
 
     event_parser: ClassVar[AbstractEventParser]
-    action_executors: ClassVar[list[type[StandardActionExecutor]]] = cast(list, ())
+    action_executors: ClassVar[list[type[ProtocolActionExecutor]]] = cast(list, ())
     # 顺序严格, 建议 full > exist long > exist short > any|none
     resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = cast(
         dict, MappingProxyType({})
