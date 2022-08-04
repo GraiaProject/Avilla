@@ -127,5 +127,5 @@ class StandardActionExecutor:
     endpoint: ClassVar[str]
 
     @staticmethod
-    async def get_execute_params(exec_: RelationshipExecutor) -> dict[str, Any]:
+    async def get_execute_params(executor: RelationshipExecutor) -> dict[str, Any] | None:
         ...

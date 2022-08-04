@@ -43,12 +43,11 @@ class RelationshipExecutor:
         async with AsyncExitStack() as stack:
             for middleware in reversed(self.middlewares):
                 await stack.enter_async_context(middleware(self))
+            account = self.relationship.current
             for executor in self.relationship.protocol.action_executors:
                 # 需要注意: 我们直接从左往右迭代了, 所以建议 full > exist long > exist short > None
-                if executor.pattern is None:
-                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
-                elif self._target is not None and executor.pattern.match(self._target):
-                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
+                if result := (await account.call(executor.endpoint, (await executor.get_execute_params(self)))):
+                    return result 
             if self._target is not None:
                 raise NotImplementedError(
                     f"No action executor found for {self.action.__class__.__name__}, target for {self._target.path}"
