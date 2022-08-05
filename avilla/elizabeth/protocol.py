@@ -21,6 +21,11 @@ from avilla.elizabeth.message_serializer import ElizabethMessageSerializer
 from avilla.elizabeth.query import ElizabethGroupQuery, ElizabethRootQuery
 from avilla.elizabeth.service import ElizabethService
 
+from .metadata_sources import (
+    ElizabethGroupMetadataSource,
+    ElizabethMemberMetadataSource,
+)
+
 
 class ElizabethProtocol(BaseProtocol):
     platform = Platform(
@@ -45,7 +50,10 @@ class ElizabethProtocol(BaseProtocol):
     ]
 
     resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = {}
-    metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = []
+    metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = [
+        ElizabethGroupMetadataSource,
+        ElizabethMemberMetadataSource,
+    ]
     query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
         ElizabethGroupQuery,
         ElizabethRootQuery,
@@ -72,7 +80,6 @@ class ElizabethProtocol(BaseProtocol):
         self.configs = config
 
     def ensure(self, avilla: Avilla):
-        from .account import ElizabethAccount
         from .connection import CONFIG_MAP
 
         self.avilla = avilla

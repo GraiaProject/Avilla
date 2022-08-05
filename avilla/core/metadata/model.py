@@ -60,8 +60,10 @@ _Meta_B = TypeVar("_Meta_B", bound="Metadata")
 
 TVT = TypeVarTuple("TVT")
 
+# TODO: add params
 
-class MetadataMCS(ABCMeta):
+
+class MetadataMCS(type):
     @overload
     def __rshift__(cls: type[_Meta_A], other: type[_Meta_B]) -> CellOf[_Meta_A, _Meta_B]:
         ...
@@ -107,7 +109,6 @@ class Metadata(Generic[T], metaclass=MetadataMCS):
         self._source = source
         self._content = content or {}
 
-    @abstractmethod
     def modifies(self) -> MetadataModifies[T] | None:
         return self._modifies
 

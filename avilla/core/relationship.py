@@ -282,11 +282,11 @@ class Relationship:
                 raise ValueError(
                     f"{model}'s modify is not a supported metadata for rs.meta, which requires a categorical target."
                 )
-            if model := self.cache.get("meta", {}).get(target, {}).get(op, None):
+            if result := self.cache.get("meta", {}).get(target, {}).get(op, None):
                 if flush:
                     del self.cache["meta"][target][op]
                 else:
-                    return model
+                    return result
             if isinstance(target, Selector):
                 if isinstance(target, DynamicSelector):
                     raise TypeError(f"Use rs.query for dynamic selector {target}!")
