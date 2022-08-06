@@ -17,6 +17,7 @@ from typing_extensions import TypeVarTuple, Unpack
 
 from avilla.core.account import AbstractAccount
 from avilla.core.action import Action, StandardActionImpl
+from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import (
     CellCompose,
@@ -26,7 +27,6 @@ from avilla.core.metadata.model import (
     Ts,
 )
 from avilla.core.resource import Resource, get_provider
-from avilla.core.typing import ActionMiddleware
 from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ class RelationshipExecutor(Generic[_A]):
     async def __await_impl__(self):
         async with AsyncExitStack() as stack:
             for middleware in reversed(self.middlewares):
-                await stack.enter_async_context(middleware(self))
+                await stack.enter_async_context(middleware.lifespan(self))
             for executor_class in self.relationship.protocol.action_executors:
                 # 需要注意: 我们直接从左往右迭代了, 所以建议 full > exist long > exist short > None
                 if executor_class.pattern is None or (self._target is not None and executor_class.pattern.match(self._target)):
@@ -73,7 +73,14 @@ class RelationshipExecutor(Generic[_A]):
                 raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
 
     async def execute_standard(self, std: type[StandardActionImpl]):
+        for middleware in reversed(self.middlewares):
+            await middleware.before_execute(self)
         params = await std.get_execute_params(self)
+        for middleware in reversed(self.middlewares):
+            await middleware.before_extensions_apply(self, params)
+        # TODO: extension apply
+        for middleware in reversed(self.middlewares):
+            await middleware.on_params_ready(self, params)
         return std.unwarp_result(self, await self.relationship.current.call(std.endpoint,params))
 
     def act(self, action: _A2) -> RelationshipExecutor[_A2]:

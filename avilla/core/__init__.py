@@ -110,7 +110,7 @@ from .resource.local import LOCAL_PROVIDER as LOCAL_PROVIDER
 from .resource.local import LocalFileResource as LocalFileResource
 from .resource.local import LocalFileResourceProvider as LocalFileResourceProvider
 from .service import AvillaService as AvillaService
-from .typing import ActionMiddleware as ActionMiddleware
+from .action.middleware import ActionMiddleware as ActionMiddleware
 from .typing import Ensureable as Ensureable
 from .utilles.selector import DynamicSelector as DynamicSelector
 from .utilles.selector import Selectable as Selectable

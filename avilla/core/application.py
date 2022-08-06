@@ -20,7 +20,7 @@ from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import ResourceProvider
 from avilla.core.service import AvillaService
-from avilla.core.typing import ActionMiddleware
+from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.utilles.selector import Selector
 
 AVILLA_ASCII_LOGO = cleandoc(

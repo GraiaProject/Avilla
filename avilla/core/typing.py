@@ -9,15 +9,10 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from contextlib import AbstractAsyncContextManager
-
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import RelationshipExecutor
-
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
 
-ActionMiddleware = Callable[["RelationshipExecutor"], "AbstractAsyncContextManager[None]"]
 
 _T = TypeVar("_T", contravariant=True)
 
