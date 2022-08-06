@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class ElizabethAccount(AbstractAccount):
     protocol: ElizabethProtocol
 
-    async def get_relationship(self, target: Selector) -> Relationship:
+    async def get_relationship(self, target: Selector, *, via: Selector | None = None) -> Relationship:
         # TODO: 对象存在性检查
         if "land" not in target:
             target = Selector().mixin(f"land.{target.path}", target)

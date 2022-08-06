@@ -28,6 +28,8 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     def ctx(self) -> Selector:
         ...
 
+    def get_via(self) -> Selector | None:
+        ...
 
 class MetadataModified(AvillaEvent):
     ctx: Selector
@@ -66,6 +68,8 @@ class RelationshipCreated(AvillaEvent):
         self.via = via
         super().__init__(account, time=time)
 
+    def get_via(self) -> Selector | None:
+        return self.via
 
 class RelationshipDestroyed(AvillaEvent):
     ctx: Selector
@@ -81,3 +85,6 @@ class RelationshipDestroyed(AvillaEvent):
         self.ctx = ctx
         self.via = via
         super().__init__(account, time=time)
+
+    def get_via(self) -> Selector | None:
+        return self.via

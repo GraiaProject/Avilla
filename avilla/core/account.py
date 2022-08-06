@@ -24,7 +24,7 @@ class AbstractAccount(ABC):
         self.protocol = protocol
 
     @abstractmethod
-    async def get_relationship(self, target: Selector) -> Relationship:
+    async def get_relationship(self, target: Selector, *, via: Selector | None = None) -> Relationship:
         ...
 
     @abstractmethod
