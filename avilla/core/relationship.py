@@ -151,9 +151,8 @@ class Relationship:
         return self.protocol.land
 
     def complete(self, selector: Selector):
-        rules = self.protocol.completion_rules.get(self.mainline.path)
-        if rules is None:
-            return selector
+        rules = self.protocol.completion_rules.get(self.mainline.path) or {}
+        rules = (self.protocol.completion_rules.get("_") or {}) | rules
         if selector.path in rules:
             return selector.mixin(
                 rules[selector.path], self.mainline, self.ctx, *((self.via,) if self.via else ())

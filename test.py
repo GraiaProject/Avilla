@@ -43,15 +43,16 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         # await rs.exec(MessageSend([
         #    "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
         # ]))
-        #t = rs.complete(Selector().friend("1846913566"))
-        #rs2 = await account.get_relationship(t)
-        #await rs2.exec(
-        #    MessageSend(
-        #        ["Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))]
-        #    )
-        #)
-        print(rs.complete(DynamicSelector().group("*")))
-        async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
-            print(i)
+        t = rs.complete(Selector().friend("1846913566"))
+        print(t)
+        rs2 = await account.get_relationship(t)
+        await rs2.exec(
+            MessageSend(
+                ["Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))]
+            )
+        )
+        #print(rs.complete(DynamicSelector().group("*")))
+        #async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
+        #    print(i)
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

@@ -70,6 +70,10 @@ class ElizabethProtocol(BaseProtocol):
         "land.contact": {"contact": "land.contact"},
         "land": {
             "contact": "land.contact",
+        },
+        "_": {
+            "group": "land.group",
+            "friend": "land.friend",
         }
         # TODO
     }
