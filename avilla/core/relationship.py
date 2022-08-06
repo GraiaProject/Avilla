@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack
+from inspect import isclass
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, TypeVar, cast, overload
 
 from typing_extensions import TypeVarTuple, Unpack
 
 from avilla.core.account import AbstractAccount
-from avilla.core.action import Action
+from avilla.core.action import Action, StandardActionImpl
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import (
     CellCompose,
@@ -43,12 +44,15 @@ class RelationshipExecutor:
         async with AsyncExitStack() as stack:
             for middleware in reversed(self.middlewares):
                 await stack.enter_async_context(middleware(self))
-            for executor in self.relationship.protocol.action_executors:
+            for executor_class in self.relationship.protocol.action_executors:
                 # 需要注意: 我们直接从左往右迭代了, 所以建议 full > exist long > exist short > None
-                if executor.pattern is None:
-                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
-                elif self._target is not None and executor.pattern.match(self._target):
-                    return await executor(self.relationship.protocol).execute(self.relationship, self.action)
+                if executor_class.pattern is None or (self._target is not None and executor_class.pattern.match(self._target)):
+                    executor = executor_class(self.relationship.protocol)
+                    implement = executor.get_implement(self.action)
+                    if isclass(implement) and issubclass(implement, StandardActionImpl):
+                        return await self.execute_standard(implement)
+                    assert not isinstance(implement, type)
+                    return await implement(executor, self.action, self.relationship)
             if self._target is not None:
                 raise NotImplementedError(
                     f"No action executor found for {self.action.__class__.__name__}, target for {self._target.path}"
@@ -56,12 +60,16 @@ class RelationshipExecutor:
             else:
                 raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
 
-    def execute(self, action: Action):
+    async def execute_standard(self, std: type[StandardActionImpl]):
+        params = await std.get_execute_params(self)
+        return std.unwarp_result(await self.relationship.current.call(std.endpoint,params))
+
+    def act(self, action: Action):
         self._target = action.set_default_target(self.relationship)
         self.action = action
         return self
 
-    __call__ = execute
+    __call__ = act
 
     def to(self, target: Selector):
         self.action.set_target(target)
@@ -220,6 +228,7 @@ class Relationship:
                 stack.append(generate_with_specified(key, value)(stack[-1] if stack else None))
             else:
                 stack.append(generate_from_upper(current_pattern, stack[-1] if stack else None))
+
         async for i in stack[-1]:
             yield i
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, AsyncIterable, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar
 
 from graia.amnesia.message import Element, MessageChain
 
@@ -12,7 +12,7 @@ from avilla.core.request import Request
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Relationship, RelationshipExecutor
 
 
 class Action:
@@ -21,6 +21,20 @@ class Action:
 
     def set_default_target(self, relationship: Relationship) -> Selector | None:
         ...
+
+
+class StandardActionImpl:
+    actions: ClassVar[list[type[Action]]] = []
+    endpoint: ClassVar[str]
+    # extension_impls: list[type[ActionExtension]]
+
+    @staticmethod
+    async def get_execute_params(executor: RelationshipExecutor) -> dict[str, Any] | None:
+        ...
+
+    @staticmethod
+    def unwarp_result(result: Any) -> Any:
+        return result
 
 
 R = TypeVar("R")

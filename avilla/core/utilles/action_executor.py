@@ -1,30 +1,40 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Generic, TypeVar
+import warnings
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Coroutine,
+    Generic,
+    TypeVar,
+    cast,
+)
 
 from typing_extensions import Self
 
-from avilla.core.action import Action
+from avilla.core.action import Action, StandardActionImpl
 from avilla.core.relationship import Relationship
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
-ActionHandler = Callable[["ActionExecutor", Action, Relationship], Any]
+NonstandardActionImplement = Callable[["ActionExecutor", Action, Relationship], Coroutine[None, None, Any]]
 
 
 def action(*action_types: type[Action]):
-    def decorator(func):
-        func.__supported_actions__ = action_types
-        return func
+    def decorator(implement: Any):
+        cast(Any, implement).__supported_actions__ = action_types
+        return implement
 
     return decorator
 
 
 class ActionExecutor:
-    action_handlers: ClassVar[dict[type[Action], Callable[[Self, Action, Relationship], Any]]] = {}
+    implements: ClassVar[dict[type[Action], type[StandardActionImpl] | Callable[[Self, Action, Relationship], Coroutine[None, None, Any]]]] = {}
     pattern: ClassVar[Selector | None] = None
     # 给外部调用 match
     # 如果是 None, 表示不对其做约束...并且适用于我们不知道 target 到底是什么的情况.
@@ -32,23 +42,26 @@ class ActionExecutor:
 
     def __init_subclass__(cls, pattern: Selector | None = None):
         super().__init_subclass__()
-        cls.action_handlers = {}
+        cls.implements = {}
         for mro in reversed(inspect.getmro(cls)):
             if issubclass(mro, ActionExecutor):
-                cls.action_handlers.update(mro.action_handlers)
+                cls.implements.update(mro.implements)
         members = inspect.getmembers(cls)
         for _, value in members:
-            actions: list[type[Action]] = getattr(value, "__supported_actions__", [])
-            if actions:
-                cls.action_handlers.update({action_type: value for action_type in actions})
+            if inspect.isclass(value) and issubclass(value, StandardActionImpl):
+                cls.implements.update({action_type: value for action_type in value.actions})
+            else:
+                actions: list[type[Action]] = getattr(value, "__supported_actions__", [])
+                if actions:
+                    cls.implements.update({action_type: value for action_type in actions})
         if pattern is not None:
             cls.pattern = pattern
 
-    def execute(self, relationship: Relationship, action: Action):
-        handler = self.action_handlers.get(type(action))
+    def get_implement(self, action: Action):
+        handler = self.implements.get(type(action))
         if handler is None:
             raise NotImplementedError(f"Action {type(action)} is not supported.")
-        return handler(self, action, relationship)
+        return handler
 
 
 _P = TypeVar("_P", bound="BaseProtocol")
