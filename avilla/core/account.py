@@ -8,8 +8,8 @@ from avilla.core.platform import Land
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
     from avilla.core.protocol import BaseProtocol
+    from avilla.core.relationship import Relationship
 
 
 @dataclass

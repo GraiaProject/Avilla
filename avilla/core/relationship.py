@@ -2,7 +2,16 @@ from __future__ import annotations
 
 from contextlib import AsyncExitStack
 from inspect import isclass
-from typing import TYPE_CHECKING, Any, AsyncIterator, Iterable, TypeVar, cast, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncIterator,
+    Generic,
+    Iterable,
+    TypeVar,
+    cast,
+    overload,
+)
 
 from typing_extensions import TypeVarTuple, Unpack
 
@@ -24,9 +33,12 @@ if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 
-class RelationshipExecutor:
+_A = TypeVar("_A", bound=Action)
+_A2 = TypeVar("_A2", bound=Action)
+
+class RelationshipExecutor(Generic[_A]):
     relationship: Relationship
-    action: Action
+    action: _A
     middlewares: list[ActionMiddleware]
 
     _target: Selector | None = None
@@ -62,12 +74,12 @@ class RelationshipExecutor:
 
     async def execute_standard(self, std: type[StandardActionImpl]):
         params = await std.get_execute_params(self)
-        return std.unwarp_result(await self.relationship.current.call(std.endpoint,params))
+        return std.unwarp_result(self, await self.relationship.current.call(std.endpoint,params))
 
-    def act(self, action: Action):
+    def act(self, action: _A2) -> RelationshipExecutor[_A2]:
         self._target = action.set_default_target(self.relationship)
         self.action = action
-        return self
+        return self  # type: ignore
 
     __call__ = act
 
