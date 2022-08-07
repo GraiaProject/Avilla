@@ -9,11 +9,6 @@ _The next-gen framework for IM development._
 </div>
 
 <p align="center">
-  <a href="https://github.com/howmanybots/onebot/blob/master/README.md">
-    <img src="https://img.shields.io/badge/OneBot-v11-blue?style=flat&logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABABAMAAABYR2ztAAAAIVBMVEUAAAAAAAADAwMHBwceHh4UFBQNDQ0ZGRkoKCgvLy8iIiLWSdWYAAAAAXRSTlMAQObYZgAAAQVJREFUSMftlM0RgjAQhV+0ATYK6i1Xb+iMd0qgBEqgBEuwBOxU2QDKsjvojQPvkJ/ZL5sXkgWrFirK4MibYUdE3OR2nEpuKz1/q8CdNxNQgthZCXYVLjyoDQftaKuniHHWRnPh2GCUetR2/9HsMAXyUT4/3UHwtQT2AggSCGKeSAsFnxBIOuAggdh3AKTL7pDuCyABcMb0aQP7aM4AnAbc/wHwA5D2wDHTTe56gIIOUA/4YYV2e1sg713PXdZJAuncdZMAGkAukU9OAn40O849+0ornPwT93rphWF0mgAbauUrEOthlX8Zu7P5A6kZyKCJy75hhw1Mgr9RAUvX7A3csGqZegEdniCx30c3agAAAABJRU5ErkJggg==" alt="onebot_v11">
-  </a>
-  <img alt="PyPI" src="https://img.shields.io/pypi/v/avilla-core" />
-  <a href="https://autumn-psi.vercel.app/"><img src="https://img.shields.io/badge/docs_click here-vercel-black" /></a>
   <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="code_style" />
   <img src="https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336" />
 
@@ -35,11 +30,34 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
   - 使用 `Selector`, 实现了信息与对象本身的解耦, 减少平台实现的负担;
   - 规范化的 `Resource` 抽象优化了对不同资源与资源类型的操作, 尤其是其内容的获取与其元信息的操作;
   - 规范各式请求为 `Request`;
-  - 将元信息的获取与操作细粒度降至字段等级, 并使用技术方法尽可能的优化了字段缺失所带来的不便;
+  - 将各式元信息放缩为各个最小功能单元及其之间的组合, 不失表现性和可扩展性;
   - 使用各式如 `Broadcast Control` 的注入入口, 极大简化了接口的使用;
   - 复用来自 `Amnesia` 的通用接口;
 * And more...
 
+```py
+from creart import create
+from graia.amnesia.builtins.aiohttp import AiohttpService
+from graia.broadcast import Broadcast
+
+from avilla.core import Avilla, MessageReceived, Relationship, Selector
+from avilla.elizabeth.connection.config import WebsocketClientConfig
+from avilla.elizabeth.protocol import ElizabethProtocol
+
+broadcast = create(Broadcast)
+avilla = Avilla(broadcast, [
+    ElizabethProtocol(
+        WebsocketClientConfig("bot-account", "mah-verify-code")
+    )
+], [AiohttpService()])
+
+@broadcast.receiver(MessageReceived)
+async def on_message_received(event: MessageReceived, rs: Relationship):
+    if Selector.fragment().group("*").member("master-account").match(rs.ctx):
+        await rs.send_message("Hello, Avilla!")
+
+avilla.launch_manager.launch_blocking(loop=broadcast.loop)
+```
 
 ## 部件发布情况
 
