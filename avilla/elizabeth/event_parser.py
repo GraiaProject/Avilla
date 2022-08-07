@@ -56,9 +56,7 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
                 .land(protocol.land.name)
                 .group(str(raw["sender"]["group"]["id"]))
                 .member(str(raw["sender"]["id"])),
-                content=MessageChain(
-                    await protocol.message_deserializer.parse_sentence(protocol, message_chain)
-                ),
+                content=MessageChain(await protocol.message_deserializer.parse_sentence(protocol, message_chain)),
                 time=datetime.fromtimestamp(source.time),
                 reply=Selector()
                 .land(protocol.land.name)
@@ -87,14 +85,9 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
                 id=str(source.id),
                 mainline=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
                 sender=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
-                content=MessageChain(
-                    await protocol.message_deserializer.parse_sentence(protocol, message_chain)
-                ),
+                content=MessageChain(await protocol.message_deserializer.parse_sentence(protocol, message_chain)),
                 time=datetime.fromtimestamp(source.time),
-                reply=Selector()
-                .land(protocol.land.name)
-                .friend(str(raw["sender"]["id"]))
-                .message(str(quote.id))
+                reply=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])).message(str(quote.id))
                 if quote is not None
                 else None,
             ),
@@ -124,9 +117,7 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
                 .land(protocol.land.name)
                 .group(str(raw["sender"]["group"]["id"]))
                 .member(str(raw["sender"]["id"])),
-                content=MessageChain(
-                    await protocol.message_deserializer.parse_sentence(protocol, message_chain)
-                ),
+                content=MessageChain(await protocol.message_deserializer.parse_sentence(protocol, message_chain)),
                 time=datetime.fromtimestamp(source.time),
                 reply=Selector()
                 .land(protocol.land.name)

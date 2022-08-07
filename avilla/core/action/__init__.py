@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import inspect
 from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar
 
 from graia.amnesia.message import Element, MessageChain
 
+from avilla.core.action.extension import ActionExtension
 from avilla.core.context import ctx_relationship
 from avilla.core.elements import Text
 from avilla.core.message import Message
 from avilla.core.request import Request
+from avilla.core.typing import ActionExtensionImpl
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -23,10 +26,35 @@ class Action:
         ...
 
 
+_Ext = TypeVar("_Ext", bound=ActionExtension)
+
+
+def extension(extension_type: type[_Ext]):
+    def wrapper(func: ActionExtensionImpl):
+        func.__implemented_extension__ = extension_type
+        return func
+
+    return wrapper
+
+
 class StandardActionImpl:
     actions: ClassVar[list[type[Action]]] = []
     endpoint: ClassVar[str]
-    # extension_impls: list[type[ActionExtension]]
+    extension_impls: dict[type[ActionExtension], ActionExtensionImpl] = {}
+
+    def __init_subclass__(cls) -> None:
+        cls.extension_impls = {}
+        for parent in reversed(cls.__mro__):
+            if issubclass(parent, StandardActionImpl):
+                cls.extension_impls.update(parent.extension_impls)
+        for _, value in inspect.getmembers(cls):
+            ext_type = getattr(value, "__implemented_extension__", None)
+            if ext_type is not None:
+                cls.extension_impls[ext_type] = value
+
+    @classmethod
+    def is_implemented(cls, extension_type: type[ActionExtension]) -> bool:
+        return extension_type in cls.extension_impls
 
     @staticmethod
     async def get_execute_params(executor: RelationshipExecutor) -> dict[str, Any] | None:

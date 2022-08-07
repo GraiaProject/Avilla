@@ -31,7 +31,10 @@ def query(target: str):
 class AbstractQueryHandler:
     prefix: str | None
     queriers: ClassVar[
-        dict[str, Callable[[Self, Relationship, Selector, Callable[[Selector], bool]], AsyncGenerator[Selector, None]]]
+        dict[
+            str,
+            Callable[[Self, Relationship, Selector, Callable[[Selector], bool]], AsyncGenerator[Selector, None]],
+        ]
     ] = {}
 
     def __init_subclass__(cls, prefix: str | None = None):

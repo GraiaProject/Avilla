@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import ChainMap
 from contextlib import AsyncExitStack
 from inspect import isclass
 from typing import (
@@ -17,6 +18,7 @@ from typing_extensions import Unpack
 
 from avilla.core.account import AbstractAccount
 from avilla.core.action import Action, StandardActionImpl
+from avilla.core.action.extension import ActionExtension
 from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import ctx_relationship
 from avilla.core.metadata.model import (
@@ -41,14 +43,19 @@ class RelationshipExecutor(Generic[_A]):
     relationship: Relationship
     action: _A
     middlewares: list[ActionMiddleware]
+    extensions: dict[str, list[ActionExtension]]
+    _oneof_groups: set[str]
 
     _target: Selector | None = None
 
     def __init__(self, relationship: Relationship) -> None:
         self.relationship = relationship
-        self.middlewares = (
-            relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
+        self.middlewares = relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
+        self.extensions = {}
+        self._impl_cache = ChainMap(
+            self.relationship.protocol.extension_impls, self.relationship.avilla.extension_impls
         )
+        self._oneof_groups = set()
 
     def __await__(self):
         return self.__await_impl__().__await__()
@@ -59,7 +66,9 @@ class RelationshipExecutor(Generic[_A]):
                 await stack.enter_async_context(middleware.lifespan(self))
             for executor_class in self.relationship.protocol.action_executors:
                 # 需要注意: 我们直接从左往右迭代了, 所以建议 full > exist long > exist short > None
-                if executor_class.pattern is None or (self._target is not None and executor_class.pattern.match(self._target)):
+                if executor_class.pattern is None or (
+                    self._target is not None and executor_class.pattern.match(self._target)
+                ):
                     executor = executor_class(self.relationship.protocol)
                     implement = executor.get_implement(self.action)
                     if isclass(implement) and issubclass(implement, StandardActionImpl):
@@ -73,16 +82,41 @@ class RelationshipExecutor(Generic[_A]):
             else:
                 raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
 
+    def get_extension_impl(self, ext: ActionExtension, std: type[StandardActionImpl] | None):
+        if std is None:
+            return self._impl_cache.get(type(ext))
+        return self._impl_cache.copy().new_child(std.extension_impls).get(type(ext))
+
     async def execute_standard(self, std: type[StandardActionImpl]):
         for middleware in reversed(self.middlewares):
             await middleware.before_execute(self)
+
         params = await std.get_execute_params(self)
+
         for middleware in reversed(self.middlewares):
             await middleware.before_extensions_apply(self, params)
-        # TODO: extension apply
+
+        for group, extensions in self.extensions.items():
+            if group in self._oneof_groups:
+                for ext in extensions:
+                    if (impl := self.get_extension_impl(ext, std)) is not None:
+                        await impl(self, ext, params)
+                        break
+                else:
+                    raise NotImplementedError(
+                        f"No available extension impl found for {std.__name__} in group {group}:{extensions}"
+                    )
+            else:
+                for ext in extensions:
+                    impl = self.get_extension_impl(ext, std)
+                    if impl is None:
+                        raise NotImplementedError(f"No available extension impl found for {type(ext).__name__}")
+                    await impl(self, ext, params)
+
         for middleware in reversed(self.middlewares):
             await middleware.on_params_ready(self, params)
-        return std.unwarp_result(self, await self.relationship.current.call(std.endpoint,params))
+
+        return std.unwarp_result(self, await self.relationship.current.call(std.endpoint, params))
 
     def act(self, action: _A2) -> RelationshipExecutor[_A2]:
         self._target = action.set_default_target(self.relationship)
@@ -98,6 +132,12 @@ class RelationshipExecutor(Generic[_A]):
 
     def use(self, *middleware: ActionMiddleware):
         self.middlewares.extend(middleware)
+        return self
+
+    def ext(self, group: str, extensions: list[ActionExtension], *, oneof: bool = False):
+        self.extensions[group] = extensions
+        if oneof:
+            self._oneof_groups.add(group)
         return self
 
 
@@ -125,11 +165,7 @@ class RelationshipQuerier:
 
         return real_generator
 
-    async def generate_from_upper(
-        self,
-        depth: Selector,
-        upper: AsyncIterator[Selector] | None = None
-    ):
+    async def generate_from_upper(self, depth: Selector, upper: AsyncIterator[Selector] | None = None):
         depth_keys = list(depth.pattern.keys())
         if not depth_keys:
             return
@@ -147,7 +183,7 @@ class RelationshipQuerier:
             raise NotImplementedError(f"No querier found for {past}, {current} unimplemented")
         if upper is None:
             async for current_value in querier.queriers[current](
-                    querier, self.relationship, Selector().land(self.relationship.land), depth.match
+                querier, self.relationship, Selector().land(self.relationship.land), depth.match
             ):
                 yield current_value
             return
@@ -296,9 +332,7 @@ class Relationship:
         ...
 
     @overload
-    async def meta(
-        self, target: Any, operator: CellOf[Unpack[tuple[Any, ...]], _M], /, *, flush: bool = False
-    ) -> _M:
+    async def meta(self, target: Any, operator: CellOf[Unpack[tuple[Any, ...]], _M], /, *, flush: bool = False) -> _M:
         ...
 
     @overload
@@ -324,9 +358,7 @@ class Relationship:
                 modify = op
                 model = op.model
             else:
-                raise TypeError(
-                    f"{op_or_target} & {maybe_op} is not a supported metadata operation for rs.meta."
-                )
+                raise TypeError(f"{op_or_target} & {maybe_op} is not a supported metadata operation for rs.meta.")
 
             target = target or model.get_default_target(self)
 
@@ -344,9 +376,7 @@ class Relationship:
                     raise TypeError(f"Use rs.query for dynamic selector {target}!")
                 target_ref = target
             elif not isinstance(target, Selectable):
-                raise ValueError(
-                    f"{target} is not a supported target for rs.meta, which requires to be selectable."
-                )
+                raise ValueError(f"{target} is not a supported target for rs.meta, which requires to be selectable.")
             else:
                 target_ref = target.to_selector()
             if isinstance(target, Resource):

@@ -28,7 +28,7 @@ class ElizabethGroupActionExecutor(
                 "messageChain": message,
                 **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
             }
-        
+
         @staticmethod
         def unwrap_result(executor: RelationshipExecutor[MessageSend], result: Any) -> Any:
             return executor.action.target.mix("land.group.message", message=result["messageId"])
@@ -44,7 +44,7 @@ class ElizabethGroupActionExecutor(
                 "__method__": "post",
                 "target": int(action.message.pattern["message"]),
             }
-        
+
         @staticmethod
         def unwrap_result(executor: Any, result: Any) -> Any:
             return
@@ -67,7 +67,7 @@ class ElizabethFriendActionExecutor(
                 "messageChain": message,
                 **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
             }
-        
+
         @staticmethod
         def unwrap_result(executor: RelationshipExecutor[MessageSend], result: Any) -> Any:
             return executor.action.target.mix("land.friend.message", message=result["messageId"])
@@ -91,7 +91,7 @@ class ElizabethGroupMemberActionExecutor(
                 "messageChain": message,
                 **({"quote": action.reply.pattern["message"]} if action.reply is not None else {}),
             }
-        
+
         @staticmethod
         def unwrap_result(executor: RelationshipExecutor[MessageSend], result: Any) -> Any:
             return executor.action.target.mix("land.group.member.message", message=result["messageId"])

@@ -15,10 +15,12 @@ if TYPE_CHECKING:
 class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     account: AbstractAccount
     time: datetime
-    
+
     extra: dict[Any, Any]
 
-    def __init__(self, account: AbstractAccount, *, extra: dict[Any, Any] | None = None, time: datetime | None = None) -> None:
+    def __init__(
+        self, account: AbstractAccount, *, extra: dict[Any, Any] | None = None, time: datetime | None = None
+    ) -> None:
         self.account = account
         self.extra = extra or {}
         self.time = time or datetime.now()
@@ -30,6 +32,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
     def get_via(self) -> Selector | None:
         ...
+
 
 class MetadataModified(AvillaEvent):
     ctx: Selector
@@ -43,7 +46,7 @@ class MetadataModified(AvillaEvent):
         account: AbstractAccount,
         operator: Selector | None = None,
         time: datetime | None = None,
-        extra: dict[Any, Any] | None = None
+        extra: dict[Any, Any] | None = None,
     ):
         self.ctx = ctx
         self.modifies = modifies
@@ -70,6 +73,7 @@ class RelationshipCreated(AvillaEvent):
 
     def get_via(self) -> Selector | None:
         return self.via
+
 
 class RelationshipDestroyed(AvillaEvent):
     ctx: Selector

@@ -67,6 +67,4 @@ class ElizabethMemberMetadataSource(ProtocolMetadataSource["ElizabethProtocol"],
             )
         )["sign"]
 
-        return Summary(
-            target=target, source=self, content={"summary.name": name, "summary.description": sign}
-        )
+        return Summary(target=target, source=self, content={"summary.name": name, "summary.description": sign})

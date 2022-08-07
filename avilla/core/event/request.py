@@ -42,6 +42,7 @@ class RequestEvent(AvillaEvent):
 class RequestReceived(RequestEvent):
     pass
 
+
 class RequestAccepted(RequestEvent):
     pass
 

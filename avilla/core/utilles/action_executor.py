@@ -34,7 +34,12 @@ def action(*action_types: type[Action]):
 
 
 class ActionExecutor:
-    implements: ClassVar[dict[type[Action], type[StandardActionImpl] | Callable[[Self, Action, Relationship], Coroutine[None, None, Any]]]] = {}
+    implements: ClassVar[
+        dict[
+            type[Action],
+            type[StandardActionImpl] | Callable[[Self, Action, Relationship], Coroutine[None, None, Any]],
+        ]
+    ] = {}
     pattern: ClassVar[Selector | None] = None
     # 给外部调用 match
     # 如果是 None, 表示不对其做约束...并且适用于我们不知道 target 到底是什么的情况.

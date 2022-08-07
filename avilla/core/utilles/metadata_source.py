@@ -51,9 +51,7 @@ def fetch(
 
 
 @overload
-def fetch(
-    model_type: CellOf[Unpack[tuple], Meta]
-) -> Callable[[Fetcher[Source_T, Meta]], Fetcher[Source_T, Meta]]:
+def fetch(model_type: CellOf[Unpack[tuple], Meta]) -> Callable[[Fetcher[Source_T, Meta]], Fetcher[Source_T, Meta]]:
     ...
 
 

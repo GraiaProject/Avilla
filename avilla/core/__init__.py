@@ -14,6 +14,7 @@ from .action import RequestCancel as RequestCancel
 from .action import RequestIgnore as RequestIgnore
 from .action import RequestReject as RequestReject
 from .action import Result as Result
+from .action.middleware import ActionMiddleware as ActionMiddleware
 from .application import Avilla as Avilla
 from .context import ctx_avilla as ctx_avilla
 from .context import ctx_protocol as ctx_protocol
@@ -110,7 +111,6 @@ from .resource.local import LOCAL_PROVIDER as LOCAL_PROVIDER
 from .resource.local import LocalFileResource as LocalFileResource
 from .resource.local import LocalFileResourceProvider as LocalFileResourceProvider
 from .service import AvillaService as AvillaService
-from .action.middleware import ActionMiddleware as ActionMiddleware
 from .typing import Ensureable as Ensureable
 from .utilles.selector import DynamicSelector as DynamicSelector
 from .utilles.selector import Selectable as Selectable

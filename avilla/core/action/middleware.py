@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, AsyncContextManager
 if TYPE_CHECKING:
     from avilla.core.relationship import RelationshipExecutor
 
+
 class ActionMiddleware(abc.ABC):
     async def before_execute(self, executor: RelationshipExecutor) -> Any:
         ...
@@ -15,7 +16,7 @@ class ActionMiddleware(abc.ABC):
 
     async def on_params_ready(self, executor: RelationshipExecutor, params: dict[str, Any] | None) -> Any:
         ...
-    
+
     @abc.abstractmethod
     def lifespan(self, executor: RelationshipExecutor) -> AsyncContextManager:
         ...
