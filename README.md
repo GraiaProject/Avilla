@@ -61,14 +61,14 @@ avilla.launch_manager.launch_blocking(loop=broadcast.loop)
 
 ## 部件发布情况
 
-|   代号    |       协议       | 开发进度  |                           PyPI                            |                  来源                  |  维护者  |
-| :-------: | :--------------: | :-------: | :-------------------------------------------------------: | :------------------------------------: | :------: |
-|   Core    |        -         | **Alpha** |    [![image](https://img.shields.io/pypi/v/avilla-core)](https://pypi.org/project/avilla-core)    |       [avilla/core](avilla/core)       | Official |
-| Elizabeth | `mirai-api-http` |  **WIP**  | [![image](https://img.shields.io/pypi/v/avilla-elizabeth)](https://pypi.org/project/avilla-elizabeth)  |  [avilla/elizabeth](avilla/elizabeth)  | Official |
-|     -     |   `OneBot v11`   |  **WIP**  | [![image](https://img.shields.io/pypi/v/avilla-onebot-v11)](https://pypi.org/project/avilla-onebot-v11) | [avilla/onebot/v11](avilla/onebot/v11) | Official |
-|     -     |   `OneBot v12`   | **Draft** | [![image](https://img.shields.io/pypi/v/avilla-onebot-v12)](https://pypi.org/project/avilla-onebot-v12) | [avilla/onebot/v12](avilla/onebot/v12) | Official |
-|     -     |    `Telegram`    | **Draft** |  [![image](https://img.shields.io/pypi/v/avilla-telegram)](https://pypi.org/project/avilla-telegram)  |   [avilla/telegram](avilla/telegram)   |    -     |
-| Nightcord |  `Discord Bots`  |  **WIP**  | [![image](https://img.shields.io/pypi/v/avilla-nightcord)](https://pypi.org/project/avilla-nightcord)  |  [avilla/nightcord](avilla/nightcord)  | Official |
+|代号|协议|开发进度|PyPI|维护者|
+| :-: | :-: | :-: | :-: | :-: |
+|      [Core](avilla/core)      |        -         | **Alpha** |       [![image](https://img.shields.io/pypi/v/avilla-core)](https://pypi.org/project/avilla-core)       | Official |
+| [Elizabeth](avilla/elizabeth) | `mirai-api-http` |  **WIP**  |  [![image](https://img.shields.io/pypi/v/avilla-elizabeth)](https://pypi.org/project/avilla-elizabeth)  | Official |
+|    [-](avilla/onebot/v11)     |   `OneBot v11`   |  **WIP**  | [![image](https://img.shields.io/pypi/v/avilla-onebot-v11)](https://pypi.org/project/avilla-onebot-v11) | Official |
+|    [-](avilla/onebot/v12)     |   `OneBot v12`   | **Draft** | [![image](https://img.shields.io/pypi/v/avilla-onebot-v12)](https://pypi.org/project/avilla-onebot-v12) | Official |
+|     [-](avilla/telegram)      |    `Telegram`    | **Draft** |   [![image](https://img.shields.io/pypi/v/avilla-telegram)](https://pypi.org/project/avilla-telegram)   |    -     |
+| [Nightcord](avilla/nightcord) |  `Discord Bots`  | **Draft** |  [![image](https://img.shields.io/pypi/v/avilla-nightcord)](https://pypi.org/project/avilla-nightcord)  | Official |
 
 ## 我们的愿景
 
