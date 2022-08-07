@@ -9,15 +9,17 @@ from typing import (
     AsyncIterator,
     Callable,
     Generic,
+    Iterable,
     TypeVar,
     cast,
     overload,
 )
 
+from graia.amnesia.message import Element, MessageChain
 from typing_extensions import Unpack
 
 from avilla.core.account import AbstractAccount
-from avilla.core.action import Action, StandardActionImpl
+from avilla.core.action import Action, MessageSend, StandardActionImpl
 from avilla.core.action.extension import ActionExtension
 from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import ctx_relationship
@@ -32,6 +34,7 @@ from avilla.core.resource import Resource, get_provider
 from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
 
 if TYPE_CHECKING:
+    from avilla.core.message import Message
     from avilla.core.protocol import BaseProtocol
 
 
@@ -285,6 +288,11 @@ class Relationship:
             if provider is None:
                 raise ValueError(f"{type(resource)} is not a supported resource.")
             return await provider.fetch(resource, self)
+
+    def send_message(
+        self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
+    ):
+        return self.exec.act(MessageSend(message, reply=reply))
 
     @overload
     async def check(self) -> None:
