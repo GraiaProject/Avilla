@@ -29,7 +29,7 @@ _P = TypeVar("_P", bound="BaseProtocol")
 
 
 class AbstractEventParser(ABC, Generic[_P]):
-    event_parser: dict[str, Callable[[Self, _P, AbstractAccount, dict], Element | Coroutine[None, None, Element]]] = {}
+    event_parser: dict[str, Callable[[Self, _P, AbstractAccount, dict], Coroutine[None, None, AvillaEvent | None]]] = {}
 
     def __init_subclass__(cls) -> None:
         super().__init_subclass__()
@@ -56,4 +56,4 @@ class AbstractEventParser(ABC, Generic[_P]):
                 raise NotImplementedError(f"Event type {event_type} is not supported.")
             logger.warning(f"Event type {event_type} is not supported by {self.__class__.__name__}", raw)
             return
-        return await run_always_await(deserializer, self, protocol, account, raw)  # type: ignore
+        return await deserializer(self, protocol, account, raw)

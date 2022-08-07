@@ -218,7 +218,7 @@ class RelationshipQuerier:
 
     def query(self, selector: Selector) -> RelationshipQuerier:
         self.target = selector
-        return self  # type: ignore
+        return self
 
     __call__ = query
 

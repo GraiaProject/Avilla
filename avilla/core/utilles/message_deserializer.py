@@ -2,22 +2,13 @@ from __future__ import annotations
 
 import inspect
 from abc import ABC, abstractmethod
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ClassVar,
-    Coroutine,
-    Generic,
-    Iterable,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Generic, Iterable, TypeVar
 
 from graia.amnesia.message.element import Element
-from graia.broadcast.utilles import run_always_await
 from typing_extensions import Self
 
 from avilla.core.elements import Unknown
+from avilla.core.utilles import run_always_await
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -35,7 +26,7 @@ _P = TypeVar("_P", bound="BaseProtocol")
 
 
 class MessageDeserializer(ABC, Generic[_P]):
-    element_deserializer: dict[str, Callable[[Self, _P, dict], Element | Coroutine[None, None, Element]]] = {}
+    element_deserializer: dict[str, Callable[[Self, _P, dict], Coroutine[None, None, Element]] | Callable[[Self, _P, dict], Element]] = {}
     ignored_types: set[str] = set()
 
     def __init_subclass__(cls) -> None:

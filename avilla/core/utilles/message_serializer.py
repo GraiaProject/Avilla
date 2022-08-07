@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Coroutine, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, Coroutine, Generic, TypeVar
 
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Element
