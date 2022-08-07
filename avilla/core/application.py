@@ -92,7 +92,7 @@ class Avilla:
         self.action_middlewares = middlewares or []
         self.accounts = []
         self.resource_providers = {}
-        self.extension_impls = []
+        self.extension_impls = {}
         self.service = AvillaService(self)
 
         for service in services:
