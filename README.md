@@ -67,7 +67,7 @@ avilla.launch_manager.launch_blocking(loop=broadcast.loop)
 | Elizabeth | `mirai-api-http` |  **WIP**  | [![image](https://img.shields.io/pypi/v/avilla-elizabeth)](https://pypi.org/project/avilla-elizabeth)  |  [avilla/elizabeth](avilla/elizabeth)  | Official |
 |     -     |   `OneBot v11`   |  **WIP**  | [![image](https://img.shields.io/pypi/v/avilla-onebot-v11)](https://pypi.org/project/avilla-onebot-v11) | [avilla/onebot/v11](avilla/onebot/v11) | Official |
 |     -     |   `OneBot v12`   | **Draft** | [![image](https://img.shields.io/pypi/v/avilla-onebot-v12)](https://pypi.org/project/avilla-onebot-v12) | [avilla/onebot/v12](avilla/onebot/v12) | Official |
-|     -     |    `Telegram`    | **Draft** |  [![image](https://img.shields.io/pypi/v/avilla-telegram)](hhttps://pypi.org/project/avilla-telegram)  |   [avilla/telegram](avilla/telegram)   |    -     |
+|     -     |    `Telegram`    | **Draft** |  [![image](https://img.shields.io/pypi/v/avilla-telegram)](https://pypi.org/project/avilla-telegram)  |   [avilla/telegram](avilla/telegram)   |    -     |
 | Nightcord |  `Discord Bots`  |  **WIP**  | [![image](https://img.shields.io/pypi/v/avilla-nightcord)](https://pypi.org/project/avilla-nightcord)  |  [avilla/nightcord](avilla/nightcord)  | Official |
 
 ## 我们的愿景
