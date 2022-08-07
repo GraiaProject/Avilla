@@ -7,7 +7,6 @@ dependencies = [
     "graia-amnesia>=0.5.2",
     "loguru>=0.6.0",
     "yarl>=1.7.2",
-    "irc>=20.0.0",
     "launart>=0.4.2",
     "statv>=0.2.2",
     "aiohttp>=3.8.1",
@@ -50,7 +49,7 @@ includes = ["avilla/core", "avilla/core/py.typed"]
 
 [tool.mina.packages.core.project]
 name = "avilla-core"
-version = "1.0.0rc2"
+version = "1.0.0rc3"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
@@ -59,6 +58,7 @@ dependencies = [
     "graia-amnesia",
     "loguru",
     "yarl",
+    "launart"
 ]
 description = ""
 license = {text = "MIT"}
