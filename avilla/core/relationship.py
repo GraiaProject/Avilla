@@ -6,15 +6,14 @@ from typing import (
     TYPE_CHECKING,
     Any,
     AsyncIterator,
+    Callable,
     Generic,
-    Iterable,
     TypeVar,
     cast,
     overload,
-    Callable
 )
 
-from typing_extensions import TypeVarTuple, Unpack
+from typing_extensions import Unpack
 
 from avilla.core.account import AbstractAccount
 from avilla.core.action import Action, StandardActionImpl
@@ -186,13 +185,7 @@ class RelationshipQuerier:
 
 
 _T = TypeVar("_T")
-_TVT = TypeVarTuple("_TVT")
 _M = TypeVar("_M", bound=Metadata)
-
-
-async def _as_asynciter(iterable: Iterable[_T]) -> AsyncIterator[_T]:
-    for i in iterable:
-        yield i
 
 
 class Relationship:
@@ -243,9 +236,11 @@ class Relationship:
         rules = self.protocol.completion_rules.get(self.mainline.path) or {}
         rules = (self.protocol.completion_rules.get("_") or {}) | rules
         if selector.path in rules:
-            return selector.mixin(
-                rules[selector.path], self.mainline, self.ctx, *((self.via,) if self.via else ())
-            )
+            return selector.mixin(rules[selector.path], self.mainline, self.ctx, *((self.via,) if self.via else ()))
+
+        if "land" not in selector.pattern:
+            selector = selector.copy()
+            selector.pattern = {"land": self.land.name, **selector.pattern}
         return selector
 
     async def fetch(self, resource: Resource[_T]) -> _T:
@@ -270,6 +265,7 @@ class Relationship:
         # 因为有些操作**只能**在处于一个特定的 mainline 中才能完成, 这其中包含了访问并操作某些 target.
         # 在 strict 模式下, target 被视作包含 "仅在当前 mainline 中才能完成的操作" 的集合中,
         # 表示其访问或是操作必须以当前 mainline 甚至是 current(account) 为基础.
+        # 如果存在可能的 via, 则会先检查 via 的存在性, 因为 via 是维系这段关系的基础.
         ...
 
     async def check(self, target: Selector | None = None, strict: bool = False) -> bool | None:

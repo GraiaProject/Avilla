@@ -31,9 +31,7 @@ class Resource(Generic[T]):
 
     def to_selector(self) -> Selector:
         base_selector = self.mainline.copy() if self.mainline is not None else Selector()
-        return base_selector.appendix("resource_type", self.resource_type).appendix(
-            self.resource_type, self.id
-        )
+        return base_selector.appendix(self.resource_type, self.id)
 
 
 R = TypeVar("R", bound=Resource)
@@ -67,9 +65,7 @@ class ProtocolResourceProvider(Generic[_P], ResourceProvider):
         pass
 
     def get_metadata_resource(self):
-        return self.protocol.get_metadata_provider(
-            Selector().land(self.protocol.land.name).resource_type(self.get_resource_type())
-        )
+        return self.protocol.get_metadata_provider(f"land.{self.get_resource_type()}")
 
 
 def get_provider(

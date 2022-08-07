@@ -119,7 +119,7 @@ class Avilla:
         self.action_middlewares.remove(middleware)
 
     def get_resource_provider(self, resource: Selector) -> ResourceProvider | None:
-        return self.resource_providers.get(cast(str, resource.pattern["resource_type"]))
+        return self.resource_providers.get(cast(str, resource.latest_key))
 
     def add_resource_provider(self, provider: ResourceProvider, *resource_types: str):
         for resource_type in resource_types:

@@ -80,9 +80,11 @@ class BaseProtocol(metaclass=ABCMeta):
     async def serialize_message(self, message: MessageChain) -> Any:
         return await self.message_serializer.serialize_chain(self, message)
 
-    def get_metadata_provider(self, target: Selector) -> MetadataSource | None:
+    def get_metadata_provider(self, target: Selector | str) -> MetadataSource | None:
+        if isinstance(target, Selector):
+            target = target.path_without_land
         for source in self.metadata_providers:
-            if source.pattern == target.path_without_land:
+            if source.pattern == target:
                 return source(self)
 
     def post_event(self, event: AvillaEvent):
