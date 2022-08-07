@@ -145,6 +145,6 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                     if event is not None:
                         self.protocol.post_event(event)
                 await wait_fut(
-                    [asyncio.sleep(0.5), self.wait_for("finished", "elizabeth.service")],
+                    [asyncio.sleep(0.5), mgr.status.wait_for_sigexit()],
                     return_when=asyncio.FIRST_COMPLETED,
                 )

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
 
 ActionExtensionImpl = Callable[
-    [RelationshipExecutor, ActionExtension, dict[str, Any] | None], Coroutine[None, None, Any]
+    ["RelationshipExecutor", "ActionExtension", dict[str, Any] | None], Coroutine[None, None, Any]
 ]
 
 

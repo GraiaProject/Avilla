@@ -178,7 +178,7 @@ class WebsocketClientConnection(BaseWebsocketConnection[WebsocketClientConfig]):
                 str(URL(config.get_url("all")).with_query({"qq": config.account, "verifyKey": config.verify_key}))
             )
             await wait_fut(
-                [rider.use(self), self.wait_for("finished", "elizabeth.service")],
+                [rider.use(self), mgr.status.wait_for_sigexit()],
                 return_when=asyncio.FIRST_COMPLETED,
             )
 
