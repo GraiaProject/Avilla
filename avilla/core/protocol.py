@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 from graia.amnesia.message import MessageChain
 
 from avilla.core.account import AbstractAccount
+from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import ctx_avilla, ctx_protocol
 from avilla.core.event import AvillaEvent
 from avilla.core.metadata.source import MetadataSource
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.querier import ProtocolAbstractQueryHandler
 from avilla.core.resource import ProtocolResourceProvider, ResourceProvider
-from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.utilles.action_executor import ProtocolActionExecutor
 from avilla.core.utilles.event_parser import AbstractEventParser
 from avilla.core.utilles.message_deserializer import MessageDeserializer

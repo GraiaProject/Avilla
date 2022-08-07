@@ -10,6 +10,7 @@ from launart import Launart, Service
 from loguru import logger
 
 from avilla.core.account import AbstractAccount
+from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import get_current_avilla
 from avilla.core.dispatchers import (
     AvillaBuiltinDispatcher,
@@ -20,7 +21,6 @@ from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import ResourceProvider
 from avilla.core.service import AvillaService
-from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.utilles.selector import Selector
 
 AVILLA_ASCII_LOGO = cleandoc(
