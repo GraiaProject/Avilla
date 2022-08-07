@@ -155,6 +155,12 @@ class Selector:
         instance.pattern = self.pattern.copy()
         return instance
 
+    def as_dyn(self) -> DynamicSelector:
+        instance = DynamicSelector(mode=self.mode, path_excludes=self.path_excludes)
+        for k, v in self.pattern.items():
+            getattr(instance, k)(v)
+        return instance
+
     def set_referent(self, referent: Any) -> Self:
         self.referent = referent
         return self
