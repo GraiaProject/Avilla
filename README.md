@@ -79,8 +79,8 @@ avilla.launch_manager.launch_blocking(loop=broadcast.loop)
 
 <div align="center">
 
-星座的光芒是由一个个星点共同组成的, 任何优秀的作品都绝不会是一个人的功绩.
-而若是没有这些项目, Avilla 的实现就无从谈起.
+星座的光芒是由一个个星点共同组成的, 任何优秀的作品都绝不会是一个人的功绩.  
+而若是没有这些项目, Avilla 的实现就无从谈起.  
 排名不分顺序, 可能有许遗漏, 这里仅列出部分较为重要的项目.
 
 </div>
@@ -98,7 +98,12 @@ avilla.launch_manager.launch_blocking(loop=broadcast.loop)
   + [ `Broadcast Control` ](https://github.com/GraiaProject/BroadcastControl): 事件系统实现, 最为锋利的魔剑(Magic Sword).
   + [ `Ariadne` ](https://github.com/GraiaProject/Ariadne): 继承了前作的衣钵, 在 Avilla 尚未成熟之际撑起大梁的后续作品, 同样进行了可贵的创新.
 
+<div align="center">
+
 衷心感谢这些以及其他未被提及的项目.
+
+</div>
+
 
 ## 开源协议
 
