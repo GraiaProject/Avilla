@@ -61,7 +61,7 @@ class StandardActionImpl:
         ...
 
     @staticmethod
-    def unwarp_result(executor: RelationshipExecutor, result: Any) -> Any:
+    def unwrap_result(executor: RelationshipExecutor, result: Any) -> Any:
         return result
 
 

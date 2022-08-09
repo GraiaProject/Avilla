@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import inspect
 from abc import ABCMeta, abstractmethod
+from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, overload
 
 from typing_extensions import Self, TypeVarTuple, Unpack
 
@@ -100,9 +101,13 @@ class MetadataMCS(type):
 
 class Metadata(Generic[T], metaclass=MetadataMCS):
     _target: Any
+    _params: ClassVar[ContextVar[dict[str, Any] | None]]
     _source: MetadataSource
     _content: dict[str, Any]
     _modifies: MetadataModifies[T] | None = None
+
+    def __init_subclass__(cls) -> None:
+        cls._params = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
 
     def __init__(self, *, target: Any, source: MetadataSource, content: dict[str, Any] | None = None) -> None:
         self._target = target
@@ -123,6 +128,26 @@ class Metadata(Generic[T], metaclass=MetadataMCS):
     @classmethod
     def get_default_target(cls, relationship: Relationship) -> Selector | None:
         return relationship.ctx
+
+    @classmethod
+    def get_params(cls) -> dict[str, Any]:
+        return cls._params.get() or {}
+
+    @classmethod
+    def set_params(cls, params: dict[str, Any]):
+        target = cls._params.get()
+        if target is None:
+            target = {}
+            cls._params.set(target)
+        target.update(params)
+
+    @classmethod
+    def clear_params(cls) -> None:
+        cls._params.set(None)
+
+    @classmethod
+    def has_params(cls) -> bool:
+        return cls._params.get() is not None
 
 
 Ts = TypeVarTuple("Ts")
@@ -183,6 +208,13 @@ class CellOf(Generic[Unpack[TVT]]):
     def __eq__(self, o: object) -> bool:
         return isinstance(o, CellOf) and o.cells == self.cells
 
+    def clear_params(self) -> None:
+        for cell in self.cells:
+            cell.clear_params()
+
+    def has_params(self) -> bool:
+        return any(cell.has_params() for cell in self.cells)
+
 
 _DeriveBack = CellOf[Unpack[tuple[Any, ...]], _M_k]
 
@@ -223,3 +255,10 @@ class CellCompose(Generic[Unpack[TVT]]):
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, CellCompose) and o.cells == self.cells
+
+    def clear_params(self) -> None:
+        for cell in self.cells:
+            cell.clear_params()
+
+    def has_params(self) -> bool:
+        return any(cell.has_params() for cell in self.cells)

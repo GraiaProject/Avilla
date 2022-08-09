@@ -119,7 +119,7 @@ class RelationshipExecutor(Generic[_A]):
         for middleware in reversed(self.middlewares):
             await middleware.on_params_ready(self, params)
 
-        return std.unwarp_result(self, await self.relationship.current.call(std.endpoint, params))
+        return std.unwrap_result(self, await self.relationship.current.call(std.endpoint, params))
 
     def act(self, action: _A2) -> RelationshipExecutor[_A2]:
         self._target = action.set_default_target(self.relationship)
@@ -377,7 +377,7 @@ class Relationship:
             if result := self.cache.get("meta", {}).get(target, {}).get(op, None):
                 if flush:
                     del self.cache["meta"][target][op]
-                else:
+                elif not model.has_params():
                     return result
             if isinstance(target, Selector):
                 if isinstance(target, DynamicSelector):
@@ -406,6 +406,7 @@ class Relationship:
 
             if modify is None:
                 result = await source.fetch(target, model)
+                model.clear_params()
                 self.cache.setdefault("meta", {}).setdefault(target, {})[op] = result
                 return result
-            return cast(_T, await source.modify(target, cast(MetadataModifies[Selector], modify)))
+            return await source.modify(target, cast(MetadataModifies[Selector], modify))
