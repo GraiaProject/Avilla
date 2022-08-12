@@ -1,129 +1,87 @@
 from __future__ import annotations
 
-import inspect
-from abc import ABCMeta, abstractmethod
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, overload
+from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
 
 if TYPE_CHECKING:
-    from avilla.core.metadata.source import MetadataSource
     from avilla.core.relationship import Relationship
     from avilla.core.utilles.selector import Selector
 
 T = TypeVar("T")  # 返回值
 
-
-@dataclass
-class MetadataModifies(Generic[T]):
-    target: Any
-    model: type[Metadata]
-    modified: list[str]
-    past: dict[str, Any]
-    current: dict[str, Any]
-
-
-M = TypeVar("M", bound=MetadataModifies)
-
-
-class MetaField:
-    id: str
-
-    def __init__(self, id: str) -> None:
-        self.id = id
-
-    def __get__(self, instance: Metadata | None, owner: type[Metadata]) -> Any:
-        # sourcery skip: assign-if-exp, reintroduce-else
-        if instance is None:
-            return self
-        return instance._content[self.id]
-
-    def __set__(self, instance: Metadata, value: Any) -> None:
-        modifies = instance._modifies
-        if modifies is None:
-            modifies = MetadataModifies(instance, instance.__class__, [], {}, {})
-        modifies.modified.append(self.id)
-        modifies.past[self.id] = instance._content[self.id]
-        modifies.current[self.id] = value
-        instance._content[self.id] = value
-
-
-def meta_field(id: str) -> Any:
-    return MetaField(id)
-
-
 _Meta_A = TypeVar("_Meta_A", bound="Metadata")
 
 _Meta_B = TypeVar("_Meta_B", bound="Metadata")
 
-
 TVT = TypeVarTuple("TVT")
 
-# TODO: add params
 
 
 class MetadataMCS(type):
     @overload
     def __rshift__(cls: type[_Meta_A], other: type[_Meta_B]) -> CellOf[_Meta_A, _Meta_B]:
+        # sourcery skip: instance-method-first-arg-name
         ...
 
     @overload
     def __rshift__(cls: type[_Meta_A], other: CellOf[Unpack[TVT]]) -> CellOf[_Meta_A, Unpack[TVT]]:
+        # sourcery skip: instance-method-first-arg-name
         ...
 
     def __rshift__(cls: Any, other: type[Metadata] | CellOf) -> CellOf:
+        # sourcery skip: instance-method-first-arg-name
         cells = (cls, other) if isinstance(other, type) else (cls, *other.cells)
         return CellOf(cells)
 
     @overload
     def __add__(cls: type[_Meta_A], other: type[_M]) -> CellCompose[_Meta_A, _M]:
+        # sourcery skip: instance-method-first-arg-name
         ...
 
     @overload
     def __add__(cls: type[_Meta_A], other: _DeriveBack[_M_k]) -> CellCompose[_Meta_A, _M_k]:
+        # sourcery skip: instance-method-first-arg-name
         ...
 
     @overload
     def __add__(cls: type[_Meta_A], other: CellCompose[Unpack[Ts]]) -> CellCompose[_Meta_A, Unpack[Ts]]:
+        # sourcery skip: instance-method-first-arg-name
         ...
 
     def __add__(cls: Any, other: type[Metadata] | CellOf | CellCompose) -> CellCompose:
+        # sourcery skip: instance-method-first-arg-name
         cells: tuple[type[Metadata] | CellOf, ...] = (
             (cls, other) if isinstance(other, (type, CellOf)) else (cls, *other.cells)
         )
         return CellCompose(cells)
 
     def __repr__(cls) -> str:
+        # sourcery skip: instance-method-first-arg-name
         return cls.__name__
 
 
+METADATA_PARAMS_CTX: WeakKeyDictionary[type[Metadata], ContextVar[dict[str, Any] | None]] = WeakKeyDictionary()
+
+@dataclass
 class Metadata(Generic[T], metaclass=MetadataMCS):
-    _target: Any
-    _params: ClassVar[ContextVar[dict[str, Any] | None]]
-    _source: MetadataSource
-    _content: dict[str, Any]
-    _modifies: MetadataModifies[T] | None = None
-
-    def __init_subclass__(cls) -> None:
-        cls._params = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
-
-    def __init__(self, *, target: Any, source: MetadataSource, content: dict[str, Any] | None = None) -> None:
-        self._target = target
-        self._source = source
-        self._content = content or {}
-
-    def modifies(self) -> MetadataModifies[T] | None:
-        return self._modifies
+    target: Any
+    describe: type[Self] | CellOf  # CellCompose 的行为和单次的行为一样.
 
     @classmethod
-    def fields(cls) -> list[MetaField]:
-        return [v for _, v in inspect.getmembers(cls, lambda x: isinstance(x, MetaField))]
+    @property
+    def _param_ctx(cls):
+        return METADATA_PARAMS_CTX[cls]
 
-    def __repr__(self) -> str:
-        values = ", ".join(f"{k}={repr(v)}" for k, v in self._content.items() if not k.startswith("_"))
-        return f"{self.__class__.__name__}({values})"
+    def __init_subclass__(cls) -> None:
+        METADATA_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
+
+    def __init__(self, *, target: Any, describe: type[Self] | CellOf) -> None:
+        self._target = target
+        self._describe = describe
 
     @classmethod
     def get_default_target(cls, relationship: Relationship) -> Selector | None:
@@ -131,23 +89,23 @@ class Metadata(Generic[T], metaclass=MetadataMCS):
 
     @classmethod
     def get_params(cls) -> dict[str, Any]:
-        return cls._params.get() or {}
+        return cls._param_ctx.get() or {}
 
     @classmethod
     def set_params(cls, params: dict[str, Any]):
-        target = cls._params.get()
+        target = cls._param_ctx.get()
         if target is None:
             target = {}
-            cls._params.set(target)
+            cls._param_ctx.set(target)
         target.update(params)
 
     @classmethod
     def clear_params(cls) -> None:
-        cls._params.set(None)
+        cls._param_ctx.set(None)
 
     @classmethod
     def has_params(cls) -> bool:
-        return cls._params.get() is not None
+        return cls._param_ctx.get() is not None
 
 
 Ts = TypeVarTuple("Ts")

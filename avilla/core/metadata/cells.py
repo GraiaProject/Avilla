@@ -3,46 +3,54 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
-from .model import Metadata, meta_field
+from .model import Metadata
 
 
+@dataclass
 class Count(Metadata):
-    current: int = meta_field("count.current")
-    max: int | None = meta_field("count.max")
+    current: int
+    max: int
 
 
+@dataclass
 class Summary(Metadata):
-    name: str = meta_field("summary.name")
-    description: str | None = meta_field("summary.description")
+    name: str
+    description: str | None
 
 
+@dataclass
 class MuteInfo(Metadata):
-    muted: bool = meta_field("mute.muted")
-    duration: timedelta = meta_field("mute.duration")
+    muted: bool
+    duration: timedelta
 
 
+@dataclass
 class BanInfo(Metadata):
-    banned: bool = meta_field("ban.banned")
-    duration: timedelta = meta_field("ban.duration")
+    banned: bool
+    duration: timedelta
 
 
+@dataclass
 class Privilege(Metadata):
-    available: bool = meta_field("privilege.available")
-    effective: bool = meta_field("privilege.effective")
+    available: bool
+    effective: bool
 
 
+@dataclass
 class Nick(Metadata):
-    name: str = meta_field("nick.name")
-    nickname: str = meta_field("nick.nickname")
-    badge: str | None = meta_field("nick.badge")
+    name: str
+    nickname: str
+    badge: str | None
 
 
+@dataclass
 class Reason(Metadata):
-    content: str = meta_field("reason")
+    content: str
 
 
+@dataclass
 class Comment(Metadata):
-    content: str = meta_field("comment")
+    content: str
 
 
 @dataclass
@@ -51,8 +59,9 @@ class QuestionItem:
     content: str
 
 
+@dataclass
 class Questions(Metadata):
-    items: list[QuestionItem] = meta_field("questions")
+    items: list[QuestionItem]
 
 
 @dataclass
@@ -61,5 +70,6 @@ class AnswerItem:
     content: str
 
 
+@dataclass
 class Answers(Metadata):
-    items: list[AnswerItem] = meta_field("answers")
+    items: list[AnswerItem]
