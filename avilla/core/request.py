@@ -16,15 +16,15 @@ class RequestTrait(Trait):
     @TargetTraitCall().bound
     async def accept(self):
         ...
-    
+
     @TargetTraitCall().bound
     async def reject(self):
         ...
-    
+
     @TargetTraitCall().bound
     async def cancel(self):
         ...
-    
+
     @TargetTraitCall().bound
     async def ignore(self):
         ...

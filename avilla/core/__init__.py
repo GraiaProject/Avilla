@@ -96,7 +96,8 @@ from .protocol import BaseProtocol as BaseProtocol
 from .querier import AbstractQueryHandler as AbstractQueryHandler
 from .querier import ProtocolAbstractQueryHandler as ProtocolAbstractQueryHandler
 from .relationship import Relationship as Relationship
-from .relationship import RelationshipExecutor as RelationshipExecutor
+
+# from .relationship import RelationshipExecutor as RelationshipExecutor
 from .request import Request as Request
 from .resource import ProtocolResourceProvider as ProtocolResourceProvider
 from .resource import Resource as Resource

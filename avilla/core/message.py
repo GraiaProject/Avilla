@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 class MessageTrait(Trait):
     @TargetTraitCall().bound
     async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:
-        # TODO: rs.send_message handle "MessageChain | str | Iterable[str | Element]"
         ...
 
     @TraitCall().bound

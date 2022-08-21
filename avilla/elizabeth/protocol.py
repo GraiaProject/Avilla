@@ -5,19 +5,12 @@ from typing import ClassVar
 from avilla.core.application import Avilla
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
-from avilla.core.querier import ProtocolAbstractQueryHandler
-from avilla.core.resource import ProtocolResourceProvider
+from avilla.core.traitof.context import wrap_namespace
 from avilla.core.utilles.selector import Selector
-from avilla.elizabeth.action_executor import (
-    ElizabethFriendActionExecutor,
-    ElizabethGroupActionExecutor,
-    ElizabethGroupMemberActionExecutor,
-)
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.event_parser import ElizabethEventParser
 from avilla.elizabeth.message_deserializer import ElizabethMessageDeserializer
 from avilla.elizabeth.message_serializer import ElizabethMessageSerializer
-from avilla.elizabeth.query import ElizabethGroupQuery, ElizabethRootQuery
 from avilla.elizabeth.service import ElizabethService
 
 
@@ -37,6 +30,7 @@ class ElizabethProtocol(BaseProtocol):
     event_parser = ElizabethEventParser()
     message_serializer = ElizabethMessageSerializer()
     message_deserializer = ElizabethMessageDeserializer()
+    """
     action_executors = [
         ElizabethGroupActionExecutor,
         ElizabethFriendActionExecutor,
@@ -66,7 +60,10 @@ class ElizabethProtocol(BaseProtocol):
         }
         # TODO: Fill more.
         # UPSTREAM: QQ Channel
-    }
+    }"""
+
+    with wrap_namespace() as impl_namespace:
+        import avilla.elizabeth.impl.group as _
 
     service: ElizabethService
 

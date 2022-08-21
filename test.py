@@ -1,4 +1,6 @@
+import asyncio
 import sys
+from avilla.core.message import Message
 from avilla.elizabeth.connection.config import WebsocketClientConfig
 
 from creart import create
@@ -41,12 +43,12 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         # await rs.exec(MessageSend([
         #    "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
         # ]))
-        t = rs.complete(Selector().friend("1846913566"))
-        print(t)
-        rs2 = await account.get_relationship(t)
-        await rs2.exec(
-            MessageSend(["Hello, Avilla!", Picture(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))])
-        )
+        # t = rs.complete(Selector().friend("1846913566"))
+        # print(t)
+        # rs2 = await account.get_relationship(t)
+        r = await rs.send_message("Hello, Avilla!")
+        await asyncio.sleep(5)
+        c = rs.cast(Message)
         # print(rs.complete(DynamicSelector().group("*")))
         # async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
         #    print(i)

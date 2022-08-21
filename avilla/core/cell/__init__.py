@@ -36,9 +36,11 @@ class CellMeta(type):
         cells = (cls, other) if isinstance(other, type) else (cls, *other.cells)
         return CellOf(cells)
 
+    """
     def __repr__(cls) -> str:
         # sourcery skip: instance-method-first-arg-name
         return cls.__name__
+    """
 
 
 METACELL_PARAMS_CTX: WeakKeyDictionary[type[Cell], ContextVar[dict[str, Any] | None]] = WeakKeyDictionary()

@@ -8,7 +8,7 @@ from avilla.core.elements import Audio, Picture, Notice, NoticeAll
 from avilla.core.utilles.message_deserializer import MessageDeserializer, deserializer
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.element import FlashImage
-from avilla.elizabeth.resource import ElizabethAudioResource, ElizabethImageResource
+from avilla.elizabeth._resource import ElizabethAudioResource, ElizabethImageResource
 
 if TYPE_CHECKING:
     from .protocol import ElizabethProtocol

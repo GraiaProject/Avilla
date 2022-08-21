@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Hashable
+from typing import TYPE_CHECKING, Hashable
 
-from avilla.core.cell import Cell, CellOf
-from avilla.core.traitof import TraitCall
+if TYPE_CHECKING:
+    from avilla.core.cell import Cell, CellOf
+    from avilla.core.traitof import TraitCall
 
 
 class ArtifactSignature:

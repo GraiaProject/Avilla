@@ -19,13 +19,16 @@ class ElizabethAccount(AbstractAccount):
         # TODO: 对象存在性检查
         if "land" not in target:
             target = Selector().mixin(f"land.{target.path}", target)
-        if target.path in {"land.group", "land.friend"}:
-            return Relationship(self.protocol, target, target, self)
+        if target.path == "land.group":
+            return Relationship(self.protocol, target, target, target.copy().member(self.id), self)
+        elif target.path == "land.friend":
+            return Relationship(self.protocol, target, target, self.to_selector(), self)
         elif target.path == "land.group.member":
             return Relationship(
                 self.protocol,
                 target,
                 Selector().land(self.land.name).group(target.pattern["group"]),
+                Selector().land(self.land.name).group(target.pattern["group"]).member(self.id),
                 self,
             )
         else:

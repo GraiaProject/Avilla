@@ -3,12 +3,15 @@ from __future__ import annotations
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from avilla.core.traitof.signature import ArtifactSignature
 
+if TYPE_CHECKING:
+    from avilla.core.cell import Cell, CellOf
 
-@dataclass
+
+@dataclass(unsafe_hash=True)
 class Scope:
     mainline: str | None = None
     self: str | None = None
@@ -22,6 +25,7 @@ GLOBAL_SCOPE = Scope()
 
 ctx_scope: ContextVar[Scope] = ContextVar("ctx_scope", default=GLOBAL_SCOPE)
 ctx_prefix: ContextVar[str] = ContextVar("ctx_prefix", default="")
+ctx_envpath: ContextVar[type[Cell] | CellOf | None] = ContextVar("ctx_envpath", default=None)
 
 
 @contextmanager
@@ -50,11 +54,18 @@ def prefix(pattern: str):
 
 
 @contextmanager
-def wrap_namespace():
-    namespace: Namespace = {}
+def wrap_namespace(initial: Namespace | None = None):
+    namespace: Namespace = initial or {}
     token = ctx_namespace.set(namespace)
     yield namespace
     ctx_namespace.reset(token)
+
+
+@contextmanager
+def wrap_default_path(path: type[Cell] | CellOf):
+    token = ctx_envpath.set(path)
+    yield
+    ctx_envpath.reset(token)
 
 
 def raise_for_invalid_namespace(exception: type[Exception] = LookupError):

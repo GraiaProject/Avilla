@@ -50,6 +50,7 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
             raise ValueError("Source not found.")
         return MessageReceived(
             message=Message(
+                describe=Message,
                 id=str(source.id),
                 mainline=Selector().land(protocol.land.name).group(str(raw["sender"]["group"]["id"])),
                 sender=Selector()
@@ -82,6 +83,7 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
             raise ValueError("Source not found.")
         return MessageReceived(
             message=Message(
+                describe=Message,
                 id=str(source.id),
                 mainline=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
                 sender=Selector().land(protocol.land.name).friend(str(raw["sender"]["id"])),
@@ -108,6 +110,7 @@ class ElizabethEventParser(AbstractEventParser["ElizabethProtocol"]):
             raise ValueError("Source not found.")
         return MessageReceived(
             message=Message(
+                describe=Message,
                 id=str(source.id),
                 mainline=Selector()
                 .land(protocol.land.name)

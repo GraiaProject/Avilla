@@ -70,9 +70,9 @@ class Avilla:
     broadcast: Broadcast
     launch_manager: Launart
     protocols: list[BaseProtocol]
-    #action_middlewares: list[ActionMiddleware]
-    #resource_providers: dict[str, ResourceProvider]
-    #extension_impls: dict[type[ActionExtension], ActionExtensionImpl]
+    # action_middlewares: list[ActionMiddleware]
+    # resource_providers: dict[str, ResourceProvider]
+    # extension_impls: dict[type[ActionExtension], ActionExtensionImpl]
     accounts: list[AbstractAccount]
     service: AvillaService
     global_artifacts: dict[ArtifactSignature, Any]
@@ -93,10 +93,10 @@ class Avilla:
         self.launch_manager = launch_manager or Launart()
         self.protocols = protocols
         self._protocol_map = {type(i): i for i in protocols}
-        #self.action_middlewares = middlewares or []
+        # self.action_middlewares = middlewares or []
         self.accounts = []
-        #self.resource_providers = {}
-        #self.extension_impls = {}
+        # self.resource_providers = {}
+        # self.extension_impls = {}
         self.global_artifacts = {}
         self.service = AvillaService(self)
 
