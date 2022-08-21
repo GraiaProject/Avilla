@@ -4,7 +4,6 @@ from abc import ABCMeta, abstractmethod
 from contextlib import ExitStack
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, cast
-from avilla.core.traitof.context import Namespace
 
 from graia.amnesia.message import MessageChain
 
@@ -16,6 +15,7 @@ from avilla.core.event import AvillaEvent
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.querier import ProtocolAbstractQueryHandler
 from avilla.core.resource import ProtocolResourceProvider, ResourceProvider
+from avilla.core.traitof.context import Namespace
 from avilla.core.typing import ActionExtensionImpl
 from avilla.core.utilles.action_executor import ProtocolActionExecutor
 from avilla.core.utilles.event_parser import AbstractEventParser

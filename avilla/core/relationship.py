@@ -15,11 +15,6 @@ from typing import (
     cast,
     overload,
 )
-from avilla.core.traitof import Trait, TraitOf
-
-from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
-
-from .traitof.signature import ArtifactSignature, Pull
 
 from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Unpack
@@ -28,15 +23,15 @@ from avilla.core.account import AbstractAccount
 from avilla.core.action import Action, MessageSend, StandardActionImpl
 from avilla.core.action.extension import ActionExtension
 from avilla.core.action.middleware import ActionMiddleware
+from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
-from avilla.core.cell import (
-    CellOf,
-    Cell,
-    Ts,
-)
-from avilla.core.resource import Resource, get_provider
-from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
 from avilla.core.message import Message
+from avilla.core.resource import Resource, get_provider
+from avilla.core.traitof import Trait, TraitOf
+from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
+from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
+
+from .traitof.signature import ArtifactSignature, Pull
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -306,6 +301,10 @@ class Relationship:
     def is_resource(self) -> bool:
         # TODO: Auto inference for implementations of a "ctx"
         ...
+
+    @property
+    def app_current(self) -> Relationship | None:
+        return ctx_relationship.get(None)
 
     """
     @property

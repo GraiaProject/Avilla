@@ -15,10 +15,10 @@ from typing import (
 from typing_extensions import Unpack
 
 from avilla.core.traitof import TargetTraitCall
-from avilla.core.traitof.context import ctx_envpath
 from avilla.core.traitof.recorder import Recorder
-from avilla.core.traitof.signature import CompleteRule, EventKeyGetter, ImplDefaultTarget
+from avilla.core.traitof.signature import CompleteRule, EventKeyGetter
 from avilla.core.traitof.signature import Impl as _Impl
+from avilla.core.traitof.signature import ImplDefaultTarget
 from avilla.core.traitof.signature import Pull as _Pull
 from avilla.core.traitof.signature import ResourceFetch as _ResourceFatch
 from avilla.core.utilles.selector import Selector
@@ -42,16 +42,16 @@ class ImplRecorder(Recorder, Generic[_P, _T]):
 
     @overload
     def __new__(
-        cls, trait_call: TargetTraitCall[_P, _T], path: type[Cell] | CellOf | None = None
+        cls, path: type[Cell] | CellOf | None, trait_call: TargetTraitCall[_P, _T]
     ) -> ImplRecorder[Concatenate[Selector, _P], _T]:
         ...
 
     @overload
-    def __new__(cls, trait_call: TraitCall[_P, _T], path: type[Cell] | CellOf | None = None) -> ImplRecorder[_P, _T]:
+    def __new__(cls, path: type[Cell] | CellOf | None, trait_call: TraitCall[_P, _T]) -> ImplRecorder[_P, _T]:
         ...
 
     def __new__(
-        cls, trait_call: TraitCall[_P, _T], path: type[Cell] | CellOf | None = None
+        cls, path: type[Cell] | CellOf | None, trait_call: TraitCall[_P, _T]
     ) -> ImplRecorder[_P, _T] | ImplRecorder[Concatenate[Selector, _P], _T]:
         self = super().__new__(cls)
         self.path = path
@@ -63,7 +63,7 @@ class ImplRecorder(Recorder, Generic[_P, _T]):
         return self
 
     def signature(self):
-        return _Impl(target=self.target, path=self.path or ctx_envpath.get(), trait_call=self.trait_call)  # type: ignore
+        return _Impl(target=self.target, path=self.path, trait_call=self.trait_call)  # type: ignore
 
     def __call__(self, content: Callable[Concatenate[Relationship, _P], Awaitable[_T]]):
         return super().__call__(content)
@@ -125,15 +125,12 @@ class ImplDefaultTargetRecorder(Recorder):
     # trait_call: TraitCall
     path: type[Cell] | CellOf | None = None
 
-    def __init__(self, trait_call: TraitCall):
+    def __init__(self, path: type[Cell] | CellOf | None, trait_call: TraitCall):
+        self.path = path
         self.trait_call = trait_call
 
-    def of(self, path: type[Cell] | CellOf):
-        self.path = path
-        return self
-
     def signature(self):
-        return ImplDefaultTarget(self.path or ctx_envpath.get(), self.trait_call)
+        return ImplDefaultTarget(self.path, self.trait_call)
 
     def __call__(self, content: Callable[[Relationship], Selector]):
         return super().__call__(content)

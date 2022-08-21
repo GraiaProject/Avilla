@@ -25,7 +25,6 @@ GLOBAL_SCOPE = Scope()
 
 ctx_scope: ContextVar[Scope] = ContextVar("ctx_scope", default=GLOBAL_SCOPE)
 ctx_prefix: ContextVar[str] = ContextVar("ctx_prefix", default="")
-ctx_envpath: ContextVar[type[Cell] | CellOf | None] = ContextVar("ctx_envpath", default=None)
 
 
 @contextmanager
@@ -61,14 +60,7 @@ def wrap_namespace(initial: Namespace | None = None):
     ctx_namespace.reset(token)
 
 
-@contextmanager
-def wrap_default_path(path: type[Cell] | CellOf):
-    token = ctx_envpath.set(path)
-    yield
-    ctx_envpath.reset(token)
-
-
-def raise_for_invalid_namespace(exception: type[Exception] = LookupError):
+def raise_for_no_namespace(exception: type[Exception] = LookupError):
     if ctx_namespace.get(None) is None:
         raise exception("required available namespace to initize")
 

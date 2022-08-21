@@ -1,8 +1,14 @@
 # One CLI to format the code tree - https://github.com/numtide/treefmt
 
-[formatter.python]
+[formatter.python-black]
 # Formatter to run
 command = "black"
 options = []
 includes = [ "*.py" ]
 excludes = []
+
+[formatter.python-isort]
+command = "isort"
+options = ["--profile black"]
+includes = [ "*.py" ]
+excludes = [ "avilla/core/__init__.py" ]

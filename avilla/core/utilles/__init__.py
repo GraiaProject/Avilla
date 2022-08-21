@@ -1,7 +1,5 @@
 import inspect
-
 from typing import Awaitable, Callable, Coroutine, TypeVar, overload
-
 
 T = TypeVar("T")
 

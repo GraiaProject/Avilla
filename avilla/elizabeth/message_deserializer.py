@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message.element import Text
 
-from avilla.core.elements import Audio, Picture, Notice, NoticeAll
+from avilla.core.elements import Audio, Notice, NoticeAll, Picture
 from avilla.core.utilles.message_deserializer import MessageDeserializer, deserializer
 from avilla.core.utilles.selector import Selector
-from avilla.elizabeth.element import FlashImage
 from avilla.elizabeth._resource import ElizabethAudioResource, ElizabethImageResource
+from avilla.elizabeth.element import FlashImage
 
 if TYPE_CHECKING:
     from .protocol import ElizabethProtocol

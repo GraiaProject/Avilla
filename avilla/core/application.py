@@ -13,10 +13,7 @@ from avilla.core.account import AbstractAccount
 from avilla.core.action.extension import ActionExtension
 from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import get_current_avilla
-from avilla.core.dispatchers import (
-    AvillaBuiltinDispatcher,
-    RelationshipDispatcher,
-)
+from avilla.core.dispatchers import AvillaBuiltinDispatcher, RelationshipDispatcher
 from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import ResourceProvider

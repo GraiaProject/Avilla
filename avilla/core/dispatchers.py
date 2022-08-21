@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 
 from avilla.core.account import AbstractAccount
+from avilla.core.cell import Cell
 from avilla.core.context import ctx_protocol, ctx_relationship
 from avilla.core.event import AvillaEvent
-from avilla.core.cell import Cell
 from avilla.core.relationship import Relationship
 
 if TYPE_CHECKING:

@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING, Any
 from graia.broadcast.entities.event import Dispatchable
 
 if TYPE_CHECKING:
-    from ..cell import CellOf, Cell
     from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
+
+    from ..cell import Cell, CellOf
 
 
 class AvillaEvent(Dispatchable, metaclass=ABCMeta):

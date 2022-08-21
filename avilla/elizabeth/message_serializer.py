@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from graia.amnesia.message.element import Text
 
 from avilla.core.context import ctx_relationship
-from avilla.core.elements import Audio, Picture, Notice, NoticeAll
+from avilla.core.elements import Audio, Notice, NoticeAll, Picture
 from avilla.core.resource import get_provider
 from avilla.core.utilles.message_serializer import MessageSerializer, element
 from avilla.elizabeth.element import FlashImage

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+import typing
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -14,7 +15,6 @@ from typing import (
     cast,
     overload,
 )
-import typing
 
 from typing_extensions import Self
 
