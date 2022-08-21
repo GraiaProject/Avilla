@@ -22,18 +22,16 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 
 > 项目名称取自日本轻小说 《魔女之旅》 的角色 "艾维莉亚(Avilla)".
 
-## Roadmap
+## Features
 
-* `Avilla Protocol` : 对各式常见的行为进行抽象, 并通过可扩展的模型, 实现尽可能的功能可迁移性.
-  - 使用 [Launart](https://github.com/GraiaProject/Launart) 调度启动任务与应用实例的生命周期;
-  - 创新性的 Relationship 模型, 携带有进行任意操作所需的基本信息, 规范化行为模式与实现的编写;
-  - 使用 `Selector`, 实现了信息与对象本身的解耦, 减少平台实现的负担;
-  - 规范化的 `Resource` 抽象优化了对不同资源与资源类型的操作, 尤其是其内容的获取与其元信息的操作;
-  - 规范各式请求为 `Request`;
-  - 将各式元信息放缩为各个最小功能单元及其之间的组合, 不失表现性和可扩展性;
-  - 使用各式如 `Broadcast Control` 的注入入口, 极大简化了接口的使用;
-  - 复用来自 `Amnesia` 的通用接口;
-* And more...
+ - 原生跨平台: 开创性的 Relationship 操作模型, 配合最小功能单元, 行为扩展等诸多独特设计, 无论是是简单的消息收发还是平台设计的独特交互, 都能得心应手.
+ - 原生多账号: Avilla 在设计之初, 就考虑了同时管理多个账号, 甚至是多个平台上的多个账号. 账号管理本应如此简单便捷而收放自如.
+ - 一次编写, 多平台可用: 得益于 Avilla 设计的强大抽象, 开发者只需面向 Avilla 就能完成核心业务的开发, 显著的减少了维护成本.
+ - 平台特性友好: Avilla 以 Activity, Reaction, Extension 等诸项设计, 使得开发者在运用平台特性时更加友好. 担心平台间特性的不通用? 你可以同时为多个平台编写不同的特性用例, Avilla 会自动应用可用的适配, 不改动核心逻辑的同时保证基本特性的可用!
+ - 现有基建兼容: 得益于 `Amnesia`, `Commander`, `Twilight`, `Alconna` 或是基于 `Launart` 编写的各式扩展, 可以直接与 Avilla 协同而无需任何迁移成本.
+ - 高可伸缩性: Avilla 既支持单文件使用, 亦支持基于 Graia Saya 驱动的模块系统编写应用.
+
+## Quick Start
 
 ```py
 from creart import create
