@@ -26,7 +26,9 @@ _P = TypeVar("_P", bound="BaseProtocol")
 
 
 class MessageDeserializer(ABC, Generic[_P]):
-    element_deserializer: dict[str, Callable[[Self, _P, dict], Coroutine[None, None, Element]] | Callable[[Self, _P, dict], Element]] = {}
+    element_deserializer: dict[
+        str, Callable[[Self, _P, dict], Coroutine[None, None, Element]] | Callable[[Self, _P, dict], Element]
+    ] = {}
     ignored_types: set[str] = set()
 
     def __init_subclass__(cls) -> None:

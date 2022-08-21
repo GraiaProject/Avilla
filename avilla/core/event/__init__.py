@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from graia.broadcast.entities.event import Dispatchable
 
 if TYPE_CHECKING:
+    from ..cell import CellOf, Cell
     from avilla.core.account import AbstractAccount
-    from avilla.core.metadata.model import MetadataModifies
     from avilla.core.utilles.selector import Selector
 
 
@@ -34,15 +35,23 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
         ...
 
 
+@dataclass
+class MetadataModify:
+    describe: type[Cell] | CellOf
+    field: str
+    current: Any
+    past: Any | None = None
+
+
 class MetadataModified(AvillaEvent):
     ctx: Selector
-    modifies: MetadataModifies
+    modifies: list[MetadataModify]
     operator: Selector | None = None
 
     def __init__(
         self,
         ctx: Selector,
-        modifies: MetadataModifies,
+        modifies: list[MetadataModify],
         account: AbstractAccount,
         operator: Selector | None = None,
         time: datetime | None = None,

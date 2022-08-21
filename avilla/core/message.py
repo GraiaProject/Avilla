@@ -3,17 +3,35 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
+from graia.amnesia.message import MessageChain
+
 from avilla.core.platform import Land
+from avilla.core.traitof import TargetTraitCall, Trait, TraitCall, TraitOf
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from datetime import datetime
 
-    from graia.amnesia.message import MessageChain as MessageChain
+
+class MessageTrait(Trait):
+    @TargetTraitCall().bound
+    async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:
+        # TODO: rs.send_message handle "MessageChain | str | Iterable[str | Element]"
+        ...
+
+    @TraitCall().bound
+    async def revoke(self, message: Selector) -> None:
+        ...
+
+    @TraitCall().bound
+    async def edit(self, message: Selector, content: MessageChain) -> None:
+        ...
+
+    # MessageFetch => rs.pull(Message, target=...)
 
 
 @dataclass
-class Message:
+class Message(TraitOf[MessageTrait]):
     id: str
     mainline: Selector
     sender: Selector

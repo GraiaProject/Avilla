@@ -32,7 +32,9 @@ class AbstractAccount(ABC):
         ...
 
     def get_self_relationship(self):
-        return Relationship(self.protocol, self.to_selector(), Selector().land(self.land.name), self)
+        return Relationship(
+            self.protocol, self.to_selector(), Selector().land(self.land.name), self.to_selector(), self
+        )
 
     @property
     def available(self) -> bool:

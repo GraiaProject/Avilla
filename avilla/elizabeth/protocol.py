@@ -7,7 +7,6 @@ from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.querier import ProtocolAbstractQueryHandler
 from avilla.core.resource import ProtocolResourceProvider
-from avilla.core.utilles.metadata_source import ProtocolMetadataSource
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.action_executor import (
     ElizabethFriendActionExecutor,
@@ -20,11 +19,6 @@ from avilla.elizabeth.message_deserializer import ElizabethMessageDeserializer
 from avilla.elizabeth.message_serializer import ElizabethMessageSerializer
 from avilla.elizabeth.query import ElizabethGroupQuery, ElizabethRootQuery
 from avilla.elizabeth.service import ElizabethService
-
-from .metadata_sources import (
-    ElizabethGroupMetadataSource,
-    ElizabethMemberMetadataSource,
-)
 
 
 class ElizabethProtocol(BaseProtocol):
@@ -48,18 +42,13 @@ class ElizabethProtocol(BaseProtocol):
         ElizabethFriendActionExecutor,
         ElizabethGroupMemberActionExecutor,
     ]
-
+    # TODO: Relationship.fn(minimum function unit) support
     resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = {}
-    metadata_providers: ClassVar[list[type[ProtocolMetadataSource]]] = [
-        ElizabethGroupMetadataSource,
-        ElizabethMemberMetadataSource,
-    ]
     query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
         ElizabethGroupQuery,
         ElizabethRootQuery,
     ]
 
-    # 鉴于你 mah 乃至 mirai 还没支持频道, 这里就直接.
     completion_rules = {
         "land.group": {
             "group": "land.group",
@@ -75,7 +64,8 @@ class ElizabethProtocol(BaseProtocol):
             "group": "land.group",
             "friend": "land.friend",
         }
-        # TODO
+        # TODO: Fill more.
+        # UPSTREAM: QQ Channel
     }
 
     service: ElizabethService

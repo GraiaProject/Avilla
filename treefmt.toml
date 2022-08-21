@@ -1,0 +1,8 @@
+# One CLI to format the code tree - https://github.com/numtide/treefmt
+
+[formatter.python]
+# Formatter to run
+command = "black"
+options = []
+includes = [ "*.py" ]
+excludes = []

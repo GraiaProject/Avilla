@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message.element import Text
 
-from avilla.core.elements import Audio, Image, Notice, NoticeAll
+from avilla.core.elements import Audio, Picture, Notice, NoticeAll
 from avilla.core.utilles.message_deserializer import MessageDeserializer, deserializer
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.element import FlashImage
@@ -35,7 +35,7 @@ class ElizabethMessageDeserializer(MessageDeserializer["ElizabethProtocol"]):
     @deserializer("Image")
     def image(self, protocol: "ElizabethProtocol", raw: dict):
         # mainline 后续修饰
-        return Image(ElizabethImageResource(raw["imageId"], raw["url"], raw["path"], raw["base64"]))
+        return Picture(ElizabethImageResource(raw["imageId"], raw["url"], raw["path"], raw["base64"]))
 
     @deserializer("FlashImage")
     def flash_image(self, protocol: "ElizabethProtocol", raw: dict):

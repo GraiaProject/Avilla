@@ -7,6 +7,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     AsyncIterator,
+    Awaitable,
     Callable,
     Generic,
     Iterable,
@@ -14,8 +15,13 @@ from typing import (
     cast,
     overload,
 )
+from avilla.core.traitof import Trait, TraitOf
 
-from graia.amnesia.message import Element, MessageChain
+from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
+
+from .traitof.signature import ArtifactSignature, Pull
+
+from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Unpack
 
 from avilla.core.account import AbstractAccount
@@ -23,21 +29,19 @@ from avilla.core.action import Action, MessageSend, StandardActionImpl
 from avilla.core.action.extension import ActionExtension
 from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import ctx_relationship
-from avilla.core.metadata.model import (
-    CellCompose,
+from avilla.core.cell import (
     CellOf,
-    Metadata,
-    MetadataModifies,
+    Cell,
     Ts,
 )
 from avilla.core.resource import Resource, get_provider
 from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
+from avilla.core.message import Message
 
 if TYPE_CHECKING:
-    from avilla.core.message import Message
     from avilla.core.protocol import BaseProtocol
 
-
+"""
 _A = TypeVar("_A", bound=Action)
 _A2 = TypeVar("_A2", bound=Action)
 
@@ -99,6 +103,7 @@ class RelationshipExecutor(Generic[_A]):
         for middleware in reversed(self.middlewares):
             await middleware.before_extensions_apply(self, params)
 
+        # TODO: Refactor for extension, use algo-effect-like.
         for group, extensions in self.extensions.items():
             if group in self._oneof_groups:
                 for ext in extensions:
@@ -119,7 +124,7 @@ class RelationshipExecutor(Generic[_A]):
         for middleware in reversed(self.middlewares):
             await middleware.on_params_ready(self, params)
 
-        return std.unwrap_result(self, await self.relationship.current.call(std.endpoint, params))
+        return std.unwrap_result(self, await self.relationship.account.call(std.endpoint, params))
 
     def act(self, action: _A2) -> RelationshipExecutor[_A2]:
         self._target = action.set_default_target(self.relationship)
@@ -143,14 +148,14 @@ class RelationshipExecutor(Generic[_A]):
             self._oneof_groups.add(group)
         return self
 
-
+""" """
 class RelationshipQuerier:
     relationship: Relationship
     target: Selector
 
     def __init__(self, relationship: Relationship) -> None:
         self.relationship = relationship
-        self.target = self.relationship.ctx
+        self.target = self.relationship.ctx.to_selector()
 
     def __await__(self):
         return self.__await_impl__()
@@ -221,21 +226,46 @@ class RelationshipQuerier:
         return self
 
     __call__ = query
+""" """
 
+class RelationshipOperateFnWarpper:
+    rs: Relationship
+    fn: type[OperateFn] | None = None
+    target: Selectable | None = None
+
+    def __init__(self, rs: Relationship):
+        self.rs = rs
+
+    def __await__(self):
+        return self.__await_impl__().__await__()
+
+    async def __await_impl__(self):
+        ...
+
+    def act(self, fn: type[OperateFn]):
+        self.fn = fn
+
+    def on(self, target: Selectable):
+        self.target = target
+"""
 
 _T = TypeVar("_T")
-_M = TypeVar("_M", bound=Metadata)
+_M = TypeVar("_M", bound=Cell)
+_TboundTrait = TypeVar("_TboundTrait", bound=Trait)
 
 
 class Relationship:
     ctx: Selector
     mainline: Selector
-    current: AbstractAccount
-    cache: dict[str, Any]
+    self: Selector
     via: Selector | None = None
+
+    account: AbstractAccount
+    cache: dict[str, Any]
 
     protocol: "BaseProtocol"
 
+    _artifacts: ChainMap[ArtifactSignature, Any]
     _middlewares: list[ActionMiddleware]
 
     def __init__(
@@ -243,25 +273,26 @@ class Relationship:
         protocol: "BaseProtocol",
         ctx: Selector,
         mainline: Selector,
-        current: AbstractAccount,
+        selft: Selector,
+        account: AbstractAccount,
         via: Selector | None = None,
         middlewares: list[ActionMiddleware] | None = None,
     ) -> None:
         self.ctx = ctx
         self.mainline = mainline
+        self.self = selft
         self.via = via
-        self.current = current
+        self.account = account
         self.protocol = protocol
         self._middlewares = middlewares or []
         self.cache = {}
-
-    @property
-    def exec(self):
-        return RelationshipExecutor(self)
-
-    @property
-    def query(self):
-        return RelationshipQuerier(self)
+        self._artifacts = ChainMap(
+            self.protocol.impl_namespace.get(Scope(self.mainline.path_without_land, self.self.path_without_land), {}),
+            self.protocol.impl_namespace.get(Scope(self.mainline.path_without_land), {}),
+            self.protocol.impl_namespace.get(Scope(self=self.self.path_without_land), {}),
+            self.protocol.impl_namespace.get(GLOBAL_SCOPE, {}),
+            self.avilla.global_artifacts,
+        )
 
     @property
     def avilla(self):
@@ -271,28 +302,66 @@ class Relationship:
     def land(self):
         return self.protocol.land
 
-    def complete(self, selector: Selector):
-        rules = self.protocol.completion_rules.get(self.mainline.path) or {}
-        rules = (self.protocol.completion_rules.get("_") or {}) | rules
-        if selector.path in rules:
-            return selector.mixin(rules[selector.path], self.mainline, self.ctx, *((self.via,) if self.via else ()))
+    @property
+    def is_resource(self) -> bool:
+        # TODO: Auto inference for implementations of a "ctx"
+        ...
 
-        if "land" not in selector.pattern:
-            selector = selector.copy()
-            selector.pattern = {"land": self.land.name, **selector.pattern}
-        return selector
+    """
+    @property
+    def query(self):
+        return RelationshipQuerier(self)
+    """
+
+    def complete(self, selector: Selector, with_land: bool = False):
+        # TODO: Selena's `CompleteRule`
+        ...
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        with ctx_relationship.use(self):
-            provider = get_provider(resource, self)
-            if provider is None:
-                raise ValueError(f"{type(resource)} is not a supported resource.")
-            return await provider.fetch(resource, self)
+        # TODO: use Fetch(Trait)
+        ...
+
+    async def pull(self, path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M], target: Selector | None = None) -> _M:
+        puller = self._artifacts.get(Pull(target.path_without_land if target is not None else None, path))
+        if puller is None:
+            raise NotImplementedError(
+                f'cannot pull "{path}"'
+                + (f' for "{target.path_without_land}"' if target is not None else "")
+                + f' because no available implement found in "{self.protocol.__class__.__name__}"'
+            )
+        puller = cast("Callable[[Relationship, Selector | None], Awaitable[_M]]", puller)
+        return await puller(self, target)
+
+    def cast(
+        self,
+        traitof: type[_TboundTrait]
+        | type[TraitOf[_TboundTrait]]
+        | CellOf[Unpack[tuple[Any, ...]], TraitOf[_TboundTrait]],
+        target: Selector | None = None,
+    ) -> _TboundTrait:
+        if isinstance(traitof, type) and issubclass(traitof, Trait):
+            return traitof(self, None, target=target)
+        path = traitof
+        if isinstance(traitof, CellOf):
+            traitof = cast("type[TraitOf[_TboundTrait]]", traitof.cells[-1])
+        return traitof.__trait_of__(self, path, target=target)
 
     def send_message(
         self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
     ):
-        return self.exec.act(MessageSend(message, reply=reply))
+        if isinstance(message, str):
+            message = MessageChain([Text(message)])
+        elif not isinstance(message, MessageChain):
+            message = MessageChain([]).extend(list(message))
+
+        if isinstance(reply, Message):
+            reply = reply.to_selector()
+        elif isinstance(reply, str):
+            reply = self.mainline.copy().message(reply)
+
+        return self.cast(Message).send(message, reply=reply)
+
+    # TODO: more shortcuts, like `accept_request` etc.
 
     @overload
     async def check(self) -> None:
@@ -315,18 +384,8 @@ class Relationship:
     async def check(self, target: Selector | None = None, strict: bool = False) -> bool | None:
         ...
 
-    @property
-    def is_resource(self) -> bool:
-        return self.ctx.path_without_land in self.protocol.resource_labels
 
-    @overload
-    async def meta(self, operator: MetadataModifies[_T], /) -> _T:
-        ...
-
-    @overload
-    async def meta(self, target: Any, operator: MetadataModifies[_T], /) -> _T:
-        ...
-
+"""
     @overload
     async def meta(self, operator: type[_M], /, *, flush: bool = False) -> _M:
         ...
@@ -353,13 +412,14 @@ class Relationship:
     ) -> tuple[Unpack[Ts]]:
         ...
 
+    # TODO: use the model of rs.exec to implement `rs.fn`
     async def meta(self, op_or_target: Any, maybe_op: Any = None, /, *, flush: bool = False) -> Any:
         op, target = cast(
-            tuple["type[_M] | MetadataModifies[_T] | CellOf[Unpack[tuple[Any, ...]], _M]", Any],
+            tuple["type[_M] | CellOf[Unpack[tuple[Any, ...]], _M]", Any],
             (op_or_target, None) if maybe_op is None else (maybe_op, op_or_target),
         )
         with ctx_relationship.use(self):
-            if isinstance(op, (CellOf, CellCompose)) or isinstance(op, type) and issubclass(op, Metadata):
+            if isinstance(op, (CellOf, CellCompose)) or isinstance(op, type) and issubclass(op, Cell):
                 modify = None
                 model = op
             elif isinstance(op, MetadataModifies):
@@ -410,3 +470,4 @@ class Relationship:
                 self.cache.setdefault("meta", {}).setdefault(target, {})[op] = result
                 return result
             return await source.modify(target, cast(MetadataModifies[Selector], modify))
+"""

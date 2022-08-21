@@ -88,9 +88,11 @@ class Selector:
         self.pattern["land"] = land
         return self
 
-    def match(self, other: Selector) -> bool:
+    def match(self, other: Selectable) -> bool:
         if not isinstance(other, Selector):
-            return False
+            if not isinstance(other, Selectable):
+                return False
+            other = other.to_selector()
         try:
             match = {
                 "any": self._match_any,
@@ -160,6 +162,12 @@ class Selector:
         for k, v in self.pattern.items():
             getattr(instance, k)(v)
         return instance
+
+    def to_selector(self):
+        return self
+
+    def follows(self, pattern: str) -> bool:
+        return pattern == ".".join(self.pattern.keys())
 
     def set_referent(self, referent: Any) -> Self:
         self.referent = referent

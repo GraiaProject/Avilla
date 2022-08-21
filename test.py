@@ -8,7 +8,7 @@ from graia.broadcast import Broadcast
 from avilla.core.application import Avilla
 from avilla.core.account import AbstractAccount
 from avilla.core.action import MessageSend
-from avilla.core.elements import Image
+from avilla.core.elements import Picture
 from avilla.core.event.message import MessageReceived
 from avilla.core.relationship import Relationship
 from avilla.core.resource.local import LocalFileResource
@@ -29,9 +29,7 @@ def loguru_excepthook(ex_type, ex_value, ex_traceback):
 
 sys.excepthook = loguru_excepthook
 
-protocol = ElizabethProtocol(
-    WebsocketClientConfig("1779309090", "testafafv4fv34v34g3y45")
-)
+protocol = ElizabethProtocol(WebsocketClientConfig("1779309090", "testafafv4fv34v34g3y45"))
 broadcast = create(Broadcast)
 avilla = Avilla(broadcast, [protocol], [AiohttpService()])
 
@@ -47,12 +45,11 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         print(t)
         rs2 = await account.get_relationship(t)
         await rs2.exec(
-            MessageSend(
-                ["Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))]
-            )
+            MessageSend(["Hello, Avilla!", Picture(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))])
         )
-        #print(rs.complete(DynamicSelector().group("*")))
-        #async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
+        # print(rs.complete(DynamicSelector().group("*")))
+        # async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
         #    print(i)
+
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

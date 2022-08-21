@@ -3,8 +3,7 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Generic, TypeVar
 
-from avilla.core.metadata.model import Metadata
-from avilla.core.metadata.source import MetadataSource
+from avilla.core.cell import Cell
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -15,7 +14,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 
-
+# TODO: 解决 "Selector only" 模式下的类型标注问题.
 class Resource(Generic[T]):
     id: str
     mainline: Selector | None = None
@@ -35,16 +34,13 @@ class Resource(Generic[T]):
 
 
 R = TypeVar("R", bound=Resource)
-M = TypeVar("M", bound=Metadata)
+M = TypeVar("M", bound=Cell)
 
 
 class ResourceProvider(metaclass=ABCMeta):
     @abstractmethod
     async def fetch(self, resource: Resource[T], relationship: Relationship | None = None) -> T:
         pass
-
-    def get_metadata_source(self) -> MetadataSource | None:
-        ...
 
 
 _P = TypeVar("_P", bound="BaseProtocol")
@@ -63,9 +59,6 @@ class ProtocolResourceProvider(Generic[_P], ResourceProvider):
     @abstractmethod
     def get_resource_type(self) -> str:
         pass
-
-    def get_metadata_resource(self):
-        return self.protocol.get_metadata_provider(f"land.{self.get_resource_type()}")
 
 
 def get_provider(

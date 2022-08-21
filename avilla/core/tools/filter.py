@@ -11,7 +11,7 @@ from typing_extensions import Self
 
 from avilla.core.account import AbstractAccount
 from avilla.core.relationship import Relationship
-from avilla.core.utilles.selector import Selector
+from avilla.core.utilles.selector import Selectable, Selector
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -85,23 +85,26 @@ class Filter(BaseDispatcher, Generic[T]):
         funcs = frozenset(funcs)
         return self.assert_true(lambda result: all(func(result) for func in funcs))
 
-    def match(self: Filter[Selector], pattern: Selector) -> Filter[Selector]:
-        return self.assert_true(lambda result: result.match(pattern))
+    def match(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
+        return self.assert_true(lambda result: pattern.match(result))
 
-    def mismatch(self: Filter[Selector], pattern: Selector) -> Filter[Selector]:
-        return self.assert_false(lambda result: result.match(pattern))
+    def mismatch(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
+        return self.assert_false(lambda result: pattern.match(result))
 
-    def match_any(self: Filter[Selector], patterns: Iterable[Selector]) -> Filter[Selector]:
-        return self.any(lambda result: result.match(pattern) for pattern in patterns)
+    def match_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
+        return self.any(lambda result: pattern.match(result) for pattern in patterns)
 
-    def match_all(self: Filter[Selector], patterns: Iterable[Selector]) -> Filter[Selector]:
-        return self.all(lambda result: result.match(pattern) for pattern in patterns)
+    def match_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
+        return self.all(lambda result: pattern.match(result) for pattern in patterns)
 
-    def mismatch_any(self: Filter[Selector], patterns: Iterable[Selector]) -> Filter[Selector]:
-        return self.any(lambda result: not result.match(pattern) for pattern in patterns)
+    def mismatch_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
+        return self.any(lambda result: not pattern.match(result) for pattern in patterns)
 
-    def mismatch_all(self: Filter[Selector], patterns: Iterable[Selector]) -> Filter[Selector]:
-        return self.all(lambda result: not result.match(pattern) for pattern in patterns)
+    def mismatch_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
+        return self.any(lambda result: not pattern.match(result) for pattern in patterns)
+
+    def follows(self: Filter[Selectable], pattern: str) -> Filter[Selectable]:
+        return self.assert_true(lambda result: result.to_selector().follows(pattern))
 
     @classmethod
     @property
@@ -109,7 +112,7 @@ class Filter(BaseDispatcher, Generic[T]):
         return cls().fetch(Relationship)
 
     @property
-    def ctx(self: Filter[Relationship]) -> Filter[Selector]:
+    def ctx(self: Filter[Relationship]) -> Filter[Selectable]:
         return self.rs.step(lambda rs: rs.ctx)
 
     @property
@@ -118,7 +121,7 @@ class Filter(BaseDispatcher, Generic[T]):
 
     @property
     def current(self: Filter[Relationship]) -> Filter[AbstractAccount]:
-        return self.rs.step(lambda rs: rs.current)
+        return self.rs.step(lambda rs: rs.account)
 
     @property
     def via(self: Filter[Relationship]) -> Filter[Selector | None]:

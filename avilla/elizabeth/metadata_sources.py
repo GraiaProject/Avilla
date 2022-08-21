@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from avilla.core.utilles.metadata_source import ProtocolMetadataSource, fetch
 
 from ..core.context import ctx_relationship
-from ..core.metadata.cells import Count, Summary
+from ..core.cell.cells import Count, Summary
 from ..core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class ElizabethGroupMetadataSource(ProtocolMetadataSource["ElizabethProtocol"], pattern="group"):
     @fetch(Summary)
     async def fetch_summary(self, target: Selector):
-        data = await ctx_relationship.get().current.call(
+        data = await ctx_relationship.get().account.call(
             "groupConfig",
             {
                 "__method__": "fetch",
@@ -32,7 +32,7 @@ class ElizabethGroupMetadataSource(ProtocolMetadataSource["ElizabethProtocol"], 
     @fetch(Count)
     async def fetch_count(self, target: Selector):
         cnt = len(
-            await ctx_relationship.get().current.call(
+            await ctx_relationship.get().account.call(
                 "memberList",
                 {
                     "__method__": "fetch",
@@ -47,7 +47,7 @@ class ElizabethMemberMetadataSource(ProtocolMetadataSource["ElizabethProtocol"],
     @fetch(Summary)
     async def fetch_summary(self, target: Selector):
         name = (
-            await ctx_relationship.get().current.call(
+            await ctx_relationship.get().account.call(
                 "memberInfo",
                 {
                     "__method__": "fetch",
@@ -57,7 +57,7 @@ class ElizabethMemberMetadataSource(ProtocolMetadataSource["ElizabethProtocol"],
             )
         )["memberName"]
         sign = (
-            await ctx_relationship.get().current.call(
+            await ctx_relationship.get().account.call(
                 "memberProfile",
                 {
                     "__method__": "get",

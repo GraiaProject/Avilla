@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from avilla.core.elements import Image
+from avilla.core.elements import Picture
 
 
-class FlashImage(Image):
+class FlashImage(Picture):
     def __str__(self) -> str:
         return "[$FlashImage]"

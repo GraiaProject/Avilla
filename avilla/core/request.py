@@ -5,14 +5,33 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.platform import Land
+from avilla.core.traitof import TargetTraitCall, Trait, TraitCall, TraitOf
 
 if TYPE_CHECKING:
     from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
 
+class RequestTrait(Trait):
+    @TargetTraitCall().bound
+    async def accept(self):
+        ...
+    
+    @TargetTraitCall().bound
+    async def reject(self):
+        ...
+    
+    @TargetTraitCall().bound
+    async def cancel(self):
+        ...
+    
+    @TargetTraitCall().bound
+    async def ignore(self):
+        ...
+
+
 @dataclass
-class Request:
+class Request(TraitOf[RequestTrait]):
     id: str
     land: Land
     mainline: Selector

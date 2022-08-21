@@ -39,7 +39,7 @@ class NoticeAll(Element):
         return "[$NoticeAll]"
 
 
-class Image(Element):
+class Picture(Element):
     resource: Resource[bytes]
 
     def __init__(self, resource: Resource[bytes] | Path | str):
@@ -50,7 +50,7 @@ class Image(Element):
         self.resource = resource
 
     def __str__(self) -> str:
-        return "[$Image]"
+        return "[$Picture]"
 
 
 class Audio(Element):

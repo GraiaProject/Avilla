@@ -3,7 +3,7 @@ from __future__ import annotations
 import importlib.metadata
 import re
 from inspect import cleandoc
-from typing import cast
+from typing import TYPE_CHECKING, Any, cast
 
 from graia.broadcast import Broadcast
 from launart import Launart, Service
@@ -15,7 +15,6 @@ from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import get_current_avilla
 from avilla.core.dispatchers import (
     AvillaBuiltinDispatcher,
-    MetadataDispatcher,
     RelationshipDispatcher,
 )
 from avilla.core.platform import Land
@@ -24,6 +23,9 @@ from avilla.core.resource import ResourceProvider
 from avilla.core.service import AvillaService
 from avilla.core.typing import ActionExtensionImpl
 from avilla.core.utilles.selector import Selector
+
+if TYPE_CHECKING:
+    from avilla.core.traitof.signature import ArtifactSignature
 
 AVILLA_ASCII_LOGO = cleandoc(
     r"""
@@ -43,7 +45,8 @@ GRAIA_PROJECT_REPOS = [
     "graia-broadcast",
     "graia-saya",
     "graia-scheduler",
-    "graia-ariadne" "statv",
+    "graia-ariadne",
+    "statv",
     "launart",
     "creart",
     "creart-graia",
@@ -67,11 +70,12 @@ class Avilla:
     broadcast: Broadcast
     launch_manager: Launart
     protocols: list[BaseProtocol]
-    action_middlewares: list[ActionMiddleware]
-    resource_providers: dict[str, ResourceProvider]
-    extension_impls: dict[type[ActionExtension], ActionExtensionImpl]
+    #action_middlewares: list[ActionMiddleware]
+    #resource_providers: dict[str, ResourceProvider]
+    #extension_impls: dict[type[ActionExtension], ActionExtensionImpl]
     accounts: list[AbstractAccount]
     service: AvillaService
+    global_artifacts: dict[ArtifactSignature, Any]
 
     # NOTE: configuration is done by kayaku.
     def __init__(
@@ -89,10 +93,11 @@ class Avilla:
         self.launch_manager = launch_manager or Launart()
         self.protocols = protocols
         self._protocol_map = {type(i): i for i in protocols}
-        self.action_middlewares = middlewares or []
+        #self.action_middlewares = middlewares or []
         self.accounts = []
-        self.resource_providers = {}
-        self.extension_impls = {}
+        #self.resource_providers = {}
+        #self.extension_impls = {}
+        self.global_artifacts = {}
         self.service = AvillaService(self)
 
         for service in services:
@@ -104,7 +109,7 @@ class Avilla:
             # Ensureable 用于注册各种东西, 包括 Service, ResourceProvider 等.
             protocol.ensure(self)
 
-        self.broadcast.finale_dispatchers.append(MetadataDispatcher())
+        # self.broadcast.finale_dispatchers.append(MetadataDispatcher())
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
@@ -116,6 +121,7 @@ class Avilla:
     def loop(self):
         return self.broadcast.loop
 
+    """
     def add_action_middleware(self, middleware: ActionMiddleware):
         self.action_middlewares.append(middleware)
 
@@ -133,6 +139,8 @@ class Avilla:
         for resource_type in self.resource_providers:
             if self.resource_providers[resource_type] is provider:
                 del self.resource_providers[resource_type]
+
+    """
 
     def add_account(self, account: AbstractAccount):
         if account in self.accounts:

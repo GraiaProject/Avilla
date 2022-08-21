@@ -9,7 +9,7 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from avilla.core.account import AbstractAccount
 from avilla.core.context import ctx_protocol, ctx_relationship
 from avilla.core.event import AvillaEvent
-from avilla.core.metadata.model import Metadata
+from avilla.core.cell import Cell
 from avilla.core.relationship import Relationship
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ class RelationshipDispatcher(BaseDispatcher):
         if protocol is not None:
             rs = await interface.event.account.get_relationship(interface.event.ctx, via=interface.event.get_via())
             token = ctx_relationship.set(rs)
-            # TODO: map AvillaEvent.extras["meta"] => rs.cache["meta"]
+            rs.cache["meta"] = interface.event.extra.get("meta", {})
             interface.local_storage["relationship"] = rs
             interface.local_storage["_ctxtoken_rs"] = token
 
@@ -63,10 +63,12 @@ class RelationshipDispatcher(BaseDispatcher):
                 return interface.local_storage["relationship"]
 
 
+"""
 class MetadataDispatcher(BaseDispatcher):
     @staticmethod
     async def catch(interface: DispatcherInterface[AvillaEvent]):
         if isinstance(interface.event, AvillaEvent):
-            if isinstance(interface.annotation, type) and issubclass(interface.annotation, Metadata):
+            if isinstance(interface.annotation, type) and issubclass(interface.annotation, Cell):
                 relationship: Relationship = interface.local_storage["relationship"]
                 return await relationship.meta(interface.annotation)
+"""
