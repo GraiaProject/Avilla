@@ -3,12 +3,12 @@
 [formatter.python-black]
 # Formatter to run
 command = "black"
-options = []
-includes = [ "*.py" ]
 excludes = []
+includes = ["*.py"]
+options = []
 
 [formatter.python-isort]
 command = "isort"
+excludes = ["avilla/core/__init__.py"]
+includes = ["*.py"]
 options = ["--profile black"]
-includes = [ "*.py" ]
-excludes = [ "avilla/core/__init__.py" ]

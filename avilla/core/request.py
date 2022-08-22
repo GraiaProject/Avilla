@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.platform import Land
-from avilla.core.traitof import TargetTraitCall, Trait, TraitCall, TraitRef
+from avilla.core.traitof import TargetTraitCall, Trait, TraitRef
 
 if TYPE_CHECKING:
     from avilla.core.account import AbstractAccount

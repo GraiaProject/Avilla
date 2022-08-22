@@ -4,6 +4,8 @@ import importlib.metadata
 import re
 from inspect import cleandoc
 from typing import TYPE_CHECKING, Any, cast
+from avilla.core.resource import LocalFileResource
+from avilla.core.traitof.signature import ResourceFetch
 
 from graia.broadcast import Broadcast
 from launart import Launart, Service
@@ -16,9 +18,7 @@ from avilla.core.context import get_current_avilla
 from avilla.core.dispatchers import AvillaBuiltinDispatcher, RelationshipDispatcher
 from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
-from avilla.core.resource import ResourceProvider
 from avilla.core.service import AvillaService
-from avilla.core.typing import ActionExtensionImpl
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -110,6 +110,10 @@ class Avilla:
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
         self.broadcast.finale_dispatchers.append(RelationshipDispatcher())
 
+        @self.register_global_artifact(ResourceFetch(LocalFileResource))
+        async def _fetch_local_file(_, res: LocalFileResource):
+            return res.file.read_bytes()
+
     @classmethod
     def current(cls) -> "Avilla":
         return get_current_avilla()
@@ -117,6 +121,12 @@ class Avilla:
     @property
     def loop(self):
         return self.broadcast.loop
+
+    def register_global_artifact(self, signature: ArtifactSignature):
+        def warpper(v):
+            self.global_artifacts[signature] = v
+            return v
+        return warpper
 
     """
     def add_action_middleware(self, middleware: ActionMiddleware):

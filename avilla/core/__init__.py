@@ -1,20 +1,6 @@
 from graia.amnesia.message import MessageChain as MessageChain
 
 from .account import AbstractAccount as AbstractAccount
-from .action import Action as Action
-from .action import MemberRemove as MemberRemove
-from .action import MessageEdit as MessageEdit
-from .action import MessageFetch as MessageFetch
-from .action import MessageRevoke as MessageRevoke
-from .action import MessageSend as MessageSend
-from .action import RelationshipDestroy as RelationshipDestroy
-from .action import RequestAccept as RequestAccept
-from .action import RequestAction as RequestAction
-from .action import RequestCancel as RequestCancel
-from .action import RequestIgnore as RequestIgnore
-from .action import RequestReject as RequestReject
-from .action import Result as Result
-from .action.middleware import ActionMiddleware as ActionMiddleware
 from .application import Avilla as Avilla
 from .context import ctx_avilla as ctx_avilla
 from .context import ctx_protocol as ctx_protocol
@@ -99,13 +85,7 @@ from .relationship import Relationship as Relationship
 
 # from .relationship import RelationshipExecutor as RelationshipExecutor
 from .request import Request as Request
-from .resource import ProtocolResourceProvider as ProtocolResourceProvider
-from .resource import Resource as Resource
-from .resource import ResourceProvider as ResourceProvider
-from .resource import get_provider as get_provider
-from .resource.local import LOCAL_PROVIDER as LOCAL_PROVIDER
-from .resource.local import LocalFileResource as LocalFileResource
-from .resource.local import LocalFileResourceProvider as LocalFileResourceProvider
+from .resource import Resource as Resource, LocalFileResource as LocalFileResource
 from .service import AvillaService as AvillaService
 from .typing import Ensureable as Ensureable
 from .utilles.selector import DynamicSelector as DynamicSelector

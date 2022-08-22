@@ -1,5 +1,5 @@
 import inspect
-from typing import Awaitable, Callable, Coroutine, TypeVar, overload
+from typing import Any, Awaitable, Callable, Coroutine, TypeVar, overload
 
 T = TypeVar("T")
 
@@ -24,3 +24,7 @@ async def run_always_await(callable, *args, **kwargs):
     while inspect.isawaitable(obj):
         obj = await obj
     return obj
+
+
+def identity(obj: Any) -> str:
+    return obj.__name__ if isinstance(obj, type) else obj.__class__.__name__

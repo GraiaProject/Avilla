@@ -31,36 +31,11 @@ class ElizabethProtocol(BaseProtocol):
     message_serializer = ElizabethMessageSerializer()
     message_deserializer = ElizabethMessageDeserializer()
     """
-    action_executors = [
-        ElizabethGroupActionExecutor,
-        ElizabethFriendActionExecutor,
-        ElizabethGroupMemberActionExecutor,
-    ]
-    # TODO: Relationship.fn(minimum function unit) support
-    resource_providers: ClassVar[dict[Selector, type[ProtocolResourceProvider]]] = {}
     query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = [
         ElizabethGroupQuery,
         ElizabethRootQuery,
     ]
-
-    completion_rules = {
-        "land.group": {
-            "group": "land.group",
-            "member": "land.group.member",
-            "group.member": "land.group.member",
-        },
-        "land.friend": {"friend": "land.friend"},
-        "land.contact": {"contact": "land.contact"},
-        "land": {
-            "contact": "land.contact",
-        },
-        "_": {
-            "group": "land.group",
-            "friend": "land.friend",
-        }
-        # TODO: Fill more.
-        # UPSTREAM: QQ Channel
-    }"""
+    """
 
     with wrap_namespace() as impl_namespace:
         import avilla.elizabeth.impl as _

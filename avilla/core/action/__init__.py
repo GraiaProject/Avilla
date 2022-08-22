@@ -11,11 +11,10 @@ from avilla.core.context import ctx_relationship
 from avilla.core.elements import Text
 from avilla.core.message import Message
 from avilla.core.request import Request
-from avilla.core.typing import ActionExtensionImpl
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship, RelationshipExecutor
+    from avilla.core.relationship import Relationship
 
 
 class Action:

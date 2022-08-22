@@ -12,7 +12,7 @@ from avilla.core.elements import Picture
 from avilla.core.event.message import MessageReceived
 from avilla.core.message import Message
 from avilla.core.relationship import Relationship
-from avilla.core.resource.local import LocalFileResource
+from avilla.core.resource import LocalFileResource
 from avilla.core.utilles.selector import DynamicSelector, Selector
 from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
@@ -46,9 +46,14 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         # t = rs.complete(Selector().friend("1846913566"))
         # print(t)
         # rs2 = await account.get_relationship(t)
-        r = await rs.send_message("Hello, Avilla!")
+        a = event.message.content.get(Picture)
+        print(a, event.message.content)
+        if a:
+            b = await rs.fetch(a[0].resource)
+            print("pulled!", len(list(b)))
+        #r = await rs.send_message(["Hello, Avilla!", Picture(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))])
         await asyncio.sleep(1)
-        c = await rs.cast(Message).revoke(r)
+        #c = await rs.cast(Message).revoke(r)
         # print(rs.complete(DynamicSelector().group("*")))
         # async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
         #    print(i)

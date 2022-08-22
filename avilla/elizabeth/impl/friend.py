@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.message import Message, MessageTrait
 from avilla.core.traitof.context import prefix, raise_for_no_namespace, scope
-from avilla.core.traitof.recorders import default_target, impl, pull
+from avilla.core.traitof.recorder import default_target, impl, pull
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -43,10 +43,10 @@ with scope("friend"), prefix("friend"):
     @impl(Message, MessageTrait.revoke)
     async def revoke_friend_message(rs: Relationship, message: Selector):
         await rs.account.call(
-            "revokeMessage",
+            "recall",
             {
                 "__method__": "post",
                 "messageId": int(message.pattern["message"]),
-                "target": int(message.pattern["friend"])
+                "target": int(message.pattern["friend"]),
             },
         )

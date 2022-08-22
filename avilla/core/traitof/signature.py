@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Hashable
 
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
+    from avilla.core.resource import Resource
     from avilla.core.traitof import TraitCall
 
 
@@ -27,7 +28,7 @@ class Pull(ArtifactSignature):
 
 @dataclass(unsafe_hash=True)
 class ResourceFetch(ArtifactSignature):
-    target: str
+    target: type[Resource]
 
 
 @dataclass(unsafe_hash=True)
@@ -49,8 +50,3 @@ class ImplDefaultTarget(ArtifactSignature):
 @dataclass(unsafe_hash=True)
 class Query(ArtifactSignature):
     path: str
-
-
-@dataclass(unsafe_hash=True)
-class EventKeyGetter(ArtifactSignature):
-    ...

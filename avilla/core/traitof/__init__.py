@@ -17,6 +17,7 @@ from typing import (
 )
 
 from typing_extensions import Self
+from avilla.core.utilles import identity
 
 from avilla.core.utilles.selector import Selector
 
@@ -71,7 +72,6 @@ class TraitCall(Generic[_P, _T]):
         ...
 
     def __set_name__(self, owner: type[Trait], attr: str):
-        print("???", owner, attr)
         self.__attr__ = attr
 
     @overload
@@ -83,6 +83,7 @@ class TraitCall(Generic[_P, _T]):
         ...
 
     def __get__(self, instance: ..., owner: ...) -> Self | TraitCallWrapper[_P, _T]:
+        # sourcery skip: assign-if-exp, reintroduce-else, swap-if-expression
         if not isinstance(instance, Trait):
             return self
         return TraitCallWrapper(instance, self)
@@ -117,14 +118,17 @@ class TraitCallWrapper(Generic[_P, _T]):
             )
         )
         if artifact_impl is None:
-            print(self.trait.relationship._artifacts, Impl(
-                self.call,
-                None,
-                self.trait.path,
-            ))
+            print(
+                self.trait.relationship._artifacts,
+                Impl(
+                    self.call,
+                    None,
+                    self.trait.path,
+                ),
+            )
             raise NotImplementedError(
-                f'"{self.trait.__class__.__name__}::{self.call.__attr__}" '
-                f'in "{self.trait.relationship.protocol.__class__.__name__}" '
+                f'"{identity(self.trait)}::{self.call.__attr__}" '
+                f'in "{identity(self.trait.relationship.protocol)}" '
                 + (f'for target "{self.trait.target.path_without_land}"' if self.trait.target is not None else "")
                 + "is not implemented"
             )
@@ -144,7 +148,7 @@ class TargetTraitCall(TraitCall[_P, _T]):
     def __get__(self, instance: ..., owner: ...) -> ...:
         if instance is None:
             return self
-        return TargetTraitCallWrapper(instance, self)
+        return DestTraitCallWrapper(instance, self)
 
     @overload
     def bound(self, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]) -> TargetTraitCall[_P1, _T1]:
@@ -160,6 +164,78 @@ class TargetTraitCall(TraitCall[_P, _T]):
 
 
 class TargetTraitCallWrapper(TraitCallWrapper[_P, _T]):
+    _args: tuple[Any, ...] | None = None
+    _kwargs: dict[str, Any] | None = None
+
+    def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
+        self._args = args
+        self._kwargs = kwargs
+        return self
+
+    def __await__(self):
+        return self.__await_impl__().__await__()
+
+    async def __await_impl__(self) -> _T:
+        if self._args is None or self._kwargs is None:
+            raise ValueError("cannot call without param in shape of schema")
+
+        target = self.trait.target
+        if target is None:
+            raise ValueError(f'cannot call "{identity(self.trait)}::{self.call.__attr__}" without target on cast')
+        artifact_impl = self.trait.relationship._artifacts.get(
+            Impl(
+                self.call,
+                target.path_without_land,
+                self.trait.path,
+            )
+        )
+        if artifact_impl is None:
+            debug(
+                self.trait.relationship._artifacts,
+                Impl(
+                    self.call,
+                    target.path_without_land,
+                    self.trait.path,
+                ),
+            )
+            raise NotImplementedError(
+                f'"{identity(self.trait)}::{self.call.__attr__}" '
+                f'in "{identity(self.trait.relationship.protocol)}" '
+                f'for target "{target.path_without_land}" '
+                "is not implemented"
+            )
+        artifact_impl = cast("Callable[Concatenate[Relationship, Selector, _P], Awaitable[_T]]", artifact_impl)
+        return await artifact_impl(self.trait.relationship, target, *self._args, **self._kwargs)  # type: ignore
+
+
+class DestTraitCall(TraitCall[_P, _T]):
+    @overload
+    def __get__(self, instance: Trait, owner: type[Trait]) -> DestTraitCallWrapper[_P, _T]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type[Trait] | None) -> Self:
+        ...
+
+    def __get__(self, instance: ..., owner: ...) -> ...:
+        if instance is None:
+            return self
+        return DestTraitCallWrapper(instance, self)
+
+    @overload
+    def bound(self, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]) -> DestTraitCall[_P1, _T1]:
+        ...
+
+    @overload
+    def bound(self, schema: Callable[_P1, Awaitable[_T1]]) -> DestTraitCall[_P1, _T1]:
+        ...
+
+    def bound(self, schema: ...) -> ...:
+        self.schema = schema
+        return self
+
+
+class DestTraitCallWrapper(TraitCallWrapper[_P, _T]):
     _args: tuple[Any, ...] | None = None
     _kwargs: dict[str, Any] | None = None
     target: Selector | None = None
@@ -198,11 +274,14 @@ class TargetTraitCallWrapper(TraitCallWrapper[_P, _T]):
             )
         )
         if artifact_impl is None:
-            debug(self.trait.relationship._artifacts, Impl(
-                self.call,
-                target.path_without_land,
-                self.trait.path,
-            ))
+            debug(
+                self.trait.relationship._artifacts,
+                Impl(
+                    self.call,
+                    target.path_without_land,
+                    self.trait.path,
+                ),
+            )
             raise NotImplementedError(
                 f'"{self.trait.__class__.__name__}::{self.call.__attr__}" '
                 f'in "{self.trait.relationship.protocol.__class__.__name__}" '

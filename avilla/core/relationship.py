@@ -26,7 +26,7 @@ from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
 from avilla.core.message import Message
-from avilla.core.resource import Resource, get_provider
+from avilla.core.resource import Resource
 from avilla.core.traitof import Trait, TraitRef
 from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
 from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
@@ -280,7 +280,7 @@ class Relationship:
         self.account = account
         self.protocol = protocol
         self._middlewares = middlewares or []
-        self.cache = {}
+        self.cache = {"meta": {}}
         self._artifacts = ChainMap(
             self.protocol.impl_namespace.get(Scope(self.mainline.path_without_land, self.self.path_without_land), {}),
             self.protocol.impl_namespace.get(Scope(self.mainline.path_without_land), {}),
@@ -322,9 +322,23 @@ class Relationship:
         return selector
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        fetcher = self._artifacts.get(ResourceFetch(resource))
+        fetcher = self._artifacts.get(ResourceFetch(type(resource)))
+        if fetcher is None:
+            raise NotImplementedError(
+                f'cannot fetch "{resource.selector}" '
+                + f' because no available fetch implement found in "{self.protocol.__class__.__name__}"'
+            )
+        return await fetcher(self, resource)
 
-    async def pull(self, path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M], target: Selector | None = None) -> _M:
+    async def pull(self, path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M], target: Selector | None = None, *, flush: bool = False) -> _M:
+        if target is not None:
+            cached = self.cache["meta"].get(target)
+            if cached is not None and path in cached:
+                if flush:
+                    del cached[path]
+                elif not path.has_params():
+                    return cached[path]
+
         puller = self._artifacts.get(Pull(target.path_without_land if target is not None else None, path))
         if puller is None:
             raise NotImplementedError(
@@ -333,21 +347,25 @@ class Relationship:
                 + f' because no available implement found in "{self.protocol.__class__.__name__}"'
             )
         puller = cast("Callable[[Relationship, Selector | None], Awaitable[_M]]", puller)
-        return await puller(self, target)
+        result = await puller(self, target)
+        if target is not None and not path.has_params():
+            cached = self.cache["meta"].setdefault(target, {})
+            cached[path] = result
+        return result
 
     def cast(
         self,
-        traitof: type[_TboundTrait]
+        trait_or_ref: type[_TboundTrait]
         | type[TraitRef[_TboundTrait]]
         | CellOf[Unpack[tuple[Any, ...]], TraitRef[_TboundTrait]],
         target: Selector | None = None,
     ) -> _TboundTrait:
-        if isinstance(traitof, type) and issubclass(traitof, Trait):
-            return traitof(self, None, target=target)
-        path = traitof
-        if isinstance(traitof, CellOf):
-            traitof = cast("type[TraitOf[_TboundTrait]]", traitof.cells[-1])
-        return traitof.__trait_ref__(self, path, target=target)
+        if isinstance(trait_or_ref, type) and issubclass(trait_or_ref, Trait):
+            return trait_or_ref(self, None, target=target)
+        path = trait_or_ref
+        if isinstance(trait_or_ref, CellOf):
+            trait_or_ref = cast("type[TraitRef[_TboundTrait]]", trait_or_ref.cells[-1])
+        return trait_or_ref.__trait_ref__(self, path, target=target)
 
     def send_message(
         self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
@@ -356,6 +374,8 @@ class Relationship:
             message = MessageChain([Text(message)])
         elif not isinstance(message, MessageChain):
             message = MessageChain([]).extend(list(message))
+        else:
+            message = MessageChain([i if isinstance(i, Element) else Text(i) for i in message])
 
         if isinstance(reply, Message):
             reply = reply.to_selector()

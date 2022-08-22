@@ -12,14 +12,15 @@ from typing import (
 if TYPE_CHECKING:
     from avilla.core.action.extension import ActionExtension
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import RelationshipExecutor
 
+"""
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
+
 
 ActionExtensionImpl = Callable[
     ["RelationshipExecutor", "ActionExtension", dict[str, Any] | None], Coroutine[None, None, Any]
 ]
-
+"""
 
 _T = TypeVar("_T", contravariant=True)
 
