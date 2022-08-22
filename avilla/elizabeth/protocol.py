@@ -63,7 +63,9 @@ class ElizabethProtocol(BaseProtocol):
     }"""
 
     with wrap_namespace() as impl_namespace:
+        import avilla.elizabeth.impl as _
         import avilla.elizabeth.impl.group as _
+        import avilla.elizabeth.impl.friend as _
 
     service: ElizabethService
 

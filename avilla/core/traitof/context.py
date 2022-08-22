@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, overload
 
 from avilla.core.traitof.signature import ArtifactSignature
 
@@ -28,19 +28,16 @@ ctx_prefix: ContextVar[str] = ContextVar("ctx_prefix", default="")
 
 
 @contextmanager
-def scope(mainline: str | None = None, self: str | None = None, auto_prefix: bool = True):
+def scope(mainline: str | None = None, self: str | None = None):
     token = ctx_scope.set(Scope(mainline, self))
-    token_prefix = ctx_prefix.set(mainline) if auto_prefix and mainline else None
     yield
-    if token_prefix is not None:
-        ctx_prefix.reset(token_prefix)
     ctx_scope.reset(token)
 
 
 def eval_dotpath(path: str, env: str = "") -> str:
     if path.startswith("."):
         if env:
-            return env + path
+            return ".".join(i for i in env.split(".") + path.split(".") if i)
         raise ValueError("cannot parse relative path without env pattern")
     return path
 

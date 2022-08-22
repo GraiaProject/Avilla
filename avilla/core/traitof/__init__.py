@@ -26,21 +26,18 @@ from .signature import Impl, ImplDefaultTarget
 if TYPE_CHECKING:
     from avilla.core.relationship import Relationship
 
+from devtools import debug
+
 T = TypeVar("T", bound="Trait")
 
 
-def _eval_upper(exp: str):
-    frame = sys._getframe(2)
-    return eval(exp, frame.f_globals, frame.f_locals)
-
-
-class TraitOf(Cell, Generic[T]):
-    __trait_of__: type[T]
+class TraitRef(Cell, Generic[T]):
+    __trait_ref__: type[T]
 
     def __init_subclass__(cls) -> None:
         for i in cls.__orig_bases__:  # type: ignore
-            if typing.get_origin(i) is TraitOf:
-                cls.__trait_of__ = typing.get_args(i)[0]
+            if typing.get_origin(i) is TraitRef:
+                cls.__trait_ref__ = typing.get_args(i)[0]
         return super().__init_subclass__()
 
 
@@ -115,11 +112,16 @@ class TraitCallWrapper(Generic[_P, _T]):
         artifact_impl = self.trait.relationship._artifacts.get(
             Impl(
                 self.call,
-                self.trait.target.path_without_land if self.trait.target is not None else None,
+                None,
                 self.trait.path,
             )
         )
         if artifact_impl is None:
+            print(self.trait.relationship._artifacts, Impl(
+                self.call,
+                None,
+                self.trait.path,
+            ))
             raise NotImplementedError(
                 f'"{self.trait.__class__.__name__}::{self.call.__attr__}" '
                 f'in "{self.trait.relationship.protocol.__class__.__name__}" '
@@ -196,6 +198,11 @@ class TargetTraitCallWrapper(TraitCallWrapper[_P, _T]):
             )
         )
         if artifact_impl is None:
+            debug(self.trait.relationship._artifacts, Impl(
+                self.call,
+                target.path_without_land,
+                self.trait.path,
+            ))
             raise NotImplementedError(
                 f'"{self.trait.__class__.__name__}::{self.call.__attr__}" '
                 f'in "{self.trait.relationship.protocol.__class__.__name__}" '

@@ -47,8 +47,8 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         # print(t)
         # rs2 = await account.get_relationship(t)
         r = await rs.send_message("Hello, Avilla!")
-        await asyncio.sleep(5)
-        c = rs.cast(Message)
+        await asyncio.sleep(1)
+        c = await rs.cast(Message).revoke(r)
         # print(rs.complete(DynamicSelector().group("*")))
         # async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
         #    print(i)

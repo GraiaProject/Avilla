@@ -27,11 +27,11 @@ from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
 from avilla.core.message import Message
 from avilla.core.resource import Resource, get_provider
-from avilla.core.traitof import Trait, TraitOf
+from avilla.core.traitof import Trait, TraitRef
 from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
 from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
 
-from .traitof.signature import ArtifactSignature, Pull
+from .traitof.signature import ArtifactSignature, CompleteRule, Pull, ResourceFetch
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -313,12 +313,16 @@ class Relationship:
     """
 
     def complete(self, selector: Selector, with_land: bool = False):
-        # TODO: Selena's `CompleteRule`
-        ...
+        output_rule = self._artifacts.get(CompleteRule(selector.path_without_land))
+        if output_rule is not None:
+            output_rule = cast(str, output_rule)
+            selector = Selector().mixin(output_rule, selector, self.ctx, self.mainline)
+        if with_land and list(selector.pattern.keys())[0] != "land":
+            selector.pattern = {"land": self.land.name, **selector.pattern}
+        return selector
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        # TODO: use Fetch(Trait)
-        ...
+        fetcher = self._artifacts.get(ResourceFetch(resource))
 
     async def pull(self, path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M], target: Selector | None = None) -> _M:
         puller = self._artifacts.get(Pull(target.path_without_land if target is not None else None, path))
@@ -334,8 +338,8 @@ class Relationship:
     def cast(
         self,
         traitof: type[_TboundTrait]
-        | type[TraitOf[_TboundTrait]]
-        | CellOf[Unpack[tuple[Any, ...]], TraitOf[_TboundTrait]],
+        | type[TraitRef[_TboundTrait]]
+        | CellOf[Unpack[tuple[Any, ...]], TraitRef[_TboundTrait]],
         target: Selector | None = None,
     ) -> _TboundTrait:
         if isinstance(traitof, type) and issubclass(traitof, Trait):
@@ -343,7 +347,7 @@ class Relationship:
         path = traitof
         if isinstance(traitof, CellOf):
             traitof = cast("type[TraitOf[_TboundTrait]]", traitof.cells[-1])
-        return traitof.__trait_of__(self, path, target=target)
+        return traitof.__trait_ref__(self, path, target=target)
 
     def send_message(
         self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None

@@ -23,7 +23,7 @@ from avilla.core.traitof.signature import Pull as _Pull
 from avilla.core.traitof.signature import ResourceFetch as _ResourceFatch
 from avilla.core.utilles.selector import Selector
 
-from .context import get_current_namespace
+from .context import eval_dotpath, get_current_namespace, ctx_prefix
 
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
@@ -59,11 +59,15 @@ class ImplRecorder(Recorder, Generic[_P, _T]):
         return self
 
     def of(self, target: str):
-        self.target = target
+        self.target = eval_dotpath(target, ctx_prefix.get())
         return self
 
     def signature(self):
-        return _Impl(target=self.target, path=self.path, trait_call=self.trait_call)  # type: ignore
+        if isinstance(self.trait_call, TargetTraitCall):
+            target = eval_dotpath(".", ctx_prefix.get())
+        else:
+            target = self.target
+        return _Impl(target=target, path=self.path, trait_call=self.trait_call)  # type: ignore
 
     def __call__(self, content: Callable[Concatenate[Relationship, _P], Awaitable[_T]]):
         return super().__call__(content)
@@ -79,7 +83,7 @@ class FetchRecorder(Recorder):
         self.resource = resource
 
     def signature(self):
-        return _ResourceFatch(self.resource)
+        return _ResourceFatch(eval_dotpath(self.resource, ctx_prefix.get()) or ctx_prefix.get())
 
     def __call__(self, content: Callable[[Relationship, Selector], Awaitable[Any]]):
         return super().__call__(content)
@@ -102,7 +106,7 @@ class PullRecorder(Recorder, Generic[_C]):
         return self
 
     def signature(self):
-        return _Pull(self.target, self.path)
+        return _Pull(eval_dotpath(self.target, ctx_prefix.get()) if self.target is not None else None, self.path)
 
     def __call__(self, content: Callable[[Relationship, Selector], Awaitable[_C]]):
         return super().__call__(content)
@@ -113,7 +117,7 @@ pull = PullRecorder
 
 def completes(relative: str, output: str):
     r = get_current_namespace()
-    r[CompleteRule(relative)] = output
+    r[CompleteRule(eval_dotpath(relative, ctx_prefix.get()))] = eval_dotpath(output, ctx_prefix.get())
 
 
 def query(path: str):

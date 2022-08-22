@@ -77,7 +77,7 @@ class ElizabethGroupMemberActionExecutor(
     ProtocolActionExecutor["ElizabethProtocol"], pattern=DynamicSelector.fragment().group("*").member("*")
 ):
     class SendMessageImpl(StandardActionImpl):
-        endpoint = "sendGroupMessage"
+        endpoint = "sendTempMessage"
         actions = [MessageSend]
 
         @staticmethod

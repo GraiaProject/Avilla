@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 from graia.amnesia.message import MessageChain
 
 from avilla.core.platform import Land
-from avilla.core.traitof import TargetTraitCall, Trait, TraitCall, TraitOf
+from avilla.core.traitof import TargetTraitCall, Trait, TraitCall, TraitRef
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -30,7 +30,7 @@ class MessageTrait(Trait):
 
 
 @dataclass
-class Message(TraitOf[MessageTrait]):
+class Message(TraitRef[MessageTrait]):
     id: str
     mainline: Selector
     sender: Selector
