@@ -14,8 +14,8 @@ from typing import (
 )
 
 from typing_extensions import Unpack
-from avilla.core.resource import Resource
 
+from avilla.core.resource import Resource
 from avilla.core.traitof import DestTraitCall
 from avilla.core.traitof.signature import CompleteRule
 from avilla.core.traitof.signature import Impl as _Impl
@@ -79,7 +79,7 @@ class ImplRecorder(Recorder, Generic[_P, _T]):
         return self
 
     def signature(self):
-        if isinstance(self.trait_call, DestTraitCall):
+        if isinstance(self.trait_call, DestTraitCall):  # type: ignore
             target = eval_dotpath(".", ctx_prefix.get())
         else:
             target = self.target

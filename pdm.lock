@@ -199,13 +199,14 @@ summary = "A list-like structure which implements collections.abc.MutableSequenc
 
 [[package]]
 name = "graia-amnesia"
-version = "0.5.4"
+version = "0.5.8"
 requires_python = ">=3.8,<4.0"
 summary = "a collection of shared components for graia"
 dependencies = [
     "launart>=0.3.3",
     "loguru<1.0.0,>=0.6.0",
     "statv>=0.2.2",
+    "typing-extensions>=4.0.0",
     "yarl<2.0.0,>=1.7.2",
 ]
 
@@ -500,7 +501,7 @@ summary = "Python 2 and 3 compatibility utilities"
 
 [[package]]
 name = "statv"
-version = "0.2.2"
+version = "0.3.2"
 requires_python = ">=3.8"
 summary = "a uniform status implementation for graia project"
 
@@ -820,9 +821,9 @@ content_hash = "sha256:6771bb1ce83ac08fdb1df39b1abf760e5390c8e68bb73cfaa80a0afc9
     {url = "https://files.pythonhosted.org/packages/f4/98/0dc010eff663f2b75feb35b7a908cda585c87b402b198a34e3b1161e20f2/frozenlist-1.3.1-cp37-cp37m-musllinux_1_1_s390x.whl", hash = "sha256:53b2b45052e7149ee8b96067793db8ecc1ae1111f2f96fe1f88ea5ad5fd92d10"},
     {url = "https://files.pythonhosted.org/packages/f8/16/addcabc0c2483fba353f5818b56e593c363e00c83eb9c9132a42aa3c740d/frozenlist-1.3.1-cp310-cp310-win32.whl", hash = "sha256:fabb953ab913dadc1ff9dcc3a7a7d3dc6a92efab3a0373989b8063347f8705be"},
 ]
-"graia-amnesia 0.5.4" = [
-    {url = "https://files.pythonhosted.org/packages/0e/0f/698e90a90c9ada08c8e49f2258fa56de6ecde4d408a5187828f045f46a95/graia_amnesia-0.5.4-py3-none-any.whl", hash = "sha256:8fe6e3c4d21bdde326e7569a99bfb5818dfbf0d79fa4da7a66ba29a84989297f"},
-    {url = "https://files.pythonhosted.org/packages/1a/61/8971d0207021f2a9a957fc322ce3d34757474a5160940c554247427e2920/graia-amnesia-0.5.4.tar.gz", hash = "sha256:e4515f72b3e16bd958b48271d5d89a2994bd891ca74fa0266cad9dc5e6a45dbb"},
+"graia-amnesia 0.5.8" = [
+    {url = "https://files.pythonhosted.org/packages/2c/68/1dd0882f1c71bc18aea76089ffecf016e890489ef500d954ac76566b49d5/graia-amnesia-0.5.8.tar.gz", hash = "sha256:6dfb4fbff8e1c4b19ce8946d4e570342f334c294cea8134d1b536c9904d7d129"},
+    {url = "https://files.pythonhosted.org/packages/73/02/e48f39097b3bde49b7d725e39d86caa6a37859e85fd83a9a1434f4924768/graia_amnesia-0.5.8-py3-none-any.whl", hash = "sha256:75f433a55f0b139782c77fa8f91413a933685a057cdab5646386144e6b68665d"},
 ]
 "graia-broadcast 0.18.2" = [
     {url = "https://files.pythonhosted.org/packages/0b/14/e155d41933b6069a0ea85dd04aca5660cdf156aee4bd8b44117b9be751a1/graia_broadcast-0.18.2-py3-none-any.whl", hash = "sha256:dcb712dc5be29419c4b65dc649c4e7c795c834fb810682f6131b313d6bd3e740"},
@@ -1110,9 +1111,9 @@ content_hash = "sha256:6771bb1ce83ac08fdb1df39b1abf760e5390c8e68bb73cfaa80a0afc9
     {url = "https://files.pythonhosted.org/packages/71/39/171f1c67cd00715f190ba0b100d606d440a28c93c7714febeca8b79af85e/six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
     {url = "https://files.pythonhosted.org/packages/d9/5a/e7c31adbe875f2abbb91bd84cf2dc52d792b5a01506781dbcf25c91daf11/six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
 ]
-"statv 0.2.2" = [
-    {url = "https://files.pythonhosted.org/packages/88/a3/2efd7aa1c9404d392f9d719bbfd01a6bb99b06377299fe7da6af131e08e0/statv-0.2.2.tar.gz", hash = "sha256:a0e3be14e8a416d3b39bff18c498672abbed4bbe9648613c5bfeb45cba05cca7"},
-    {url = "https://files.pythonhosted.org/packages/b0/fa/6f133082bc939b8dbfdaf84609dcaad6a439121d5cca457e09f07cf7c181/statv-0.2.2-py3-none-any.whl", hash = "sha256:24e3c37df0db49dbb02d252ae45043342fd0862ddf4442d7f484684ad0994b34"},
+"statv 0.3.2" = [
+    {url = "https://files.pythonhosted.org/packages/17/94/90af52fbb882f7d5a86f75b8f151fabb3540a01b592d5c12646b55712266/statv-0.3.2-py3-none-any.whl", hash = "sha256:32e430b21ab6a62695c67ab6cae3dba6e01e9c3fdbc9344e3236ad7a1f51d0c7"},
+    {url = "https://files.pythonhosted.org/packages/eb/34/55f3fde006d8d6c1f8d2422856360a9fde6a3f81dcd79f9203cfeac5b9dc/statv-0.3.2.tar.gz", hash = "sha256:fb4df2a37bf7a792e36a6e657c74cbdef9e2cdb8de3a0762b28b35c9e13f0fdd"},
 ]
 "toml 0.10.2" = [
     {url = "https://files.pythonhosted.org/packages/44/6f/7120676b6d73228c96e17f1f794d8ab046fc910d781c8d151120c3f1569e/toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

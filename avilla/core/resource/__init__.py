@@ -14,6 +14,9 @@ class Resource(Cell, Generic[T]):
 
     def __init__(self, selector: Selector):
         self.selector = selector
+    
+    def to_selector(self):
+        return self.selector
 
 
 BlobResource: TypeAlias = Resource[bytes]

@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 from graia.amnesia.message import MessageChain
 
 from avilla.core.account import AbstractAccount
-from avilla.core.action.extension import ActionExtension
-from avilla.core.action.middleware import ActionMiddleware
+#from avilla.core.action.extension import ActionExtension
+#from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.context import ctx_avilla, ctx_protocol
 from avilla.core.event import AvillaEvent
 from avilla.core.platform import Abstract, Land, Platform

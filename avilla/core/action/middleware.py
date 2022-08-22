@@ -3,6 +3,7 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING, Any, AsyncContextManager
 
+"""
 if TYPE_CHECKING:
     from avilla.core.relationship import RelationshipExecutor
 
@@ -20,3 +21,4 @@ class ActionMiddleware(abc.ABC):
     @abc.abstractmethod
     def lifespan(self, executor: RelationshipExecutor) -> AsyncContextManager:
         ...
+"""

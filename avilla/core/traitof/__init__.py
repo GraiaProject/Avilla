@@ -1,13 +1,11 @@
 from __future__ import annotations
 
-import sys
 import typing
 from typing import (
     TYPE_CHECKING,
     Any,
     Awaitable,
     Callable,
-    ClassVar,
     Concatenate,
     Generic,
     ParamSpec,
@@ -17,8 +15,8 @@ from typing import (
 )
 
 from typing_extensions import Self
-from avilla.core.utilles import identity
 
+from avilla.core.utilles import identity
 from avilla.core.utilles.selector import Selector
 
 from ..cell import Cell, CellOf
@@ -146,6 +144,7 @@ class TargetTraitCall(TraitCall[_P, _T]):
         ...
 
     def __get__(self, instance: ..., owner: ...) -> ...:
+        # sourcery skip: assign-if-exp, reintroduce-else
         if instance is None:
             return self
         return DestTraitCallWrapper(instance, self)
@@ -218,6 +217,7 @@ class DestTraitCall(TraitCall[_P, _T]):
         ...
 
     def __get__(self, instance: ..., owner: ...) -> ...:
+        # sourcery skip: assign-if-exp, reintroduce-else
         if instance is None:
             return self
         return DestTraitCallWrapper(instance, self)

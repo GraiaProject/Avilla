@@ -20,229 +20,19 @@ from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Unpack
 
 from avilla.core.account import AbstractAccount
-from avilla.core.action import Action, MessageSend, StandardActionImpl
-from avilla.core.action.extension import ActionExtension
-from avilla.core.action.middleware import ActionMiddleware
+#from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
 from avilla.core.message import Message
 from avilla.core.resource import Resource
 from avilla.core.traitof import Trait, TraitRef
 from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
-from avilla.core.utilles.selector import DynamicSelector, Selectable, Selector
+from avilla.core.utilles.selector import Selectable, Selector
 
 from .traitof.signature import ArtifactSignature, CompleteRule, Pull, ResourceFetch
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
-
-"""
-_A = TypeVar("_A", bound=Action)
-_A2 = TypeVar("_A2", bound=Action)
-
-
-class RelationshipExecutor(Generic[_A]):
-    relationship: Relationship
-    action: _A
-    middlewares: list[ActionMiddleware]
-    extensions: dict[str, list[ActionExtension]]
-    _oneof_groups: set[str]
-
-    _target: Selector | None = None
-
-    def __init__(self, relationship: Relationship) -> None:
-        self.relationship = relationship
-        self.middlewares = relationship.protocol.action_middlewares + relationship.protocol.avilla.action_middlewares
-        self.extensions = {}
-        self._impl_cache = ChainMap(
-            self.relationship.protocol.extension_impls, self.relationship.avilla.extension_impls
-        )
-        self._oneof_groups = set()
-
-    def __await__(self):
-        return self.__await_impl__().__await__()
-
-    async def __await_impl__(self):
-        async with AsyncExitStack() as stack:
-            for middleware in reversed(self.middlewares):
-                await stack.enter_async_context(middleware.lifespan(self))
-            for executor_class in self.relationship.protocol.action_executors:
-                # 需要注意: 我们直接从左往右迭代了, 所以建议 full > exist long > exist short > None
-                if executor_class.pattern is None or (
-                    self._target is not None and executor_class.pattern.match(self._target)
-                ):
-                    executor = executor_class(self.relationship.protocol)
-                    implement = executor.get_implement(self.action)
-                    if isclass(implement) and issubclass(implement, StandardActionImpl):
-                        return await self.execute_standard(implement)
-                    assert not isinstance(implement, type)
-                    return await implement(executor, self.action, self.relationship)
-            if self._target is not None:
-                raise NotImplementedError(
-                    f"No action executor found for {self.action.__class__.__name__}, target for {self._target.path}"
-                )
-            else:
-                raise NotImplementedError(f"No action executor found for {self.action.__class__.__name__}")
-
-    def get_extension_impl(self, ext: ActionExtension, std: type[StandardActionImpl] | None):
-        if std is None:
-            return self._impl_cache.get(type(ext))
-        return self._impl_cache.copy().new_child(std.extension_impls).get(type(ext))
-
-    async def execute_standard(self, std: type[StandardActionImpl]):
-        for middleware in reversed(self.middlewares):
-            await middleware.before_execute(self)
-
-        params = await std.get_execute_params(self)
-
-        for middleware in reversed(self.middlewares):
-            await middleware.before_extensions_apply(self, params)
-
-        # TODO: Refactor for extension, use algo-effect-like.
-        for group, extensions in self.extensions.items():
-            if group in self._oneof_groups:
-                for ext in extensions:
-                    if (impl := self.get_extension_impl(ext, std)) is not None:
-                        await impl(self, ext, params)
-                        break
-                else:
-                    raise NotImplementedError(
-                        f"No available extension impl found for {std.__name__} in group {group}:{extensions}"
-                    )
-            else:
-                for ext in extensions:
-                    impl = self.get_extension_impl(ext, std)
-                    if impl is None:
-                        raise NotImplementedError(f"No available extension impl found for {type(ext).__name__}")
-                    await impl(self, ext, params)
-
-        for middleware in reversed(self.middlewares):
-            await middleware.on_params_ready(self, params)
-
-        return std.unwrap_result(self, await self.relationship.account.call(std.endpoint, params))
-
-    def act(self, action: _A2) -> RelationshipExecutor[_A2]:
-        self._target = action.set_default_target(self.relationship)
-        self.action = action
-        return self  # type: ignore
-
-    __call__ = act
-
-    def to(self, target: Selector):
-        self.action.set_target(target)
-        self._target = target
-        return self
-
-    def use(self, *middleware: ActionMiddleware):
-        self.middlewares.extend(middleware)
-        return self
-
-    def ext(self, group: str, extensions: list[ActionExtension], *, oneof: bool = False):
-        self.extensions[group] = extensions
-        if oneof:
-            self._oneof_groups.add(group)
-        return self
-
-""" """
-class RelationshipQuerier:
-    relationship: Relationship
-    target: Selector
-
-    def __init__(self, relationship: Relationship) -> None:
-        self.relationship = relationship
-        self.target = self.relationship.ctx.to_selector()
-
-    def __await__(self):
-        return self.__await_impl__()
-
-    @staticmethod
-    def generate_with_specified(k: str, v: str):
-        async def real_generator(upper: AsyncIterator[Selector] | None = None):
-            if upper is None:
-                yield Selector().from_dict({k: v})
-                return
-            async for upper_value in upper:
-                a = upper_value.copy()
-                a.pattern[k] = v
-                yield a
-
-        return real_generator
-
-    async def generate_from_upper(self, depth: Selector, upper: AsyncIterator[Selector] | None = None):
-        depth_keys = list(depth.pattern.keys())
-        if not depth_keys:
-            return
-        current = depth_keys[-1]
-        past = ".".join(depth_keys[:-1])
-        if depth_keys[0] != "land":
-            depth.pattern = {"land": self.relationship.land.name, **depth.pattern}
-        for querier in self.relationship.protocol.query_handlers:
-            if querier.prefix is None or querier.prefix == past:
-                querier = querier(self.relationship.protocol)
-                break
-        else:
-            raise NotImplementedError(f"No query handler found for {past}")
-        if current not in querier.queriers:
-            raise NotImplementedError(f"No querier found for {past}, {current} unimplemented")
-        if upper is None:
-            async for current_value in querier.queriers[current](
-                querier, self.relationship, Selector().land(self.relationship.land), depth.match
-            ):
-                yield current_value
-            return
-        async for upper_value in upper:
-            async for current_value in querier.queriers[current](querier, self.relationship, upper_value, depth.match):
-                yield current_value
-
-    async def __await_impl__(self):
-        if self.target.empty:
-            raise ValueError("Selector is empty.")
-        past: dict[str, str | Callable[[str], bool]] = {}
-        stack: list[AsyncIterator[Selector]] = []
-
-        for key, value in self.target.pattern.items():
-            if key == "land":
-                continue
-            past[key] = value
-            current_pattern = DynamicSelector()
-            current_pattern.pattern = past.copy()
-            if isinstance(value, str):
-                # 当前层级是明确的, 那么就只需要给 upper 上每个值加上当前层级.
-                # 如果 past 为空, 则直接返回.
-                stack.append(self.generate_with_specified(key, value)(stack[-1] if stack else None))
-            else:
-                stack.append(self.generate_from_upper(current_pattern, stack[-1] if stack else None))
-
-        async for i in stack[-1]:
-            yield i
-
-    def query(self, selector: Selector) -> RelationshipQuerier:
-        self.target = selector
-        return self
-
-    __call__ = query
-""" """
-
-class RelationshipOperateFnWarpper:
-    rs: Relationship
-    fn: type[OperateFn] | None = None
-    target: Selectable | None = None
-
-    def __init__(self, rs: Relationship):
-        self.rs = rs
-
-    def __await__(self):
-        return self.__await_impl__().__await__()
-
-    async def __await_impl__(self):
-        ...
-
-    def act(self, fn: type[OperateFn]):
-        self.fn = fn
-
-    def on(self, target: Selectable):
-        self.target = target
-"""
 
 _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Cell)
@@ -261,7 +51,7 @@ class Relationship:
     protocol: "BaseProtocol"
 
     _artifacts: ChainMap[ArtifactSignature, Any]
-    _middlewares: list[ActionMiddleware]
+    #_middlewares: list[ActionMiddleware]
 
     def __init__(
         self,
@@ -271,7 +61,7 @@ class Relationship:
         selft: Selector,
         account: AbstractAccount,
         via: Selector | None = None,
-        middlewares: list[ActionMiddleware] | None = None,
+        #middlewares: list[ActionMiddleware] | None = None,
     ) -> None:
         self.ctx = ctx
         self.mainline = mainline
@@ -279,7 +69,7 @@ class Relationship:
         self.via = via
         self.account = account
         self.protocol = protocol
-        self._middlewares = middlewares or []
+        #self._middlewares = middlewares or []
         self.cache = {"meta": {}}
         self._artifacts = ChainMap(
             self.protocol.impl_namespace.get(Scope(self.mainline.path_without_land, self.self.path_without_land), {}),
@@ -330,7 +120,9 @@ class Relationship:
             )
         return await fetcher(self, resource)
 
-    async def pull(self, path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M], target: Selector | None = None, *, flush: bool = False) -> _M:
+    async def pull(self, path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M], target: Selector | Selectable | None = None, *, flush: bool = False) -> _M:
+        if isinstance(target, Selectable):
+            target = target.to_selector()
         if target is not None:
             cached = self.cache["meta"].get(target)
             if cached is not None and path in cached:
@@ -358,8 +150,10 @@ class Relationship:
         trait_or_ref: type[_TboundTrait]
         | type[TraitRef[_TboundTrait]]
         | CellOf[Unpack[tuple[Any, ...]], TraitRef[_TboundTrait]],
-        target: Selector | None = None,
+        target: Selector | Selectable | None = None,
     ) -> _TboundTrait:
+        if isinstance(target, Selectable):
+            target = target.to_selector()
         if isinstance(trait_or_ref, type) and issubclass(trait_or_ref, Trait):
             return trait_or_ref(self, None, target=target)
         path = trait_or_ref

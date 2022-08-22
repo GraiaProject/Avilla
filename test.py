@@ -2,7 +2,7 @@ import asyncio
 import sys
 
 from creart import create
-from graia.amnesia.builtins.aiohttp import AiohttpService
+from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast
 
 from avilla.core.account import AbstractAccount
@@ -33,7 +33,7 @@ sys.excepthook = loguru_excepthook
 
 protocol = ElizabethProtocol(WebsocketClientConfig("1779309090", "testafafv4fv34v34g3y45"))
 broadcast = create(Broadcast)
-avilla = Avilla(broadcast, [protocol], [AiohttpService()])
+avilla = Avilla(broadcast, [protocol], [AiohttpClientService()])
 
 
 @broadcast.receiver(MessageReceived)
