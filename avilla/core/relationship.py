@@ -20,11 +20,13 @@ from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Unpack
 
 from avilla.core.account import AbstractAccount
-#from avilla.core.action.middleware import ActionMiddleware
+
+# from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
-from avilla.core.message import Message, MessageTrait
+from avilla.core.message import Message
 from avilla.core.resource import Resource
+from avilla.core.skeleton.message import MessageTrait
 from avilla.core.traitof import Trait
 from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
 from avilla.core.utilles.selector import Selectable, Selector
@@ -51,7 +53,7 @@ class Relationship:
     protocol: "BaseProtocol"
 
     _artifacts: ChainMap[ArtifactSignature, Any]
-    #_middlewares: list[ActionMiddleware]
+    # _middlewares: list[ActionMiddleware]
 
     def __init__(
         self,
@@ -61,7 +63,7 @@ class Relationship:
         selft: Selector,
         account: AbstractAccount,
         via: Selector | None = None,
-        #middlewares: list[ActionMiddleware] | None = None,
+        # middlewares: list[ActionMiddleware] | None = None,
     ) -> None:
         self.ctx = ctx
         self.mainline = mainline
@@ -69,7 +71,7 @@ class Relationship:
         self.via = via
         self.account = account
         self.protocol = protocol
-        #self._middlewares = middlewares or []
+        # self._middlewares = middlewares or []
         self.cache = {"meta": {}}
         self._artifacts = ChainMap(
             self.protocol.impl_namespace.get(Scope(self.mainline.path_without_land, self.self.path_without_land), {}),
@@ -120,7 +122,13 @@ class Relationship:
             )
         return await fetcher(self, resource)
 
-    async def pull(self, path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M], target: Selector | Selectable | None = None, *, flush: bool = False) -> _M:
+    async def pull(
+        self,
+        path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M],
+        target: Selector | Selectable | None = None,
+        *,
+        flush: bool = False,
+    ) -> _M:
         if isinstance(target, Selectable):
             target = target.to_selector()
         if target is not None:
@@ -148,15 +156,13 @@ class Relationship:
     def cast(
         self,
         trait: type[_TboundTrait],
-        path: type[Cell]
-        | CellOf[Unpack[tuple[Any, ...]], Cell]
-        | None = None,
+        path: type[Cell] | CellOf[Unpack[tuple[Any, ...]], Cell] | None = None,
         target: Selector | Selectable | None = None,
     ) -> _TboundTrait:
         if isinstance(target, Selectable):
             target = target.to_selector()
         return trait(self, path, target)
-    
+
     def send_message(
         self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
     ):

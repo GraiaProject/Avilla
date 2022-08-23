@@ -3,32 +3,13 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
-from avilla.core.cell import Cell
 
+from avilla.core.cell import Cell
 from avilla.core.platform import Land
-from avilla.core.traitof import TargetTraitCall, Trait
 
 if TYPE_CHECKING:
     from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
-
-
-class RequestTrait(Trait):
-    @TargetTraitCall().bound
-    async def accept(self):
-        ...
-
-    @TargetTraitCall().bound
-    async def reject(self):
-        ...
-
-    @TargetTraitCall().bound
-    async def cancel(self):
-        ...
-
-    @TargetTraitCall().bound
-    async def ignore(self):
-        ...
 
 
 @dataclass

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.message import Message, MessageTrait
+from avilla.core.message import Message
+from avilla.core.skeleton.message import MessageTrait
 from avilla.core.traitof.context import prefix, raise_for_no_namespace, scope
 from avilla.core.traitof.recorder import default_target, impl
 from avilla.core.utilles.selector import Selector

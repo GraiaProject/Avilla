@@ -9,7 +9,7 @@ from avilla.core.traitof.recorder import completes, default_target, fetch, impl,
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.resource import ElizabethAudioResource, ElizabethImageResource
 
-#from graia.amnesia.transport.common.http import AbstractClientInterface
+# from graia.amnesia.transport.common.http import AbstractClientInterface
 
 
 if TYPE_CHECKING:

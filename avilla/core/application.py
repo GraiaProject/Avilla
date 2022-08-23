@@ -78,7 +78,7 @@ class Avilla:
         broadcast: Broadcast,
         protocols: list[BaseProtocol],
         services: list[Service],
-        #middlewares: list[ActionMiddleware] | None = None,
+        # middlewares: list[ActionMiddleware] | None = None,
         launch_manager: Launart | None = None,
     ):
         if len({type(i) for i in protocols}) != len(protocols):
@@ -124,6 +124,7 @@ class Avilla:
         def warpper(v):
             self.global_artifacts[signature] = v
             return v
+
         return warpper
 
     """

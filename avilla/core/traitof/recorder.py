@@ -16,7 +16,7 @@ from typing import (
 from typing_extensions import Unpack
 
 from avilla.core.resource import Resource
-from avilla.core.traitof import DestTraitCall, TargetTraitCall
+from avilla.core.traitof import DirectFn, OrientedFn
 from avilla.core.traitof.signature import CompleteRule
 from avilla.core.traitof.signature import Impl as _Impl
 from avilla.core.traitof.signature import ImplDefaultTarget
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
     from avilla.core.relationship import Relationship
     from avilla.core.traitof.signature import ArtifactSignature
 
-    from . import TraitCall
+    from . import Fn
 
 
 class Recorder(abc.ABC):
@@ -51,32 +51,26 @@ _T = TypeVar("_T")
 
 
 class ImplRecorder(Recorder, Generic[_P, _T]):
-    trait_call: TraitCall
+    trait_call: Fn
     path: type[Cell] | CellOf | None = None
     target: str | None = None
 
     @overload
-    def __new__(
-        cls, trait_call: TargetTraitCall[_P, _T]
-    ) -> ImplRecorder[Concatenate[Selector, _P], _T]:
+    def __new__(cls, trait_call: OrientedFn[_P, _T]) -> ImplRecorder[Concatenate[Selector, _P], _T]:
         ...
 
     @overload
-    def __new__(
-        cls, trait_call: DestTraitCall[_P, _T]
-    ) -> ImplRecorder[Concatenate[Selector, _P], _T]:
+    def __new__(cls, trait_call: DirectFn[_P, _T]) -> ImplRecorder[Concatenate[Selector, _P], _T]:
         ...
 
     @overload
-    def __new__(cls, trait_call: TraitCall[_P, _T]) -> ImplRecorder[_P, _T]:
+    def __new__(cls, trait_call: Fn[_P, _T]) -> ImplRecorder[_P, _T]:
         ...
 
-    def __new__(
-        cls, trait_call: TraitCall[_P, _T]
-    ) -> ImplRecorder[_P, _T] | ImplRecorder[Concatenate[Selector, _P], _T]:
+    def __new__(cls, trait_call: Fn[_P, _T]) -> ImplRecorder[_P, _T] | ImplRecorder[Concatenate[Selector, _P], _T]:
         return super(ImplRecorder, cls).__new__(cls)
 
-    def __init__(self, trait_call: TraitCall[_P, _T]):
+    def __init__(self, trait_call: Fn[_P, _T]):
         self.trait_call = trait_call
 
     def of(self, path: type[Cell] | CellOf):
@@ -88,7 +82,7 @@ class ImplRecorder(Recorder, Generic[_P, _T]):
         return self
 
     def signature(self):
-        if isinstance(self.trait_call, DestTraitCall):  # type: ignore
+        if isinstance(self.trait_call, DirectFn):  # type: ignore
             target = eval_dotpath(".", ctx_prefix.get())
         else:
             target = self.target
@@ -156,7 +150,7 @@ class ImplDefaultTargetRecorder(Recorder):
     # trait_call: TraitCall
     path: type[Cell] | CellOf | None = None
 
-    def __init__(self, trait_call: TraitCall):
+    def __init__(self, trait_call: Fn):
         self.trait_call = trait_call
 
     def of(self, path: type[Cell] | CellOf):

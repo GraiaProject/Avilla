@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Hashable
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
     from avilla.core.resource import Resource
-    from avilla.core.traitof import TraitCall
+    from avilla.core.traitof import Fn
 
 
 class ArtifactSignature:
@@ -15,7 +15,7 @@ class ArtifactSignature:
 
 @dataclass(unsafe_hash=True)
 class Impl(ArtifactSignature):
-    trait_call: TraitCall
+    trait_call: Fn
     target: str | None
     path: type[Cell] | CellOf | None
 
@@ -44,7 +44,7 @@ class CompleteRule(ArtifactSignature):
 @dataclass(unsafe_hash=True)
 class ImplDefaultTarget(ArtifactSignature):
     path: type[Cell] | CellOf | None
-    trait_call: TraitCall
+    trait_call: Fn
 
 
 @dataclass(unsafe_hash=True)
