@@ -17,13 +17,11 @@ raise_for_no_namespace()
 
 with scope("friend"), prefix("friend"):
 
-    @default_target(None, MessageTrait.send)
-    @default_target(Message, MessageTrait.send)
+    @default_target(MessageTrait.send)
     def send_friend_message_default_target(rs: Relationship):
         return rs.ctx
 
-    @impl(None, MessageTrait.send)
-    @impl(Message, MessageTrait.send)
+    @impl(MessageTrait.send)
     async def send_friend_message(
         rs: Relationship, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
@@ -39,8 +37,7 @@ with scope("friend"), prefix("friend"):
         )
         return Selector().land(rs.land).group(target.pattern["friend"]).message(result["messageId"])
 
-    @impl(None, MessageTrait.revoke)
-    @impl(Message, MessageTrait.revoke)
+    @impl(MessageTrait.revoke)
     async def revoke_friend_message(rs: Relationship, message: Selector):
         await rs.account.call(
             "recall",

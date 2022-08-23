@@ -10,7 +10,7 @@ from avilla.core.action import MessageSend
 from avilla.core.application import Avilla
 from avilla.core.elements import Picture
 from avilla.core.event.message import MessageReceived
-from avilla.core.message import Message
+from avilla.core.message import Message, MessageTrait
 from avilla.core.relationship import Relationship
 from avilla.core.resource import LocalFileResource
 from avilla.core.utilles.selector import DynamicSelector, Selector
@@ -51,9 +51,15 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         if a:
             b = await rs.fetch(a[0].resource)
             print("pulled!", len(list(b)))
-        #r = await rs.send_message(["Hello, Avilla!", Picture(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))])
-        await asyncio.sleep(1)
-        #c = await rs.cast(Message).revoke(r)
+        r = await rs.send_message(
+            [
+                "Hello, Avilla!",
+                Picture(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg")),
+                "\n本消息将于 10s 后撤回",
+            ]
+        )
+        await asyncio.sleep(10)
+        c = await rs.cast(MessageTrait).revoke(r)
         # print(rs.complete(DynamicSelector().group("*")))
         # async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
         #    print(i)

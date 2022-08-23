@@ -16,7 +16,7 @@ from typing import (
 from typing_extensions import Unpack
 
 from avilla.core.resource import Resource
-from avilla.core.traitof import DestTraitCall
+from avilla.core.traitof import DestTraitCall, TargetTraitCall
 from avilla.core.traitof.signature import CompleteRule
 from avilla.core.traitof.signature import Impl as _Impl
 from avilla.core.traitof.signature import ImplDefaultTarget
@@ -52,29 +52,38 @@ _T = TypeVar("_T")
 
 class ImplRecorder(Recorder, Generic[_P, _T]):
     trait_call: TraitCall
-    path: type[Cell] | CellOf | None
+    path: type[Cell] | CellOf | None = None
     target: str | None = None
 
     @overload
     def __new__(
-        cls, path: type[Cell] | CellOf | None, trait_call: DestTraitCall[_P, _T]
+        cls, trait_call: TargetTraitCall[_P, _T]
     ) -> ImplRecorder[Concatenate[Selector, _P], _T]:
         ...
 
     @overload
-    def __new__(cls, path: type[Cell] | CellOf | None, trait_call: TraitCall[_P, _T]) -> ImplRecorder[_P, _T]:
+    def __new__(
+        cls, trait_call: DestTraitCall[_P, _T]
+    ) -> ImplRecorder[Concatenate[Selector, _P], _T]:
+        ...
+
+    @overload
+    def __new__(cls, trait_call: TraitCall[_P, _T]) -> ImplRecorder[_P, _T]:
         ...
 
     def __new__(
-        cls, path: type[Cell] | CellOf | None, trait_call: TraitCall[_P, _T]
+        cls, trait_call: TraitCall[_P, _T]
     ) -> ImplRecorder[_P, _T] | ImplRecorder[Concatenate[Selector, _P], _T]:
         return super(ImplRecorder, cls).__new__(cls)
 
-    def __init__(self, path: type[Cell] | CellOf | None, trait_call: TraitCall[_P, _T]):
-        self.path = path
+    def __init__(self, trait_call: TraitCall[_P, _T]):
         self.trait_call = trait_call
 
-    def of(self, target: str):
+    def of(self, path: type[Cell] | CellOf):
+        self.path = path
+        return self
+
+    def pin(self, target: str):
         self.target = eval_dotpath(target, ctx_prefix.get())
         return self
 
@@ -147,9 +156,12 @@ class ImplDefaultTargetRecorder(Recorder):
     # trait_call: TraitCall
     path: type[Cell] | CellOf | None = None
 
-    def __init__(self, path: type[Cell] | CellOf | None, trait_call: TraitCall):
-        self.path = path
+    def __init__(self, trait_call: TraitCall):
         self.trait_call = trait_call
+
+    def of(self, path: type[Cell] | CellOf):
+        self.path = path
+        return self
 
     def signature(self):
         return ImplDefaultTarget(self.path, self.trait_call)

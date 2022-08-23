@@ -17,13 +17,11 @@ raise_for_no_namespace()
 
 with scope("group"), prefix("group"):
 
-    @default_target(None, MessageTrait.send)
-    @default_target(Message, MessageTrait.send)
+    @default_target(MessageTrait.send)
     def send_group_message_default_target(rs: Relationship):
         return rs.mainline
 
-    @impl(None, MessageTrait.send)
-    @impl(Message, MessageTrait.send)
+    @impl(MessageTrait.send)
     async def send_group_message(
         rs: Relationship, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
@@ -39,8 +37,7 @@ with scope("group"), prefix("group"):
         )
         return Selector().land(rs.land).group(target.pattern["group"]).message(result["messageId"])
 
-    @impl(None, MessageTrait.revoke)
-    @impl(Message, MessageTrait.revoke)
+    @impl(MessageTrait.revoke)
     async def revoke_group_message(rs: Relationship, message: Selector):
         await rs.account.call(
             "recall",

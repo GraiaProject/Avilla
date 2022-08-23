@@ -27,18 +27,6 @@ if TYPE_CHECKING:
 
 from devtools import debug
 
-T = TypeVar("T", bound="Trait")
-
-
-class TraitRef(Cell, Generic[T]):
-    __trait_ref__: type[T]
-
-    def __init_subclass__(cls) -> None:
-        for i in cls.__orig_bases__:  # type: ignore
-            if typing.get_origin(i) is TraitRef:
-                cls.__trait_ref__ = typing.get_args(i)[0]
-        return super().__init_subclass__()
-
 
 class Trait:
     relationship: Relationship
@@ -46,7 +34,7 @@ class Trait:
     target: Selector | None = None
 
     def __init__(
-        self, relationship: Relationship, path: type[Cell] | CellOf | None = None, *, target: Selector | None = None
+        self, relationship: Relationship, path: type[Cell] | CellOf | None = None, target: Selector | None = None
     ) -> None:
         self.relationship = relationship
         self.path = path

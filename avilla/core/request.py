@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
+from avilla.core.cell import Cell
 
 from avilla.core.platform import Land
-from avilla.core.traitof import TargetTraitCall, Trait, TraitRef
+from avilla.core.traitof import TargetTraitCall, Trait
 
 if TYPE_CHECKING:
     from avilla.core.account import AbstractAccount
@@ -31,7 +32,7 @@ class RequestTrait(Trait):
 
 
 @dataclass
-class Request(TraitRef[RequestTrait]):
+class Request(Cell):
     id: str
     land: Land
     mainline: Selector

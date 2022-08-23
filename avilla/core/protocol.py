@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from contextlib import ExitStack
-from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 from graia.amnesia.message import MessageChain
@@ -75,7 +74,5 @@ class BaseProtocol(metaclass=ABCMeta):
         return await self.message_serializer.serialize_chain(self, message)
 
     def post_event(self, event: AvillaEvent):
-        with ExitStack() as stack:
-            stack.enter_context(ctx_avilla.use(self.avilla))
-            stack.enter_context(ctx_protocol.use(self))
+        with ctx_avilla.use(self.avilla), ctx_protocol.use(self):
             self.avilla.broadcast.postEvent(event)

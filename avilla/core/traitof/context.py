@@ -3,12 +3,9 @@ from __future__ import annotations
 from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, overload
+from typing import Any
 
 from avilla.core.traitof.signature import ArtifactSignature
-
-if TYPE_CHECKING:
-    from avilla.core.cell import Cell, CellOf
 
 
 @dataclass(unsafe_hash=True)

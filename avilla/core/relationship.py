@@ -23,9 +23,9 @@ from avilla.core.account import AbstractAccount
 #from avilla.core.action.middleware import ActionMiddleware
 from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
-from avilla.core.message import Message
+from avilla.core.message import Message, MessageTrait
 from avilla.core.resource import Resource
-from avilla.core.traitof import Trait, TraitRef
+from avilla.core.traitof import Trait
 from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
 from avilla.core.utilles.selector import Selectable, Selector
 
@@ -147,20 +147,16 @@ class Relationship:
 
     def cast(
         self,
-        trait_or_ref: type[_TboundTrait]
-        | type[TraitRef[_TboundTrait]]
-        | CellOf[Unpack[tuple[Any, ...]], TraitRef[_TboundTrait]],
+        trait: type[_TboundTrait],
+        path: type[Cell]
+        | CellOf[Unpack[tuple[Any, ...]], Cell]
+        | None = None,
         target: Selector | Selectable | None = None,
     ) -> _TboundTrait:
         if isinstance(target, Selectable):
             target = target.to_selector()
-        if isinstance(trait_or_ref, type) and issubclass(trait_or_ref, Trait):
-            return trait_or_ref(self, None, target=target)
-        path = trait_or_ref
-        if isinstance(trait_or_ref, CellOf):
-            trait_or_ref = cast("type[TraitRef[_TboundTrait]]", trait_or_ref.cells[-1])
-        return trait_or_ref.__trait_ref__(self, path, target=target)
-
+        return trait(self, path, target)
+    
     def send_message(
         self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
     ):
@@ -176,7 +172,7 @@ class Relationship:
         elif isinstance(reply, str):
             reply = self.mainline.copy().message(reply)
 
-        return self.cast(Message).send(message, reply=reply)
+        return self.cast(MessageTrait).send(message, reply=reply)
 
     # TODO: more shortcuts, like `accept_request` etc.
 

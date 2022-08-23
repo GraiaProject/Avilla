@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
+from avilla.core.cell import Cell
 
 from graia.amnesia.message import MessageChain
 
 from avilla.core.platform import Land
-from avilla.core.traitof import DestTraitCall, Trait, TraitCall, TraitRef
+from avilla.core.traitof import DestTraitCall, Trait, TraitCall
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -30,7 +31,7 @@ class MessageTrait(Trait):
 
 
 @dataclass
-class Message(TraitRef[MessageTrait]):
+class Message(Cell):
     id: str
     mainline: Selector
     sender: Selector
