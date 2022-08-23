@@ -9,7 +9,7 @@ class RequestTrait(Trait):
         ...
 
     @OrientedFn
-    async def reject(self):
+    async def reject(self, reason: str | None = None, forever: bool = False):
         ...
 
     @OrientedFn

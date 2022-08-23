@@ -15,6 +15,9 @@ from typing import (
     cast,
     overload,
 )
+from avilla.core.request import Request
+from avilla.core.skeleton.request import RequestTrait
+from avilla.core.skeleton.scene import SceneTrait
 
 from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Unpack
@@ -104,6 +107,27 @@ class Relationship:
         return RelationshipQuerier(self)
     """
 
+    @overload
+    async def check(self) -> None:
+        # 检查 Relationship 的存在性.
+        # 如 Relationship 的存在性无法被验证为真, 则 Relationship 不成立, 抛出错误.
+        ...
+
+    @overload
+    async def check(self, target: Selector, strict: bool = False) -> bool:
+        # 检查 target 相对于当前关系 Relationship 的存在性.
+        # 注意, 这里是 "相对于当前关系", 如 Github 的项目若为 Private, 则对于外界/Amonymous来说是不存在的, 即使他从客观上是存在的.
+        # 注意, target 不仅需要相对于当前关系是存在的, 由于关系本身处在一个 mainline 之中,
+        # mainline 相当于工作目录或者是 docker 那样的应用容器, 后者是更严谨的比喻,
+        # 因为有些操作**只能**在处于一个特定的 mainline 中才能完成, 这其中包含了访问并操作某些 target.
+        # 在 strict 模式下, target 被视作包含 "仅在当前 mainline 中才能完成的操作" 的集合中,
+        # 表示其访问或是操作必须以当前 mainline 甚至是 current(account) 为基础.
+        # 如果存在可能的 via, 则会先检查 via 的存在性, 因为 via 是维系这段关系的基础.
+        ...
+
+    async def check(self, target: Selector | None = None, strict: bool = False) -> bool | None:
+        ...
+
     def complete(self, selector: Selector, with_land: bool = False):
         output_rule = self._artifacts.get(CompleteRule(selector.path_without_land))
         if output_rule is not None:
@@ -182,23 +206,39 @@ class Relationship:
 
     # TODO: more shortcuts, like `accept_request` etc.
 
-    @overload
-    async def check(self) -> None:
-        # 检查 Relationship 的存在性.
-        # 如 Relationship 的存在性无法被验证为真, 则 Relationship 不成立, 抛出错误.
-        ...
+    async def accept_request(self, request: Request | Selector):
+        if isinstance(request, Request):
+            request = request.to_selector()
+        return await self.cast(RequestTrait, target=request).accept()
 
-    @overload
-    async def check(self, target: Selector, strict: bool = False) -> bool:
-        # 检查 target 相对于当前关系 Relationship 的存在性.
-        # 注意, 这里是 "相对于当前关系", 如 Github 的项目若为 Private, 则对于外界/Amonymous来说是不存在的, 即使他从客观上是存在的.
-        # 注意, target 不仅需要相对于当前关系是存在的, 由于关系本身处在一个 mainline 之中,
-        # mainline 相当于工作目录或者是 docker 那样的应用容器, 后者是更严谨的比喻,
-        # 因为有些操作**只能**在处于一个特定的 mainline 中才能完成, 这其中包含了访问并操作某些 target.
-        # 在 strict 模式下, target 被视作包含 "仅在当前 mainline 中才能完成的操作" 的集合中,
-        # 表示其访问或是操作必须以当前 mainline 甚至是 current(account) 为基础.
-        # 如果存在可能的 via, 则会先检查 via 的存在性, 因为 via 是维系这段关系的基础.
-        ...
+    async def reject_request(self, request: Request | Selector, reason: str | None = None, forever: bool = False):
+        if isinstance(request, Request):
+            request = request.to_selector()
+        return await self.cast(RequestTrait, target=request).reject(reason, forever)
 
-    async def check(self, target: Selector | None = None, strict: bool = False) -> bool | None:
-        ...
+    async def cancel_request(self, request: Request | Selector):
+        if isinstance(request, Request):
+            request = request.to_selector()
+        return await self.cast(RequestTrait, target=request).cancel()
+
+    async def ignore_request(self, request: Request | Selector):
+        if isinstance(request, Request):
+            request = request.to_selector()
+        return await self.cast(RequestTrait, target=request).ignore()
+
+    async def leave_scene(self, scene: Selectable | Selector | None = None):
+        if isinstance(scene, Selectable):
+            scene = scene.to_selector()
+        return await self.cast(SceneTrait, target=scene or self.mainline).leave()
+
+    async def disband_scene(self, scene: Selectable | Selector | None = None):
+        if isinstance(scene, Selectable):
+            scene = scene.to_selector()
+        return await self.cast(SceneTrait, target=scene or self.mainline).disband()
+
+    async def remove_member(
+        self, target: Selector, reason: str | None = None, scene: Selectable | Selector | None = None
+    ):
+        if isinstance(scene, Selectable):
+            scene = scene.to_selector()
+        return await self.cast(SceneTrait, target=scene or self.mainline).remove_member(target, reason)
