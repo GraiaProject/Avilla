@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import ChainMap, defaultdict, deque
+from collections import ChainMap, deque
 from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
@@ -63,18 +63,19 @@ async def _query_depth_generator(
             yield j
 
 
-def _find_querier_steps(artifacts: ChainMap[ArtifactSignature, Any], query_path: str) -> list[Query] | None:
-    @dataclass
-    class MatchStep:
-        upper: str
-        start: int
-        history: tuple[Query, ...]
+@dataclass
+class _MatchStep:
+    upper: str
+    start: int
+    history: tuple[Query, ...]
 
+
+def _find_querier_steps(artifacts: ChainMap[ArtifactSignature, Any], query_path: str) -> list[Query] | None:
     result: list[Query] | None = None
     frags: list[str] = query_path.split(".")
-    queue: deque[MatchStep] = deque([MatchStep("", 0, ())])
+    queue: deque[_MatchStep] = deque([_MatchStep("", 0, ())])
     while queue:
-        head: MatchStep = queue.popleft()
+        head: _MatchStep = queue.popleft()
         current_steps: list[str] = []
         for curr_frag in frags[head.start :]:
             current_steps.append(curr_frag)
@@ -87,7 +88,7 @@ def _find_querier_steps(artifacts: ChainMap[ArtifactSignature, Any], query_path:
                         result = [*head.history, query]
                 else:
                     queue.append(
-                        MatchStep(
+                        _MatchStep(
                             full_path,
                             head.start,
                             head.history + (query,),
