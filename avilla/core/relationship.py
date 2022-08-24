@@ -1,23 +1,17 @@
 from __future__ import annotations
 
-from collections import ChainMap
-from contextlib import AsyncExitStack
-from inspect import isclass
+from collections import ChainMap, defaultdict
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncIterator,
+    AsyncGenerator,
     Awaitable,
     Callable,
-    Generic,
     Iterable,
     TypeVar,
     cast,
     overload,
 )
-from avilla.core.request import Request
-from avilla.core.skeleton.request import RequestTrait
-from avilla.core.skeleton.scene import SceneTrait
 
 from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Unpack
@@ -28,13 +22,22 @@ from avilla.core.account import AbstractAccount
 from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
 from avilla.core.message import Message
+from avilla.core.request import Request
 from avilla.core.resource import Resource
 from avilla.core.skeleton.message import MessageTrait
+from avilla.core.skeleton.request import RequestTrait
+from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.traitof import Trait
 from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
+from avilla.core.traitof.recorder import Querier
+from avilla.core.traitof.signature import (
+    ArtifactSignature,
+    CompleteRule,
+    Pull,
+    Query,
+    ResourceFetch,
+)
 from avilla.core.utilles.selector import Selectable, Selector
-
-from .traitof.signature import ArtifactSignature, CompleteRule, Pull, ResourceFetch
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -43,7 +46,14 @@ _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Cell)
 _TboundTrait = TypeVar("_TboundTrait", bound=Trait)
 
-
+async def _query_depth_generator(current: Querier, predicate: Selector, upper_generator: AsyncGenerator[Selector, None] | None = None):
+    if upper_generator is not None:
+        async for i in upper_generator:
+            async for j in current(i, predicate):
+                yield j
+    else:
+        async for j in current(None, predicate):
+            yield j
 class Relationship:
     ctx: Selector
     mainline: Selector
@@ -101,11 +111,54 @@ class Relationship:
     def app_current(self) -> Relationship | None:
         return ctx_relationship.get(None)
 
-    """
-    @property
-    def query(self):
-        return RelationshipQuerier(self)
-    """
+    async def query(self, pattern: Selector):
+        querier_steps: list[Query] | None = None
+
+        query_map: defaultdict[str | None, dict[str, Any]] = defaultdict(dict)
+        query_path: str = pattern.path_without_land
+        candidates: dict[str, list[Query]] = {}
+
+        for k, v in self._artifacts.items():
+            if isinstance(k, Query):
+                if k.upper is None:
+                    if k.target == query_path:
+                        if querier_steps is None or 1 < len(querier_steps):
+                            querier_steps = [k]
+                    else:
+                        candidates[k.target] = [k]
+                query_map[k.upper][k.target] = v
+
+        while candidates:
+            nxt: dict[str, list[Query]] = {}
+            for upper, query_list in candidates.items():
+                for path_frag in query_map[upper]:
+                    nxt_frag = f"{upper}.{path_frag}"
+                    if nxt_frag not in query_path:
+                        continue
+                    nxt_query_list = query_list + [Query(upper, path_frag)]
+                    if nxt_frag == query_path:
+                        if querier_steps is None or len(nxt_query_list) < len(querier_steps):
+                            querier_steps: list[Query] | None = nxt_query_list
+                    else:
+                        if nxt_frag not in nxt or len(nxt_query_list) < len(nxt[nxt_frag]):
+                            nxt[nxt_frag] = nxt_query_list
+            candidates = nxt
+        
+        if querier_steps is None:
+            raise NotImplementedError # TODO: error message
+
+        querier = cast("dict[str, Querier]", {i.target: self._artifacts[i] for i in querier_steps})
+        generators: list[AsyncGenerator[Selector, None]] = []
+        
+        upper_generator: AsyncGenerator[Selector, None] | None = None
+        for k, v in querier.items():
+            pred = pattern.mixin(k)
+            current = _query_depth_generator(v, pred, upper_generator)
+            generators.append(current)
+            upper_generator = current
+            
+        async for i in generators[-1]:
+            yield i
 
     @overload
     async def check(self) -> None:

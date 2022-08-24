@@ -49,4 +49,5 @@ class ImplDefaultTarget(ArtifactSignature):
 
 @dataclass(unsafe_hash=True)
 class Query(ArtifactSignature):
-    path: str
+    upper: str | None
+    target: str

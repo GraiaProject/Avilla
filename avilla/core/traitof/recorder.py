@@ -4,11 +4,13 @@ import abc
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncGenerator,
     Awaitable,
     Callable,
     Concatenate,
     Generic,
     ParamSpec,
+    Protocol,
     TypeVar,
     overload,
 )
@@ -21,6 +23,7 @@ from avilla.core.traitof.signature import CompleteRule
 from avilla.core.traitof.signature import Impl as _Impl
 from avilla.core.traitof.signature import ImplDefaultTarget
 from avilla.core.traitof.signature import Pull as _Pull
+from avilla.core.traitof.signature import Query
 from avilla.core.traitof.signature import ResourceFetch as _ResourceFatch
 from avilla.core.utilles.selector import Selector
 
@@ -129,7 +132,7 @@ class PullRecorder(Recorder, Generic[_C]):
     def signature(self):
         return _Pull(eval_dotpath(self.target, ctx_prefix.get()) if self.target is not None else None, self.path)
 
-    def __call__(self, content: Callable[[Relationship, Selector], Awaitable[_C]]):
+    def __call__(self, content: Callable[[Relationship, Selector | None], Awaitable[_C]]):
         return super().__call__(content)
 
 
@@ -141,9 +144,17 @@ def completes(relative: str, output: str):
     r[CompleteRule(eval_dotpath(relative, ctx_prefix.get()))] = eval_dotpath(output, ctx_prefix.get())
 
 
-def query(path: str):
-    # TODO: Redesign, 主要是 Upper 的传递方式, 路径的自动组合之类的
-    ...
+class Querier(Protocol):
+    def __call__(self, upper: Selector | None, predicate: Selector) -> AsyncGenerator[Selector, None]:
+        ...
+
+
+def query(upper: str | None, target: str):
+    def wrapper(querier: Querier):
+        r = get_current_namespace()
+        r[Query(upper, target)] = querier
+        return querier
+    return wrapper
 
 
 class ImplDefaultTargetRecorder(Recorder):
