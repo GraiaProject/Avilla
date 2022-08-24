@@ -15,6 +15,7 @@ dependencies = [
 ]
 version = "0"
 requires-python = ">=3.9"
+
 [project.optional-dependencies]
 
 [tool.pdm.dev-dependencies]
@@ -24,7 +25,6 @@ dev = [
     "isort>=5.10.1",
     "typing-extensions>=4.2.0",
     "graia-scheduler>=0.0.8",
-    "pdm-mina>=0.2.0",
     "mina-build>=0.2.6",
     "pre-commit>=2.20.0",
     "devtools>=0.9.0",
