@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from collections import ChainMap, defaultdict
+from collections import ChainMap, defaultdict, deque
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -62,6 +63,39 @@ async def _query_depth_generator(
             yield j
 
 
+def _find_querier_steps(artifacts: ChainMap[ArtifactSignature, Any], query_path: str) -> list[Query] | None:
+    @dataclass
+    class MatchStep:
+        upper: str
+        start: int
+        history: tuple[Query, ...]
+
+    result: list[Query] | None = None
+    frags: list[str] = query_path.split(".")
+    queue: deque[MatchStep] = deque([MatchStep("", 0, ())])
+    while queue:
+        head: MatchStep = queue.popleft()
+        current_steps: list[str] = []
+        for curr_frag in frags[head.start :]:
+            current_steps.append(curr_frag)
+            steps = ".".join(current_steps)
+            full_path = f"{head.upper}.{steps}" if head.upper else steps
+            head.start += 1
+            if (query := Query(head.upper or None, steps)) in artifacts:
+                if full_path == query_path:
+                    if result is None or len(result) > len(head.history) + 1:
+                        result = [*head.history, query]
+                else:
+                    queue.append(
+                        MatchStep(
+                            full_path,
+                            head.start,
+                            head.history + (query,),
+                        )
+                    )
+    return result
+
+
 class Relationship:
     ctx: Selector
     mainline: Selector
@@ -120,41 +154,12 @@ class Relationship:
         return ctx_relationship.get(None)
 
     async def query(self, pattern: Selector, with_land: bool = False):
-        querier_steps: list[Query] | None = None
-
-        query_map: defaultdict[str | None, dict[str, Any]] = defaultdict(dict)
-        query_path: str = pattern.path_without_land
-        candidates: dict[str, list[Query]] = {}
-
-        for k, v in self._artifacts.items():
-            if isinstance(k, Query):
-                if k.upper is None:
-                    if k.target == query_path:
-                        if querier_steps is None or len(querier_steps) > 1:
-                            querier_steps = [k]
-                    else:
-                        candidates[k.target] = [k]
-                query_map[k.upper][k.target] = v
-
-        while candidates:
-            nxt: dict[str, list[Query]] = {}
-            for upper, query_list in candidates.items():
-                for path_frag in query_map[upper]:
-                    nxt_frag = f"{upper}.{path_frag}"
-                    if nxt_frag not in query_path:
-                        continue
-                    nxt_query_list = query_list + [Query(upper, path_frag)]
-                    if nxt_frag == query_path:
-                        if querier_steps is None or len(nxt_query_list) < len(querier_steps):
-                            querier_steps: list[Query] | None = nxt_query_list
-                    elif nxt_frag not in nxt or len(nxt_query_list) < len(nxt[nxt_frag]):
-                        nxt[nxt_frag] = nxt_query_list
-            candidates = nxt
+        querier_steps: list[Query] | None = _find_querier_steps(
+            self._artifacts, pattern.path if with_land else pattern.path_without_land
+        )
 
         if querier_steps is None:
-            raise NotImplementedError(
-                f'cannot query "{pattern.path_without_land}" due to unknown step calc.'
-            )
+            raise NotImplementedError(f'cannot query "{pattern.path_without_land}" due to unknown step calc.')
 
         querier = cast("dict[Query, Querier]", {i: self._artifacts[i] for i in querier_steps})
         generators: list[AsyncGenerator[Selector, None]] = []
