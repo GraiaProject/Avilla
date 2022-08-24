@@ -130,7 +130,7 @@ class Relationship:
             if isinstance(k, Query):
                 if k.upper is None:
                     if k.target == query_path:
-                        if querier_steps is None or 1 < len(querier_steps):
+                        if querier_steps is None or len(querier_steps) > 1:
                             querier_steps = [k]
                     else:
                         candidates[k.target] = [k]
@@ -147,13 +147,14 @@ class Relationship:
                     if nxt_frag == query_path:
                         if querier_steps is None or len(nxt_query_list) < len(querier_steps):
                             querier_steps: list[Query] | None = nxt_query_list
-                    else:
-                        if nxt_frag not in nxt or len(nxt_query_list) < len(nxt[nxt_frag]):
-                            nxt[nxt_frag] = nxt_query_list
+                    elif nxt_frag not in nxt or len(nxt_query_list) < len(nxt[nxt_frag]):
+                        nxt[nxt_frag] = nxt_query_list
             candidates = nxt
 
         if querier_steps is None:
-            raise NotImplementedError  # TODO: error message
+            raise NotImplementedError(
+                f'cannot query "{pattern.path_without_land}" due to unknown step calc.'
+            )
 
         querier = cast("dict[Query, Querier]", {i: self._artifacts[i] for i in querier_steps})
         generators: list[AsyncGenerator[Selector, None]] = []
@@ -165,11 +166,10 @@ class Relationship:
             current = _query_depth_generator(self, v, pred, generators[-1] if generators else None)
             generators.append(current)
 
-        if with_land:
-            async for i in generators[-1]:
+        async for i in generators[-1]:
+            if with_land:
                 yield Selector.from_dict({"land": self.land.name, **i.pattern})
-        else:
-            async for i in generators[-1]:
+            else:
                 yield i
 
     @overload
