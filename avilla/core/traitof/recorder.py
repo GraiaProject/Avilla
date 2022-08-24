@@ -144,13 +144,20 @@ def completes(relative: str, output: str):
     r[CompleteRule(eval_dotpath(relative, ctx_prefix.get()))] = eval_dotpath(output, ctx_prefix.get())
 
 
-class Querier(Protocol):
-    def __call__(self, upper: Selector | None, predicate: Selector) -> AsyncGenerator[Selector, None]:
-        ...
+
+Querier = Callable[["Relationship", Selector | None, Selector], AsyncGenerator[Selector, None]]
 
 
-def query(upper: str | None, target: str):
-    def wrapper(querier: Querier):
+@overload
+def query(upper: None, target: str) -> Callable[[Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]]], Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]]]:
+    ...
+
+@overload
+def query(upper: str, target: str) -> Callable[[Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]]], Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]]]:
+    ...
+
+def query(upper: str | None, target: str) -> ...:
+    def wrapper(querier):
         r = get_current_namespace()
         r[Query(upper, target)] = querier
         return querier

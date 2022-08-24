@@ -46,14 +46,22 @@ _T = TypeVar("_T")
 _M = TypeVar("_M", bound=Cell)
 _TboundTrait = TypeVar("_TboundTrait", bound=Trait)
 
-async def _query_depth_generator(current: Querier, predicate: Selector, upper_generator: AsyncGenerator[Selector, None] | None = None):
+
+async def _query_depth_generator(
+    rs: Relationship,
+    current: Querier,
+    predicate: Selector,
+    upper_generator: AsyncGenerator[Selector, None] | None = None,
+):
     if upper_generator is not None:
         async for i in upper_generator:
-            async for j in current(i, predicate):
+            async for j in current(rs, i, predicate):
                 yield j
     else:
-        async for j in current(None, predicate):
+        async for j in current(rs, None, predicate):
             yield j
+
+
 class Relationship:
     ctx: Selector
     mainline: Selector
@@ -111,7 +119,7 @@ class Relationship:
     def app_current(self) -> Relationship | None:
         return ctx_relationship.get(None)
 
-    async def query(self, pattern: Selector):
+    async def query(self, pattern: Selector, with_land: bool = False):
         querier_steps: list[Query] | None = None
 
         query_map: defaultdict[str | None, dict[str, Any]] = defaultdict(dict)
@@ -143,22 +151,26 @@ class Relationship:
                         if nxt_frag not in nxt or len(nxt_query_list) < len(nxt[nxt_frag]):
                             nxt[nxt_frag] = nxt_query_list
             candidates = nxt
-        
-        if querier_steps is None:
-            raise NotImplementedError # TODO: error message
 
-        querier = cast("dict[str, Querier]", {i.target: self._artifacts[i] for i in querier_steps})
+        if querier_steps is None:
+            raise NotImplementedError  # TODO: error message
+
+        querier = cast("dict[Query, Querier]", {i: self._artifacts[i] for i in querier_steps})
         generators: list[AsyncGenerator[Selector, None]] = []
-        
-        upper_generator: AsyncGenerator[Selector, None] | None = None
+
+        past = []
         for k, v in querier.items():
-            pred = pattern.mixin(k)
-            current = _query_depth_generator(v, pred, upper_generator)
+            past.append(k.target)
+            pred = pattern.mixin(".".join(past))
+            current = _query_depth_generator(self, v, pred, generators[-1] if generators else None)
             generators.append(current)
-            upper_generator = current
-            
-        async for i in generators[-1]:
-            yield i
+
+        if with_land:
+            async for i in generators[-1]:
+                yield Selector.from_dict({"land": self.land.name, **i.pattern})
+        else:
+            async for i in generators[-1]:
+                yield i
 
     @overload
     async def check(self) -> None:
