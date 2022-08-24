@@ -25,6 +25,14 @@ class Mute(Trait):
     async def unmute(self, target: Selector) -> None:
         ...
 
+    @Fn
+    async def mute_all(self, target: Selector) -> None:
+        ...
+    
+    @Fn
+    async def unmute_all(self, target: Selector) -> None:
+        ...
+
     # Fetch => rs.pull(MuteInfo, target=...)
 
 
