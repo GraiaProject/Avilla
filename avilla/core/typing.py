@@ -10,7 +10,6 @@ from typing import (
 )
 
 if TYPE_CHECKING:
-    from avilla.core.action.extension import ActionExtension
     from avilla.core.protocol import BaseProtocol
 
 """
