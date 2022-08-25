@@ -35,7 +35,7 @@ with scope("group"), prefix("group"):
         result = await rs.account.call(
             "sendGroupMessage",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "target": int(target.pattern["group"]),
                 "messageChain": serialized_msg,
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
@@ -48,7 +48,7 @@ with scope("group"), prefix("group"):
         await rs.account.call(
             "recall",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "messageId": int(message.pattern["message"]),
                 "target": int(message.pattern["group"]),
             },
@@ -65,7 +65,7 @@ with scope("group"), prefix("group"):
         await rs.account.call(
             "mute",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "target": int(target.pattern["group"]),
                 "memberId": int(target.pattern["member"]),
                 "time": time,
@@ -80,7 +80,7 @@ with scope("group"), prefix("group"):
         await rs.account.call(
             "unmute",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "target": int(target.pattern["group"]),
                 "memberId": int(target.pattern["member"]),
             },
@@ -91,7 +91,7 @@ with scope("group"), prefix("group"):
         await rs.account.call(
             "muteAll",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "target": int(target.pattern["group"]),
             },
         )
@@ -101,14 +101,14 @@ with scope("group"), prefix("group"):
         await rs.account.call(
             "unmuteAll",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "target": int(target.pattern["group"]),
             },
         )
 
     @impl(SceneTrait.leave).pin("group")
     async def leave(rs: Relationship, target: Selector):
-        await rs.account.call("quit", {"__method__": "post", "target": int(target.pattern["group"])})
+        await rs.account.call("quit", {"__method__": "update", "target": int(target.pattern["group"])})
 
     @impl(SceneTrait.remove_member)
     async def remove_member(rs: Relationship, target: Selector, reason: str | None = None):
@@ -117,7 +117,7 @@ with scope("group"), prefix("group"):
             raise PermissionError()  # TODO: error message, including Summary info
         await rs.account.call(
             "kick",
-            {"__method__": "post", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
+            {"__method__": "update", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
 
     @pull(Summary).of("group")
@@ -125,7 +125,7 @@ with scope("group"), prefix("group"):
         assert target is not None
         result = await rs.account.call(
             "groupConfig",
-            {"__method__": "get", "target": int(target.pattern["group"])},
+            {"__method__": "fetch", "target": int(target.pattern["group"])},
         )
         return Summary(describe=Summary, name=result["name"], description=None)
 
@@ -133,21 +133,40 @@ with scope("group"), prefix("group"):
     async def group_set_name(rs: Relationship, target: Selector, name: str):
         await rs.account.call(
             "groupConfig",
-            {"__method__": "post", "target": int(target.pattern["group"]), "config": {"name": name}},
+            {"__method__": "update", "target": int(target.pattern["group"]), "config": {"name": name}},
         )
+
+    @pull(Privilege).of("group.member")
+    async def group_get_privilege_info(rs: Relationship, target: Selector | None) -> Privilege:
+        self_info = await rs.account.call(
+            "memberInfo",
+            {"__method__": "fetch", "target": int(rs.self.pattern['group']), "memberId": int(rs.self.pattern["member"])},
+        )
+        if target is None:
+            return Privilege(Privilege, self_info['permission'] in {"OWNER", "ADMINISTRATOR"}, self_info['permission'] in {"OWNER", "ADMINISTRATOR"})
+        target_info = await rs.account.call(
+            "memberInfo",
+            {"__method__": "fetch", "target": int(target.pattern['group']), "memberId": int(target.pattern["member"])},
+        )
+        return Privilege(
+            Privilege,
+            self_info['permission'] in {"OWNER", "ADMINISTRATOR"},
+            self_info['permission'] in {"OWNER", "ADMINISTRATOR"} and target_info['permission'] not in {"OWNER", "ADMINISTRATOR"}
+        )
+
 
     @pull(Nick).of("group.member")
     async def get_member_nick(rs: Relationship, target: Selector | None) -> Nick:
         assert target is not None
         result = await rs.account.call(
             "memberInfo",
-            {"__method__": "get", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
+            {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
         return Nick(Nick, result["memberName"], result["memberName"], result["specialTitle"])
 
     @query(None, "group")
     async def get_groups(rs: Relationship, upper: None, predicate: Selector):
-        result: list[dict] = await rs.account.call("groupList", {"__method__": "get"})
+        result: list[dict] = await rs.account.call("groupList", {"__method__": "fetch"})
         for i in result:
             group = Selector().group(str(i["id"]))
             if predicate.match(group):
@@ -156,7 +175,7 @@ with scope("group"), prefix("group"):
     @query("group", "member")
     async def get_group_members(rs: Relationship, upper: Selector, predicate: Selector):
         result: list[dict] = await rs.account.call(
-            "memberList", {"__method__": "get", "target": int(upper.pattern["group"])}
+            "memberList", {"__method__": "fetch", "target": int(upper.pattern["group"])}
         )
         for i in result:
             member = Selector().group(str(i["group"]["id"])).member(str(i["id"]))

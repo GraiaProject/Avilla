@@ -1,6 +1,9 @@
 import asyncio
+from datetime import timedelta
 import sys
+from avilla.core.cell.cells import Privilege
 from avilla.core.skeleton.message import MessageTrait
+from avilla.core.skeleton.privilege import Mute
 
 from creart import create
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
@@ -19,9 +22,6 @@ from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
 
 
-import richuru
-richuru.install()
-
 protocol = ElizabethProtocol(WebsocketClientConfig("1779309090", "testafafv4fv34v34g3y45"))
 broadcast = create(Broadcast)
 avilla = Avilla(broadcast, [protocol], [AiohttpClientService()])
@@ -30,6 +30,7 @@ avilla = Avilla(broadcast, [protocol], [AiohttpClientService()])
 @broadcast.receiver(MessageReceived)
 async def on_message_received(event: MessageReceived, rs: Relationship, account: AbstractAccount):
     print(event, rs, rs.ctx.pattern, DynamicSelector(mode="exist").member(lambda x: x == "1846913566").match(rs.ctx))
+    print(await rs.pull(Privilege, rs.ctx))
     if DynamicSelector.fragment().group("*").member("1846913566").match(rs.ctx):
         # await rs.exec(MessageSend([
         #    "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
@@ -49,12 +50,14 @@ async def on_message_received(event: MessageReceived, rs: Relationship, account:
         #        "\n本消息将于 10s 后撤回",
         #    ]
         #)
-        #await asyncio.sleep(10)
+        #print(await rs.cast(Mute).mute(rs.mainline.copy().member("3542335634"), timedelta(minutes=10)))
+        #await asyncio.sleep(2)
+        #print(await rs.cast(Mute).unmute(rs.mainline.copy().member("3542335634")))
         #c = await rs.cast(MessageTrait).revoke(r)
-        print("1")
-        async for i in rs.query(DynamicSelector().group("*").member("*")):
-            print(i)
-        print("2")
+        #print("1")
+        #async for i in rs.query(DynamicSelector().group("*").member("*")):
+        #    print(i)
+        #print("2")
         # print(rs.complete(DynamicSelector().group("*")))
         # async for i in rs.query(DynamicSelector().land(rs.land).group("*").member("*")):
         #    print(i)
