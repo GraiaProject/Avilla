@@ -19,18 +19,8 @@ from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
 
 
-def loguru_excepthook(ex_type, ex_value, ex_traceback):
-    if ex_type is not None:
-        import loguru
-
-        loguru.logger.opt(exception=(ex_type, ex_value, ex_traceback)).error("Unhandled exception")
-    else:
-        import sys
-
-        sys.__excepthook__(ex_type, ex_value, ex_traceback)
-
-
-sys.excepthook = loguru_excepthook
+import richuru
+richuru.install()
 
 protocol = ElizabethProtocol(WebsocketClientConfig("1779309090", "testafafv4fv34v34g3y45"))
 broadcast = create(Broadcast)
