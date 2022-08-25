@@ -28,10 +28,10 @@ from avilla.core.resource import Resource
 from avilla.core.skeleton.message import MessageTrait
 from avilla.core.skeleton.request import RequestTrait
 from avilla.core.skeleton.scene import SceneTrait
-from avilla.core.traitof import Trait
-from avilla.core.traitof.context import GLOBAL_SCOPE, Scope
-from avilla.core.traitof.recorder import Querier
-from avilla.core.traitof.signature import (
+from avilla.core.trait import Trait
+from avilla.core.trait.context import GLOBAL_SCOPE, Scope
+from avilla.core.trait.recorder import Querier
+from avilla.core.trait.signature import (
     ArtifactSignature,
     CompleteRule,
     Pull,

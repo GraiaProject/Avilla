@@ -5,7 +5,7 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any
 
-from avilla.core.traitof.signature import ArtifactSignature
+from avilla.core.trait.signature import ArtifactSignature
 
 
 @dataclass(unsafe_hash=True)

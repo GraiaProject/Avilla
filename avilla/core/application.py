@@ -16,11 +16,11 @@ from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import LocalFileResource
 from avilla.core.service import AvillaService
-from avilla.core.traitof.signature import ResourceFetch
+from avilla.core.trait.signature import ResourceFetch
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.traitof.signature import ArtifactSignature
+    from avilla.core.trait.signature import ArtifactSignature
 
 AVILLA_ASCII_LOGO = cleandoc(
     r"""

@@ -5,7 +5,7 @@ from typing import ClassVar
 from avilla.core.application import Avilla
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
-from avilla.core.traitof.context import wrap_namespace
+from avilla.core.trait.context import wrap_namespace
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.event_parser import ElizabethEventParser

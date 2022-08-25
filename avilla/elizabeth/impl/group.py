@@ -9,8 +9,8 @@ from avilla.core.skeleton.message import MessageTrait
 from avilla.core.skeleton.privilege import Mute
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.skeleton.summary import SummaryTrait
-from avilla.core.traitof.context import prefix, raise_for_no_namespace, scope
-from avilla.core.traitof.recorder import default_target, impl, pull, query
+from avilla.core.trait.context import prefix, raise_for_no_namespace, scope
+from avilla.core.trait.recorder import default_target, impl, pull, query
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:

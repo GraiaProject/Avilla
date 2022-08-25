@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from avilla.core.traitof import Fn, OrientedFn, Trait
+from avilla.core.trait import Fn, OrientedFn, Trait
 from avilla.core.utilles.selector import Selector
 
 

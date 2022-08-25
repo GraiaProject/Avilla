@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 
-from avilla.core.traitof.context import prefix, raise_for_no_namespace, scope
-from avilla.core.traitof.recorder import completes, default_target, fetch, impl, pull
+from avilla.core.trait.context import prefix, raise_for_no_namespace, scope
+from avilla.core.trait.recorder import completes, default_target, fetch, impl, pull
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.resource import ElizabethAudioResource, ElizabethImageResource
 

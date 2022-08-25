@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core.traitof import DirectFn, Fn, Trait
+from avilla.core.trait import DirectFn, Fn, Trait
 from avilla.core.utilles.selector import Selector
 
 

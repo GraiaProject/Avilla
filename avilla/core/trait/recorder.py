@@ -18,13 +18,13 @@ from typing import (
 from typing_extensions import Unpack
 
 from avilla.core.resource import Resource
-from avilla.core.traitof import DirectFn, OrientedFn
-from avilla.core.traitof.signature import CompleteRule
-from avilla.core.traitof.signature import Impl as _Impl
-from avilla.core.traitof.signature import ImplDefaultTarget
-from avilla.core.traitof.signature import Pull as _Pull
-from avilla.core.traitof.signature import Query
-from avilla.core.traitof.signature import ResourceFetch as _ResourceFatch
+from avilla.core.trait import DirectFn, OrientedFn
+from avilla.core.trait.signature import CompleteRule
+from avilla.core.trait.signature import Impl as _Impl
+from avilla.core.trait.signature import ImplDefaultTarget
+from avilla.core.trait.signature import Pull as _Pull
+from avilla.core.trait.signature import Query
+from avilla.core.trait.signature import ResourceFetch as _ResourceFatch
 from avilla.core.utilles.selector import Selector
 
 from .context import ctx_prefix, eval_dotpath, get_current_namespace
@@ -32,7 +32,7 @@ from .context import ctx_prefix, eval_dotpath, get_current_namespace
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
     from avilla.core.relationship import Relationship
-    from avilla.core.traitof.signature import ArtifactSignature
+    from avilla.core.trait.signature import ArtifactSignature
 
     from . import Fn
 

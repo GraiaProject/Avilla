@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Hashable
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
     from avilla.core.resource import Resource
-    from avilla.core.traitof import Fn
+    from avilla.core.trait import Fn
 
 
 class ArtifactSignature:
