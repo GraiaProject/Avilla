@@ -8,7 +8,7 @@ from avilla.core.cell.cells import Nick, Privilege, Summary
 from avilla.core.exceptions import permission_error_message
 from avilla.core.message import Message
 from avilla.core.skeleton.message import MessageTrait
-from avilla.core.skeleton.privilege import Mute
+from avilla.core.skeleton.privilege import MuteTrait
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.skeleton.summary import SummaryTrait
 from avilla.core.trait.context import prefix, raise_for_no_namespace, scope
@@ -56,13 +56,15 @@ with scope("elizabeth", "group"), prefix("group"):
             },
         )
 
-    @impl(Mute.mute)
+    @impl(MuteTrait.mute)
     async def mute_member(rs: Relationship, target: Selector, duration: timedelta):
         privilege_info = await rs.pull(Privilege, target)
         if not privilege_info.effective:
             self_privilege_info = await rs.pull(Privilege >> Summary, rs.self)
             raise PermissionError(
-                permission_error_message(f"Mute.mute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"])
+                permission_error_message(
+                    f"Mute.mute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
+                )
             )
         time = max(0, min(int(duration.total_seconds()), 2592000))  # Fix time parameter
         if not time:
@@ -77,13 +79,15 @@ with scope("elizabeth", "group"), prefix("group"):
             },
         )
 
-    @impl(Mute.unmute)
+    @impl(MuteTrait.unmute)
     async def unmute_member(rs: Relationship, target: Selector):
         privilege_info = await rs.pull(Privilege, target)
         if not privilege_info.effective:
             self_privilege_info = await rs.pull(Privilege >> Summary, rs.self)
             raise PermissionError(
-                permission_error_message(f"Mute.unmute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"])
+                permission_error_message(
+                    f"Mute.unmute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
+                )
             )
         await rs.account.call(
             "unmute",
@@ -94,7 +98,7 @@ with scope("elizabeth", "group"), prefix("group"):
             },
         )
 
-    @impl(Mute.mute_all)
+    @impl(MuteTrait.mute_all)
     async def group_mute_all(rs: Relationship, target: Selector):
         await rs.account.call(
             "muteAll",
@@ -104,7 +108,7 @@ with scope("elizabeth", "group"), prefix("group"):
             },
         )
 
-    @impl(Mute.unmute_all)
+    @impl(MuteTrait.unmute_all)
     async def group_unmute_all(rs: Relationship, target: Selector):
         await rs.account.call(
             "unmuteAll",

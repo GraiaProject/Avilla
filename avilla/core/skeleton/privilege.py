@@ -6,7 +6,7 @@ from avilla.core.trait import Fn, Trait
 from avilla.core.utilles.selector import Selector
 
 
-class Privilege(Trait):
+class PrivilegeTrait(Trait):
     @Fn
     async def upgrade(self, target: Selector, dest: str | None = None) -> None:
         ...
@@ -16,7 +16,7 @@ class Privilege(Trait):
         ...
 
 
-class Mute(Trait):
+class MuteTrait(Trait):
     @Fn
     async def mute(self, target: Selector, duration: timedelta) -> None:
         ...
@@ -36,7 +36,7 @@ class Mute(Trait):
     # Fetch => rs.pull(MuteInfo, target=...)
 
 
-class Ban(Trait):
+class BanTrait(Trait):
     @Fn
     async def ban(self, target: Selector, duration: timedelta | None = None) -> None:
         ...
