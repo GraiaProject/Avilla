@@ -22,9 +22,12 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 
 > 项目名称取自日本轻小说 《魔女之旅》 的角色 "艾维莉亚(Avilla)".
 
+<p align="center">
+
 |Docs|[![docs](https://img.shields.io/badge/docs%20on-readthedocs-black)](https://graia.readthedocs.io/)|[![docs](https://img.shields.io/badge/docs%20on-netlify-informational)](https://graia.netlify.app/)|[![docs](https://img.shields.io/badge/docs%20on-cloudflare-orange)](https://graia.pages.dev/)|
 |:-:|:-:|:-:|:-:|
 
+</p>
 
 ## Notable Features
 
