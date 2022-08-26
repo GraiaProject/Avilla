@@ -51,3 +51,7 @@ class ImplDefaultTarget(ArtifactSignature):
 class Query(ArtifactSignature):
     upper: str | None
     target: str
+
+@dataclass(unsafe_hash=True)
+class Check(ArtifactSignature):
+    target: str

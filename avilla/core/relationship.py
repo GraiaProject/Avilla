@@ -33,6 +33,7 @@ from avilla.core.trait.context import GLOBAL_SCOPE, Scope
 from avilla.core.trait.recorder import Querier
 from avilla.core.trait.signature import (
     ArtifactSignature,
+    Check,
     CompleteRule,
     Pull,
     Query,
@@ -179,13 +180,13 @@ class Relationship:
                 yield i
 
     @overload
-    async def check(self) -> None:
+    async def check(self, *, check_via: bool = True) -> None:
         # 检查 Relationship 的存在性.
         # 如 Relationship 的存在性无法被验证为真, 则 Relationship 不成立, 抛出错误.
         ...
 
     @overload
-    async def check(self, target: Selector, strict: bool = False) -> bool:
+    async def check(self, target: Selector, *, strict: bool = False, check_via: bool = True) -> bool:
         # 检查 target 相对于当前关系 Relationship 的存在性.
         # 注意, 这里是 "相对于当前关系", 如 Github 的项目若为 Private, 则对于外界/Amonymous来说是不存在的, 即使他从客观上是存在的.
         # 注意, target 不仅需要相对于当前关系是存在的, 由于关系本身处在一个 mainline 之中,
@@ -196,8 +197,19 @@ class Relationship:
         # 如果存在可能的 via, 则会先检查 via 的存在性, 因为 via 是维系这段关系的基础.
         ...
 
-    async def check(self, target: Selector | None = None, strict: bool = False) -> bool | None:
-        ...
+    async def check(self, target: Selector | None = None, *, strict: bool = False, check_via: bool = True) -> bool | None:
+        # FIXME: check this sentence again
+        if check_via and self.via is not None:
+            await self.check(self.via, strict=True, check_via=False)
+        checker = self._artifacts.get(Check((target or self.ctx).path_without_land))
+        if checker is None:
+            raise NotImplementedError(
+                f'cannot check existence & accessible of "{(target or self.ctx).path_without_land}" due to notimplemented checker'
+            )
+        result = checker(self, target)
+        if strict and not result:
+            raise ValueError(f"check failed on {target or self.ctx!r}")
+        return result
 
     def complete(self, selector: Selector, with_land: bool = False):
         output_rule = self._artifacts.get(CompleteRule(selector.path_without_land))
