@@ -68,3 +68,11 @@ class UnknownError(Exception):
 
 class DeprecatedError(Exception):
     """该接口已弃用."""
+
+
+def permission_error_message(operator: str, current: str, required: list[str]):
+    return (
+        f'missing permission: {operator} required ' +
+        " or ".join(f'"{i}"' for i in required) +
+        f" but current is {current}"
+    )

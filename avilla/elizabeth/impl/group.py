@@ -1,9 +1,11 @@
 from __future__ import annotations
+from collections import defaultdict
 
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.cell.cells import Nick, Privilege, Summary
+from avilla.core.exceptions import permission_error_message
 from avilla.core.message import Message
 from avilla.core.skeleton.message import MessageTrait
 from avilla.core.skeleton.privilege import Mute
@@ -21,7 +23,7 @@ if TYPE_CHECKING:
 
 raise_for_no_namespace()
 
-with scope("group"), prefix("group"):
+with scope("elizabeth", "group"), prefix("group"):
 
     @default_target(MessageTrait.send)
     def send_group_message_default_target(rs: Relationship):
@@ -58,7 +60,10 @@ with scope("group"), prefix("group"):
     async def mute_member(rs: Relationship, target: Selector, duration: timedelta):
         privilege_info = await rs.pull(Privilege, target)
         if not privilege_info.effective:
-            raise PermissionError()  # TODO: error message, including Summary info
+            self_privilege_info = await rs.pull(Privilege >> Summary, rs.self)
+            raise PermissionError(
+                permission_error_message(f"Mute.mute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"])
+            )
         time = max(0, min(int(duration.total_seconds()), 2592000))  # Fix time parameter
         if not time:
             return
@@ -76,7 +81,10 @@ with scope("group"), prefix("group"):
     async def unmute_member(rs: Relationship, target: Selector):
         privilege_info = await rs.pull(Privilege, target)
         if not privilege_info.effective:
-            raise PermissionError()  # TODO: error message, including Summary info
+            self_privilege_info = await rs.pull(Privilege >> Summary, rs.self)
+            raise PermissionError(
+                permission_error_message(f"Mute.unmute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"])
+            )
         await rs.account.call(
             "unmute",
             {
@@ -140,20 +148,56 @@ with scope("group"), prefix("group"):
     async def group_get_privilege_info(rs: Relationship, target: Selector | None) -> Privilege:
         self_info = await rs.account.call(
             "memberInfo",
-            {"__method__": "fetch", "target": int(rs.self.pattern['group']), "memberId": int(rs.self.pattern["member"])},
+            {
+                "__method__": "fetch",
+                "target": int(rs.self.pattern["group"]),
+                "memberId": int(rs.self.pattern["member"]),
+            },
         )
         if target is None:
-            return Privilege(Privilege, self_info['permission'] in {"OWNER", "ADMINISTRATOR"}, self_info['permission'] in {"OWNER", "ADMINISTRATOR"})
+            return Privilege(
+                Privilege,
+                self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
+                self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
+            )
         target_info = await rs.account.call(
             "memberInfo",
-            {"__method__": "fetch", "target": int(target.pattern['group']), "memberId": int(target.pattern["member"])},
+            {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
         return Privilege(
             Privilege,
-            self_info['permission'] in {"OWNER", "ADMINISTRATOR"},
-            self_info['permission'] in {"OWNER", "ADMINISTRATOR"} and target_info['permission'] not in {"OWNER", "ADMINISTRATOR"}
+            self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
+            self_info["permission"] in {"OWNER", "ADMINISTRATOR"}
+            and target_info["permission"] not in {"OWNER", "ADMINISTRATOR"},
         )
 
+    @pull(Privilege >> Summary).of("group.member")
+    async def group_get_privilege_summary_info(rs: Relationship, target: Selector | None) -> Summary:
+        privilege_trans = defaultdict(lambda: "group_member", {"OWNER": "group_owner", "ADMINISTRATOR": "group_admin"})
+
+        if target is None:
+            self_info = await rs.account.call(
+                "memberInfo",
+                {
+                    "__method__": "fetch",
+                    "target": int(rs.self.pattern["group"]),
+                    "memberId": int(rs.self.pattern["member"]),
+                },
+            )
+            return Summary(
+                Privilege >> Summary,
+                privilege_trans[self_info["permission"]],
+                "the permission info of current account in the group",
+            )
+        target_info = await rs.account.call(
+            "memberInfo",
+            {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
+        )
+        return Summary(
+            Privilege >> Summary,
+            privilege_trans[target_info["permission"]],
+            "the permission info of current account in the group",
+        )
 
     @pull(Nick).of("group.member")
     async def get_member_nick(rs: Relationship, target: Selector | None) -> Nick:

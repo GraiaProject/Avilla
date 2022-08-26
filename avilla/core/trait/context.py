@@ -10,6 +10,7 @@ from avilla.core.trait.signature import ArtifactSignature
 
 @dataclass(unsafe_hash=True)
 class Scope:
+    land: str
     mainline: str | None = None
     self: str | None = None
 
@@ -18,15 +19,15 @@ Namespace = dict[Scope | None, dict[ArtifactSignature, Any]]
 
 ctx_namespace: ContextVar[Namespace] = ContextVar("ctx_namespace")
 
-GLOBAL_SCOPE = Scope()
+GLOBAL_SCOPE = Scope(land="avilla")
 
 ctx_scope: ContextVar[Scope] = ContextVar("ctx_scope", default=GLOBAL_SCOPE)
 ctx_prefix: ContextVar[str] = ContextVar("ctx_prefix", default="")
 
 
 @contextmanager
-def scope(mainline: str | None = None, self: str | None = None):
-    token = ctx_scope.set(Scope(mainline, self))
+def scope(land: str, mainline: str | None = None, self: str | None = None):
+    token = ctx_scope.set(Scope(land, mainline, self))
     yield
     ctx_scope.reset(token)
 
