@@ -134,6 +134,7 @@ class Relationship:
             self.protocol.impl_namespace.get(Scope(self.land.name, self.mainline.path_without_land, self.self.path_without_land), {}),
             self.protocol.impl_namespace.get(Scope(self.land.name, self.mainline.path_without_land), {}),
             self.protocol.impl_namespace.get(Scope(self.land.name, self=self.self.path_without_land), {}),
+            self.protocol.impl_namespace.get(Scope(self.land.name), {}),
             self.protocol.impl_namespace.get(GLOBAL_SCOPE, {}),
             self.avilla.global_artifacts,
         )
