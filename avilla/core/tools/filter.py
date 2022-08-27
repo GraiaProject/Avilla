@@ -103,8 +103,8 @@ class Filter(BaseDispatcher, Generic[T]):
     def mismatch_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
         return self.any(lambda result: not pattern.match(result) for pattern in patterns)
 
-    def follows(self: Filter[Selectable], pattern: str) -> Filter[Selectable]:
-        return self.assert_true(lambda result: result.to_selector().follows(pattern))
+    def follows(self: Filter[Selectable], *patterns: str) -> Filter[Selectable]:
+        return self.any(lambda result: result.to_selector().follows(pattern) for pattern in patterns)
 
     @classmethod
     @property
