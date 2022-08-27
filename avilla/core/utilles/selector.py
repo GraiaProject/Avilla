@@ -110,7 +110,7 @@ class Selector:
         return True
 
     def _match_exact(self, other: Selector) -> bool:
-        return type(other) is Selector and self.path == self.path and self.pattern == other.pattern
+        return type(other) is Selector and self.path == other.path and self.pattern == other.pattern
 
     def _match_exist(self, other: Selector) -> bool:
         return set(self.pattern.items()).issubset(other.pattern.items())
@@ -167,7 +167,32 @@ class Selector:
         return self
 
     def follows(self, pattern: str) -> bool:
-        return pattern == ".".join(self.pattern.keys())
+        patterns: dict[str, str] = {}
+        bracket_depth: int = 0
+        path_buf: list[str] = []
+        pattern_buf: list[str] = []
+        for ch in pattern:
+            if ch == "." and bracket_depth == 0:
+                patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+                path_buf.clear()
+                pattern_buf.clear()
+            if ch == "(":
+                if bracket_depth:
+                    pattern_buf.append(ch)
+                bracket_depth += 1
+            elif ch == ")":
+                if not bracket_depth:
+                    raise ValueError
+                bracket_depth -= 1
+                if bracket_depth:
+                    pattern_buf.append(ch)
+            else:
+                (pattern_buf if bracket_depth else path_buf).append(ch)
+        if path_buf:
+            patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+        return (self.path if "land" in patterns else self.path_without_land) == ".".join(patterns) and all(
+            k in self.pattern and v in ["*", self.pattern[k]] for k, v in patterns.items()
+        )
 
     def set_referent(self, referent: Any) -> Self:
         self.referent = referent

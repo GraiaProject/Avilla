@@ -171,8 +171,11 @@ with scope("elizabeth", "group"), prefix("group"):
         return Privilege(
             Privilege,
             self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
-            self_info["permission"] in {"OWNER", "ADMINISTRATOR"}
-            and target_info["permission"] not in {"OWNER", "ADMINISTRATOR"},
+            (self_info["permission"] == "OWNER" and target_info["permission"] != "OWNER")
+            or (
+                self_info["permission"] in {"OWNER", "ADMINISTRATOR"}
+                and target_info["permission"] not in {"OWNER", "ADMINISTRATOR"}
+            ),
         )
 
     @pull(Privilege >> Summary).of("group.member")
