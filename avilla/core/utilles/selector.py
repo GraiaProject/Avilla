@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import ChainMap
 from itertools import filterfalse
-from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, Union, runtime_checkable
 
 from typing_extensions import Self
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     ...
 
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
-Pattern = str | Callable[[str], bool]
+Pattern = Union[str, Callable[[str], bool]]
 
 
 class Selector:
