@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 raise_for_no_namespace()
 
-with scope("elizabeth", "friend"), prefix("friend"):
+with scope("qq", "friend"), prefix("friend"):
 
     @default_target(MessageTrait.send)
     def send_friend_message_default_target(rs: Relationship):

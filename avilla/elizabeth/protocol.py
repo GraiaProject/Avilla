@@ -17,14 +17,19 @@ from avilla.elizabeth.service import ElizabethService
 class ElizabethProtocol(BaseProtocol):
     platform = Platform(
         Land(
-            "elizabeth",
-            [{"name": "GraiaProject"}],
-            humanized_name="Elizabeth - mirai-api-http for avilla",
+            "qq",
+            [{"name": "Tencent"}],
+            humanized_name="QQ",
         ),
         Abstract(
             protocol="mirai-api-http",
             maintainers=[{"name": "royii"}],
             humanized_name="mirai-api-http protocol",
+        ),
+        Land(
+            "elizabeth",
+            [{"name": "GraiaProject"}],
+            humanized_name="Elizabeth - mirai-api-http for avilla",
         ),
     )
     event_parser = ElizabethEventParser()

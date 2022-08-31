@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 raise_for_no_namespace()
 
-with scope("elizabeth", "group"), prefix("group"):
+with scope("qq", "group"), prefix("group"):
 
     @default_target(MessageTrait.send)
     def send_group_message_default_target(rs: Relationship):
