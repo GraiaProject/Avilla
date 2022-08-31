@@ -51,7 +51,7 @@ includes = ["avilla/core", "avilla/core/py.typed"]
 
 [tool.mina.packages.core.project]
 name = "avilla-core"
-version = "1.0.0rc3"
+version = "1.0.0rc4"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
@@ -71,24 +71,24 @@ requires-python = ">=3.9"
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
 
-[tool.mina.packages.irc]
-includes = ["avilla/irc"]
+[tool.mina.packages.elizabeth]
+includes = ["avilla/elizabeth"]
 raw-dependencies = [
-  "avilla-core>=1.0.0rc3"
+  "avilla-core>=1.0.0rc4"
 ]
 
-[tool.mina.packages.irc.project]
-name = "avilla-irc"
-version = "1.0.0rc3" # WIP for release.
+[tool.mina.packages.elizabeth.project]
+name = "avilla-elizabeth"
+version = "1.0.0rc4" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
-dependencies = ["irc"]
+dependencies = []
 description = ""
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
 
-[tool.mina.packages.irc.project.urls]
+[tool.mina.packages.elizabeth.project.urls]
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
