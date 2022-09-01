@@ -5,6 +5,8 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 from typing import Any
 
+from typing_extensions import TypeAlias
+
 from avilla.core.trait.signature import ArtifactSignature
 
 
@@ -15,7 +17,7 @@ class Scope:
     self: str | None = None
 
 
-Namespace = dict[Scope | None, dict[ArtifactSignature, Any]]
+Namespace: TypeAlias = "dict[Scope | None, dict[ArtifactSignature, Any]]"
 
 ctx_namespace: ContextVar[Namespace] = ContextVar("ctx_namespace")
 

@@ -1,20 +1,17 @@
 from __future__ import annotations
 
-import typing
 from typing import (
     TYPE_CHECKING,
     Any,
     Awaitable,
     Callable,
-    Concatenate,
     Generic,
-    ParamSpec,
     TypeVar,
     cast,
     overload,
 )
 
-from typing_extensions import Self
+from typing_extensions import Concatenate, ParamSpec, Self
 
 from avilla.core.utilles import identity
 from avilla.core.utilles.selector import Selector
@@ -77,6 +74,7 @@ class Fn(Generic[_P, _T]):
     @overload
     def __get__(self, instance: Any, owner: type[Trait] | None) -> Self:
         ...
+
     def __get__(self, instance: ..., owner: ...) -> Self | FnWrapper[_P, _T]:
         # sourcery skip: assign-if-exp, reintroduce-else, swap-if-expression
         if not isinstance(instance, Trait):

@@ -7,15 +7,12 @@ from typing import (
     AsyncGenerator,
     Awaitable,
     Callable,
-    Concatenate,
     Generic,
-    ParamSpec,
-    Protocol,
     TypeVar,
     overload,
 )
 
-from typing_extensions import Unpack
+from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
 from avilla.core.resource import Resource
 from avilla.core.trait import DirectFn, OrientedFn
@@ -144,23 +141,35 @@ def completes(relative: str, output: str):
     r[CompleteRule(eval_dotpath(relative, ctx_prefix.get()))] = eval_dotpath(output, ctx_prefix.get())
 
 
+Querier: TypeAlias = "Callable[[Relationship, Selector | None, Selector], AsyncGenerator[Selector, None]]"
 
-Querier = Callable[["Relationship", Selector | None, Selector], AsyncGenerator[Selector, None]]
+
+@overload
+def query(
+    upper: None, target: str
+) -> Callable[
+    [Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]]],
+    Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]],
+]:
+    ...
 
 
 @overload
-def query(upper: None, target: str) -> Callable[[Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]]], Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]]]:
+def query(
+    upper: str, target: str
+) -> Callable[
+    [Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]]],
+    Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]],
+]:
     ...
 
-@overload
-def query(upper: str, target: str) -> Callable[[Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]]], Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]]]:
-    ...
 
 def query(upper: str | None, target: str) -> ...:
     def wrapper(querier):
         r = get_current_namespace()
         r[Query(upper, target)] = querier
         return querier
+
     return wrapper
 
 

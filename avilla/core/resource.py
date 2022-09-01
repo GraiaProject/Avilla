@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Generic, TypeAlias, TypeVar
+from typing import Generic, TypeVar
+
+from typing_extensions import TypeAlias
 
 from avilla.core.cell import Cell
 from avilla.core.utilles.selector import Selector
