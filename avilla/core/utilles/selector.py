@@ -2,7 +2,15 @@ from __future__ import annotations
 
 from collections import ChainMap
 from itertools import filterfalse
-from typing import TYPE_CHECKING, Any, Callable, Literal, Protocol, Union, runtime_checkable
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Literal,
+    Protocol,
+    Union,
+    runtime_checkable,
+)
 
 from typing_extensions import Self
 
@@ -176,18 +184,21 @@ class Selector:
                 patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
                 path_buf.clear()
                 pattern_buf.clear()
+                continue
             if ch == "(":
                 if bracket_depth:
                     pattern_buf.append(ch)
                 bracket_depth += 1
             elif ch == ")":
                 if not bracket_depth:
-                    raise ValueError
+                    raise ValueError("Found unmatched bracket.")
                 bracket_depth -= 1
                 if bracket_depth:
                     pattern_buf.append(ch)
             else:
                 (pattern_buf if bracket_depth else path_buf).append(ch)
+        if bracket_depth:
+            raise ValueError("Found unmatched bracket.")
         if path_buf:
             patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
         return (self.path if "land" in patterns else self.path_without_land) == ".".join(patterns) and all(
