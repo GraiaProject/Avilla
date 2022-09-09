@@ -55,7 +55,7 @@ avilla = Avilla(broadcast, [
 
 @broadcast.receiver(MessageReceived)
 async def on_message_received(event: MessageReceived, rs: Relationship):
-    if Selector.fragment().as_dyn().group("*").member("master-account").match(rs.ctx):
+    if rs.ctx.follows("group.member(<master-account>)")
         await rs.send_message("Hello, Avilla!")
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)
