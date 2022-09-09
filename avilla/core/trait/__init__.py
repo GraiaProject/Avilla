@@ -85,14 +85,26 @@ class Fn(Generic[_P, _T]):
 
 
 class FnWrapper(Generic[_P, _T]):
+    _args: tuple[Any, ...] | None = None
+    _kwargs: dict[str, Any] | None = None
     trait: Trait
-    # call: TraitCall[_P, _T]
 
     def __init__(self, trait: Trait, fn: Fn[_P, _T]):
         self.trait = trait
         self.fn = fn
 
-    async def __call__(self, *args: _P.args, **kwargs: _P.kwargs) -> _T:
+    async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
+        self._args = args
+        self._kwargs = kwargs
+        return self
+
+    def __await__(self):
+        return self.__await_impl__().__await__()
+
+    async def __await_impl__(self) -> _T:
+        if self._args is None or self._kwargs is None:
+            raise ValueError("cannot call without param in shape of schema")
+
         impl = self.trait.relationship._artifacts.get(
             Impl(
                 self.fn,
@@ -108,7 +120,7 @@ class FnWrapper(Generic[_P, _T]):
                 + "is not implemented"
             )
         impl = cast("Callable[Concatenate[Relationship, _P], Awaitable[_T]]", impl)
-        return await impl(self.trait.relationship, *args, **kwargs)
+        return await impl(self.trait.relationship, *self._args, **self._kwargs)  # type: ignore
 
 
 class OrientedFn(Fn[_P, _T]):
@@ -143,14 +155,6 @@ class OrientedFn(Fn[_P, _T]):
 class OrientedFnWrapper(FnWrapper[_P, _T]):
     _args: tuple[Any, ...] | None = None
     _kwargs: dict[str, Any] | None = None
-
-    def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
-        self._args = args
-        self._kwargs = kwargs
-        return self
-
-    def __await__(self):
-        return self.__await_impl__().__await__()
 
     async def __await_impl__(self) -> _T:
         if self._args is None or self._kwargs is None:
@@ -213,21 +217,11 @@ class DirectFn(Fn[_P, _T]):
 
 
 class DirectFnWrapper(FnWrapper[_P, _T]):
-    _args: tuple[Any, ...] | None = None
-    _kwargs: dict[str, Any] | None = None
     target: Selector | None = None
 
     def to(self, target: Selector):
         self.target = target
         return self
-
-    def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
-        self._args = args
-        self._kwargs = kwargs
-        return self
-
-    def __await__(self):
-        return self.__await_impl__().__await__()
 
     async def __await_impl__(self) -> _T:
         if self._args is None or self._kwargs is None:

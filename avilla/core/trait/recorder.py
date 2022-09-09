@@ -48,6 +48,17 @@ class Recorder(abc.ABC):
         r[sig] = content
         return content
 
+class AlterRecorder(Recorder):
+    @abc.abstractmethod
+    def signature(self) -> ArtifactSignature:
+        ...
+
+    def __call__(self, content: Any):
+        sig = self.signature()
+        r = get_current_namespace()
+        r.setdefault(sig, []).append(content)
+        return content
+
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
@@ -183,12 +194,3 @@ class ImplDefaultTargetRecorder(Recorder):
 
 
 default_target = ImplDefaultTargetRecorder
-"""
-def event_key(func: Callable[[Any], str]):
-    r = get_current_namespace()
-    r[EventKeyGetter()] = func
-    return func
-
-def event(key: str):
-    def wrapper(func: Callable[[Any], Avilla])
-"""

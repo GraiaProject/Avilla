@@ -1,12 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Hashable
+from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
 
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
     from avilla.core.resource import Resource
     from avilla.core.trait import Fn
+    from avilla.core.trait.extension import FnExtension
 
 
 class ArtifactSignature:
@@ -55,3 +56,17 @@ class Query(ArtifactSignature):
 @dataclass(unsafe_hash=True)
 class Check(ArtifactSignature):
     target: str
+
+
+E = TypeVar("E", bound="FnExtension")
+
+@dataclass(unsafe_hash=True)
+class ExtensionImpl(ArtifactSignature, Generic[E]):
+    fn: Fn
+    ext: type[E]
+
+    path: type[Cell] | CellOf | None = None
+
+    @property
+    def pure(self):
+        return ExtensionImpl(self.ext)
