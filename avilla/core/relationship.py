@@ -25,7 +25,7 @@ from avilla.core.context import ctx_relationship
 from avilla.core.message import Message
 from avilla.core.request import Request
 from avilla.core.resource import Resource
-from avilla.core.skeleton.message import MessageTrait
+from avilla.core.skeleton.message import MessageSend, MessageRevoke, MessageEdit
 from avilla.core.skeleton.request import RequestTrait
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.trait import Trait
@@ -286,7 +286,7 @@ class Relationship:
         elif isinstance(reply, str):
             reply = self.mainline.copy().message(reply)
 
-        return self.cast(MessageTrait).send(message, reply=reply)
+        return self.cast(MessageSend).send(message, reply=reply)
 
     # TODO: more shortcuts, like `accept_request` etc.
 

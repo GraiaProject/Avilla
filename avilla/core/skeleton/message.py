@@ -6,17 +6,20 @@ from avilla.core.trait import DirectFn, Fn, Trait
 from avilla.core.utilles.selector import Selector
 
 
-class MessageTrait(Trait):
+# MessageFetch => rs.pull(Message, target=...)
+class MessageSend(Trait):
     @DirectFn
     async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:
         ...
 
+
+class MessageRevoke(Trait):
     @Fn
     async def revoke(self, message: Selector) -> None:
         ...
 
+
+class MessageEdit(Trait):
     @Fn
     async def edit(self, message: Selector, content: MessageChain) -> None:
         ...
-
-    # MessageFetch => rs.pull(Message, target=...)
