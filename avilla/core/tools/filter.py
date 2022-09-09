@@ -4,10 +4,10 @@ from collections.abc import Callable, Container, Iterable
 from functools import partial
 from inspect import isawaitable
 from operator import contains, eq, is_, is_not, ne
-from typing import Any, Awaitable, Generic, ParamSpec, TypeVar
+from typing import Any, Awaitable, Generic, TypeVar
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
-from typing_extensions import Self
+from typing_extensions import ParamSpec, Self
 
 from avilla.core.account import AbstractAccount
 from avilla.core.relationship import Relationship

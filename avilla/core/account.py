@@ -32,6 +32,7 @@ class AbstractAccount(ABC):
         ...
 
     def get_self_relationship(self):
+        from avilla.core.relationship import Relationship
         return Relationship(
             self.protocol, self.to_selector(), Selector().land(self.land.name), self.to_selector(), self
         )

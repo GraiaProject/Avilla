@@ -1,32 +1,40 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 from avilla.core.event import AvillaEvent
 from avilla.core.utilles.selector import Selector
+from graia.broadcast.entities.dispatcher import BaseDispatcher
+
+if TYPE_CHECKING:
+    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
-class ActivityAvailable(AvillaEvent):
+class ActivityEvent(AvillaEvent):
     id: Selector  # eg. [...].activity("button_clicked")
-    activity: Selector # eg. [...].button("#1")
+    activity: Selector  # eg. [...].button("#1")
 
     @property
     def ctx(self):
         return self.activity
 
-class ActivityUnavailable(AvillaEvent):
-    id: Selector
-    activity: Selector
+    class Dispatcher(BaseDispatcher):
+        @staticmethod
+        async def catch(interface: 'DispatcherInterface[ActivityEvent]'):
+            ...
 
-    @property
-    def ctx(self):
-        return self.activity
 
-class ActivityTrigged(AvillaEvent):
-    id: Selector
-    activity: Selector
+class ActivityAvailable(ActivityEvent):
+    pass
 
+
+class ActivityUnavailable(ActivityEvent):
+    pass
+
+
+class ActivityTrigged(ActivityEvent):
     trigger: Selector  # who trigged the activity
     mainline: Selector
-    
+
     @property
     def ctx(self):
         return self.trigger

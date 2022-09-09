@@ -3,11 +3,13 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, get_origin, get_args
 
 from graia.broadcast.entities.event import Dispatchable
+from graia.broadcast.entities.dispatcher import BaseDispatcher
 
 if TYPE_CHECKING:
+    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
     from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
@@ -63,6 +65,12 @@ class MetadataModified(AvillaEvent):
         self.operator = operator
         super().__init__(account, time=time, extra=extra)
 
+    class Dispatcher(BaseDispatcher):
+        @staticmethod
+        async def catch(interface: DispatcherInterface["MetadataModified"]):
+            if get_origin(interface.annotation) is list and get_args(interface.annotation)[0] is MetadataModify:
+                return interface.event.modifies
+
 
 class RelationshipCreated(AvillaEvent):
     ctx: Selector
@@ -84,6 +92,11 @@ class RelationshipCreated(AvillaEvent):
     def get_via(self) -> Selector | None:
         return self.via
 
+    class Dispatcher(BaseDispatcher):
+        @staticmethod
+        async def catch(interface: DispatcherInterface["RelationshipCreated"]):
+            ...
+
 
 class RelationshipDestroyed(AvillaEvent):
     ctx: Selector
@@ -102,3 +115,8 @@ class RelationshipDestroyed(AvillaEvent):
 
     def get_via(self) -> Selector | None:
         return self.via
+
+    class Dispatcher(BaseDispatcher):
+        @staticmethod
+        async def catch(interface: DispatcherInterface["RelationshipDestroyed"]):
+            ...
