@@ -62,11 +62,4 @@ E = TypeVar("E", bound="FnExtension")
 
 @dataclass(unsafe_hash=True)
 class ExtensionImpl(ArtifactSignature, Generic[E]):
-    fn: Fn
     ext: type[E]
-
-    path: type[Cell] | CellOf | None = None
-
-    @property
-    def pure(self):
-        return ExtensionImpl(self.ext)

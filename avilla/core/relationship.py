@@ -30,6 +30,7 @@ from avilla.core.skeleton.request import RequestTrait
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.trait import Trait
 from avilla.core.trait.context import GLOBAL_SCOPE, Scope
+from avilla.core.trait.extension import ExtensionHandler
 from avilla.core.trait.recorder import Querier
 from avilla.core.trait.signature import (
     ArtifactSignature,
@@ -151,6 +152,10 @@ class Relationship:
     def is_resource(self) -> bool:
         # TODO: Auto inference for implementations of a "ctx"
         ...
+
+    @property
+    def _ext_handler(self):
+        return ExtensionHandler(self)
 
     @property
     def app_current(self) -> Relationship | None:

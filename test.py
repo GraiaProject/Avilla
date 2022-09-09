@@ -2,7 +2,7 @@ import asyncio
 from datetime import timedelta
 import sys
 from avilla.core.cell.cells import Privilege, Summary
-from avilla.core.skeleton.message import MessageTrait
+from avilla.core.skeleton.message import MessageSend
 from avilla.core.skeleton.privilege import MuteTrait
 
 from creart import create
