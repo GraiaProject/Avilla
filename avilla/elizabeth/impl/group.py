@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from avilla.core.cell.cells import Nick, Privilege, Summary
 from avilla.core.exceptions import permission_error_message
 from avilla.core.message import Message
-from avilla.core.skeleton.message import MessageTrait
+from avilla.core.skeleton.message import MessageRevoke, MessageSend
 from avilla.core.skeleton.privilege import MuteTrait
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.skeleton.summary import SummaryTrait
@@ -20,16 +20,15 @@ if TYPE_CHECKING:
 
     from avilla.core.relationship import Relationship
 
-
 raise_for_no_namespace()
 
 with scope("qq", "group"), prefix("group"):
 
-    @default_target(MessageTrait.send)
+    @default_target(MessageSend.send)
     def send_group_message_default_target(rs: Relationship):
         return rs.mainline
 
-    @impl(MessageTrait.send)
+    @impl(MessageSend.send)
     async def send_group_message(
         rs: Relationship, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
@@ -45,7 +44,7 @@ with scope("qq", "group"), prefix("group"):
         )
         return Selector().land(rs.land).group(target.pattern["group"]).message(result["messageId"])
 
-    @impl(MessageTrait.revoke)
+    @impl(MessageRevoke.revoke)
     async def revoke_group_message(rs: Relationship, message: Selector):
         await rs.account.call(
             "recall",
