@@ -25,7 +25,7 @@ from avilla.core.context import ctx_relationship
 from avilla.core.message import Message
 from avilla.core.request import Request
 from avilla.core.resource import Resource
-from avilla.core.skeleton.message import MessageSend, MessageRevoke, MessageEdit
+from avilla.core.skeleton.message import MessageEdit, MessageRevoke, MessageSend
 from avilla.core.skeleton.request import RequestTrait
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.trait import Trait
