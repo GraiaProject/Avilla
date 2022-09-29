@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.message import Message
 from avilla.core.skeleton.message import MessageRevoke, MessageSend
 from avilla.core.trait.context import prefix, raise_for_no_namespace, scope
-from avilla.core.trait.recorder import default_target, impl, pull
+from avilla.core.trait.recorder import casts, default_target, impl, pull
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -17,6 +17,9 @@ if TYPE_CHECKING:
 raise_for_no_namespace()
 
 with scope("qq", "friend"), prefix("friend"):
+
+    casts(MessageSend)
+    casts(MessageRevoke)
 
     @default_target(MessageSend.send)
     def send_friend_message_default_target(rs: Relationship):

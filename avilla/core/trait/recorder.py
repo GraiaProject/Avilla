@@ -15,8 +15,8 @@ from typing import (
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
 from avilla.core.resource import Resource
-from avilla.core.trait import DirectFn, OrientedFn
-from avilla.core.trait.signature import CompleteRule
+from avilla.core.trait import DirectFn, OrientedFn, Trait
+from avilla.core.trait.signature import CastAllow, CompleteRule
 from avilla.core.trait.signature import Impl as _Impl
 from avilla.core.trait.signature import ImplDefaultTarget
 from avilla.core.trait.signature import Pull as _Pull
@@ -183,6 +183,10 @@ def query(upper: str | None, target: str) -> ...:
 
     return wrapper
 
+
+def casts(trait_type: type[Trait], target: str | None = None):
+    r: dict[ArtifactSignature, Any] = get_current_namespace()
+    r[CastAllow(trait_type, target)] = True
 
 class ImplDefaultTargetRecorder(Recorder):
     # trait_call: TraitCall

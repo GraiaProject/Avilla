@@ -12,7 +12,7 @@ from avilla.core.skeleton.privilege import MuteAllTrait, MuteTrait
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.skeleton.summary import SummaryTrait
 from avilla.core.trait.context import prefix, raise_for_no_namespace, scope
-from avilla.core.trait.recorder import default_target, impl, pull, query
+from avilla.core.trait.recorder import casts, default_target, impl, pull, query
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -23,6 +23,13 @@ if TYPE_CHECKING:
 raise_for_no_namespace()
 
 with scope("qq", "group"), prefix("group"):
+
+    casts(MessageSend)
+    casts(MessageRevoke)
+    casts(MuteTrait)
+    casts(MuteAllTrait)
+    casts(SceneTrait)
+    casts(SummaryTrait)
 
     @default_target(MessageSend.send)
     def send_group_message_default_target(rs: Relationship):

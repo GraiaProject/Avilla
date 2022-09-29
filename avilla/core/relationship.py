@@ -34,6 +34,7 @@ from avilla.core.trait.extension import ExtensionHandler
 from avilla.core.trait.recorder import Querier
 from avilla.core.trait.signature import (
     ArtifactSignature,
+    CastAllow,
     Check,
     CompleteRule,
     Pull,
@@ -274,6 +275,8 @@ class Relationship:
     ) -> _TboundTrait:
         if isinstance(target, Selectable):
             target = target.to_selector()
+        if CastAllow(trait) not in self._artifacts:
+            raise NotImplementedError(f"trait {trait.__name__} is not allow to cast in current context.")
         return trait(self, path, target)
 
     def send_message(

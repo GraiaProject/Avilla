@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
     from avilla.core.resource import Resource
-    from avilla.core.trait import Fn
+    from avilla.core.trait import Fn, Trait
     from avilla.core.trait.extension import FnExtension
 
 
@@ -63,3 +63,8 @@ E = TypeVar("E", bound="FnExtension")
 @dataclass(unsafe_hash=True)
 class ExtensionImpl(ArtifactSignature, Generic[E]):
     ext: type[E]
+
+@dataclass(unsafe_hash=True)
+class CastAllow(ArtifactSignature):
+    trait: type[Trait]
+    target: str | None = None
