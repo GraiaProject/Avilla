@@ -9,7 +9,7 @@ from launart import Launchable, LaunchableStatus
 from loguru import logger
 from statv import Stats
 
-from avilla.core.utilles.selector import Selector
+from avilla.core.event.lifecycle import AccountAvailable, AccountUnavailable
 
 from .config import HttpClientConfig, HttpServerConfig, T_Config
 from .config import U_Config as U_Config
@@ -82,6 +82,14 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
                 alt=f"[green]Registered account: [magenta]{self.config.account}[/]",
             )
 
+    def on_connected_update(self, statv: ConnectionStatus, stats: Stats[bool], past: bool, current: bool) -> None:
+        if past != current:
+            logger.warning(f"Account: {'Connected' if current else 'Disconnected'}")
+            proto = self.account.protocol
+            proto.avilla.broadcast.postEvent(
+                (AccountAvailable if current else AccountUnavailable)(proto.avilla, self.account)
+            )
+
     def __init__(self, protocol: ElizabethProtocol, config: T_Config) -> None:
         from avilla.elizabeth.account import ElizabethAccount
 
@@ -98,6 +106,7 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
         self.protocol = protocol
         self.config = config
         self.status = ConnectionStatus()
+        self.status.on_update(ConnectionStatus.connected)(self.on_connected_update)
         if config.use_http:
             self.http_conn = HttpClientConnection(protocol, HttpClientConfig.cast(config))
             self.http_conn.is_hook = True

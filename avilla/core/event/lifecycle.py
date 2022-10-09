@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from ..account import AbstractAccount
     from ..application import Avilla
 
+
 @dataclass
 class AvillaLifecycleEvent(Dispatchable):
     """指示有关应用 (Avilla) 的事件."""

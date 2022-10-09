@@ -40,12 +40,12 @@ class AvillaService(Service):
         async with self.stage("preparing"):
             await self.avilla.broadcast.postEvent(ApplicationPreparing(self.avilla))
 
-        self.avilla.broadcast.postEvent(ApplicationReady(self.avilla))
+        await self.avilla.broadcast.postEvent(ApplicationReady(self.avilla))
 
         async with self.stage("blocking"):
             ...  # TODO: 先放着.
 
         async with self.stage("cleanup"):
-            self.avilla.broadcast.postEvent(ApplicationClosing(self.avilla))
+            await self.avilla.broadcast.postEvent(ApplicationClosing(self.avilla))
 
-        self.avilla.broadcast.postEvent(ApplicationClosed(self.avilla))
+        await self.avilla.broadcast.postEvent(ApplicationClosed(self.avilla))

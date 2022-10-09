@@ -3,13 +3,14 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, get_origin, get_args
+from typing import TYPE_CHECKING, Any, get_args, get_origin
 
-from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.entities.dispatcher import BaseDispatcher
+from graia.broadcast.entities.event import Dispatchable
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
     from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
