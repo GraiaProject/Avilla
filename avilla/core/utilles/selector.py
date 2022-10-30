@@ -205,6 +205,12 @@ class Selector:
             k in self.pattern and v in ["*", self.pattern[k]] for k, v in patterns.items()
         )
 
+    def expects(self, pattern: str) -> Self:
+        if not self.follows(pattern):
+            raise ValueError(f"Selector {self} does not follow {pattern}")
+
+        return self
+
     def set_referent(self, referent: Any) -> Self:
         self.referent = referent
         return self
