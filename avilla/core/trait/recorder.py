@@ -28,7 +28,7 @@ from .context import ctx_prefix, eval_dotpath, get_current_namespace
 
 if TYPE_CHECKING:
     from avilla.core.cell import Cell, CellOf
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Context
     from avilla.core.trait.signature import ArtifactSignature
 
     from . import Fn
@@ -99,7 +99,7 @@ class ImplRecorder(Recorder, Generic[_P, _T]):
             target = self.target
         return _Impl(target=target, path=self.path, trait_call=self.trait_call)  # type: ignore
 
-    def __call__(self, content: Callable[Concatenate[Relationship, _P], Awaitable[_T]]):
+    def __call__(self, content: Callable[Concatenate[Context, _P], Awaitable[_T]]):
         return super().__call__(content)
 
 
@@ -117,7 +117,7 @@ class FetchRecorder(Recorder, Generic[_R]):
     def signature(self):
         return _ResourceFatch(self.resource)
 
-    def __call__(self, content: Callable[[Relationship, _R], Awaitable[Any]]):
+    def __call__(self, content: Callable[[Context, _R], Awaitable[Any]]):
         return super().__call__(content)
 
 
@@ -140,7 +140,7 @@ class PullRecorder(Recorder, Generic[_C]):
     def signature(self):
         return _Pull(eval_dotpath(self.target, ctx_prefix.get()) if self.target is not None else None, self.path)
 
-    def __call__(self, content: Callable[[Relationship, Selector | None], Awaitable[_C]]):
+    def __call__(self, content: Callable[[Context, Selector | None], Awaitable[_C]]):
         return super().__call__(content)
 
 
@@ -152,15 +152,15 @@ def completes(relative: str, output: str):
     r[CompleteRule(eval_dotpath(relative, ctx_prefix.get()))] = eval_dotpath(output, ctx_prefix.get())
 
 
-Querier: TypeAlias = "Callable[[Relationship, Selector | None, Selector], AsyncGenerator[Selector, None]]"
+Querier: TypeAlias = "Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]"
 
 
 @overload
 def query(
     upper: None, target: str
 ) -> Callable[
-    [Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]]],
-    Callable[["Relationship", None, Selector], AsyncGenerator[Selector, None]],
+    [Callable[["Context", None, Selector], AsyncGenerator[Selector, None]]],
+    Callable[["Context", None, Selector], AsyncGenerator[Selector, None]],
 ]:
     ...
 
@@ -169,8 +169,8 @@ def query(
 def query(
     upper: str, target: str
 ) -> Callable[
-    [Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]]],
-    Callable[["Relationship", Selector, Selector], AsyncGenerator[Selector, None]],
+    [Callable[["Context", Selector, Selector], AsyncGenerator[Selector, None]]],
+    Callable[["Context", Selector, Selector], AsyncGenerator[Selector, None]],
 ]:
     ...
 
@@ -202,7 +202,7 @@ class ImplDefaultTargetRecorder(Recorder):
     def signature(self):
         return ImplDefaultTarget(self.path, self.trait_call)
 
-    def __call__(self, content: Callable[[Relationship], Selector]):
+    def __call__(self, content: Callable[[Context], Selector]):
         return super().__call__(content)
 
 

@@ -14,7 +14,7 @@ from avilla.core.cell.cells import Privilege, Summary
 from avilla.core.elements import Picture
 from avilla.core.event.message import MessageReceived
 from avilla.core.message import Message
-from avilla.core.relationship import Relationship
+from avilla.core.relationship import Context
 from avilla.core.resource import LocalFileResource
 from avilla.core.skeleton.message import MessageSend
 from avilla.core.skeleton.privilege import MuteTrait
@@ -28,10 +28,10 @@ avilla = Avilla(broadcast, [protocol], [AiohttpClientService()])
 
 
 @broadcast.receiver(MessageReceived)
-async def on_message_received(event: MessageReceived, rs: Relationship, account: AbstractAccount):
     print(event, rs, rs.ctx.pattern, DynamicSelector(mode="exist").member(lambda x: x == "1846913566").match(rs.ctx))
     print(await rs.pull(Privilege >> Summary, rs.ctx))
     if DynamicSelector.fragment().group("*").member("1846913566").match(rs.ctx):
+async def on_message_received(event: MessageReceived, rs: Context, account: AbstractAccount):
         # await rs.exec(MessageSend([
         #    "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
         # ]))

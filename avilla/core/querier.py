@@ -17,7 +17,7 @@ from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Context
 
 
 def query(target: str):
@@ -33,7 +33,7 @@ class AbstractQueryHandler:
     queriers: ClassVar[
         dict[
             str,
-            Callable[[Self, Relationship, Selector, Callable[[Selector], bool]], AsyncGenerator[Selector, None]],
+            Callable[[Self, Context, Selector, Callable[[Selector], bool]], AsyncGenerator[Selector, None]],
         ]
     ] = {}
 

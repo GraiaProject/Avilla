@@ -10,12 +10,12 @@ if TYPE_CHECKING:
 
     from avilla.core.application import Avilla
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Context
 
 
 ctx_avilla: Ctx[Avilla] = Ctx("avilla")
 ctx_protocol: Ctx[BaseProtocol] = Ctx("protocol")
-ctx_relationship: Ctx[Relationship] = Ctx("relationship")
+ctx_relationship: Ctx[Context] = Ctx("relationship")
 
 
 def get_current_avilla() -> Avilla:

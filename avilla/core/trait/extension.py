@@ -7,7 +7,7 @@ from avilla.core.trait import Fn, Trait
 from avilla.core.trait.signature import ExtensionImpl
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Context
 
 
 class FnExtension:
@@ -21,20 +21,20 @@ ctx_fnextensions: ContextVar[dict[str, list[FnExtension]]] = ContextVar("fnexten
 E = TypeVar("E", bound=FnExtension)
 
 class ExtensionHandler:
-    rs: Relationship
+    rs: Context
 
-    _artifacts: dict[ExtensionImpl, Callable[[Relationship, FnExtension], Awaitable[Any]]]
+    _artifacts: dict[ExtensionImpl, Callable[[Context, FnExtension], Awaitable[Any]]]
 
-    def __init__(self, rs: Relationship):
+    def __init__(self, rs: Context):
         self.rs = rs
 
         self._artifacts = {k: v for k, v in rs._artifacts.items() if isinstance(k, ExtensionImpl)}
-    
-    def add_impl(self, signature: ExtensionImpl, impl: Callable[[Relationship, FnExtension], Awaitable[Any]]):
+
+    def add_impl(self, signature: ExtensionImpl, impl: Callable[[Context, FnExtension], Awaitable[Any]]):
         self._artifacts[signature] = impl
-    
+
     def impl(self, signature: ExtensionImpl[E]):
-        def wrapper(impl: Callable[[Relationship, E], Awaitable[Any]]):
+        def wrapper(impl: Callable[[Context, E], Awaitable[Any]]):
             self._artifacts[signature] = impl  # type: ignore
             return impl
         return wrapper
@@ -60,7 +60,7 @@ class ExtensionHandler:
             raise NotImplementedError(
                 f"groups {repr(failed_group)} cannot be displayed due to all attempt for apply failed"
             )
-        
+
         for impl, impl_ext in impl_map.items():
             for ext in impl_ext:
                 await impl(self.rs, ext)

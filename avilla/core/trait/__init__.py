@@ -20,18 +20,18 @@ from ..cell import Cell, CellOf
 from .signature import Impl, ImplDefaultTarget
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Context
 
 from devtools import debug
 
 
 class Trait:
-    relationship: Relationship
+    relationship: Context
     path: type[Cell] | CellOf | None
     target: Selector | None = None
 
     def __init__(
-        self, relationship: Relationship, path: type[Cell] | CellOf | None = None, target: Selector | None = None
+        self, relationship: Context, path: type[Cell] | CellOf | None = None, target: Selector | None = None
     ) -> None:
         self.relationship = relationship
         self.path = path
@@ -117,7 +117,7 @@ class FnWrapper(Generic[_P, _T]):
                 + (f'for target "{self.trait.target.path_without_land}"' if self.trait.target is not None else "")
                 + "is not implemented"
             )
-        impl = cast("Callable[Concatenate[Relationship, _P], Awaitable[_T]]", impl)
+        impl = cast("Callable[Concatenate[Context, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.relationship, *self._args, **self._kwargs)  # type: ignore
 
 
@@ -183,7 +183,7 @@ class OrientedFnWrapper(FnWrapper[_P, _T]):
                 f'for target "{target.path_without_land}" '
                 "is not implemented"
             )
-        impl = cast("Callable[Concatenate[Relationship, Selector, _P], Awaitable[_T]]", impl)
+        impl = cast("Callable[Concatenate[Context, Selector, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.relationship, target, *self._args, **self._kwargs)  # type: ignore
 
 
@@ -233,7 +233,7 @@ class DirectFnWrapper(FnWrapper[_P, _T]):
                     f'"{self.trait.__class__.__name__}::{self.fn.__attr__}" '
                     "required a target, but no target given and no default getter implemented."
                 )
-            targetter = cast("Callable[[Relationship], Selector]", targetter)
+            targetter = cast("Callable[[Context], Selector]", targetter)
             target = targetter(self.trait.relationship)
         impl = self.trait.relationship._artifacts.get(
             Impl(
@@ -257,5 +257,5 @@ class DirectFnWrapper(FnWrapper[_P, _T]):
                 f'for target "{target.path_without_land}" '
                 "is not implemented"
             )
-        impl = cast("Callable[Concatenate[Relationship, Selector, _P], Awaitable[_T]]", impl)
+        impl = cast("Callable[Concatenate[Context, Selector, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.relationship, target, *self._args, **self._kwargs)  # type: ignore

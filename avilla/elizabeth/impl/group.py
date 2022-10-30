@@ -18,7 +18,7 @@ from avilla.core.utilles.selector import Selector
 if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
 
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Context
 
 raise_for_no_namespace()
 
@@ -32,12 +32,12 @@ with scope("qq", "group"), prefix("group"):
     casts(SummaryTrait)
 
     @default_target(MessageSend.send)
-    def send_group_message_default_target(rs: Relationship):
         return rs.mainline
+    def send_group_message_default_target(rs: Context):
 
     @impl(MessageSend.send)
     async def send_group_message(
-        rs: Relationship, target: Selector, message: MessageChain, *, reply: Selector | None = None
+        rs: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
         serialized_msg = await rs.protocol.serialize_message(message)
         result = await rs.account.call(
@@ -52,7 +52,7 @@ with scope("qq", "group"), prefix("group"):
         return Selector().land(rs.land).group(target.pattern["group"]).message(result["messageId"])
 
     @impl(MessageRevoke.revoke)
-    async def revoke_group_message(rs: Relationship, message: Selector):
+    async def revoke_group_message(rs: Context, message: Selector):
         await rs.account.call(
             "recall",
             {
@@ -63,7 +63,7 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @impl(MuteTrait.mute)
-    async def mute_member(rs: Relationship, target: Selector, duration: timedelta):
+    async def mute_member(rs: Context, target: Selector, duration: timedelta):
         privilege_info = await rs.pull(Privilege, target)
         if not privilege_info.effective:
             self_privilege_info = await rs.pull(Privilege >> Summary, rs.self)
@@ -86,7 +86,7 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @impl(MuteTrait.unmute)
-    async def unmute_member(rs: Relationship, target: Selector):
+    async def unmute_member(rs: Context, target: Selector):
         privilege_info = await rs.pull(Privilege, target)
         if not privilege_info.effective:
             self_privilege_info = await rs.pull(Privilege >> Summary, rs.self)
@@ -105,7 +105,7 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @impl(MuteAllTrait.mute_all)
-    async def group_mute_all(rs: Relationship, target: Selector):
+    async def group_mute_all(rs: Context, target: Selector):
         await rs.account.call(
             "muteAll",
             {
@@ -115,7 +115,7 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @impl(MuteAllTrait.unmute_all)
-    async def group_unmute_all(rs: Relationship, target: Selector):
+    async def group_unmute_all(rs: Context, target: Selector):
         await rs.account.call(
             "unmuteAll",
             {
@@ -125,11 +125,11 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @impl(SceneTrait.leave).pin("group")
-    async def leave(rs: Relationship, target: Selector):
+    async def leave(rs: Context, target: Selector):
         await rs.account.call("quit", {"__method__": "update", "target": int(target.pattern["group"])})
 
     @impl(SceneTrait.remove_member)
-    async def remove_member(rs: Relationship, target: Selector, reason: str | None = None):
+    async def remove_member(rs: Context, target: Selector, reason: str | None = None):
         privilege_info = await rs.pull(Privilege, target)
         if not privilege_info.effective:
             raise PermissionError()  # TODO: error message, including Summary info
@@ -139,7 +139,7 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @pull(Summary).of("group")
-    async def get_summary(rs: Relationship, target: Selector | None) -> Summary:
+    async def get_summary(rs: Context, target: Selector | None) -> Summary:
         assert target is not None
         result = await rs.account.call(
             "groupConfig",
@@ -148,14 +148,14 @@ with scope("qq", "group"), prefix("group"):
         return Summary(describe=Summary, name=result["name"], description=None)
 
     @impl(SummaryTrait.set_name).pin("group")
-    async def group_set_name(rs: Relationship, target: Selector, name: str):
+    async def group_set_name(rs: Context, target: Selector, name: str):
         await rs.account.call(
             "groupConfig",
             {"__method__": "update", "target": int(target.pattern["group"]), "config": {"name": name}},
         )
 
     @pull(Privilege).of("group.member")
-    async def group_get_privilege_info(rs: Relationship, target: Selector | None) -> Privilege:
+    async def group_get_privilege_info(rs: Context, target: Selector | None) -> Privilege:
         self_info = await rs.account.call(
             "memberInfo",
             {
@@ -185,7 +185,7 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @pull(Privilege >> Summary).of("group.member")
-    async def group_get_privilege_summary_info(rs: Relationship, target: Selector | None) -> Summary:
+    async def group_get_privilege_summary_info(rs: Context, target: Selector | None) -> Summary:
         privilege_trans = defaultdict(lambda: "group_member", {"OWNER": "group_owner", "ADMINISTRATOR": "group_admin"})
 
         if target is None:
@@ -213,7 +213,7 @@ with scope("qq", "group"), prefix("group"):
         )
 
     @pull(Nick).of("group.member")
-    async def get_member_nick(rs: Relationship, target: Selector | None) -> Nick:
+    async def get_member_nick(rs: Context, target: Selector | None) -> Nick:
         assert target is not None
         result = await rs.account.call(
             "memberInfo",
@@ -222,7 +222,7 @@ with scope("qq", "group"), prefix("group"):
         return Nick(Nick, result["memberName"], result["memberName"], result["specialTitle"])
 
     @query(None, "group")
-    async def get_groups(rs: Relationship, upper: None, predicate: Selector):
+    async def get_groups(rs: Context, upper: None, predicate: Selector):
         result: list[dict] = await rs.account.call("groupList", {"__method__": "fetch"})
         for i in result:
             group = Selector().group(str(i["id"]))
@@ -230,7 +230,7 @@ with scope("qq", "group"), prefix("group"):
                 yield group
 
     @query("group", "member")
-    async def get_group_members(rs: Relationship, upper: Selector, predicate: Selector):
+    async def get_group_members(rs: Context, upper: Selector, predicate: Selector):
         result: list[dict] = await rs.account.call(
             "memberList", {"__method__": "fetch", "target": int(upper.pattern["group"])}
         )

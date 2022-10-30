@@ -10,7 +10,7 @@ from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 from typing_extensions import ParamSpec, Self
 
 from avilla.core.account import AbstractAccount
-from avilla.core.relationship import Relationship
+from avilla.core.relationship import Context
 from avilla.core.utilles.selector import Selectable, Selector
 
 T = TypeVar("T")
@@ -108,24 +108,24 @@ class Filter(BaseDispatcher, Generic[T]):
 
     @classmethod
     @property
-    def rs(cls) -> Filter[Relationship]:
-        return cls().fetch(Relationship)
+    def rs(cls) -> Filter[Context]:
+        return cls().fetch(Context)
 
     @property
-    def ctx(self: Filter[Relationship]) -> Filter[Selectable]:
         return self.rs.step(lambda rs: rs.ctx)
+    def ctx(self: Filter[Context]) -> Filter[Selectable]:
 
     @property
-    def mainline(self: Filter[Relationship]) -> Filter[Selector]:
         return self.rs.step(lambda rs: rs.mainline)
+    def mainline(self: Filter[Context]) -> Filter[Selector]:
 
     @property
-    def current(self: Filter[Relationship]) -> Filter[AbstractAccount]:
+    def current(self: Filter[Context]) -> Filter[AbstractAccount]:
         return self.rs.step(lambda rs: rs.account)
 
     @property
-    def via(self: Filter[Relationship]) -> Filter[Selector | None]:
         return self.rs.step(lambda rs: rs.via)
+    def via(self: Filter[Context]) -> Filter[Selector | None]:
 
     async def beforeExecution(self, interface: DispatcherInterface):
         result: Awaitable[Any] | Any = interface  # type: ignore

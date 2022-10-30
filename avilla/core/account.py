@@ -9,7 +9,7 @@ from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import Relationship
+    from avilla.core.relationship import Context
 
 
 @dataclass
@@ -24,7 +24,7 @@ class AbstractAccount(ABC):
         self.protocol = protocol
 
     @abstractmethod
-    async def get_relationship(self, target: Selector, *, via: Selector | None = None) -> Relationship:
+    async def get_relationship(self, target: Selector, *, via: Selector | None = None) -> Context:
         ...
 
     @abstractmethod
@@ -32,8 +32,8 @@ class AbstractAccount(ABC):
         ...
 
     def get_self_relationship(self):
-        from avilla.core.relationship import Relationship
-        return Relationship(
+        from avilla.core.relationship import Context
+        return Context(
             self.protocol, self.to_selector(), Selector().land(self.land.name), self.to_selector(), self
         )
 

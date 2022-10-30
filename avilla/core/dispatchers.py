@@ -10,7 +10,7 @@ from avilla.core.account import AbstractAccount
 from avilla.core.cell import Cell
 from avilla.core.context import ctx_protocol, ctx_relationship
 from avilla.core.event import AvillaEvent
-from avilla.core.relationship import Relationship
+from avilla.core.relationship import Context
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -33,11 +33,11 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
             return self.avilla._protocol_map[interface.annotation]
         elif isinstance(interface.event, AvillaEvent):
             if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
-                rs: Relationship = interface.local_storage["relationship"]
+                rs: Context = interface.local_storage["relationship"]
                 return interface.event.account
 
 
-class RelationshipDispatcher(BaseDispatcher):
+class ContextDispatcher(BaseDispatcher):
     @staticmethod
     async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
         protocol = ctx_protocol.get()
@@ -58,9 +58,8 @@ class RelationshipDispatcher(BaseDispatcher):
 
     @staticmethod
     async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if isinstance(interface.event, AvillaEvent):
-            if interface.annotation is Relationship:
-                return interface.local_storage["relationship"]
+        if isinstance(interface.event, AvillaEvent) and interface.annotation is Context:
+            return interface.local_storage["relationship"]
 
 
 """
