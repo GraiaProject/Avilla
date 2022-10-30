@@ -23,7 +23,7 @@ with scope("qq", "friend"), prefix("friend"):
 
     @default_target(MessageSend.send)
     def send_friend_message_default_target(rs: Context):
-        return rs.ctx
+        return rs.client
 
     @impl(MessageSend.send)
     async def send_friend_message(

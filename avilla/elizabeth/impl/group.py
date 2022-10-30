@@ -32,8 +32,8 @@ with scope("qq", "group"), prefix("group"):
     casts(SummaryTrait)
 
     @default_target(MessageSend.send)
-        return rs.mainline
     def send_group_message_default_target(rs: Context):
+        return rs.scene
 
     @impl(MessageSend.send)
     async def send_group_message(

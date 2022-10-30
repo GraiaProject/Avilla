@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from asyncio import gather
 from collections import ChainMap, deque
 from dataclasses import dataclass
 from typing import (
@@ -41,7 +42,7 @@ from avilla.core.trait.signature import (
     Query,
     ResourceFetch,
 )
-from avilla.core.utilles.selector import Selectable, Selector
+from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -100,11 +101,50 @@ def _find_querier_steps(artifacts: ChainMap[ArtifactSignature, Any], query_path:
     return result
 
 
+class ContextSelector(Selector):
+    ctx: Context
+
+    def __init__(
+        self,
+        ctx: Context,
+        selector: Selector,
+        *,
+        mode: MatchRule | None = None,
+        path_excludes: frozenset[str] | None = None,
+    ) -> None:
+        self.ctx = ctx
+        self.mode = mode or selector.mode
+        self.path_excludes = path_excludes or selector.path_excludes
+        self.pattern = selector.pattern
+
+
+class ContextClientSelector(ContextSelector):
+    ...
+
+
+class ContextEndpointSelector(ContextSelector):
+    ...
+
+
+class ContextRequestSelector(ContextEndpointSelector):
+    ...
+
+
+class ContextSceneSelector(ContextSelector):
+    ...
+
+
+@dataclass
+class ContextMedium:
+    selector: ContextSelector
+
+
 class Context:
-    ctx: Selector
-    mainline: Selector
+    client: ContextClientSelector
+    endpoint: ContextEndpointSelector
+    scene: ContextSceneSelector
     self: Selector
-    via: Selector | None = None
+    mediums: list[ContextMedium]
 
     account: AbstractAccount
     cache: dict[str, Any]
@@ -117,26 +157,28 @@ class Context:
     def __init__(
         self,
         protocol: "BaseProtocol",
-        ctx: Selector,
-        mainline: Selector,
+        client: Selector,
+        endpoint: Selector,
+        scene: Selector,
         selft: Selector,
         account: AbstractAccount,
-        via: Selector | None = None,
+        mediums: list[Selector] | None = None,
         # middlewares: list[ActionMiddleware] | None = None,
     ) -> None:
-        self.ctx = ctx
-        self.mainline = mainline
+        self.client = ContextClientSelector(self, client)
+        self.endpoint = ContextEndpointSelector(self, endpoint)
+        self.scene = ContextSceneSelector(self, scene)
         self.self = selft
-        self.via = via
+        self.mediums = [ContextMedium(ContextSelector(self, medium)) for medium in mediums or []]
         self.account = account
         self.protocol = protocol
         # self._middlewares = middlewares or []
         self.cache = {"meta": {}}
         self._artifacts = ChainMap(
             self.protocol.impl_namespace.get(
-                Scope(self.land.name, self.mainline.path_without_land, self.self.path_without_land), {}
+                Scope(self.land.name, self.scene.path_without_land, self.self.path_without_land), {}
             ),
-            self.protocol.impl_namespace.get(Scope(self.land.name, self.mainline.path_without_land), {}),
+            self.protocol.impl_namespace.get(Scope(self.land.name, self.scene.path_without_land), {}),
             self.protocol.impl_namespace.get(Scope(self.land.name, self=self.self.path_without_land), {}),
             self.protocol.impl_namespace.get(Scope(self.land.name), {}),
             self.protocol.impl_namespace.get(GLOBAL_SCOPE, {}),
@@ -210,23 +252,23 @@ class Context:
         self, target: Selector | None = None, *, strict: bool = False, check_via: bool = True
     ) -> bool | None:
         # FIXME: check this sentence again
-        if check_via and self.via is not None:
-            await self.check(self.via, strict=True, check_via=False)
-        checker = self._artifacts.get(Check((target or self.ctx).path_without_land))
+        if check_via and self.mediums is not None:
+            await gather(*(self.check(medium.selector, strict=True, check_via=False) for medium in self.mediums))
+        checker = self._artifacts.get(Check((target or self.endpoint).path_without_land))
         if checker is None:
             raise NotImplementedError(
-                f'cannot check existence & accessible of "{(target or self.ctx).path_without_land}" due to notimplemented checker'
+                f'cannot check existence & accessible of "{(target or self.endpoint).path_without_land}" due to notimplemented checker'
             )
         result = checker(self, target)
         if strict and not result:
-            raise ValueError(f"check failed on {target or self.ctx!r}")
+            raise ValueError(f"check failed on {target or self.endpoint!r}")
         return result
 
     def complete(self, selector: Selector, with_land: bool = False):
         output_rule = self._artifacts.get(CompleteRule(selector.path_without_land))
         if output_rule is not None:
             output_rule = cast(str, output_rule)
-            selector = Selector().mixin(output_rule, selector, self.ctx, self.mainline)
+            selector = Selector().mixin(output_rule, selector, self.endpoint, self.scene)
         if with_land and list(selector.pattern.keys())[0] != "land":
             selector.pattern = {"land": self.land.name, **selector.pattern}
         return selector
@@ -264,7 +306,7 @@ class Context:
                 + (f' for "{target.path_without_land}"' if target is not None else "")
                 + f' because no available implement found in "{self.protocol.__class__.__name__}"'
             )
-        puller = cast("Callable[[Relationship, Selector | None], Awaitable[_M]]", puller)
+        puller = cast("Callable[[Context, Selector | None], Awaitable[_M]]", puller)
         result = await puller(self, target)
         if target is not None and not path.has_params():
             cached = self.cache["meta"].setdefault(target, {})
@@ -296,7 +338,7 @@ class Context:
         if isinstance(reply, Message):
             reply = reply.to_selector()
         elif isinstance(reply, str):
-            reply = self.mainline.copy().message(reply)
+            reply = self.scene.copy().message(reply)
 
         return self.cast(MessageSend).send(message, reply=reply)
 
@@ -325,16 +367,16 @@ class Context:
     async def leave_scene(self, scene: Selectable | Selector | None = None):
         if isinstance(scene, Selectable):
             scene = scene.to_selector()
-        return await self.cast(SceneTrait, target=scene or self.mainline).leave()
+        return await self.cast(SceneTrait, target=scene or self.scene).leave()
 
     async def disband_scene(self, scene: Selectable | Selector | None = None):
         if isinstance(scene, Selectable):
             scene = scene.to_selector()
-        return await self.cast(SceneTrait, target=scene or self.mainline).disband()
+        return await self.cast(SceneTrait, target=scene or self.scene).disband()
 
     async def remove_member(
         self, target: Selector, reason: str | None = None, scene: Selectable | Selector | None = None
     ):
         if isinstance(scene, Selectable):
             scene = scene.to_selector()
-        return await self.cast(SceneTrait, target=scene or self.mainline).remove_member(target, reason)
+        return await self.cast(SceneTrait, target=scene or self.scene).remove_member(target, reason)

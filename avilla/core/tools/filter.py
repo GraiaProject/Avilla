@@ -112,20 +112,20 @@ class Filter(BaseDispatcher, Generic[T]):
         return cls().fetch(Context)
 
     @property
-        return self.rs.step(lambda rs: rs.ctx)
     def ctx(self: Filter[Context]) -> Filter[Selectable]:
+        return self.rs.step(lambda rs: rs.client)
 
     @property
-        return self.rs.step(lambda rs: rs.mainline)
     def mainline(self: Filter[Context]) -> Filter[Selector]:
+        return self.rs.step(lambda rs: rs.scene)
 
     @property
     def current(self: Filter[Context]) -> Filter[AbstractAccount]:
         return self.rs.step(lambda rs: rs.account)
 
     @property
-        return self.rs.step(lambda rs: rs.via)
     def via(self: Filter[Context]) -> Filter[Selector | None]:
+        return self.rs.step(lambda rs: rs.mediums[0].selector if rs.mediums else None)
 
     async def beforeExecution(self, interface: DispatcherInterface):
         result: Awaitable[Any] | Any = interface  # type: ignore
