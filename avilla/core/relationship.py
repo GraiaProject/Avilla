@@ -96,18 +96,21 @@ def _find_querier_steps(artifacts: ChainMap[ArtifactSignature, Any], query_path:
 class ContextSelector(Selector):
     ctx: Context
 
-    def __init__(
-        self,
-        ctx: Context,
-        selector: Selector,
-        *,
-        mode: MatchRule | None = None,
-        path_excludes: frozenset[str] | None = None,
-    ) -> None:
+    def __init__(self, ctx: Context, *, mode: MatchRule = "exact", path_excludes: frozenset[str] = frozenset()) -> None:
         self.ctx = ctx
-        self.mode = mode or selector.mode
-        self.path_excludes = path_excludes or selector.path_excludes
-        self.pattern = selector.pattern
+        super().__init__(mode=mode, path_excludes=path_excludes)
+
+    @classmethod
+    def from_selector(cls, ctx: Context, selector: Selector) -> Self:
+        self = cls(ctx, mode=selector.mode, path_excludes=selector.path_excludes).set_referent(selector.referent)
+        self.pattern = selector.pattern.copy()
+        return self
+
+    def pull(self, metadata: _Describe[_MetadataT]) -> Awaitable[_MetadataT]:
+        return self.ctx.pull(metadata, self)
+
+    def wrap(self, trait: type[_TraitT]) -> _TraitT:
+        return self.ctx.wrap(self, trait)
 
 
 class ContextClientSelector(ContextSelector):
@@ -115,15 +118,53 @@ class ContextClientSelector(ContextSelector):
 
 
 class ContextEndpointSelector(ContextSelector):
-    ...
+    def expects_request(self) -> ContextRequestSelector:
+        if "request" in self.pattern:
+            return ContextRequestSelector.from_selector(self.ctx, self)
 
-
-class ContextRequestSelector(ContextEndpointSelector):
-    ...
+        raise ValueError(f"endpoint {self!r} is not a request endpoint")
 
 
 class ContextSceneSelector(ContextSelector):
-    ...
+    def leave_scene(self):
+        return self.wrap(SceneTrait).leave()
+
+    def disband_scene(self):
+        return self.wrap(SceneTrait).disband()
+
+    def send_message(
+        self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
+    ):
+        if isinstance(message, str):
+            message = MessageChain([Text(message)])
+        elif not isinstance(message, MessageChain):
+            message = MessageChain([]).extend(list(message))
+        else:
+            message = MessageChain([i if isinstance(i, Element) else Text(i) for i in message])
+
+        if isinstance(reply, Message):
+            reply = reply.to_selector()
+        elif isinstance(reply, str):
+            reply = self.copy().message(reply)
+
+        return self.wrap(MessageSend).send(message, reply=reply)
+
+    def remove_member(self, target: Selector, reason: str | None = None):
+        return self.wrap(SceneTrait).remove_member(target, reason)
+
+
+class ContextRequestSelector(ContextEndpointSelector):
+    def accept_request(self):
+        return self.wrap(RequestTrait).accept()
+
+    def reject_request(self, reason: str | None = None, forever: bool = False):
+        return self.wrap(RequestTrait).reject(reason, forever)
+
+    def cancel_request(self):
+        return self.wrap(RequestTrait).cancel()
+
+    def ignore_request(self):
+        return self.wrap(RequestTrait).ignore()
 
 
 @dataclass
