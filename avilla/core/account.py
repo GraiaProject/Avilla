@@ -33,9 +33,10 @@ class AbstractAccount(ABC):
 
     def get_self_relationship(self):
         from avilla.core.relationship import Context
+
         return Context(
-            self.protocol, self.to_selector(), Selector().land(self.land.name), self.to_selector(), self
-        )
+            self.protocol, self, self.to_selector(), Selector().land(self.land.name), self.to_selector()
+        )  # FIXME: endpoint?
 
     @property
     def available(self) -> bool:

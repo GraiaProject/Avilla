@@ -2,21 +2,12 @@ from __future__ import annotations
 
 from asyncio import gather
 from collections import ChainMap, deque
+from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    AsyncGenerator,
-    Awaitable,
-    Callable,
-    Iterable,
-    TypeVar,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, MessageChain, Text
-from typing_extensions import Unpack
+from typing_extensions import Self, Unpack
 
 from avilla.core.account import AbstractAccount
 from avilla.core.context import ctx_relationship
@@ -140,41 +131,46 @@ class ContextMedium:
     selector: ContextSelector
 
 
+@dataclass
+class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
+    ctx: Context
+
+
 class Context:
+    protocol: "BaseProtocol"
+    account: AbstractAccount
+
     client: ContextClientSelector
     endpoint: ContextEndpointSelector
     scene: ContextSceneSelector
     self: Selector
     mediums: list[ContextMedium]
 
-    account: AbstractAccount
     cache: dict[str, Any]
 
-    protocol: "BaseProtocol"
-
     _artifacts: ChainMap[ArtifactSignature, Any]
-    # _middlewares: list[ActionMiddleware]
 
     def __init__(
         self,
         protocol: "BaseProtocol",
+        account: AbstractAccount,
         client: Selector,
         endpoint: Selector,
         scene: Selector,
         selft: Selector,
-        account: AbstractAccount,
         mediums: list[Selector] | None = None,
-        # middlewares: list[ActionMiddleware] | None = None,
     ) -> None:
-        self.client = ContextClientSelector(self, client)
-        self.endpoint = ContextEndpointSelector(self, endpoint)
-        self.scene = ContextSceneSelector(self, scene)
-        self.self = selft
-        self.mediums = [ContextMedium(ContextSelector(self, medium)) for medium in mediums or []]
-        self.account = account
         self.protocol = protocol
-        # self._middlewares = middlewares or []
+        self.account = account
+
+        self.client = ContextClientSelector.from_selector(self, client)
+        self.endpoint = ContextEndpointSelector.from_selector(self, endpoint)
+        self.scene = ContextSceneSelector.from_selector(self, scene)
+        self.self = selft
+        self.mediums = [ContextMedium(ContextSelector.from_selector(self, medium)) for medium in mediums or []]
+
         self.cache = {"meta": {}}
+
         self._artifacts = ChainMap(
             self.protocol.impl_namespace.get(
                 Scope(self.land.name, self.scene.path_without_land, self.self.path_without_land), {}
@@ -203,9 +199,14 @@ class Context:
     def _ext_handler(self):
         return ExtensionHandler(self)
 
+    @classmethod
     @property
-    def app_current(self) -> Context | None:
+    def app_current(cls) -> Context | None:
         return ctx_relationship.get(None)
+
+    @property
+    def request(self) -> ContextRequestSelector:
+        return self.endpoint.expects_request()
 
     async def query(self, pattern: Selector, with_land: bool = False):
         querier_steps: list[Query] | None = _find_querier_steps(
@@ -314,70 +315,39 @@ class Context:
             cached[path] = result
         return result
 
-    def cast(
+    @overload
+    def wrap(self, bound: Selector) -> ContextSelector:
+        ...
+
+    @overload
+    def wrap(self, bound: MetadataOf[_Describe]) -> ContextWrappedMetadataOf[_Describe]:
+        ...
+
+    @overload
+    def wrap(self, bound: Selector, trait: type[_TraitT]) -> _TraitT:
+        ...
+
+    @overload
+    def wrap(self, bound: MetadataOf, trait: type[_TraitT]) -> _TraitT:
+        ...
+
+    def wrap(
         self,
-        trait: type[_TboundTrait],
-        path: type[Cell] | CellOf[Unpack[tuple[Any, ...]], Cell] | None = None,
-        target: Selector | Selectable | None = None,
-    ) -> _TboundTrait:
-        if isinstance(target, Selectable):
-            target = target.to_selector()
-        if CastAllow(trait) not in self._artifacts:
-            raise NotImplementedError(f"trait {trait.__name__} is not allow to cast in current context.")
-        return trait(self, path, target)
+        bound: Selector | MetadataOf[_DescribeT],
+        trait: type[_TraitT] | None = None,
+    ) -> ContextSelector | ContextWrappedMetadataOf[_Describe] | _TraitT:
+        if trait:
+            if CastAllow(trait) not in self._artifacts:
+                raise NotImplementedError(f"trait {trait.__name__} is not allow to cast in current context.")
 
-    def send_message(
-        self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
-    ):
-        if isinstance(message, str):
-            message = MessageChain([Text(message)])
-        elif not isinstance(message, MessageChain):
-            message = MessageChain([]).extend(list(message))
-        else:
-            message = MessageChain([i if isinstance(i, Element) else Text(i) for i in message])
+            if isinstance(bound, Selector):
+                return trait(self, None, bound)
+            elif isinstance(bound, MetadataOf):
+                return trait(self, bound.describe, bound.target)
 
-        if isinstance(reply, Message):
-            reply = reply.to_selector()
-        elif isinstance(reply, str):
-            reply = self.scene.copy().message(reply)
+        elif isinstance(bound, Selector):
+            return ContextSelector.from_selector(self, bound)
+        elif isinstance(bound, MetadataOf):
+            return ContextWrappedMetadataOf(bound.target, bound.describe, self)
 
-        return self.cast(MessageSend).send(message, reply=reply)
-
-    # TODO: more shortcuts, like `accept_request` etc.
-
-    async def accept_request(self, request: Request | Selector):
-        if isinstance(request, Request):
-            request = request.to_selector()
-        return await self.cast(RequestTrait, target=request).accept()
-
-    async def reject_request(self, request: Request | Selector, reason: str | None = None, forever: bool = False):
-        if isinstance(request, Request):
-            request = request.to_selector()
-        return await self.cast(RequestTrait, target=request).reject(reason, forever)
-
-    async def cancel_request(self, request: Request | Selector):
-        if isinstance(request, Request):
-            request = request.to_selector()
-        return await self.cast(RequestTrait, target=request).cancel()
-
-    async def ignore_request(self, request: Request | Selector):
-        if isinstance(request, Request):
-            request = request.to_selector()
-        return await self.cast(RequestTrait, target=request).ignore()
-
-    async def leave_scene(self, scene: Selectable | Selector | None = None):
-        if isinstance(scene, Selectable):
-            scene = scene.to_selector()
-        return await self.cast(SceneTrait, target=scene or self.scene).leave()
-
-    async def disband_scene(self, scene: Selectable | Selector | None = None):
-        if isinstance(scene, Selectable):
-            scene = scene.to_selector()
-        return await self.cast(SceneTrait, target=scene or self.scene).disband()
-
-    async def remove_member(
-        self, target: Selector, reason: str | None = None, scene: Selectable | Selector | None = None
-    ):
-        if isinstance(scene, Selectable):
-            scene = scene.to_selector()
-        return await self.cast(SceneTrait, target=scene or self.scene).remove_member(target, reason)
+        raise TypeError(f"cannot wrap {bound!r}")
