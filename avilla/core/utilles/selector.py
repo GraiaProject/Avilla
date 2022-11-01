@@ -184,8 +184,7 @@ class Selector:
                 patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
                 path_buf.clear()
                 pattern_buf.clear()
-                continue
-            if ch == "(":
+            elif ch == "(":
                 if bracket_depth:
                     pattern_buf.append(ch)
                 bracket_depth += 1
@@ -202,7 +201,7 @@ class Selector:
         if path_buf:
             patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
         return (self.path if "land" in patterns else self.path_without_land) == ".".join(patterns) and all(
-            k in self.pattern and v in ["*", self.pattern[k]] for k, v in patterns.items()
+            k in self.pattern and v in ("*", self.pattern[k]) for k, v in patterns.items()
         )
 
     def expects(self, pattern: str) -> Self:
