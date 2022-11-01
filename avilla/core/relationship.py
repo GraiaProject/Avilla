@@ -176,6 +176,12 @@ class ContextMedium:
 class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
     ctx: Context
 
+    def pull(self) -> Awaitable[_DescribeT]:
+        return self.ctx.pull(self.describe, self.target)
+
+    def wrap(self, trait: type[_TraitT]) -> _TraitT:
+        return self.ctx.wrap(self, trait)
+
 
 class Context:
     protocol: "BaseProtocol"
