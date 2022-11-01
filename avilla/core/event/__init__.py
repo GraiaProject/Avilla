@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
-    from ..cell import Cell, CellOf
+    from ..metadata import Metadata, MetadataRoute
 
 
 class AvillaEvent(Dispatchable, metaclass=ABCMeta):
@@ -41,7 +41,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
 @dataclass
 class MetadataModify:
-    describe: type[Cell] | CellOf
+    describe: type[Metadata] | MetadataRoute
     field: str
     current: Any
     past: Any | None = None

@@ -27,7 +27,7 @@ from avilla.core.utilles.selector import Selector
 from .context import ctx_prefix, eval_dotpath, get_current_namespace
 
 if TYPE_CHECKING:
-    from avilla.core.cell import Cell, CellOf
+    from avilla.core.metadata import Metadata, MetadataRoute
     from avilla.core.relationship import Context
     from avilla.core.trait.signature import ArtifactSignature
 
@@ -44,6 +44,7 @@ class Recorder(abc.ABC):
         r = get_current_namespace()
         r[sig] = content
         return content
+
 
 class AlterRecorder(Recorder):
     @abc.abstractmethod
@@ -63,7 +64,7 @@ _T = TypeVar("_T")
 
 class ImplRecorder(Recorder, Generic[_P, _T]):
     trait_call: Fn
-    path: type[Cell] | CellOf | None = None
+    path: type[Metadata] | MetadataRoute | None = None
     target: str | None = None
 
     @overload
@@ -84,7 +85,7 @@ class ImplRecorder(Recorder, Generic[_P, _T]):
     def __init__(self, trait_call: Fn[_P, _T]):
         self.trait_call = trait_call
 
-    def of(self, path: type[Cell] | CellOf):
+    def of(self, path: type[Metadata] | MetadataRoute):
         self.path = path
         return self
 
@@ -123,14 +124,14 @@ class FetchRecorder(Recorder, Generic[_R]):
 
 fetch = FetchRecorder
 
-_C = TypeVar("_C", bound="Cell")
+_M = TypeVar("_M", bound="Metadata")
 
 
-class PullRecorder(Recorder, Generic[_C]):
+class PullRecorder(Recorder, Generic[_M]):
     target: str | None = None
-    path: type[Cell] | CellOf
+    path: type[Metadata] | MetadataRoute
 
-    def __init__(self, path: type[_C] | CellOf[Unpack[tuple[Any, ...]], _C]):
+    def __init__(self, path: type[_M] | MetadataRoute[Unpack[tuple[Any, ...]], _M]):
         self.path = path
 
     def of(self, target: str):
@@ -140,7 +141,7 @@ class PullRecorder(Recorder, Generic[_C]):
     def signature(self):
         return _Pull(eval_dotpath(self.target, ctx_prefix.get()) if self.target is not None else None, self.path)
 
-    def __call__(self, content: Callable[[Context, Selector | None], Awaitable[_C]]):
+    def __call__(self, content: Callable[[Context, Selector | None], Awaitable[_M]]):
         return super().__call__(content)
 
 
@@ -188,14 +189,15 @@ def casts(trait_type: type[Trait], target: str | None = None):
     r: dict[ArtifactSignature, Any] = get_current_namespace()
     r[CastAllow(trait_type, target)] = True
 
+
 class ImplDefaultTargetRecorder(Recorder):
     # trait_call: TraitCall
-    path: type[Cell] | CellOf | None = None
+    path: type[Metadata] | MetadataRoute | None = None
 
     def __init__(self, trait_call: Fn):
         self.trait_call = trait_call
 
-    def of(self, path: type[Cell] | CellOf):
+    def of(self, path: type[Metadata] | MetadataRoute):
         self.path = path
         return self
 

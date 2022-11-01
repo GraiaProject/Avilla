@@ -5,13 +5,13 @@ from typing import Generic, TypeVar
 
 from typing_extensions import TypeAlias
 
-from avilla.core.cell import Cell
+from avilla.core.metadata import Metadata
 from avilla.core.utilles.selector import Selector
 
 T = TypeVar("T")
 
 
-class Resource(Cell, Generic[T]):
+class Resource(Metadata, Generic[T]):
     selector: Selector
 
     def __init__(self, selector: Selector):

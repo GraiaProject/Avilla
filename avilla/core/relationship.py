@@ -19,11 +19,9 @@ from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Unpack
 
 from avilla.core.account import AbstractAccount
-
-# from avilla.core.action.middleware import ActionMiddleware
-from avilla.core.cell import Cell, CellOf
 from avilla.core.context import ctx_relationship
 from avilla.core.message import Message
+from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute
 from avilla.core.request import Request
 from avilla.core.resource import Resource
 from avilla.core.skeleton.message import MessageEdit, MessageRevoke, MessageSend
@@ -48,8 +46,11 @@ if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 _T = TypeVar("_T")
-_M = TypeVar("_M", bound=Cell)
-_TboundTrait = TypeVar("_TboundTrait", bound=Trait)
+_MetadataT = TypeVar("_MetadataT", bound=Metadata)
+_DescribeT = TypeVar("_DescribeT", bound=type[Metadata] | MetadataRoute)
+_TraitT = TypeVar("_TraitT", bound=Trait)
+
+_Describe = type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
 
 
 async def _query_depth_generator(
@@ -284,11 +285,11 @@ class Context:
 
     async def pull(
         self,
-        path: type[_M] | CellOf[Unpack[tuple[Any, ...]], _M],
+        path: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT],
         target: Selector | Selectable | None = None,
         *,
         flush: bool = False,
-    ) -> _M:
+    ) -> _MetadataT:
         if isinstance(target, Selectable):
             target = target.to_selector()
         if target is not None:
@@ -306,7 +307,7 @@ class Context:
                 + (f' for "{target.path_without_land}"' if target is not None else "")
                 + f' because no available implement found in "{self.protocol.__class__.__name__}"'
             )
-        puller = cast("Callable[[Context, Selector | None], Awaitable[_M]]", puller)
+        puller = cast("Callable[[Context, Selector | None], Awaitable[_MetadataT]]", puller)
         result = await puller(self, target)
         if target is not None and not path.has_params():
             cached = self.cache["meta"].setdefault(target, {})

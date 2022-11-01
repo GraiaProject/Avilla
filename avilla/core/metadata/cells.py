@@ -3,53 +3,53 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
-from . import Cell
+from . import Metadata
 
 
 @dataclass
-class Count(Cell):
+class Count(Metadata):
     current: int
     max: int
 
 
 @dataclass
-class Summary(Cell):
+class Summary(Metadata):
     name: str
     description: str | None
 
 
 @dataclass
-class MuteInfo(Cell):
+class MuteInfo(Metadata):
     muted: bool
     duration: timedelta
 
 
 @dataclass
-class BanInfo(Cell):
+class BanInfo(Metadata):
     banned: bool
     duration: timedelta
 
 
 @dataclass
-class Privilege(Cell):
+class Privilege(Metadata):
     available: bool
     effective: bool
 
 
 @dataclass
-class Nick(Cell):
+class Nick(Metadata):
     name: str
     nickname: str
     badge: str | None
 
 
 @dataclass
-class Reason(Cell):
+class Reason(Metadata):
     content: str
 
 
 @dataclass
-class Comment(Cell):
+class Comment(Metadata):
     content: str
 
 
@@ -60,7 +60,7 @@ class QuestionItem:
 
 
 @dataclass
-class Questions(Cell):
+class Questions(Metadata):
     items: list[QuestionItem]
 
 
@@ -71,5 +71,5 @@ class AnswerItem:
 
 
 @dataclass
-class Answers(Cell):
+class Answers(Metadata):
     items: list[AnswerItem]

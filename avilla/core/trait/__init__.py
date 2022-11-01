@@ -16,7 +16,7 @@ from typing_extensions import Concatenate, ParamSpec, Self
 from avilla.core.utilles import identity
 from avilla.core.utilles.selector import Selector
 
-from ..cell import Cell, CellOf
+from ..metadata import Metadata, MetadataRoute
 from .signature import Impl, ImplDefaultTarget
 
 if TYPE_CHECKING:
@@ -27,11 +27,11 @@ from devtools import debug
 
 class Trait:
     relationship: Context
-    path: type[Cell] | CellOf | None
+    path: type[Metadata] | MetadataRoute | None
     target: Selector | None = None
 
     def __init__(
-        self, relationship: Context, path: type[Cell] | CellOf | None = None, target: Selector | None = None
+        self, relationship: Context, path: type[Metadata] | MetadataRoute | None = None, target: Selector | None = None
     ) -> None:
         self.relationship = relationship
         self.path = path

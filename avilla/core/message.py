@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, cast
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core.cell import Cell
+from avilla.core.metadata import Metadata
 from avilla.core.platform import Land
 from avilla.core.utilles.selector import Selector
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Message(Cell):
+class Message(Metadata):
     id: str
     mainline: Selector
     sender: Selector

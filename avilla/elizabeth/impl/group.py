@@ -4,7 +4,7 @@ from collections import defaultdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-from avilla.core.cell.cells import Nick, Privilege, Summary
+from avilla.core.metadata.cells import Nick, Privilege, Summary
 from avilla.core.exceptions import permission_error_message
 from avilla.core.message import Message
 from avilla.core.skeleton.message import MessageRevoke, MessageSend

@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
 
 if TYPE_CHECKING:
-    from avilla.core.cell import Cell, CellOf
+    from avilla.core.metadata import Metadata, MetadataRoute
     from avilla.core.resource import Resource
     from avilla.core.trait import Fn, Trait
     from avilla.core.trait.extension import FnExtension
@@ -18,13 +18,13 @@ class ArtifactSignature:
 class Impl(ArtifactSignature):
     trait_call: Fn
     target: str | None
-    path: type[Cell] | CellOf | None
+    path: type[Metadata] | MetadataRoute | None
 
 
 @dataclass(unsafe_hash=True)
 class Pull(ArtifactSignature):
     target: str | None
-    path: type[Cell] | CellOf
+    path: type[Metadata] | MetadataRoute
 
 
 @dataclass(unsafe_hash=True)
@@ -44,7 +44,7 @@ class CompleteRule(ArtifactSignature):
 
 @dataclass(unsafe_hash=True)
 class ImplDefaultTarget(ArtifactSignature):
-    path: type[Cell] | CellOf | None
+    path: type[Metadata] | MetadataRoute | None
     trait_call: Fn
 
 
@@ -53,6 +53,7 @@ class Query(ArtifactSignature):
     upper: str | None
     target: str
 
+
 @dataclass(unsafe_hash=True)
 class Check(ArtifactSignature):
     target: str
@@ -60,9 +61,11 @@ class Check(ArtifactSignature):
 
 E = TypeVar("E", bound="FnExtension")
 
+
 @dataclass(unsafe_hash=True)
 class ExtensionImpl(ArtifactSignature, Generic[E]):
     ext: type[E]
+
 
 @dataclass(unsafe_hash=True)
 class CastAllow(ArtifactSignature):
