@@ -11,6 +11,7 @@ from typing_extensions import ParamSpec, Self
 
 from avilla.core.account import AbstractAccount
 from avilla.core.relationship import Context
+from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import Selectable, Selector
 
 T = TypeVar("T")
@@ -106,8 +107,8 @@ class Filter(BaseDispatcher, Generic[T]):
     def follows(self: Filter[Selectable], *patterns: str) -> Filter[Selectable]:
         return self.any(lambda result: result.to_selector().follows(pattern) for pattern in patterns)
 
+    @classproperty
     @classmethod
-    @property
     def rs(cls) -> Filter[Context]:
         return cls().fetch(Context)
 

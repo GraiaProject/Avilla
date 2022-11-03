@@ -7,6 +7,8 @@ from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
 
+from avilla.core.utilles import classproperty
+
 if TYPE_CHECKING:
     from avilla.core.relationship import Context
     from avilla.core.utilles.selector import Selector
@@ -64,8 +66,8 @@ class Metadata(Generic[T], metaclass=MetadataMeta):
     def of(cls, target: Selector) -> MetadataOf[type[Self]]:
         return MetadataOf(target, cls)
 
+    @classproperty
     @classmethod
-    @property
     def _param_ctx(cls):
         return METACELL_PARAMS_CTX[cls]
 

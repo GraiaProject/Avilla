@@ -31,6 +31,7 @@ from avilla.core.trait.signature import (
     Query,
     ResourceFetch,
 )
+from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 
 if TYPE_CHECKING:
@@ -246,8 +247,8 @@ class Context:
     def _ext_handler(self):
         return ExtensionHandler(self)
 
+    @classproperty
     @classmethod
-    @property
     def app_current(cls) -> Context | None:
         return ctx_relationship.get(None)
 
