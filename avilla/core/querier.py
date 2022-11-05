@@ -16,8 +16,8 @@ from typing_extensions import Self
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.protocol import BaseProtocol
     from avilla.core.context import Context
+    from avilla.core.protocol import BaseProtocol
 
 
 def query(target: str):

@@ -9,9 +9,9 @@ from graia.broadcast import Broadcast
 from launart import Launart, Service
 from loguru import logger
 
-from avilla.core.account import AbstractAccount
 from avilla.core._runtime import get_current_avilla
-from avilla.core.dispatchers import AvillaBuiltinDispatcher, ContextDispatcher
+from avilla.core.account import AbstractAccount
+from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import LocalFileResource
@@ -106,7 +106,6 @@ class Avilla:
 
         # self.broadcast.finale_dispatchers.append(MetadataDispatcher())
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
-        self.broadcast.finale_dispatchers.append(ContextDispatcher())
 
         @self.register_global_artifact(ResourceFetch(LocalFileResource))
         async def _fetch_local_file(_, res: LocalFileResource):

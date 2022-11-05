@@ -27,8 +27,8 @@ from avilla.core.utilles.selector import Selector
 from .context import ctx_prefix, eval_dotpath, get_current_namespace
 
 if TYPE_CHECKING:
-    from avilla.core.metadata import Metadata, MetadataRoute
     from avilla.core.context import Context
+    from avilla.core.metadata import Metadata, MetadataRoute
     from avilla.core.trait.signature import ArtifactSignature
 
     from . import Fn

@@ -6,6 +6,7 @@ from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
+
 class Stream(Generic[T]):
     _receivers: list[Future[T]]
     closed: bool = False

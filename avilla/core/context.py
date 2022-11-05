@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Self, Unpack
 
-from avilla.core.account import AbstractAccount
 from avilla.core._runtime import ctx_context
+from avilla.core.account import AbstractAccount
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute
 from avilla.core.request import Request
@@ -207,7 +207,7 @@ class Context:
         scene: Selector,
         selft: Selector,
         mediums: list[Selector] | None = None,
-        prelude_metadatas: dict[Selector | MetadataRoute, Metadata] | None = None
+        prelude_metadatas: dict[Selector | MetadataRoute, Metadata] | None = None,
     ) -> None:
         self.protocol = protocol
         self.account = account

@@ -1,6 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -19,7 +19,7 @@ class ActivityEvent(AvillaEvent):
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
-        async def catch(interface: 'DispatcherInterface[ActivityEvent]'):
+        async def catch(interface: "DispatcherInterface[ActivityEvent]"):
             ...
 
 
@@ -34,4 +34,3 @@ class ActivityUnavailable(ActivityEvent):
 class ActivityTrigged(ActivityEvent):
     trigger: Selector  # who trigged the activity
     scene: Selector
-

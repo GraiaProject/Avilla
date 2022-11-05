@@ -25,11 +25,12 @@ class MuteTrait(Trait):
     async def unmute(self, target: Selector) -> None:
         ...
 
+
 class MuteAllTrait(Trait):
     @Fn
     async def mute_all(self, target: Selector) -> None:
         ...
-    
+
     @Fn
     async def unmute_all(self, target: Selector) -> None:
         ...

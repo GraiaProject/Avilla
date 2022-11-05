@@ -20,6 +20,7 @@ ctx_fnextensions: ContextVar[dict[str, list[FnExtension]]] = ContextVar("fnexten
 
 E = TypeVar("E", bound=FnExtension)
 
+
 class ExtensionHandler:
     rs: Context
 
@@ -37,6 +38,7 @@ class ExtensionHandler:
         def wrapper(impl: Callable[[Context, E], Awaitable[Any]]):
             self._artifacts[signature] = impl  # type: ignore
             return impl
+
         return wrapper
 
     async def handle_extensions(self):

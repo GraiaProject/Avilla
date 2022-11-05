@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 
-from avilla.core.account import AbstractAccount
 from avilla.core._runtime import ctx_context, ctx_protocol
-from avilla.core.event import AvillaEvent
+from avilla.core.account import AbstractAccount
 from avilla.core.context import Context
+from avilla.core.event import AvillaEvent
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface

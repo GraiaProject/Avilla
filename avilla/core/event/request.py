@@ -1,6 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -13,6 +13,7 @@ from . import AvillaEvent
 if TYPE_CHECKING:
     from datetime import datetime
 
+
 @dataclass
 class RequestEvent(AvillaEvent):
     request: Request
@@ -22,6 +23,7 @@ class RequestEvent(AvillaEvent):
         async def catch(interface: DispatcherInterface[RequestEvent]):
             if interface.annotation is Request:
                 return interface.event.request
+            return await super().catch(interface)
 
 
 class RequestReceived(RequestEvent):

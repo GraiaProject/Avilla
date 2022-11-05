@@ -6,6 +6,7 @@ from typing import Generic, TypeVar
 
 T = TypeVar("T")
 
+
 class Promise(Generic[T]):
     _futures: list[Future[T]]
     done: bool = False
@@ -15,7 +16,7 @@ class Promise(Generic[T]):
 
     def __await__(self):
         return self.__await_impl__().__await__()
-    
+
     async def __await_impl__(self):
         future = Future()
         try:
@@ -29,12 +30,12 @@ class Promise(Generic[T]):
         for future in self._futures:
             if not future.done() and not future.cancelled():
                 future.set_result(value)
-    
+
     def reject(self, exception: Exception):
         for future in self._futures:
             if not future.done() and not future.cancelled():
                 future.set_exception(exception)
-    
+
     def cancel(self):
         for future in self._futures:
             if not future.done() and not future.cancelled():

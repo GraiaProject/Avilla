@@ -1,6 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -16,15 +16,17 @@ if TYPE_CHECKING:
 
     from avilla.core.account import AbstractAccount
 
+
 @dataclass
 class ResourceEvent(AvillaEvent):
     resource: Resource
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
-        async def catch(interface: 'DispatcherInterface[ResourceEvent]'):
+        async def catch(interface: "DispatcherInterface[ResourceEvent]"):
             if issubclass((get_origin(interface.annotation)) or interface.annotation, Resource):
                 return interface.event.resource
+            return await super().catch(interface)
 
 
 class ResourceAvailable(ResourceEvent):
@@ -34,10 +36,12 @@ class ResourceAvailable(ResourceEvent):
 class ResourceUnavailable(ResourceEvent):
     pass
 
+
 @dataclass
 class FileUploaded(ResourceAvailable):
     uploader: Selector
     scene: Selector
+
 
 @dataclass
 class FileRemoved(ResourceUnavailable):

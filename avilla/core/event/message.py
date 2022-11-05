@@ -1,6 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 @dataclass
 class MessageReceived(AvillaEvent):
     message: Message
+
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageReceived"]):
@@ -27,6 +28,8 @@ class MessageReceived(AvillaEvent):
                 return interface.event.message
             elif interface.annotation is MessageChain:
                 return interface.event.message.content
+            return await super().catch(interface)
+
 
 @dataclass
 class MessageEdited(AvillaEvent):
@@ -35,7 +38,6 @@ class MessageEdited(AvillaEvent):
     past: MessageChain
     current: MessageChain
 
-
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageEdited"]):
@@ -43,14 +45,15 @@ class MessageEdited(AvillaEvent):
                 return interface.event.message
             elif interface.annotation is MessageChain:
                 return interface.event.current
+            return await super().catch(interface)
+
 
 @dataclass
 class MessageRevoked(AvillaEvent):
     message: Selector
     operator: Selector
 
-
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageRevoked"]):
-            ...
+            return await super().catch(interface)

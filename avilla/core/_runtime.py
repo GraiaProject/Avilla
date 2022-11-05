@@ -7,8 +7,8 @@ from graia.broadcast.utilles import Ctx
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
-    from avilla.core.protocol import BaseProtocol
     from avilla.core.context import Context
+    from avilla.core.protocol import BaseProtocol
 
 
 ctx_avilla: Ctx[Avilla] = Ctx("avilla")
