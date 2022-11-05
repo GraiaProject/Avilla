@@ -10,7 +10,7 @@ from launart import Launart, Service
 from loguru import logger
 
 from avilla.core.account import AbstractAccount
-from avilla.core.context import get_current_avilla
+from avilla.core._runtime import get_current_avilla
 from avilla.core.dispatchers import AvillaBuiltinDispatcher, ContextDispatcher
 from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol

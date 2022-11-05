@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 
 from avilla.core.account import AbstractAccount
-from avilla.core.context import ctx_protocol, ctx_relationship
+from avilla.core._runtime import ctx_context, ctx_protocol
 from avilla.core.event import AvillaEvent
-from avilla.core.relationship import Context
+from avilla.core.context import Context
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -33,32 +33,7 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
         elif isinstance(interface.event, AvillaEvent):
             if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
                 rs: Context = interface.local_storage["relationship"]
-                return interface.event.account
-
-
-class ContextDispatcher(BaseDispatcher):
-    @staticmethod
-    async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
-        protocol = ctx_protocol.get()
-        if protocol is not None:
-            rs = await interface.event.account.get_relationship(interface.event.ctx, via=interface.event.get_via())
-            token = ctx_relationship.set(rs)
-            rs.cache["meta"] = interface.event.extra.get("meta", {})
-            interface.local_storage["relationship"] = rs
-            interface.local_storage["_ctxtoken_rs"] = token
-
-    @staticmethod
-    async def afterExecution(
-        interface: DispatcherInterface[AvillaEvent],
-        exception: Exception | None,
-        tb: TracebackType | None,
-    ):
-        ctx_relationship.reset(interface.local_storage["_ctxtoken_rs"])
-
-    @staticmethod
-    async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if isinstance(interface.event, AvillaEvent) and interface.annotation is Context:
-            return interface.local_storage["relationship"]
+                return rs.account
 
 
 """

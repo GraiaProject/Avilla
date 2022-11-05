@@ -20,7 +20,7 @@ from ..metadata import Metadata, MetadataRoute
 from .signature import Impl, ImplDefaultTarget
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Context
+    from avilla.core.context import Context
 
 from devtools import debug
 

@@ -1,123 +1,77 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, get_args, get_origin
+
+from ..context import Context
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-
-    from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
-    from ..metadata import Metadata, MetadataRoute
-
-
-class AvillaEvent(Dispatchable, metaclass=ABCMeta):
-    account: AbstractAccount
-    time: datetime
-
-    extra: dict[Any, Any]
-
-    def __init__(
-        self, account: AbstractAccount, *, extra: dict[Any, Any] | None = None, time: datetime | None = None
-    ) -> None:
-        self.account = account
-        self.extra = extra or {}
-        self.time = time or datetime.now()
-
-    @property
-    @abstractmethod
-    def ctx(self) -> Selector:
-        ...
-
-    def get_via(self) -> Selector | None:
-        ...
-
+    from .._runtime import ctx_avilla, ctx_context, ctx_protocol
+    from ..metadata import MetadataOf
 
 @dataclass
-class MetadataModify:
-    describe: type[Metadata] | MetadataRoute
-    field: str
-    current: Any
-    past: Any | None = None
-
-
-class MetadataModified(AvillaEvent):
-    ctx: Selector
-    modifies: list[MetadataModify]
-    operator: Selector | None = None
-
-    def __init__(
-        self,
-        ctx: Selector,
-        modifies: list[MetadataModify],
-        account: AbstractAccount,
-        operator: Selector | None = None,
-        time: datetime | None = None,
-        extra: dict[Any, Any] | None = None,
-    ):
-        self.ctx = ctx
-        self.modifies = modifies
-        self.operator = operator
-        super().__init__(account, time=time, extra=extra)
+class AvillaEvent(Dispatchable, metaclass=ABCMeta):
+    context: Context
+    time: datetime = field(init=False, default_factory=datetime.now)
 
     class Dispatcher(BaseDispatcher):
         @staticmethod
+        async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
+            interface.local_storage["avilla_context"] = interface.event.context
+            interface.local_storage["_context_token"] = ctx_context.set(interface.event.context)
+            # TODO: 重新评估此处: 由于 asyncio 会自动 copy_context, 所以在此 set ctxvar 的可用性存疑.
+        
+        @staticmethod
+        async def afterExecution(interface: DispatcherInterface[AvillaEvent]):
+            ctx_context.reset(interface.local_storage["_context_token"])
+
+@dataclass
+class MetadataModify:
+    bound: Selector | MetadataOf
+    field: str
+    action: str
+    past: Any
+    present: Any
+
+@dataclass
+class MetadataModified(AvillaEvent):
+    endpoint: Selector
+    modifies: list[MetadataModify]
+    operator: Selector | None = None
+
+    class Dispatcher(AvillaEvent.Dispatcher):
+        @staticmethod
         async def catch(interface: DispatcherInterface["MetadataModified"]):
-            if get_origin(interface.annotation) is list and get_args(interface.annotation)[0] is MetadataModify:
-                return interface.event.modifies
+            ...
 
-
+@dataclass
 class RelationshipCreated(AvillaEvent):
-    ctx: Selector
-    via: Selector | None
-    # 用 via 同时表示两个方向的关系.(自发行为和被动行为)
-    # 自发行为就是 None, 被动行为反之
+    client: Selector
+    scene: Selector
+    self: Selector
+    mediums: list[Selector] = field(default_factory=list)
 
-    def __init__(
-        self,
-        ctx: Selector,
-        account: AbstractAccount,
-        time: datetime | None = None,
-        via: Selector | None = None,
-    ):
-        self.ctx = ctx
-        self.via = via
-        super().__init__(account, time=time)
-
-    def get_via(self) -> Selector | None:
-        return self.via
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["RelationshipCreated"]):
             ...
 
-
+@dataclass
 class RelationshipDestroyed(AvillaEvent):
-    ctx: Selector
-    via: Selector | None
+    client: Selector
+    scene: Selector
+    self: Selector
+    mediums: list[Selector] = field(default_factory=list)
 
-    def __init__(
-        self,
-        ctx: Selector,
-        account: AbstractAccount,
-        time: datetime | None = None,
-        via: Selector | None = None,
-    ):
-        self.ctx = ctx
-        self.via = via
-        super().__init__(account, time=time)
-
-    def get_via(self) -> Selector | None:
-        return self.via
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["RelationshipDestroyed"]):
             ...

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -16,18 +17,10 @@ if TYPE_CHECKING:
     from avilla.core.account import AbstractAccount
 
 
+@dataclass
 class MessageReceived(AvillaEvent):
     message: Message
-
-    @property
-    def ctx(self) -> Selector:
-        return self.message.sender
-
-    def __init__(self, message: Message, account: AbstractAccount, time: datetime | None = None) -> None:
-        self.message = message
-        super().__init__(account, time=time)
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageReceived"]):
             if interface.annotation is Message:
@@ -35,33 +28,15 @@ class MessageReceived(AvillaEvent):
             elif interface.annotation is MessageChain:
                 return interface.event.message.content
 
-
+@dataclass
 class MessageEdited(AvillaEvent):
     message: Message
     operator: Selector
     past: MessageChain
     current: MessageChain
 
-    @property
-    def ctx(self):
-        return self.operator
 
-    def __init__(
-        self,
-        message: Message,
-        operator: Selector,
-        past: MessageChain,
-        current: MessageChain,
-        account: AbstractAccount,
-        time: datetime | None = None,
-    ) -> None:
-        self.message = message
-        self.operator = operator
-        self.past = past
-        self.current = current
-        super().__init__(account, time=time)
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageEdited"]):
             if interface.annotation is Message:
@@ -69,27 +44,13 @@ class MessageEdited(AvillaEvent):
             elif interface.annotation is MessageChain:
                 return interface.event.current
 
-
+@dataclass
 class MessageRevoked(AvillaEvent):
     message: Selector
     operator: Selector
 
-    @property
-    def ctx(self):
-        return self.operator
 
-    def __init__(
-        self,
-        message: Selector,
-        operator: Selector,
-        account: AbstractAccount,
-        time: datetime | None = None,
-    ) -> None:
-        self.message = message
-        self.operator = operator
-        super().__init__(account, time=time)
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageRevoked"]):
             ...

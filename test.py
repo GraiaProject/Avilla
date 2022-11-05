@@ -14,7 +14,7 @@ from avilla.core.metadata.cells import Privilege, Summary
 from avilla.core.elements import Picture
 from avilla.core.event.message import MessageReceived
 from avilla.core.message import Message
-from avilla.core.relationship import Context
+from avilla.core.context import Context
 from avilla.core.resource import LocalFileResource
 from avilla.core.skeleton.message import MessageSend
 from avilla.core.skeleton.privilege import MuteTrait

@@ -7,7 +7,7 @@ from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Context
+    from avilla.core.context import Context
 
 
 class ElizabethRootQuery(ProtocolAbstractQueryHandler):

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 from typing import TYPE_CHECKING
 
@@ -11,15 +12,12 @@ if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
+@dataclass
 class ActivityEvent(AvillaEvent):
     id: Selector  # eg. [...].activity("button_clicked")
     activity: Selector  # eg. [...].button("#1")
 
-    @property
-    def ctx(self):
-        return self.activity
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: 'DispatcherInterface[ActivityEvent]'):
             ...
@@ -35,8 +33,5 @@ class ActivityUnavailable(ActivityEvent):
 
 class ActivityTrigged(ActivityEvent):
     trigger: Selector  # who trigged the activity
-    mainline: Selector
+    scene: Selector
 
-    @property
-    def ctx(self):
-        return self.trigger

@@ -11,7 +11,7 @@ from avilla.core.utilles.selector import Selector
 if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
 
-    from avilla.core.relationship import Context
+    from avilla.core.context import Context
 
 
 raise_for_no_namespace()

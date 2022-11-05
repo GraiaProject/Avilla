@@ -9,7 +9,7 @@ from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import Context
+    from avilla.core.context import Context
 
 
 @dataclass
@@ -32,7 +32,7 @@ class AbstractAccount(ABC):
         ...
 
     def get_self_relationship(self):
-        from avilla.core.relationship import Context
+        from avilla.core.context import Context
 
         return Context(
             self.protocol,

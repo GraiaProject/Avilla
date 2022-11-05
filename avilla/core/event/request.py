@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 from typing import TYPE_CHECKING
 
@@ -12,27 +13,11 @@ from . import AvillaEvent
 if TYPE_CHECKING:
     from datetime import datetime
 
-
+@dataclass
 class RequestEvent(AvillaEvent):
     request: Request
 
-    @property
-    def mainline(self):
-        return self.request.mainline
-
-    @property
-    def ctx(self):
-        return self.request.sender
-
-    def __init__(
-        self,
-        request: Request,
-        time: datetime | None = None,
-    ):
-        self.request = request
-        super().__init__(request.account, time=time)
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface[RequestEvent]):
             if interface.annotation is Request:

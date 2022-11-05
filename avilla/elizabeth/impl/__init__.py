@@ -13,7 +13,7 @@ from avilla.elizabeth.resource import ElizabethAudioResource, ElizabethImageReso
 
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
+    from avilla.core.context import Relationship
 
 raise_for_no_namespace()
 

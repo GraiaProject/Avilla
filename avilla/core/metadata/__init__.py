@@ -10,7 +10,7 @@ from typing_extensions import Self, TypeVarTuple, Unpack
 from avilla.core.utilles import classproperty
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Context
+    from avilla.core.context import Context
     from avilla.core.utilles.selector import Selector
 
 T = TypeVar("T")
@@ -131,10 +131,10 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
 
     def __repr__(self) -> str:
         cells_repr = " >> ".join(cell.__name__ for cell in self.cells)
-        return f"CellOf[{cells_repr}]"
+        return f"MetadataRoute[{cells_repr}]"
 
     def __hash__(self) -> int:
-        return hash(self.cells) + hash("CellOf")
+        return hash(self.cells) + hash("MetadataRoute")
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, MetadataRoute) and o.cells == self.cells

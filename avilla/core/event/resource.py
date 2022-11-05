@@ -1,4 +1,5 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 from datetime import datetime
 from typing import TYPE_CHECKING
@@ -15,24 +16,11 @@ if TYPE_CHECKING:
 
     from avilla.core.account import AbstractAccount
 
-
+@dataclass
 class ResourceEvent(AvillaEvent):
-    resource: BlobResource
+    resource: Resource
 
-    @property
-    def ctx(self):
-        return self.resource.selector
-
-    def __init__(
-            self,
-            resource: BlobResource,
-            account: AbstractAccount,
-            time: datetime | None = None,
-    ):
-        self.resource = resource
-        super().__init__(account, time=time)
-
-    class Dispatcher(BaseDispatcher):
+    class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: 'DispatcherInterface[ResourceEvent]'):
             if issubclass((get_origin(interface.annotation)) or interface.annotation, Resource):
@@ -46,36 +34,12 @@ class ResourceAvailable(ResourceEvent):
 class ResourceUnavailable(ResourceEvent):
     pass
 
-
+@dataclass
 class FileUploaded(ResourceAvailable):
     uploader: Selector
-    mainline: Selector
+    scene: Selector
 
-    def __init__(
-        self,
-        resource: BlobResource,
-        uploader: Selector,
-        mainline: Selector,
-        account: AbstractAccount,
-        time: datetime | None = None,
-    ):
-        self.uploader = uploader
-        self.mainline = mainline
-        super().__init__(resource, account, time)
-
-
+@dataclass
 class FileRemoved(ResourceUnavailable):
     uploader: Selector
-    mainline: Selector
-
-    def __init__(
-        self,
-        resource: BlobResource,
-        uploader: Selector,
-        mainline: Selector,
-        account: AbstractAccount,
-        time: datetime | None = None,
-    ):
-        self.uploader = uploader
-        self.mainline = mainline
-        super().__init__(resource, account, time)
+    scene: Selector

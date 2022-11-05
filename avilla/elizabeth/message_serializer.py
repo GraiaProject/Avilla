@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message.element import Text
 
-from avilla.core.context import ctx_relationship
+from avilla.core._runtime import ctx_context
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
 from avilla.core.utilles.message_serializer import MessageSerializer, element
 from avilla.elizabeth.element import FlashImage
@@ -29,7 +29,7 @@ class ElizabethMessageSerializer(MessageSerializer["ElizabethProtocol"]):
 
     @element(Picture)
     async def image(self, protocol: "ElizabethProtocol", element: Picture):
-        raw = await ctx_relationship.get().fetch(element.resource)
+        raw = await ctx_context.get().fetch(element.resource)
         return {
             "type": "Image",
             "base64": base64.b64encode(raw).decode("utf-8"),
@@ -37,7 +37,7 @@ class ElizabethMessageSerializer(MessageSerializer["ElizabethProtocol"]):
 
     @element(FlashImage)
     async def flash_image(self, protocol: "ElizabethProtocol", element: FlashImage):
-        raw = await ctx_relationship.get().fetch(element.resource)
+        raw = await ctx_context.get().fetch(element.resource)
         return {
             "type": "FlashImage",
             "base64": base64.b64encode(raw).decode("utf-8"),
@@ -45,5 +45,5 @@ class ElizabethMessageSerializer(MessageSerializer["ElizabethProtocol"]):
 
     @element(Audio)
     async def voice(self, protocol: "ElizabethProtocol", element: Audio):
-        raw = await ctx_relationship.get().fetch(element.resource)
+        raw = await ctx_context.get().fetch(element.resource)
         return {"type": "Voice", "base64": base64.b64encode(raw).decode("utf-8")}

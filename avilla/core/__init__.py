@@ -2,13 +2,7 @@ from graia.amnesia.message import MessageChain as MessageChain
 
 from .account import AbstractAccount as AbstractAccount
 from .application import Avilla as Avilla
-from .context import ctx_avilla as ctx_avilla
-from .context import ctx_protocol as ctx_protocol
-from .context import ctx_relationship as ctx_relationship
-from .context import get_current_avilla as get_current_avilla
-from .context import get_current_protocol as get_current_protocol
-from .context import get_current_relationship as get_current_relationship
-from .context import require_relationship as require_relationship
+from .context import Context as Context
 from .dispatchers import AvillaBuiltinDispatcher as AvillaBuiltinDispatcher
 from .dispatchers import ContextDispatcher as ContextDispatcher
 from .elements import Audio as Audio
@@ -81,7 +75,6 @@ from .platform import Version as Version
 from .protocol import BaseProtocol as BaseProtocol
 from .querier import AbstractQueryHandler as AbstractQueryHandler
 from .querier import ProtocolAbstractQueryHandler as ProtocolAbstractQueryHandler
-from .relationship import Context as Context
 from .request import Request as Request
 from .resource import LocalFileResource as LocalFileResource
 from .resource import Resource as Resource

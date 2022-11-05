@@ -7,7 +7,7 @@ from avilla.core.trait import Fn, Trait
 from avilla.core.trait.signature import ExtensionImpl
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Context
+    from avilla.core.context import Context
 
 
 class FnExtension:
