@@ -4,6 +4,7 @@ from asyncio import gather
 from collections import ChainMap, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, MessageChain, Text
@@ -19,13 +20,11 @@ from avilla.core.skeleton.message import MessageEdit, MessageRevoke, MessageSend
 from avilla.core.skeleton.request import RequestTrait
 from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.trait import Trait
-from avilla.core.trait.context import GLOBAL_SCOPE, Scope
+from avilla.core.trait.context import Artifacts
 from avilla.core.trait.extension import ExtensionHandler
 from avilla.core.trait.recorder import Querier
 from avilla.core.trait.signature import (
-    ArtifactSignature,
-    CastAllow,
-    Check,
+    Bounds,
     CompleteRule,
     Pull,
     Query,
@@ -34,8 +33,6 @@ from avilla.core.trait.signature import (
 from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 
-if TYPE_CHECKING:
-    from avilla.core.protocol import BaseProtocol
 
 _T = TypeVar("_T")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
@@ -67,7 +64,7 @@ class _MatchStep:
     history: tuple[Query, ...]
 
 
-def _find_querier_steps(artifacts: ChainMap[ArtifactSignature, Any], query_path: str) -> list[Query] | None:
+def _find_querier_steps(artifacts: Artifacts, query_path: str) -> list[Query] | None:
     result: list[Query] | None = None
     frags: list[str] = query_path.split(".")
     queue: deque[_MatchStep] = deque([_MatchStep("", 0, ())])
@@ -175,17 +172,16 @@ class ContextMedium:
 
 @dataclass
 class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
-    ctx: Context
+    context: Context
 
     def pull(self) -> Awaitable[_DescribeT]:
-        return self.ctx.pull(self.describe, self.target)
+        return self.context.pull(self.describe, self.target)
 
     def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return self.ctx.wrap(self, trait)
+        return self.context.wrap(self, trait)
 
 
 class Context:
-    protocol: "BaseProtocol"
     account: AbstractAccount
 
     client: ContextClientSelector
@@ -196,11 +192,8 @@ class Context:
 
     cache: dict[str, Any]
 
-    _artifacts: ChainMap[ArtifactSignature, Any]
-
     def __init__(
         self,
-        protocol: "BaseProtocol",
         account: AbstractAccount,
         client: Selector,
         endpoint: Selector,
@@ -209,7 +202,6 @@ class Context:
         mediums: list[Selector] | None = None,
         prelude_metadatas: dict[Selector | MetadataRoute, Metadata] | None = None,
     ) -> None:
-        self.protocol = protocol
         self.account = account
 
         self.client = ContextClientSelector.from_selector(self, client)
@@ -220,16 +212,9 @@ class Context:
 
         self.cache = {"meta": prelude_metadatas or {}}
 
-        self._artifacts = ChainMap(
-            self.protocol.impl_namespace.get(
-                Scope(self.land.name, self.scene.path_without_land, self.self.path_without_land), {}
-            ),
-            self.protocol.impl_namespace.get(Scope(self.land.name, self.scene.path_without_land), {}),
-            self.protocol.impl_namespace.get(Scope(self.land.name, self=self.self.path_without_land), {}),
-            self.protocol.impl_namespace.get(Scope(self.land.name), {}),
-            self.protocol.impl_namespace.get(GLOBAL_SCOPE, {}),
-            self.avilla.global_artifacts,
-        )
+    @property
+    def protocol(self):
+        return self.account.protocol
 
     @property
     def avilla(self):
@@ -239,10 +224,18 @@ class Context:
     def land(self):
         return self.protocol.land
 
+    @cached_property
+    def _artifacts(self) -> Artifacts:
+        # TODO: evaluate override
+        return self.protocol.artifacts
+
+    @property
+    def request(self) -> ContextRequestSelector:
+        return self.endpoint.expects_request()
+
     @property
     def is_resource(self) -> bool:
-        # TODO: Auto inference for implementations of a "ctx"
-        ...
+        return any(isinstance(i, Resource) for i in self.cache["meta"].get(self.endpoint, {}).values())
 
     @property
     def _ext_handler(self):
@@ -252,10 +245,6 @@ class Context:
     @classmethod
     def app_current(cls) -> Context | None:
         return ctx_context.get(None)
-
-    @property
-    def request(self) -> ContextRequestSelector:
-        return self.endpoint.expects_request()
 
     async def query(self, pattern: Selector, with_land: bool = False):
         querier_steps: list[Query] | None = _find_querier_steps(
@@ -281,39 +270,7 @@ class Context:
             else:
                 yield i
 
-    @overload
-    async def check(self, *, check_via: bool = True) -> None:
-        # 检查 Relationship 的存在性。
-        # 如 Relationship 的存在性无法被验证为真，则 Relationship 不成立，抛出错误。
-        ...
-
-    @overload
-    async def check(self, target: Selector, *, strict: bool = False, check_via: bool = True) -> bool:
-        # 检查 target 相对于当前关系 Relationship 的存在性。
-        # 注意，这里是 "相对于当前关系", 如 Github 的项目若为 Private, 则对于外界/Amonymous来说是不存在的, 即使他从客观上是存在的。
-        # 注意，target 不仅需要相对于当前关系是存在的，由于关系本身处在一个 mainline 之中，
-        # mainline 相当于工作目录或者是 docker 那样的应用容器，后者是更严谨的比喻，
-        # 因为有些操作**只能**在处于一个特定的 mainline 中才能完成，这其中包含了访问并操作某些 target.
-        # 在 strict 模式下，target 被视作包含 "仅在当前 mainline 中才能完成的操作" 的集合中，
-        # 表示其访问或是操作必须以当前 mainline 甚至是 current(account) 为基础。
-        # 如果存在可能的 via, 则会先检查 via 的存在性，因为 via 是维系这段关系的基础。
-        ...
-
-    async def check(
-        self, target: Selector | None = None, *, strict: bool = False, check_via: bool = True
-    ) -> bool | None:
-        # FIXME: check this sentence again
-        if check_via and self.mediums is not None:
-            await gather(*(self.check(medium.selector, strict=True, check_via=False) for medium in self.mediums))
-        checker = self._artifacts.get(Check((target or self.endpoint).path_without_land))
-        if checker is None:
-            raise NotImplementedError(
-                f'cannot check existence & accessible of "{(target or self.endpoint).path_without_land}" due to notimplemented checker'
-            )
-        result = checker(self, target)
-        if strict and not result:
-            raise ValueError(f"check failed on {target or self.endpoint!r}")
-        return result
+    # TODO: GraiaProject/Avilla#66
 
     def complete(self, selector: Selector, with_land: bool = False):
         output_rule = self._artifacts.get(CompleteRule(selector.path_without_land))
@@ -335,33 +292,33 @@ class Context:
 
     async def pull(
         self,
-        path: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT],
-        target: Selector | Selectable | None = None,
+        route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT],
+        target: Selector | Selectable,
         *,
         flush: bool = False,
     ) -> _MetadataT:
         if isinstance(target, Selectable):
             target = target.to_selector()
-        if target is not None:
-            cached = self.cache["meta"].get(target)
-            if cached is not None and path in cached:
-                if flush:
-                    del cached[path]
-                elif not path.has_params():
-                    return cached[path]
 
-        puller = self._artifacts.get(Pull(target.path_without_land if target is not None else None, path))
-        if puller is None:
+        cached = self.cache["meta"].get(target)
+        if cached is not None and route in cached:
+            if flush:
+                del cached[route]
+            elif not route.has_params():
+                return cached[route]
+
+        pull_implement = self._artifacts.get(Bounds(target.path_without_land), {}).get(Pull(route))
+        if pull_implement is None:
             raise NotImplementedError(
-                f'cannot pull "{path}"'
+                f'cannot pull "{route}"'
                 + (f' for "{target.path_without_land}"' if target is not None else "")
                 + f' because no available implement found in "{self.protocol.__class__.__name__}"'
             )
-        puller = cast("Callable[[Context, Selector | None], Awaitable[_MetadataT]]", puller)
-        result = await puller(self, target)
-        if target is not None and not path.has_params():
+        pull_implement = cast("Callable[[Context, Selector | None], Awaitable[_MetadataT]]", pull_implement)
+        result = await pull_implement(self, target)
+        if target is not None and not route.has_params():
             cached = self.cache["meta"].setdefault(target, {})
-            cached[path] = result
+            cached[route] = result
         return result
 
     @overload
@@ -385,15 +342,8 @@ class Context:
         bound: Selector | MetadataOf[_DescribeT],
         trait: type[_TraitT] | None = None,
     ) -> ContextSelector | ContextWrappedMetadataOf[_Describe] | _TraitT:
-        if trait:
-            if CastAllow(trait) not in self._artifacts:
-                raise NotImplementedError(f"trait {trait.__name__} is not allow to cast in current context.")
-
-            if isinstance(bound, Selector):
-                return trait(self, None, bound)
-            elif isinstance(bound, MetadataOf):
-                return trait(self, bound.describe, bound.target)
-
+        if trait is not None:
+            return trait(self, bound)
         elif isinstance(bound, Selector):
             return ContextSelector.from_selector(self, bound)
         elif isinstance(bound, MetadataOf):

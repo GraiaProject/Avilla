@@ -7,8 +7,7 @@ from graia.amnesia.message import MessageChain
 
 # from avilla.core.action.extension import ActionExtension
 # from avilla.core.action.middleware import ActionMiddleware
-from avilla.core._runtime import ctx_avilla, ctx_protocol
-from avilla.core.account import AbstractAccount
+from avilla.core._runtime import ctx_avilla, ctx_protoavilla.core.context.account import AbstractAccount
 from avilla.core.event import AvillaEvent
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.querier import ProtocolAbstractQueryHandler
@@ -37,7 +36,7 @@ class BaseProtocol(metaclass=ABCMeta):
     # query_handlers: ClassVar[list[type[ProtocolAbstractQueryHandler]]] = cast(list, ())
     # extension_impls: ClassVar[dict[type[ActionExtension], ActionExtensionImpl]] = cast(dict, MappingProxyType({}))
 
-    impl_namespace: ClassVar[Namespace]
+    artifacts: ClassVar[Namespace]
 
     def __init__(self):
         ...

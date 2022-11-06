@@ -29,8 +29,6 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
         async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
             interface.local_storage["avilla_context"] = interface.event.context
             interface.local_storage["_context_token"] = ctx_context.set(interface.event.context)
-            # TODO: 重新评估此处: 由于 asyncio 会自动 copy_context, 所以在此 set ctxvar 的可用性存疑.
-
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):
             if interface.annotation is Context:

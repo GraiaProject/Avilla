@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
 
 if TYPE_CHECKING:
-    from avilla.core.metadata import Metadata, MetadataRoute
+    from avilla.core.metadata import Metadata, MetadataRoute, MetadataBound
     from avilla.core.resource import Resource
     from avilla.core.trait import Fn, Trait
     from avilla.core.trait.extension import FnExtension
@@ -15,16 +15,22 @@ class ArtifactSignature:
 
 
 @dataclass(unsafe_hash=True)
-class Impl(ArtifactSignature):
-    trait_call: Fn
-    target: str | None
-    path: type[Metadata] | MetadataRoute | None
+class Override(ArtifactSignature):
+    client: str | None = None
+    endpoint: str | None = None
+    scene: str | None = None
 
 
 @dataclass(unsafe_hash=True)
+class Bounds(ArtifactSignature):
+    bound: str | MetadataBound
+@dataclass(unsafe_hash=True)
+class Impl(ArtifactSignature):
+    fn: Fn
+
+@dataclass(unsafe_hash=True)
 class Pull(ArtifactSignature):
-    target: str | None
-    path: type[Metadata] | MetadataRoute
+    route: type[Metadata] | MetadataRoute
 
 
 @dataclass(unsafe_hash=True)
@@ -33,29 +39,13 @@ class ResourceFetch(ArtifactSignature):
 
 
 @dataclass(unsafe_hash=True)
-class Allow(ArtifactSignature):
-    content: Hashable
-
-
-@dataclass(unsafe_hash=True)
 class CompleteRule(ArtifactSignature):
     relative: str
 
 
 @dataclass(unsafe_hash=True)
-class ImplDefaultTarget(ArtifactSignature):
-    path: type[Metadata] | MetadataRoute | None
-    trait_call: Fn
-
-
-@dataclass(unsafe_hash=True)
 class Query(ArtifactSignature):
     upper: str | None
-    target: str
-
-
-@dataclass(unsafe_hash=True)
-class Check(ArtifactSignature):
     target: str
 
 
@@ -65,9 +55,3 @@ E = TypeVar("E", bound="FnExtension")
 @dataclass(unsafe_hash=True)
 class ExtensionImpl(ArtifactSignature, Generic[E]):
     ext: type[E]
-
-
-@dataclass(unsafe_hash=True)
-class CastAllow(ArtifactSignature):
-    trait: type[Trait]
-    target: str | None = None

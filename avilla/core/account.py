@@ -35,7 +35,6 @@ class AbstractAccount(ABC):
         from avilla.core.context import Context
 
         return Context(
-            self.protocol,
             self,
             self.to_selector(),
             self.to_selector(),

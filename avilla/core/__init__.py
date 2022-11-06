@@ -4,7 +4,6 @@ from .account import AbstractAccount as AbstractAccount
 from .application import Avilla as Avilla
 from .context import Context as Context
 from .dispatchers import AvillaBuiltinDispatcher as AvillaBuiltinDispatcher
-from .dispatchers import ContextDispatcher as ContextDispatcher
 from .elements import Audio as Audio
 from .elements import Notice as Notice
 from .elements import NoticeAll as NoticeAll

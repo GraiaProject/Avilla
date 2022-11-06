@@ -29,6 +29,17 @@ class MetadataOf(Generic[_DescribeT]):
     target: Selector
     describe: _DescribeT
 
+    def to_bounding(self):
+        return MetadataBound(
+            self.target.path_without_land,
+            self.describe
+        )
+
+@dataclass
+class MetadataBound(Generic[_DescribeT]):
+    target: str
+    describe: _DescribeT
+
 
 class MetadataMeta(type):
     @overload

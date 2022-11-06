@@ -3,8 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from graia.broadcast.entities.dispatcher import BaseDispatcher
-
 from avilla.core.event import AvillaEvent
 from avilla.core.utilles.selector import Selector
 
