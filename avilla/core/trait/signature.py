@@ -24,6 +24,8 @@ class Override(ArtifactSignature):
 @dataclass(unsafe_hash=True)
 class Bounds(ArtifactSignature):
     bound: str | MetadataBound
+
+
 @dataclass(unsafe_hash=True)
 class Impl(ArtifactSignature):
     fn: Fn

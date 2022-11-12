@@ -4,11 +4,13 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import reduce
-from typing import Any, MutableMapping
+from typing import Any, Awaitable, Callable, Concatenate, MutableMapping, ParamSpec, TypeVar, overload
 
 from typing_extensions import TypeAlias
 
-from . import Fn, Trait
+from ..context import Context
+
+from . import BoundFn, Fn, OverrideFn, OverrideSchema, Trait
 from ..metadata import MetadataBound
 
 from avilla.core.trait.signature import ArtifactSignature, Impl, Override, Bounds
@@ -26,12 +28,14 @@ Artifacts: TypeAlias = "MutableMapping[ArtifactSignature, Any]"
 
 ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
 
+
 @contextmanager
 def wrap_artifacts(*upstraem_artifacts: Artifacts):
     artifacts = reduce(lambda a, b: {**a, **b}, upstraem_artifacts)
     token = ctx_artifacts.set(artifacts)
     yield artifacts
     ctx_artifacts.reset(token)
+
 
 def get_artifacts() -> Artifacts:
     try:
@@ -53,6 +57,7 @@ def overrides(
     parent[Override(client, endpoint, scene)] = override_artifacts
     ctx_artifacts.reset(token)
 
+# TODO: 重新整理一遍 bounds 的形式
 
 @contextmanager
 def bounds(bound: str | MetadataBound, check: bool = True):
@@ -85,3 +90,40 @@ def bounds(bound: str | MetadataBound, check: bool = True):
 
     parent[Bounds(bound)] = override_artifacts
     ctx_artifacts.reset(token)
+
+
+_P = ParamSpec("_P")
+_T = TypeVar("_T")
+_T_co = TypeVar("_T_co", covariant=True)
+
+_P2 = ParamSpec("_P2")
+_T1_co = TypeVar("_T1_co", covariant=True)
+_T2_co = TypeVar("_T2_co", covariant=True)
+
+RecordCallable = Callable[[_T], _T]
+
+
+@overload
+def implement(fn: Fn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, _P], Awaitable[_T_co]]]:
+    ...
+
+
+@overload
+def implement(fn: BoundFn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, Selector, _P], Awaitable[_T_co]]]:
+    ...
+
+
+@overload
+def implement(
+    fn: OverrideFn[_P, _T1_co, _P2, _T2_co]
+) -> RecordCallable[OverrideSchema[Concatenate[Context, Selector, _P], _T1_co, Concatenate[Context, _P2], _T2_co]]:
+    ...
+
+
+def implement(fn: ...) -> ...:
+    def wrapper(artifact):
+        artifacts = get_artifacts()
+        artifacts[Impl(fn)] = artifact
+        return artifact
+
+    return wrapper
