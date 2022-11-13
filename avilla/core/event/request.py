@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from avilla.core.request import Request
+from avilla.core.abstract.request import Request
 
-from . import AvillaEvent
+from ..abstract.event import AvillaEvent
 
 if TYPE_CHECKING:
     from datetime import datetime

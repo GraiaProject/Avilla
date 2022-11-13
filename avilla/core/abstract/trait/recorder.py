@@ -14,19 +14,19 @@ from typing import (
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
-from avilla.core.resource import Resource
-from avilla.core.trait.signature import Impl as _Impl
-from avilla.core.trait.signature import Pull as _Pull
-from avilla.core.trait.signature import Query
-from avilla.core.trait.signature import ResourceFetch as _ResourceFatch
+from ..resource import Resource
+from .signature import Impl as _Impl
+from .signature import Pull as _Pull
+from .signature import Query
+from .signature import ResourceFetch as _ResourceFatch
 from avilla.core.utilles.selector import Selector
 
 from .context import get_artifacts
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
-    from avilla.core.metadata import Metadata, MetadataRoute
-    from avilla.core.trait.signature import ArtifactSignature
+    from ..metadata import Metadata, MetadataRoute
+    from .signature import ArtifactSignature
 
     from . import Fn
 

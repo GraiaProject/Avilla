@@ -7,14 +7,14 @@ from typing import TYPE_CHECKING
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from typing_extensions import get_origin
 
-from avilla.core.event import AvillaEvent
-from avilla.core.resource import BlobResource, Resource
+from avilla.core.abstract.event import AvillaEvent
+from avilla.core.abstract.resource import BlobResource, Resource
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-    from avilla.core.account import AbstractAccount
+    from avilla.core.abstract.account import AbstractAccount
 
 
 @dataclass

@@ -7,11 +7,12 @@ from graia.amnesia.message import MessageChain
 
 # from avilla.core.action.extension import ActionExtension
 # from avilla.core.action.middleware import ActionMiddleware
-from avilla.core._runtime import ctx_avilla, ctx_protoavilla.core.context.account import AbstractAccount
-from avilla.core.event import AvillaEvent
+from avilla.core._runtime import ctx_avilla, ctx_protocol
+from avilla.core.abstract.account import AbstractAccount
+from avilla.core.abstract.event import AvillaEvent
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.querier import ProtocolAbstractQueryHandler
-from avilla.core.trait.context import Namespace
+from avilla.core.abstract.trait.context import Namespace
 from avilla.core.utilles.event_parser import AbstractEventParser
 from avilla.core.utilles.message_deserializer import MessageDeserializer
 from avilla.core.utilles.message_serializer import MessageSerializer

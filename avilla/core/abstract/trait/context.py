@@ -8,13 +8,13 @@ from typing import Any, Awaitable, Callable, Concatenate, MutableMapping, ParamS
 
 from typing_extensions import TypeAlias
 
-from ..context import Context
+from ...context import Context
 
 from . import BoundFn, Fn, OverrideFn, OverrideSchema, Trait
 from ..metadata import MetadataBound
 
-from avilla.core.trait.signature import ArtifactSignature, Impl, Override, Bounds
-from ..utilles.selector import Selector
+from .signature import ArtifactSignature, Impl, Override, Bounds
+from ...utilles.selector import Selector
 
 
 @dataclass(unsafe_hash=True)

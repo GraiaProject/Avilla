@@ -127,6 +127,7 @@ class FnCall(Generic[_P, _T]):
         impl = cast("Callable[Concatenate[Context, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.context, *args, **kwargs)
 
+
 # TODO: UnboundTrait, UnboundFn
 class BoundFn(Fn[_P, _T]):
     @overload
@@ -146,7 +147,7 @@ class BoundFn(Fn[_P, _T]):
     @overload
     def __get__(self, instance: Trait[Literal[True]], owner: type[Trait]) -> BoundedFnCall[_P, _T]:
         ...
-    
+
     @overload
     def __get__(self, instance: Trait[Literal[False]], owner: type[Trait]) -> UnboundedFnCall[_P, _T]:
         ...
@@ -185,22 +186,19 @@ class BoundedFnCall(FnCall[_P, _T]):
         impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.context, self.trait.bound, *args, **kwargs)
 
+
 class UnboundedFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
         return f"<FnCall unbounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: Selector | MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
-        bounding = (
-            target.path_without_land
-            if isinstance(target, Selector)
-            else target.to_bounding()
-        )
-        impl = self.trait.context._artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))  # TODO: Signature for Fn refactor
+        bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
+        impl = self.trait.context._artifacts.get(Bounds(bounding), {}).get(
+            Impl(self.fn)
+        )  # TODO: Signature for Fn refactor
         if impl is None:
             raise NotImplementedError(
-                f'"{identity(self.trait)}::{self.fn.identity}" '
-                f'for target "{bounding}" '
-                "is not implemented."
+                f'"{identity(self.trait)}::{self.fn.identity}" ' f'for target "{bounding}" ' "is not implemented."
             )
         impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.context, target, *args, **kwargs)
@@ -229,8 +227,8 @@ class OverrideFn(BoundFn, Generic[_P, _T1_co, _P2, _T2_co]):
     def __repr__(self) -> str:
         return (
             f"<OverrideFn async {self.trait.__name__}::{self.identity} "
-            f"bound#{inspect.signature(partial(self.schema.bound, NoReturn))} "
-            f"unbound#{inspect.signature(partial(self.schema.unbound, NoReturn))}>"
+            f"bound#[{inspect.signature(partial(self.schema.bound, NoReturn))}] "
+            f"unbound#[{inspect.signature(partial(self.schema.unbound, NoReturn))}]>"
         )
 
     @overload

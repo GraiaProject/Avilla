@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from avilla.core.trait import Fn, Trait, TBounded
+from avilla.core.abstract.trait import Fn, TBounded, Trait
 
 
 class RequestTrait(Trait[TBounded]):

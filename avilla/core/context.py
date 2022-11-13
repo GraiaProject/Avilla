@@ -11,28 +11,28 @@ from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Self, Unpack
 
 from avilla.core._runtime import ctx_context
-from avilla.core.account import AbstractAccount
-from avilla.core.message import Message
-from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute
-from avilla.core.request import Request
-from avilla.core.resource import Resource
-from avilla.core.skeleton.message import MessageEdit, MessageRevoke, MessageSend
-from avilla.core.skeleton.request import RequestTrait
-from avilla.core.skeleton.scene import SceneTrait
-from avilla.core.trait import Trait
-from avilla.core.trait.context import Artifacts
-from avilla.core.trait.extension import ExtensionHandler
-from avilla.core.trait.recorder import Querier
-from avilla.core.trait.signature import (
+from avilla.core.abstract.account import AbstractAccount
+from avilla.core.abstract.message import Message
+from avilla.core.abstract.metadata import Metadata, MetadataOf, MetadataRoute
+from avilla.core.abstract.request import Request
+from avilla.core.abstract.resource import Resource
+from avilla.core.abstract.trait import Trait
+from avilla.core.abstract.trait.context import Artifacts
+
+#from avilla.core.abstract.trait.extension import ExtensionHandler
+from avilla.core.abstract.trait.recorder import Querier
+from avilla.core.abstract.trait.signature import (
     Bounds,
     CompleteRule,
     Pull,
     Query,
     ResourceFetch,
 )
+from avilla.core.skeleton.message import MessageEdit, MessageRevoke, MessageSend
+from avilla.core.skeleton.request import RequestTrait
+from avilla.core.skeleton.scene import SceneTrait
 from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import MatchRule, Selectable, Selector
-
 
 _T = TypeVar("_T")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)

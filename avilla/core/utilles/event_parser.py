@@ -9,11 +9,11 @@ from graia.broadcast.utilles import run_always_await
 from loguru import logger
 from typing_extensions import Self
 
-from avilla.core.account import AbstractAccount
+from avilla.core.abstract.account import AbstractAccount
 from avilla.core.event import AvillaEvent
 
 if TYPE_CHECKING:
-    from avilla.core.account import AbstractAccount
+    from avilla.core.abstract.account import AbstractAccount
     from avilla.core.protocol import BaseProtocol
 
 

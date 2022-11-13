@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 
-from . import Metadata
+from ..abstract.metadata import Metadata
 
 
 @dataclass

@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
 
 if TYPE_CHECKING:
-    from avilla.core.metadata import Metadata, MetadataRoute, MetadataBound
-    from avilla.core.resource import Resource
-    from avilla.core.trait import Fn, Trait
-    from avilla.core.trait.extension import FnExtension
+    from ..metadata import Metadata, MetadataRoute, MetadataBound
+    from ..resource import Resource
+    from ..trait import Fn, Trait
+#    from ..trait.extension import FnExtension
 
 
 class ArtifactSignature:
@@ -51,9 +51,11 @@ class Query(ArtifactSignature):
     target: str
 
 
+"""
 E = TypeVar("E", bound="FnExtension")
 
 
 @dataclass(unsafe_hash=True)
 class ExtensionImpl(ArtifactSignature, Generic[E]):
     ext: type[E]
+"""

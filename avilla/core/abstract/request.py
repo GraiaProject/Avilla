@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.metadata import Metadata
+from .metadata import Metadata
 from avilla.core.platform import Land
 
 if TYPE_CHECKING:
-    from avilla.core.account import AbstractAccount
+    from avilla.core.abstract.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
 
