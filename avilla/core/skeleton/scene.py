@@ -1,20 +1,20 @@
 from __future__ import annotations
 
-from avilla.core.trait import Fn, OrientedFn, Trait
+from avilla.core.trait import Fn, Trait, TBounded
 from avilla.core.utilles.selector import Selector
 
 
-class SceneTrait(Trait):
-    @OrientedFn
+class SceneTrait(Trait[TBounded]):
+    @Fn.bound
     async def leave(self) -> None:
         ...
 
-    @OrientedFn
+    @Fn.bound
     async def disband(self) -> None:
         ...
 
-    @Fn
-    async def remove_member(self, target: Selector, reason: str | None = None) -> None:
+    @Fn.bound
+    async def remove_member(self, reason: str | None = None) -> None:
         ...
 
     # TODO: join, invite etc.

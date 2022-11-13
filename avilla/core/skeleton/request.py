@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from avilla.core.trait import OrientedFn, Trait
+from avilla.core.trait import Fn, Trait, TBounded
 
 
-class RequestTrait(Trait):
-    @OrientedFn
+class RequestTrait(Trait[TBounded]):
+    @Fn.bound
     async def accept(self):
         ...
 
-    @OrientedFn
+    @Fn.bound
     async def reject(self, reason: str | None = None, forever: bool = False):
         ...
 
-    @OrientedFn
+    @Fn.bound
     async def cancel(self):
         ...
 
-    @OrientedFn
+    @Fn.bound
     async def ignore(self):
         ...

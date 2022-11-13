@@ -144,11 +144,11 @@ class BoundFn(Fn[_P, _T]):
         return f"<Fn bound-required async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
 
     @overload
-    def __get__(self, instance: Trait[Literal[True]], owner: type[Trait]) -> FnCall[_P, _T]:
+    def __get__(self, instance: Trait[Literal[True]], owner: type[Trait]) -> BoundedFnCall[_P, _T]:
         ...
     
     @overload
-    def __get__(self, instance: Trait[Literal[False]], owner: type[Trait]) -> FnCall[Concatenate[Selector, _P], _T]:
+    def __get__(self, instance: Trait[Literal[False]], owner: type[Trait]) -> UnboundedFnCall[_P, _T]:
         ...
 
     @overload
@@ -186,13 +186,6 @@ class BoundedFnCall(FnCall[_P, _T]):
         return await impl(self.trait.context, self.trait.bound, *args, **kwargs)
 
 class UnboundedFnCall(FnCall[_P, _T]):
-    trait: Trait
-    fn: BoundFn[_P, _T]
-
-    def __init__(self, trait: Trait, fn: BoundFn[_P, _T]):
-        self.trait = trait
-        self.fn = fn
-
     def __repr__(self) -> str:
         return f"<FnCall unbounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 

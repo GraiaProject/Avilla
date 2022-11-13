@@ -2,47 +2,47 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from avilla.core.trait import Fn, Trait
+from avilla.core.trait import Fn, Trait, TBounded
 from avilla.core.utilles.selector import Selector
 
 
-class PrivilegeTrait(Trait):
-    @Fn
-    async def upgrade(self, target: Selector, dest: str | None = None) -> None:
+class PrivilegeTrait(Trait[TBounded]):
+    @Fn.bound
+    async def upgrade(self, dest: str | None = None) -> None:
         ...
 
-    @Fn
-    async def downgrade(self, target: Selector, dest: str | None = None) -> None:
-        ...
-
-
-class MuteTrait(Trait):
-    @Fn
-    async def mute(self, target: Selector, duration: timedelta) -> None:
-        ...
-
-    @Fn
-    async def unmute(self, target: Selector) -> None:
+    @Fn.bound
+    async def downgrade(self, dest: str | None = None) -> None:
         ...
 
 
-class MuteAllTrait(Trait):
-    @Fn
-    async def mute_all(self, target: Selector) -> None:
+class MuteTrait(Trait[TBounded]):
+    @Fn.bound
+    async def mute(self, duration: timedelta) -> None:
         ...
 
-    @Fn
-    async def unmute_all(self, target: Selector) -> None:
+    @Fn.bound
+    async def unmute(self) -> None:
+        ...
+
+
+class MuteAllTrait(Trait[TBounded]):
+    @Fn.bound
+    async def mute_all(self) -> None:
+        ...
+
+    @Fn.bound
+    async def unmute_all(self) -> None:
         ...
 
     # Fetch => rs.pull(MuteInfo, target=...)
 
 
-class BanTrait(Trait):
-    @Fn
-    async def ban(self, target: Selector, duration: timedelta | None = None) -> None:
+class BanTrait(Trait[TBounded]):
+    @Fn.bound
+    async def ban(self, duration: timedelta | None = None) -> None:
         ...
 
-    @Fn
-    async def unban(self, target: Selector) -> None:
+    @Fn.bound
+    async def unban(self) -> None:
         ...

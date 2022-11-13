@@ -1,21 +1,21 @@
 from __future__ import annotations
 
-from avilla.core.trait import OrientedFn, Trait
+from avilla.core.trait import Fn, Trait, TBounded
 
 
-class SummaryTrait(Trait):
-    @OrientedFn
+class SummaryTrait(Trait[TBounded]):
+    @Fn.bound
     async def set_name(self, name: str) -> None:
         ...
 
-    @OrientedFn
+    @Fn.bound
     async def unset_name(self) -> None:
         ...
 
-    @OrientedFn
+    @Fn.bound
     async def set_description(self, description: str) -> None:
         ...
 
-    @OrientedFn
+    @Fn.bound
     async def unset_description(self) -> None:
         ...
