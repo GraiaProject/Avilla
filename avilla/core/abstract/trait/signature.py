@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
 
 if TYPE_CHECKING:
-    from ..metadata import Metadata, MetadataRoute, MetadataBound
+    from ..metadata import Metadata, MetadataBound, MetadataRoute
     from ..resource import Resource
     from ..trait import Fn, Trait
 #    from ..trait.extension import FnExtension
@@ -29,6 +29,7 @@ class Bounds(ArtifactSignature):
 @dataclass(unsafe_hash=True)
 class Impl(ArtifactSignature):
     fn: Fn
+
 
 @dataclass(unsafe_hash=True)
 class Pull(ArtifactSignature):

@@ -14,21 +14,21 @@ from typing import (
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
+from avilla.core.utilles.selector import Selector
+
 from ..resource import Resource
+from .context import get_artifacts
 from .signature import Impl as _Impl
 from .signature import Pull as _Pull
 from .signature import Query
 from .signature import ResourceFetch as _ResourceFatch
-from avilla.core.utilles.selector import Selector
-
-from .context import get_artifacts
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
-    from ..metadata import Metadata, MetadataRoute
-    from .signature import ArtifactSignature
 
+    from ..metadata import Metadata, MetadataRoute
     from . import Fn
+    from .signature import ArtifactSignature
 
 
 class Recorder(abc.ABC):
@@ -109,6 +109,7 @@ class PullRecorder(Recorder, Generic[_M]):
 
     def __call__(self, content: Callable[[Context, Selector | None], Awaitable[_M]]):
         return super().__call__(content)
+
 
 Querier: TypeAlias = "Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]"
 

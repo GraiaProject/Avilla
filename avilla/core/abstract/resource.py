@@ -5,8 +5,9 @@ from typing import Generic, TypeVar
 
 from typing_extensions import TypeAlias
 
-from .metadata import Metadata
 from avilla.core.utilles.selector import Selector
+
+from .metadata import Metadata
 
 T = TypeVar("T")
 

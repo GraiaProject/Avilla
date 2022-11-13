@@ -1,7 +1,7 @@
 from __future__ import annotations
-from functools import partial
 
 import inspect
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -90,7 +90,7 @@ class Fn(Generic[_P, _T]):
         return BoundedFnCall(instance, self)
 
     @classmethod
-    def bound(cls, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]) -> Fn[_P1, _T1]:
+    def bound(cls, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]) -> BoundFn[_P1, _T1]:
         return BoundFn(schema)
 
     @classmethod

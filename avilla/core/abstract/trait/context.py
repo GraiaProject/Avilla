@@ -4,17 +4,24 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import reduce
-from typing import Any, Awaitable, Callable, Concatenate, MutableMapping, ParamSpec, TypeVar, overload
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Concatenate,
+    MutableMapping,
+    ParamSpec,
+    TypeVar,
+    overload,
+)
 
 from typing_extensions import TypeAlias
 
 from ...context import Context
-
-from . import BoundFn, Fn, OverrideFn, OverrideSchema, Trait
-from ..metadata import MetadataBound
-
-from .signature import ArtifactSignature, Impl, Override, Bounds
 from ...utilles.selector import Selector
+from ..metadata import MetadataBound
+from . import BoundFn, Fn, OverrideFn, OverrideSchema, Trait
+from .signature import ArtifactSignature, Bounds, Impl, Override
 
 
 @dataclass(unsafe_hash=True)
@@ -57,7 +64,9 @@ def overrides(
     parent[Override(client, endpoint, scene)] = override_artifacts
     ctx_artifacts.reset(token)
 
+
 # TODO: 重新整理一遍 bounds 的形式
+
 
 @contextmanager
 def bounds(bound: str | MetadataBound, check: bool = True):

@@ -30,10 +30,8 @@ class MetadataOf(Generic[_DescribeT]):
     describe: _DescribeT
 
     def to_bounding(self):
-        return MetadataBound(
-            self.target.path_without_land,
-            self.describe
-        )
+        return MetadataBound(self.target.path_without_land, self.describe)
+
 
 @dataclass
 class MetadataBound(Generic[_DescribeT]):

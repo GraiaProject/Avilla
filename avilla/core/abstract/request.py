@@ -4,8 +4,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from .metadata import Metadata
 from avilla.core.platform import Land
+
+from .metadata import Metadata
 
 if TYPE_CHECKING:
     from avilla.core.abstract.account import AbstractAccount

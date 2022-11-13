@@ -29,6 +29,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
         async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
             interface.local_storage["avilla_context"] = interface.event.context
             interface.local_storage["_context_token"] = ctx_context.set(interface.event.context)
+
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):
             if interface.annotation is Context:

@@ -19,7 +19,7 @@ from avilla.core.abstract.resource import Resource
 from avilla.core.abstract.trait import Trait
 from avilla.core.abstract.trait.context import Artifacts
 
-#from avilla.core.abstract.trait.extension import ExtensionHandler
+# from avilla.core.abstract.trait.extension import ExtensionHandler
 from avilla.core.abstract.trait.recorder import Querier
 from avilla.core.abstract.trait.signature import (
     Bounds,
