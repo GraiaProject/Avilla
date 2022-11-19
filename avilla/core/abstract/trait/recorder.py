@@ -12,13 +12,12 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
+from typing_extensions import TypeAlias, Unpack
 
 from avilla.core.utilles.selector import Selector
 
 from ..resource import Resource
 from .context import get_artifacts
-from .signature import Impl as _Impl
 from .signature import Pull as _Pull
 from .signature import Query
 from .signature import ResourceFetch as _ResourceFatch
@@ -27,7 +26,6 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
 
     from ..metadata import Metadata, MetadataRoute
-    from . import Fn
     from .signature import ArtifactSignature
 
 
@@ -53,26 +51,6 @@ class AlterRecorder(Recorder):
         r = get_artifacts()
         r.setdefault(sig, []).append(content)
         return content
-
-
-_P = ParamSpec("_P")
-_T = TypeVar("_T")
-
-
-class ImplRecorder(Recorder, Generic[_P, _T]):
-    fn: Fn
-
-    def __new__(cls, fn: Fn[_P, _T]) -> ImplRecorder[_P, _T]:
-        return super(ImplRecorder, cls).__new__(cls)
-
-    def __init__(self, fn: Fn[_P, _T]):
-        self.fn = fn
-
-    def signature(self):
-        return _Impl(self.fn)
-
-    def __call__(self, content: Callable[Concatenate[Context, Selector, _P], Awaitable[_T]]):
-        return super().__call__(content)
 
 
 _R = TypeVar("_R", bound=Resource)
@@ -143,6 +121,5 @@ def query(upper: str | None, target: str) -> ...:
     return wrapper
 
 
-impl = ImplRecorder
 fetch = FetchRecorder
 pull = PullRecorder

@@ -21,7 +21,7 @@ from ...context import Context
 from ...utilles.selector import Selector
 from ..metadata import MetadataBound
 from . import BoundFn, Fn, Trait
-from .signature import ArtifactSignature, Bounds, Impl, Override
+from .signature import ArtifactSignature, Bounds, Impl
 
 
 @dataclass(unsafe_hash=True)
@@ -50,19 +50,6 @@ def get_artifacts() -> Artifacts:
     except LookupError:
         raise ValueError("cannot access artifacts due to undefined") from None
 
-
-@contextmanager
-def overrides(
-    client: str | None = None,
-    endpoint: str | None = None,
-    scene: str | None = None,
-):
-    parent = get_artifacts()
-    override_artifacts = {}
-    token = ctx_artifacts.set(override_artifacts)
-    yield
-    parent[Override(client, endpoint, scene)] = override_artifacts
-    ctx_artifacts.reset(token)
 
 
 # TODO: 重新整理一遍 bounds 的形式
@@ -104,10 +91,6 @@ def bounds(bound: str | MetadataBound, check: bool = True):
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
 _T_co = TypeVar("_T_co", covariant=True)
-
-_P2 = ParamSpec("_P2")
-_T1_co = TypeVar("_T1_co", covariant=True)
-_T2_co = TypeVar("_T2_co", covariant=True)
 
 RecordCallable = Callable[[_T], _T]
 

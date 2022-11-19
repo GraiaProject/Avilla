@@ -13,14 +13,6 @@ if TYPE_CHECKING:
 class ArtifactSignature:
     pass
 
-
-@dataclass(unsafe_hash=True)
-class Override(ArtifactSignature):
-    client: str | None = None
-    endpoint: str | None = None
-    scene: str | None = None
-
-
 @dataclass(unsafe_hash=True)
 class Bounds(ArtifactSignature):
     bound: str | MetadataBound

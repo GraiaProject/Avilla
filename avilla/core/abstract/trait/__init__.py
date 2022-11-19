@@ -1,17 +1,12 @@
 from __future__ import annotations
 
 import inspect
-from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
     Awaitable,
     Callable,
-    Final,
     Generic,
-    Literal,
-    NoReturn,
-    Protocol,
     TypeVar,
     cast,
     overload,
