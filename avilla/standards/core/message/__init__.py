@@ -1,10 +1,6 @@
-from .event import (
-    MessageReceived as MessageReceived,
-    MessageEdited as MessageEdited,
-    MessageRevoked as MessageRevoked
-)
-from .skeleton import (
-    MessageSend as MessageSend,
-    MessageRevoke as MessageRevoke,
-    MessageEdit as MessageEdit
-)
+from .event import MessageEdited as MessageEdited
+from .event import MessageReceived as MessageReceived
+from .event import MessageRevoked as MessageRevoked
+from .skeleton import MessageEdit as MessageEdit
+from .skeleton import MessageRevoke as MessageRevoke
+from .skeleton import MessageSend as MessageSend

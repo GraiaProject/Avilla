@@ -1,4 +1,3 @@
-
 from typing import Literal
 
 from .avilla.core.standards.message.skeleton import MessageSend

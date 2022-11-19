@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from launart import Launart, Service
+from loguru import logger
 
 from avilla.standards.core.application import (
     ApplicationClosed,
@@ -10,6 +11,8 @@ from avilla.standards.core.application import (
     ApplicationPreparing,
     ApplicationReady,
 )
+
+from .graia import AVILLA_ASCII_LOGO, AVILLA_ASCII_RAW_LOGO, log_telemetry
 
 if TYPE_CHECKING:
     from .application import Avilla
@@ -39,6 +42,15 @@ class AvillaService(Service):
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
             await self.avilla.broadcast.postEvent(ApplicationPreparing(self.avilla))
+
+            logger.info(AVILLA_ASCII_RAW_LOGO, alt=AVILLA_ASCII_LOGO)
+            log_telemetry()
+
+            for protocol in self.avilla.protocols:
+                logger.info(
+                    f"Using platform: {protocol.__class__.platform}",
+                    alt=f"[magenta]Using platform: [/][dark_orange]{protocol.__class__.platform}[/]",
+                )
 
         await self.avilla.broadcast.postEvent(ApplicationReady(self.avilla))
 

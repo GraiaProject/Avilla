@@ -1,15 +1,11 @@
-from .event import (
-    RequestEvent as RequestEvent,
-    RequestReceived as RequestReceived,
-    RequestAccepted as RequestAccepted,
-    RequestRejected as RequestRejected,
-    RequestIgnored as RequestIgnored,
-    RequestCancelled as RequestCancelled
-)
-from .metadata import (
-    Reason as Reason,
-    Comment as Comment,
-    Questions as Questions,
-    Answers as Answers
-)
+from .event import RequestAccepted as RequestAccepted
+from .event import RequestCancelled as RequestCancelled
+from .event import RequestEvent as RequestEvent
+from .event import RequestIgnored as RequestIgnored
+from .event import RequestReceived as RequestReceived
+from .event import RequestRejected as RequestRejected
+from .metadata import Answers as Answers
+from .metadata import Comment as Comment
+from .metadata import Questions as Questions
+from .metadata import Reason as Reason
 from .skeleton import RequestTrait as RequestTrait

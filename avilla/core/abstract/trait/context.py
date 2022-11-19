@@ -51,7 +51,6 @@ def get_artifacts() -> Artifacts:
         raise ValueError("cannot access artifacts due to undefined") from None
 
 
-
 # TODO: 重新整理一遍 bounds 的形式
 
 
@@ -101,7 +100,9 @@ def implement(fn: Fn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context,
 
 
 @overload
-def implement(fn: BoundFn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, Selector | MetadataBound, _P], Awaitable[_T_co]]]:
+def implement(
+    fn: BoundFn[_P, _T_co]
+) -> RecordCallable[Callable[Concatenate[Context, Selector | MetadataBound, _P], Awaitable[_T_co]]]:
     ...
 
 

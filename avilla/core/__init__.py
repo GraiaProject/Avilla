@@ -11,6 +11,7 @@ from .elements import Picture as Picture
 from .elements import Text as Text
 from .elements import Unknown as Unknown
 from .elements import Video as Video
+
 """
 from .event import AvillaEvent as AvillaEvent
 from .event import MetadataModified as MetadataModified
@@ -52,6 +53,7 @@ from .exceptions import TooLongMessage as TooLongMessage
 from .exceptions import UnknownError as UnknownError
 from .exceptions import UnknownTarget as UnknownTarget
 from .exceptions import UnsupportedOperation as UnsupportedOperation
+
 """
 from .message import Message as Message
 from .metadata import Metadata as Metadata
@@ -77,6 +79,7 @@ from .platform import Version as Version
 from .protocol import BaseProtocol as BaseProtocol
 from .querier import AbstractQueryHandler as AbstractQueryHandler
 from .querier import ProtocolAbstractQueryHandler as ProtocolAbstractQueryHandler
+
 """
 from .request import Request as Request
 from .resource import LocalFileResource as LocalFileResource

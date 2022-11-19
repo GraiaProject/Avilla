@@ -8,6 +8,7 @@ from avilla.core.utilles.selector import Selector
 
 # MessageFetch => rs.pull(Message, target=...)
 
+
 class MessageSend(Trait):
     @Fn.bound
     async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:

@@ -1,9 +1,6 @@
 from __future__ import annotations
 
-import importlib.metadata
-import re
-from inspect import cleandoc
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any
 
 from graia.broadcast import Broadcast
 from launart import Launart, Service
@@ -22,63 +19,20 @@ from avilla.core.utilles.selector import Selector
 if TYPE_CHECKING:
     from avilla.core.abstract.trait.signature import ArtifactSignature
 
-AVILLA_ASCII_LOGO = cleandoc(
-    r"""
-    [bold]Avilla[/]: a universal backend/framework for effective im development, powered by [blue]Graia Project[/].
-        _        _ _ _
-       / \__   _(_) | | __ _
-      / _ \ \ / / | | |/ _` |
-     / ___ \ V /| | | | (_| |
-    /_/   \_\_/ |_|_|_|\__,_|
-    """
-)
-AVILLA_ASCII_RAW_LOGO = re.sub(r"\[.*?\]", "", AVILLA_ASCII_LOGO)
-
-
-GRAIA_PROJECT_REPOS = [
-    "avilla-core",
-    "graia-broadcast",
-    "graia-saya",
-    "graia-scheduler",
-    "graia-ariadne",
-    "statv",
-    "launart",
-    "creart",
-    "creart-graia",
-    "kayaku",
-]
-
-
-def _log_telemetry():
-    for telemetry in GRAIA_PROJECT_REPOS:
-        try:
-            version = importlib.metadata.version(telemetry)
-        except Exception:
-            version = "unknown / not-installed"
-        logger.info(
-            f"{telemetry} version: {version}",
-            alt=f"[b cornflower_blue]{telemetry}[/] version: [cyan3]{version}[/]",
-        )
-
 
 class Avilla:
     broadcast: Broadcast
     launch_manager: Launart
     protocols: list[BaseProtocol]
-    # action_middlewares: list[ActionMiddleware]
-    # resource_providers: dict[str, ResourceProvider]
-    # extension_impls: dict[type[ActionExtension], ActionExtensionImpl]
     accounts: list[AbstractAccount]
     service: AvillaService
     global_artifacts: dict[ArtifactSignature, Any]
 
-    # NOTE: configuration is done by kayaku.
     def __init__(
         self,
         broadcast: Broadcast,
         protocols: list[BaseProtocol],
         services: list[Service],
-        # middlewares: list[ActionMiddleware] | None = None,
         launch_manager: Launart | None = None,
     ):
         if len({type(i) for i in protocols}) != len(protocols):
@@ -88,10 +42,7 @@ class Avilla:
         self.launch_manager = launch_manager or Launart()
         self.protocols = protocols
         self._protocol_map = {type(i): i for i in protocols}
-        # self.action_middlewares = middlewares or []
         self.accounts = []
-        # self.resource_providers = {}
-        # self.extension_impls = {}
         self.global_artifacts = {}
         self.service = AvillaService(self)
 
@@ -104,7 +55,6 @@ class Avilla:
             # Ensureable 用于注册各种东西, 包括 Service, ResourceProvider 等.
             protocol.ensure(self)
 
-        # self.broadcast.finale_dispatchers.append(MetadataDispatcher())
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
 
         @self.register_global_artifact(ResourceFetch(LocalFileResource))
@@ -125,14 +75,6 @@ class Avilla:
             return v
 
         return warpper
-
-    """
-    def add_action_middleware(self, middleware: ActionMiddleware):
-        self.action_middlewares.append(middleware)
-
-    def remove_action_middleware(self, middleware: ActionMiddleware):
-        self.action_middlewares.remove(middleware)
-    """
 
     def add_account(self, account: AbstractAccount):
         if account in self.accounts:
@@ -169,15 +111,3 @@ class Avilla:
                 continue
             result.append(account)
         return result
-
-    async def launch(self):
-        logger.info(AVILLA_ASCII_RAW_LOGO, alt=AVILLA_ASCII_LOGO)
-        _log_telemetry()
-
-        for protocol in self.protocols:
-            logger.info(
-                f"Using platform: {protocol.__class__.platform}",
-                alt=f"[magenta]Using platform: [/][dark_orange]{protocol.__class__.platform}[/]",
-            )
-
-        await self.launch_manager.launch()

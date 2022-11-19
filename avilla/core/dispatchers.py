@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from inspect import isclass
-from types import TracebackType
 from typing import TYPE_CHECKING
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -34,14 +33,3 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
             if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
                 rs: Context = interface.local_storage["relationship"]
                 return rs.account
-
-
-"""
-class MetadataDispatcher(BaseDispatcher):
-    @staticmethod
-    async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if isinstance(interface.event, AvillaEvent):
-            if isinstance(interface.annotation, type) and issubclass(interface.annotation, Cell):
-                relationship: Relationship = interface.local_storage["relationship"]
-                return await relationship.meta(interface.annotation)
-"""
