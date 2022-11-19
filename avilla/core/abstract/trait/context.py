@@ -20,7 +20,7 @@ from typing_extensions import TypeAlias
 from ...context import Context
 from ...utilles.selector import Selector
 from ..metadata import MetadataBound
-from . import BoundFn, Fn, OverrideFn, OverrideSchema, Trait
+from . import BoundFn, Fn, Trait
 from .signature import ArtifactSignature, Bounds, Impl, Override
 
 
@@ -118,14 +118,7 @@ def implement(fn: Fn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context,
 
 
 @overload
-def implement(fn: BoundFn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, Selector, _P], Awaitable[_T_co]]]:
-    ...
-
-
-@overload
-def implement(
-    fn: OverrideFn[_P, _T1_co, _P2, _T2_co]
-) -> RecordCallable[OverrideSchema[Concatenate[Context, Selector, _P], _T1_co, Concatenate[Context, _P2], _T2_co]]:
+def implement(fn: BoundFn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, Selector | MetadataBound, _P], Awaitable[_T_co]]]:
     ...
 
 

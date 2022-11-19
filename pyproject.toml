@@ -29,6 +29,7 @@ dev = [
     "pre-commit>=2.20.0",
     "devtools>=0.9.0",
     "richuru>=0.1.1",
+    "mypy>=0.990",
 ]
 
 [build-system]

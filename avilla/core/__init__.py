@@ -1,6 +1,6 @@
 from graia.amnesia.message import MessageChain as MessageChain
 
-from .account import AbstractAccount as AbstractAccount
+from .abstract.account import AbstractAccount as AbstractAccount
 from .application import Avilla as Avilla
 from .context import Context as Context
 from .dispatchers import AvillaBuiltinDispatcher as AvillaBuiltinDispatcher
@@ -11,6 +11,7 @@ from .elements import Picture as Picture
 from .elements import Text as Text
 from .elements import Unknown as Unknown
 from .elements import Video as Video
+"""
 from .event import AvillaEvent as AvillaEvent
 from .event import MetadataModified as MetadataModified
 from .event import RelationshipCreated as RelationshipCreated
@@ -34,6 +35,7 @@ from .event.request import RequestReceived as RequestReceived
 from .event.request import RequestRejected as RequestRejected
 from .event.resource import ResourceAvailable as ResourceAvailable
 from .event.resource import ResourceUnavailable as ResourceUnavailable
+"""
 from .exceptions import AccountDeleted as AccountDeleted
 from .exceptions import AccountMuted as AccountMuted
 from .exceptions import ActionFailed as ActionFailed
@@ -50,6 +52,7 @@ from .exceptions import TooLongMessage as TooLongMessage
 from .exceptions import UnknownError as UnknownError
 from .exceptions import UnknownTarget as UnknownTarget
 from .exceptions import UnsupportedOperation as UnsupportedOperation
+"""
 from .message import Message as Message
 from .metadata import Metadata as Metadata
 from .metadata.cells import AnswerItem as AnswerItem
@@ -63,7 +66,7 @@ from .metadata.cells import Privilege as Privilege
 from .metadata.cells import QuestionItem as QuestionItem
 from .metadata.cells import Questions as Questions
 from .metadata.cells import Reason as Reason
-from .metadata.cells import Summary as Summary
+from .metadata.cells import Summary as Summary"""
 from .platform import Abstract as Abstract
 from .platform import Branch as Branch
 from .platform import Land as Land
@@ -74,9 +77,10 @@ from .platform import Version as Version
 from .protocol import BaseProtocol as BaseProtocol
 from .querier import AbstractQueryHandler as AbstractQueryHandler
 from .querier import ProtocolAbstractQueryHandler as ProtocolAbstractQueryHandler
+"""
 from .request import Request as Request
 from .resource import LocalFileResource as LocalFileResource
-from .resource import Resource as Resource
+from .resource import Resource as Resource"""
 from .service import AvillaService as AvillaService
 from .typing import Ensureable as Ensureable
 from .utilles.selector import DynamicSelector as DynamicSelector

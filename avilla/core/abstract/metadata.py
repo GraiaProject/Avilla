@@ -154,6 +154,3 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
 
     def has_params(self) -> bool:
         return any(cell.has_params() for cell in self.cells)
-
-
-_DeriveBack = MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]

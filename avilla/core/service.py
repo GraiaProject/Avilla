@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from launart import Launart, Service
 
-from avilla.core.event.lifecycle import (
+from avilla.standards.core.application import (
     ApplicationClosed,
     ApplicationClosing,
     ApplicationPreparing,

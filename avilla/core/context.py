@@ -5,7 +5,7 @@ from collections import ChainMap, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Self, Unpack
@@ -28,9 +28,9 @@ from avilla.core.abstract.trait.signature import (
     Query,
     ResourceFetch,
 )
-from avilla.core.skeleton.message import MessageEdit, MessageRevoke, MessageSend
-from avilla.core.skeleton.request import RequestTrait
-from avilla.core.skeleton.scene import SceneTrait
+from avilla.standards.core.message import MessageEdit, MessageRevoke, MessageSend
+from avilla.standards.core.request import RequestTrait
+from avilla.standards.core.scene import SceneTrait
 from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 
@@ -108,7 +108,7 @@ class ContextSelector(Selector):
         return self.context.pull(metadata, self)
 
     def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return self.context.wrap(self, trait)
+        return self.context.wrap(trait)
 
 
 class ContextClientSelector(ContextSelector):
@@ -125,10 +125,10 @@ class ContextEndpointSelector(ContextSelector):
 
 class ContextSceneSelector(ContextSelector):
     def leave_scene(self):
-        return self.wrap(SceneTrait).leave()
+        return self.wrap(SceneTrait).leave(self)
 
     def disband_scene(self):
-        return self.wrap(SceneTrait).disband()
+        return self.wrap(SceneTrait).disband(self)
 
     def send_message(
         self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
@@ -145,24 +145,24 @@ class ContextSceneSelector(ContextSelector):
         elif isinstance(reply, str):
             reply = self.copy().message(reply)
 
-        return self.wrap(MessageSend).send(message, reply=reply)
+        return self.wrap(MessageSend).send(self, message, reply=reply)
 
     def remove_member(self, target: Selector, reason: str | None = None):
-        return self.wrap(SceneTrait).remove_member(target, reason)
+        return self.wrap(SceneTrait).remove_member(self, reason)
 
 
 class ContextRequestSelector(ContextEndpointSelector):
     def accept_request(self):
-        return self.wrap(RequestTrait).accept()
+        return self.wrap(RequestTrait).accept(self)
 
     def reject_request(self, reason: str | None = None, forever: bool = False):
-        return self.wrap(RequestTrait).reject(reason, forever)
+        return self.wrap(RequestTrait).reject(self, reason, forever)
 
     def cancel_request(self):
-        return self.wrap(RequestTrait).cancel()
+        return self.wrap(RequestTrait).cancel(self)
 
     def ignore_request(self):
-        return self.wrap(RequestTrait).ignore()
+        return self.wrap(RequestTrait).ignore(self)
 
 
 @dataclass
@@ -176,9 +176,9 @@ class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
 
     def pull(self) -> Awaitable[_DescribeT]:
         return self.context.pull(self.describe, self.target)
-
-    def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return self.context.wrap(self, trait)
+    
+    # NOTICE: because python didn't support HKTs currently, so
+    #         wrap(trait: Trait) cannot be provided.
 
 
 class Context:
@@ -237,9 +237,11 @@ class Context:
     def is_resource(self) -> bool:
         return any(isinstance(i, Resource) for i in self.cache["meta"].get(self.endpoint, {}).values())
 
+    """
     @property
     def _ext_handler(self):
         return ExtensionHandler(self)
+    """
 
     @classproperty
     @classmethod
@@ -322,31 +324,26 @@ class Context:
         return result
 
     @overload
-    def wrap(self, bound: Selector) -> ContextSelector:
+    def wrap(self, closure: Selector) -> ContextSelector:
         ...
 
     @overload
-    def wrap(self, bound: MetadataOf[_Describe]) -> ContextWrappedMetadataOf[_Describe]:
+    def wrap(self, closure: MetadataOf[_Describe]) -> ContextWrappedMetadataOf[_Describe]:
         ...
 
     @overload
-    def wrap(self, bound: Selector, trait: type[_TraitT]) -> _TraitT:
-        ...
-
-    @overload
-    def wrap(self, bound: MetadataOf, trait: type[_TraitT]) -> _TraitT:
+    def wrap(self, closure: type[_TraitT]) -> _TraitT:
         ...
 
     def wrap(
         self,
-        bound: Selector | MetadataOf[_DescribeT],
-        trait: type[_TraitT] | None = None,
+        closure: Selector | MetadataOf[_DescribeT] | type[_TraitT],
     ) -> ContextSelector | ContextWrappedMetadataOf[_Describe] | _TraitT:
-        if trait is not None:
-            return trait(self, bound)
-        elif isinstance(bound, Selector):
-            return ContextSelector.from_selector(self, bound)
-        elif isinstance(bound, MetadataOf):
-            return ContextWrappedMetadataOf(bound.target, bound.describe, self)
+        if isinstance(closure, type) and issubclass(closure, Trait):
+            return closure(self)
+        elif isinstance(closure, Selector):
+            return ContextSelector.from_selector(self, closure)
+        elif isinstance(closure, MetadataOf):
+            return ContextWrappedMetadataOf(closure.target, closure.describe, self)
 
-        raise TypeError(f"cannot wrap {bound!r}")
+        raise TypeError(f"cannot wrap {closure!r}")

@@ -2,24 +2,25 @@ from __future__ import annotations
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core.abstract.trait import Fn, TBounded, Trait
+from avilla.core.abstract.trait import Fn, Trait
 from avilla.core.utilles.selector import Selector
 
 
 # MessageFetch => rs.pull(Message, target=...)
-class MessageSend(Trait[TBounded]):
+
+class MessageSend(Trait):
     @Fn.bound
     async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:
         ...
 
 
-class MessageRevoke(Trait[TBounded]):
+class MessageRevoke(Trait):
     @Fn
     async def revoke(self, message: Selector) -> None:
         ...
 
 
-class MessageEdit(Trait[TBounded]):
+class MessageEdit(Trait):
     @Fn
     async def edit(self, message: Selector, content: MessageChain) -> None:
         ...

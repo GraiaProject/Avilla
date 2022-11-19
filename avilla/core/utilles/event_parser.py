@@ -10,7 +10,7 @@ from loguru import logger
 from typing_extensions import Self
 
 from avilla.core.abstract.account import AbstractAccount
-from avilla.core.event import AvillaEvent
+from avilla.core.abstract.event import AvillaEvent
 
 if TYPE_CHECKING:
     from avilla.core.abstract.account import AbstractAccount

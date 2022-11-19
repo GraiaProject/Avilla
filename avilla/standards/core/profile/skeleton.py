@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from avilla.core.abstract.trait import Fn, TBounded, Trait
+from avilla.core.abstract.trait import Fn, Trait
 from avilla.core.utilles.selector import Selector
 
 
-class SummaryTrait(Trait[TBounded]):
+class SummaryTrait(Trait):
     @Fn.bound
     async def set_name(self, name: str) -> None:
         ...
@@ -22,7 +22,7 @@ class SummaryTrait(Trait[TBounded]):
         ...
 
 
-class NickTrait(Trait[TBounded]):
+class NickTrait(Trait):
     @Fn.bound
     async def set_name(self, name: str) -> None:
         ...

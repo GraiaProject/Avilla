@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from avilla.core.abstract.trait import Fn, TBounded, Trait
+from avilla.core.abstract.trait import Fn, Trait
 from avilla.core.utilles.selector import Selector
 
 
-class SceneTrait(Trait[TBounded]):
+class SceneTrait(Trait):
     @Fn.bound
     async def leave(self) -> None:
         ...

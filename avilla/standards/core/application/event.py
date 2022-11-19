@@ -8,8 +8,8 @@ from graia.broadcast.entities.event import Dispatchable
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 if TYPE_CHECKING:
-    from ...abstract.account import AbstractAccount
-    from ...application import Avilla
+    from avilla.core.abstract.account import AbstractAccount
+    from avilla.core.application import Avilla
 
 
 @dataclass
@@ -21,7 +21,7 @@ class AvillaLifecycleEvent(Dispatchable):
     class Dispatcher(BaseDispatcher):
         @classmethod
         async def catch(cls, interface: "DispatcherInterface[AvillaLifecycleEvent]"):
-            from ...application import Avilla
+            from avilla.core.application import Avilla
 
             if interface.annotation is Avilla:
                 return interface.event.avilla
@@ -52,7 +52,7 @@ class AccountStatusChanged(AvillaLifecycleEvent):
     class Dispatcher(BaseDispatcher):
         @classmethod
         async def catch(cls, interface: "DispatcherInterface[AccountStatusChanged]"):
-            from ...abstract.account import AbstractAccount
+            from avilla.core.abstract.account import AbstractAccount
 
             if issubclass(interface.annotation, AbstractAccount):
                 return interface.event.account

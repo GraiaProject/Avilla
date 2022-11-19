@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from ...abstract.metadata import Metadata
+from avilla.core.abstract.metadata import Metadata
 
 
 @dataclass

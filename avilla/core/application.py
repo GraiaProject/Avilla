@@ -15,7 +15,7 @@ from avilla.core.abstract.trait.signature import ResourceFetch
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
-from avilla.core.resource import LocalFileResource
+from avilla.core.abstract.resource import LocalFileResource
 from avilla.core.service import AvillaService
 from avilla.core.utilles.selector import Selector
 
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
 
 AVILLA_ASCII_LOGO = cleandoc(
     r"""
-    [bold]Avilla[/]: a universal asynchronous message flow solution, powered by [blue]Graia Project[/].
+    [bold]Avilla[/]: a universal backend/framework for effective im development, powered by [blue]Graia Project[/].
         _        _ _ _
        / \__   _(_) | | __ _
       / _ \ \ / / | | |/ _` |
@@ -132,19 +132,6 @@ class Avilla:
 
     def remove_action_middleware(self, middleware: ActionMiddleware):
         self.action_middlewares.remove(middleware)
-
-    def get_resource_provider(self, resource: Selector) -> ResourceProvider | None:
-        return self.resource_providers.get(cast(str, resource.latest_key))
-
-    def add_resource_provider(self, provider: ResourceProvider, *resource_types: str):
-        for resource_type in resource_types:
-            self.resource_providers[resource_type] = provider
-
-    def remove_resource_provider(self, provider: ResourceProvider):
-        for resource_type in self.resource_providers:
-            if self.resource_providers[resource_type] is provider:
-                del self.resource_providers[resource_type]
-
     """
 
     def add_account(self, account: AbstractAccount):
