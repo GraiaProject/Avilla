@@ -15,9 +15,10 @@ from typing import (
 from typing_extensions import Self
 
 from avilla.core.platform import Land
+from avilla.core._runtime import ctx_context
 
 if TYPE_CHECKING:
-    ...
+    from ..context import ContextSelector
 
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
@@ -213,6 +214,12 @@ class Selector:
     def set_referent(self, referent: Any) -> Self:
         self.referent = referent
         return self
+
+    def rev(self) -> ContextSelector:
+        ctx = ctx_context.get(None)
+        if ctx is None:
+            raise LookupError
+        return ctx.wrap(self)
 
 
 class DynamicSelector(Selector):

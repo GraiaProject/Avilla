@@ -25,7 +25,7 @@ class BaseProtocol(metaclass=ABCMeta):
     # completion_rules: ClassVar[dict[str, dict[str, str]]] = cast(dict, MappingProxyType({}))
     # action_middlewares: list[ActionMiddleware] = []
 
-    artifacts: ClassVar[Artifacts]
+    implementations: ClassVar[Artifacts]
 
     def __init__(self):
         ...

@@ -7,7 +7,7 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, MessageChain, Text
-from typing_extensions import Self, Unpack, TypeAlias
+from typing_extensions import Self, TypeAlias, Unpack
 
 from avilla.core._runtime import ctx_context
 from avilla.core.abstract.account import AbstractAccount
@@ -27,11 +27,11 @@ from avilla.core.abstract.trait.signature import (
     Query,
     ResourceFetch,
 )
+from avilla.core.utilles import classproperty
+from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 from avilla.spec.core.message import MessageEdit, MessageRevoke, MessageSend
 from avilla.spec.core.request import RequestTrait
 from avilla.spec.core.scene import SceneTrait
-from avilla.core.utilles import classproperty
-from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 
 _T = TypeVar("_T")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
@@ -226,7 +226,7 @@ class Context:
     @cached_property
     def _artifacts(self) -> Artifacts:
         # TODO: evaluate override
-        return self.protocol.artifacts
+        return self.protocol.implementations
 
     @property
     def request(self) -> ContextRequestSelector:
@@ -339,9 +339,7 @@ class Context:
         closure: Selector | MetadataOf[_DescribeT] | type[_TraitT],
     ) -> ContextSelector | ContextWrappedMetadataOf[_Describe] | type[_TraitT]:
         if isinstance(closure, type) and issubclass(closure, Trait):
-            return type(closure.__name__, (closure,), {
-                "context": self
-            })  # type: ignore
+            return type(closure.__name__, (closure,), {"context": self})  # type: ignore
         elif isinstance(closure, Selector):
             return ContextSelector.from_selector(self, closure)
         elif isinstance(closure, MetadataOf):

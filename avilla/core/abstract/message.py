@@ -8,6 +8,8 @@ from graia.amnesia.message import MessageChain
 from avilla.core.platform import Land
 from avilla.core.utilles.selector import Selector
 
+from ...spec.core.message.skeleton import MessageRevoke
+
 from .metadata import Metadata
 
 if TYPE_CHECKING:
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
 @dataclass
 class Message(Metadata):
     id: str
-    mainline: Selector
+    scene: Selector
     sender: Selector
     content: MessageChain
     time: datetime
@@ -25,7 +27,13 @@ class Message(Metadata):
 
     @property
     def land(self):
-        return Land(cast(str, self.mainline.pattern.get("land")))
+        return Land(cast(str, self.scene.pattern.get("land")))
 
     def to_selector(self) -> Selector:
-        return self.mainline.copy().message(self.id)
+        return self.scene.copy().message(self.id)
+
+    def rev(self):
+        return self.to_selector().rev()
+    
+    async def revoke(self):
+        return await self.rev().wrap(MessageRevoke).revoke()

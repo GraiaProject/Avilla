@@ -16,8 +16,8 @@ class MessageSend(Trait):
 
 
 class MessageRevoke(Trait):
-    @Fn
-    async def revoke(self, message: Selector) -> None:
+    @Fn.bound
+    async def revoke(self) -> None:
         ...
 
 
