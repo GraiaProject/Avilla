@@ -4,8 +4,6 @@ import inspect
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Callable, Coroutine, Generic, TypeVar
 
-from graia.amnesia.message.element import Element
-from graia.broadcast.utilles import run_always_await
 from loguru import logger
 from typing_extensions import Self
 
