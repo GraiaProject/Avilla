@@ -52,9 +52,12 @@ includes = ["avilla/core", "avilla/core/py.typed", "avilla/spec/core"]
 
 [tool.mina.packages.core.project]
 name = "avilla-core"
-version = "1.0.0rc4"
+version = "1.0.0-alpha.5"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
+  {name = "BlueGlassBlock", email = "BlueGlassBlock"},
+  {name = "ProgramRipper", email = "programripper@foxmail.com"},
+  {name = "Tarrailt", email = "rf_tar_railt@qq.com"}
 ]
 dependencies = [
     "graia-broadcast",
