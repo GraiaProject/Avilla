@@ -56,7 +56,7 @@ authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "BlueGlassBlock"},
   {name = "ProgramRipper", email = "programripper@foxmail.com"},
-  {name = "Tarrailt", email = "rf_tar_railt@qq.com"}
+  {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
 dependencies = [
     "graia-broadcast",
