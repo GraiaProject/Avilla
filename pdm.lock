@@ -173,7 +173,7 @@ dependencies = [
 
 [[package]]
 name = "graia-broadcast"
-version = "0.19.0"
+version = "0.19.1"
 requires_python = ">=3.7,<4.0"
 summary = "a highly customizable, elegantly designed event system based on asyncio"
 
@@ -684,9 +684,9 @@ content_hash = "sha256:b8cfb6a10bb9cb5408a7ebcd58329e686b2e09879335c2ea65309ca3e
     {url = "https://files.pythonhosted.org/packages/4f/0d/434bae97145de0e5bda33e4757c5def19e034fdb12a32ea2dd7d0d4d1c70/graia_amnesia-0.6.0-py3-none-any.whl", hash = "sha256:c1e347171cd42d81b10dea4fb6afef4bed4e836fa9c698ecf595ccaa5c2d1939"},
     {url = "https://files.pythonhosted.org/packages/e4/17/23accd9a4466a7cebc4cd6f74821197ad1e74b23cd5395acee7ccd19ce1f/graia-amnesia-0.6.0.tar.gz", hash = "sha256:9f4ed226ebd2ccfe5e09489e4afffd9e58ae28c3fa93211dda72c3c6b9a439f0"},
 ]
-"graia-broadcast 0.19.0" = [
-    {url = "https://files.pythonhosted.org/packages/18/88/c87afe3d5f6cfa0a8befc8491a5e4a648966325421fbaa0a355ac61704d2/graia_broadcast-0.19.0-py3-none-any.whl", hash = "sha256:16a6cb0eaa7e405f243d5380a7e9acdf563000e2b8158dc3bc5c2b984d1b4411"},
-    {url = "https://files.pythonhosted.org/packages/46/19/749976aada206042fa677242d034f7b0951ba75a7351601393a9f8cf5d09/graia-broadcast-0.19.0.tar.gz", hash = "sha256:bd12fda9a4ae0251ed875aca5ad70cc15ec8184248e7ab4dd6fdfd8b4dd1aa7a"},
+"graia-broadcast 0.19.1" = [
+    {url = "https://files.pythonhosted.org/packages/2d/74/479522bf0643121b6bd967ee26410faa0129b35ef3339e0d9a513dfc3057/graia_broadcast-0.19.1-py3-none-any.whl", hash = "sha256:94ba3a53b3dda292e95f6be2ae964d975e34d5f6fb973df31016bd34089e2c47"},
+    {url = "https://files.pythonhosted.org/packages/3c/a0/6baa89337a9fde73e5a0715d32cad8bb37925e30e42fcae71d6046deb1e6/graia-broadcast-0.19.1.tar.gz", hash = "sha256:bd0d3b9891e6ff3b86948d94fbac52ff187056389556aecc0251c261a7806ba0"},
 ]
 "graia-scheduler 0.0.10" = [
     {url = "https://files.pythonhosted.org/packages/4c/58/0171da0e922bc07fe2216cb014d72d64b6cd38bdb7170ed046544d24a906/graia_scheduler-0.0.10-py3-none-any.whl", hash = "sha256:9e725b83aeb36c9f95754c979fe01a4b6e23eea0ae6c527e3d3bb7ca388e02aa"},

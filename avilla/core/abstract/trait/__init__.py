@@ -1,4 +1,5 @@
 from __future__ import annotations
+from functools import partial
 
 import inspect
 from typing import (
@@ -26,9 +27,11 @@ if TYPE_CHECKING:
 
 class Trait:
     context: Context
+    bound: Selector
 
-    def __init__(self, context: Context) -> None:
+    def __init__(self, context: Context, bound: Selector) -> None:
         self.context = context
+        self.bound = bound
 
     @classmethod
     def fn(cls) -> list[Fn]:
@@ -64,13 +67,21 @@ class Fn(Generic[_P, _T]):
         ...
 
     @overload
+    def __get__(self, instance: Any, owner: type[Trait]) -> FnCall[_P, _T]:
+        ...
+
+    @overload
     def __get__(self, instance: Any, owner: type) -> Self:
         ...
 
-    def __get__(self, instance: Any, owner: Any) -> Self | FnCall[_P, _T]:
-        if not isinstance(instance, Trait):
-            return self
-        return FnCall(instance, self)
+    def __get__(self, instance: Any, owner: type) -> Self | FnCall[_P, _T]:
+        if issubclass(owner, Trait):
+            return FnCall(instance, self)
+        return self
+
+    @classmethod
+    def configure(cls, **kwargs):
+        return partial(cls.__new__, **kwargs)
 
     @classmethod
     def bound(cls, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]) -> BoundFn[_P1, _T1]:
@@ -116,24 +127,48 @@ class BoundFn(Fn[_P, _T]):
         return f"<Fn bound-required async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
 
     @overload
-    def __get__(self, instance: Trait, owner: type[Trait]) -> BoundFnCall[_P, _T]:
+    def __get__(self, instance: Trait, owner: type[Trait]) -> AppliedFnCall[_P, _T]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type[Trait]) -> UnappliedFnCall[_P, _T]:
         ...
 
     @overload
     def __get__(self, instance: Any, owner: type) -> Self:
         ...
 
-    def __get__(self, instance: Any, owner: Any) -> Self | FnCall:
-        if isinstance(instance, Trait):
-            return BoundFnCall(instance, self)
+    def __get__(self, instance: Any, owner: type) -> Self | UnappliedFnCall | AppliedFnCall:
+        if issubclass(owner, Trait):
+            if isinstance(instance, Trait):
+                return UnappliedFnCall(instance, self)
+            return AppliedFnCall(instance, self)
         return self
 
 
-class BoundFnCall(FnCall[_P, _T]):
+
+class UnappliedFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
         return f"<FnCall unbounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: Selector | MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
+        bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
+        impl = self.trait.context._artifacts.get(Bounds(bounding), {}).get(
+            Impl(self.fn)
+        )  # TODO: Signature for Fn refactor
+        if impl is None:
+            raise NotImplementedError(
+                f'"{identity(self.trait)}::{self.fn.identity}" ' f'for target "{bounding}" ' "is not implemented."
+            )
+        impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
+        return await impl(self.trait.context, target, *args, **kwargs)
+
+class AppliedFnCall(FnCall[_P, _T]):
+    def __repr__(self) -> str:
+        return f"<FnCall unbounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+
+    async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
+        target = self.trait.bound
         bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
         impl = self.trait.context._artifacts.get(Bounds(bounding), {}).get(
             Impl(self.fn)

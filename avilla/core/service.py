@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from launart import Launart, Service
 from loguru import logger
 
-from avilla.standards.core.application import (
+from avilla.spec.core.application import (
     ApplicationClosed,
     ApplicationClosing,
     ApplicationPreparing,

@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from asyncio import gather
-from collections import ChainMap, deque
+from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, MessageChain, Text
-from typing_extensions import Self, Unpack
+from typing_extensions import Self, Unpack, TypeAlias
 
 from avilla.core._runtime import ctx_context
 from avilla.core.abstract.account import AbstractAccount
@@ -28,18 +27,18 @@ from avilla.core.abstract.trait.signature import (
     Query,
     ResourceFetch,
 )
-from avilla.standards.core.message import MessageEdit, MessageRevoke, MessageSend
-from avilla.standards.core.request import RequestTrait
-from avilla.standards.core.scene import SceneTrait
+from avilla.spec.core.message import MessageEdit, MessageRevoke, MessageSend
+from avilla.spec.core.request import RequestTrait
+from avilla.spec.core.scene import SceneTrait
 from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 
 _T = TypeVar("_T")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
-_DescribeT = TypeVar("_DescribeT", bound=type[Metadata] | MetadataRoute)
+_DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
 _TraitT = TypeVar("_TraitT", bound=Trait)
 
-_Describe = type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
+_Describe: TypeAlias = "type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]"
 
 
 async def _query_depth_generator(
@@ -95,8 +94,8 @@ class ContextSelector(Selector):
     context: Context
 
     def __init__(self, ctx: Context, *, mode: MatchRule = "exact", path_excludes: frozenset[str] = frozenset()) -> None:
-        self.context = ctx
         super().__init__(mode=mode, path_excludes=path_excludes)
+        self.context = ctx
 
     @classmethod
     def from_selector(cls, ctx: Context, selector: Selector) -> Self:
@@ -108,7 +107,7 @@ class ContextSelector(Selector):
         return self.context.pull(metadata, self)
 
     def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return self.context.wrap(trait)
+        return trait(self.context, self)
 
 
 class ContextClientSelector(ContextSelector):
@@ -125,10 +124,10 @@ class ContextEndpointSelector(ContextSelector):
 
 class ContextSceneSelector(ContextSelector):
     def leave_scene(self):
-        return self.wrap(SceneTrait).leave(self)
+        return self.wrap(SceneTrait).leave()
 
     def disband_scene(self):
-        return self.wrap(SceneTrait).disband(self)
+        return self.wrap(SceneTrait).disband()
 
     def send_message(
         self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
@@ -145,24 +144,24 @@ class ContextSceneSelector(ContextSelector):
         elif isinstance(reply, str):
             reply = self.copy().message(reply)
 
-        return self.wrap(MessageSend).send(self, message, reply=reply)
+        return self.wrap(MessageSend).send(message, reply=reply)
 
     def remove_member(self, target: Selector, reason: str | None = None):
-        return self.wrap(SceneTrait).remove_member(self, reason)
+        return self.wrap(SceneTrait).remove_member(reason)
 
 
 class ContextRequestSelector(ContextEndpointSelector):
     def accept_request(self):
-        return self.wrap(RequestTrait).accept(self)
+        return self.wrap(RequestTrait).accept()
 
     def reject_request(self, reason: str | None = None, forever: bool = False):
-        return self.wrap(RequestTrait).reject(self, reason, forever)
+        return self.wrap(RequestTrait).reject(reason, forever)
 
     def cancel_request(self):
-        return self.wrap(RequestTrait).cancel(self)
+        return self.wrap(RequestTrait).cancel()
 
     def ignore_request(self):
-        return self.wrap(RequestTrait).ignore(self)
+        return self.wrap(RequestTrait).ignore()
 
 
 @dataclass
@@ -332,15 +331,17 @@ class Context:
         ...
 
     @overload
-    def wrap(self, closure: type[_TraitT]) -> _TraitT:
+    def wrap(self, closure: type[_TraitT]) -> type[_TraitT]:
         ...
 
     def wrap(
         self,
         closure: Selector | MetadataOf[_DescribeT] | type[_TraitT],
-    ) -> ContextSelector | ContextWrappedMetadataOf[_Describe] | _TraitT:
+    ) -> ContextSelector | ContextWrappedMetadataOf[_Describe] | type[_TraitT]:
         if isinstance(closure, type) and issubclass(closure, Trait):
-            return closure(self)
+            return type(closure.__name__, (closure,), {
+                "context": self
+            })  # type: ignore
         elif isinstance(closure, Selector):
             return ContextSelector.from_selector(self, closure)
         elif isinstance(closure, MetadataOf):
