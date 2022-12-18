@@ -4,7 +4,7 @@ from collections import deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Literal, TypeVar, cast, overload
+from typing import Any, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Self, TypeAlias, Unpack
@@ -13,7 +13,6 @@ from avilla.core._runtime import ctx_context
 from avilla.core.abstract.account import AbstractAccount
 from avilla.core.abstract.message import Message
 from avilla.core.abstract.metadata import Metadata, MetadataOf, MetadataRoute
-from avilla.core.abstract.request import Request
 from avilla.core.abstract.resource import Resource
 from avilla.core.abstract.trait import Trait
 from avilla.core.abstract.trait.context import Artifacts
@@ -27,9 +26,10 @@ from avilla.core.abstract.trait.signature import (
     Query,
     ResourceFetch,
 )
+from avilla.core.platform import Land
 from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import MatchRule, Selectable, Selector
-from avilla.spec.core.message import MessageEdit, MessageRevoke, MessageSend
+from avilla.spec.core.message import MessageSend
 from avilla.spec.core.request import RequestTrait
 from avilla.spec.core.scene import SceneTrait
 
@@ -96,6 +96,18 @@ class ContextSelector(Selector):
     def __init__(self, ctx: Context, *, mode: MatchRule = "exact", path_excludes: frozenset[str] = frozenset()) -> None:
         super().__init__(mode=mode, path_excludes=path_excludes)
         self.context = ctx
+
+    def __getattr__(self, name: str) -> Callable[[str], Self]:
+        return type(super()).__getattr__(self.copy(), name)  # type: ignore
+
+    def land(self, land: Land | str) -> Self:
+        return type(super()).land(self.copy(), land)  # type: ignore
+
+    def appendix(self, key: str, value: str) -> Self:
+        return type(super()).appendix(self.copy(), key, value)  # type: ignore
+
+    def set_referent(self, referent: Any) -> Self:
+        return type(super()).set_referent(self.copy(), referent)  # type: ignore
 
     @classmethod
     def from_selector(cls, ctx: Context, selector: Selector) -> Self:
