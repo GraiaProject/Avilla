@@ -54,7 +54,7 @@ name = "avilla-core"
 version = "1.0.0-alpha.5"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
-  {name = "BlueGlassBlock", email = "BlueGlassBlock"},
+  {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
   {name = "ProgramRipper", email = "programripper@foxmail.com"},
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
