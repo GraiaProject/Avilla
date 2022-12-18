@@ -211,10 +211,6 @@ class Selector:
 
         return self
 
-    def set_referent(self, referent: Any) -> Self:
-        self.referent = referent
-        return self
-
     def rev(self) -> ContextSelector:
         ctx = ctx_context.get(None)
         if ctx is None:
