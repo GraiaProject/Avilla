@@ -1,7 +1,7 @@
 from __future__ import annotations
-from functools import partial
 
 import inspect
+from functools import partial
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -146,7 +146,6 @@ class BoundFn(Fn[_P, _T]):
         return self
 
 
-
 class UnappliedFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
         return f"<FnCall unbounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
@@ -162,6 +161,7 @@ class UnappliedFnCall(FnCall[_P, _T]):
             )
         impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.context, target, *args, **kwargs)
+
 
 class AppliedFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:

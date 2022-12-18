@@ -5,7 +5,6 @@ from graia.amnesia.message import MessageChain
 from avilla.core.abstract.trait import Fn, Trait
 from avilla.core.utilles.selector import Selector
 
-
 # MessageFetch => rs.pull(Message, target=...)
 
 
