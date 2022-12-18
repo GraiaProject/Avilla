@@ -176,8 +176,8 @@ class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
     def pull(self) -> Awaitable[_DescribeT]:
         return self.context.pull(self.describe, self.target)
 
-    # NOTICE: because python didn't support HKTs currently, so
-    #         wrap(trait: Trait) cannot be provided.
+    def wrap(self, trait: type[_TraitT]) -> _TraitT:
+        return trait(self.context, self)
 
 
 class Context:

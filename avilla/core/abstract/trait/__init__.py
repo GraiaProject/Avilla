@@ -27,9 +27,9 @@ if TYPE_CHECKING:
 
 class Trait:
     context: Context
-    bound: Selector
+    bound: Selector | MetadataOf
 
-    def __init__(self, context: Context, bound: Selector) -> None:
+    def __init__(self, context: Context, bound: Selector | MetadataOf) -> None:
         self.context = context
         self.bound = bound
 
