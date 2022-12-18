@@ -106,12 +106,9 @@ class ContextSelector(Selector):
     def appendix(self, key: str, value: str) -> Self:
         return type(super()).appendix(self.copy(), key, value)  # type: ignore
 
-    def set_referent(self, referent: Any) -> Self:
-        return type(super()).set_referent(self.copy(), referent)  # type: ignore
-
     @classmethod
     def from_selector(cls, ctx: Context, selector: Selector) -> Self:
-        self = cls(ctx, mode=selector.mode, path_excludes=selector.path_excludes).set_referent(selector.referent)
+        self = cls(ctx, mode=selector.mode, path_excludes=selector.path_excludes)
         self.pattern = selector.pattern.copy()
         return self
 

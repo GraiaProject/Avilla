@@ -28,7 +28,6 @@ class Selector:
     mode: MatchRule = "exact"
     pattern: dict[str, str]
     path_excludes: frozenset[str]
-    referent: Any = None
 
     def __init__(self, *, mode: MatchRule = "exact", path_excludes: frozenset[str] = frozenset()) -> None:
         self.mode = mode
