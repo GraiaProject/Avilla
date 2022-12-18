@@ -12,10 +12,6 @@ from avilla.core.abstract.account import AbstractAccount
 from avilla.core.abstract.event import AvillaEvent
 from avilla.core.abstract.trait.context import Artifacts
 from avilla.core.platform import Abstract, Land, Platform
-from avilla.core.querier import ProtocolAbstractQueryHandler
-from avilla.core.utilles.event_parser import AbstractEventParser
-from avilla.core.utilles.message_deserializer import MessageDeserializer
-from avilla.core.utilles.message_serializer import MessageSerializer
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -25,13 +21,9 @@ if TYPE_CHECKING:
 class BaseProtocol(metaclass=ABCMeta):
     avilla: Avilla
     platform: ClassVar[Platform]
-    message_serializer: MessageSerializer
-    message_deserializer: MessageDeserializer
 
     # completion_rules: ClassVar[dict[str, dict[str, str]]] = cast(dict, MappingProxyType({}))
     # action_middlewares: list[ActionMiddleware] = []
-
-    event_parser: ClassVar[AbstractEventParser]
 
     artifacts: ClassVar[Artifacts]
 
@@ -61,12 +53,6 @@ class BaseProtocol(metaclass=ABCMeta):
 
     def get_account(self, selector: Selector) -> AbstractAccount | None:
         return self.avilla.get_account(selector=selector, land=self.platform[Land])
-
-    async def parse_message(self, data: Any) -> MessageChain:
-        return MessageChain(await self.message_deserializer.parse_sentence(self, data))
-
-    async def serialize_message(self, message: MessageChain) -> Any:
-        return await self.message_serializer.serialize_chain(self, message)
 
     def post_event(self, event: AvillaEvent):
         with ctx_avilla.use(self.avilla), ctx_protocol.use(self):
