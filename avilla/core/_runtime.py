@@ -23,9 +23,9 @@ def get_current_avilla() -> Avilla:
     protocol = ctx_protocol.get(None)
     if protocol:
         return protocol.avilla
-    relationship = ctx_context.get(None)
+    context = ctx_context.get(None)
     if relationship:
-        return relationship.protocol.avilla
+        return context.protocol.avilla
     raise RuntimeError("no any current avilla")
 
 
@@ -33,9 +33,9 @@ def get_current_protocol():
     protocol = ctx_protocol.get(None)
     if protocol:
         return protocol
-    relationship = ctx_context.get(None)
-    if relationship:
-        return relationship.protocol
+    context = ctx_context.get(None)
+    if context:
+        return context.protocol
     raise RuntimeError("no any current protocol")
 
 
@@ -44,6 +44,6 @@ def require_context(func):
     async def wrapper(*args, **kwargs):
         if ctx_context.get(None):
             return await func(*args, **kwargs)
-        raise RuntimeError("no any current relationship")
+        raise RuntimeError("no any current context")
 
     return wrapper
