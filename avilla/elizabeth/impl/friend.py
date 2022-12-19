@@ -2,35 +2,29 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.abstract.trait.context import prefix, raise_for_no_namespace, scope
-from avilla.core.abstract.trait.recorder import casts, default_target, impl, pull
-from avilla.core.message import Message
-from avilla.core.skeleton.message import MessageRevoke, MessageSend
+from avilla.core.abstract.trait.context import bounds, implement
 from avilla.core.utilles.selector import Selector
+from avilla.spec.core.message import MessageRevoke, MessageSend
 
 if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
 
     from avilla.core.context import Context
 
+# raise_for_no_namespace()
 
-raise_for_no_namespace()
+# with scope("qq", "friend"), prefix("friend"):
+with bounds("tencent_qq"):  # maybe problem
 
-with scope("qq", "friend"), prefix("friend"):
+    # casts(MessageSend)
+    # casts(MessageRevoke)
 
-    casts(MessageSend)
-    casts(MessageRevoke)
-
-    @default_target(MessageSend.send)
-    def send_friend_message_default_target(rs: Context):
-        return rs.client
-
-    @impl(MessageSend.send)
+    @implement(MessageSend.send)
     async def send_friend_message(
-        rs: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
+        ctx: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
-        serialized_msg = await rs.protocol.serialize_message(message)
-        result = await rs.account.call(
+        serialized_msg = await ctx.protocol.serialize_message(message)
+        result = await ctx.account.call(
             "sendFriendMessage",
             {
                 "__method__": "post",
@@ -39,11 +33,11 @@ with scope("qq", "friend"), prefix("friend"):
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
-        return Selector().land(rs.land).group(target.pattern["friend"]).message(result["messageId"])
+        return Selector().land(ctx.land).group(target.pattern["friend"]).message(result["messageId"])
 
-    @impl(MessageRevoke.revoke)
-    async def revoke_friend_message(rs: Context, message: Selector):
-        await rs.account.call(
+    @implement(MessageRevoke.revoke)
+    async def revoke_friend_message(ctx: Context, message: Selector):
+        await ctx.account.call(
             "recall",
             {
                 "__method__": "post",
