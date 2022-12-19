@@ -75,9 +75,7 @@ class Fn(Generic[_P, _T]):
         ...
 
     def __get__(self, instance: Any, owner: type) -> Self | FnCall[_P, _T]:
-        if issubclass(owner, Trait):
-            return FnCall(instance, self)
-        return self
+        return FnCall(instance, self) if issubclass(owner, Trait) else self
 
     @classmethod
     def configure(cls, **kwargs):

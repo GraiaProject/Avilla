@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class Request(Metadata):
     id: str
     land: Land
-    mainline: Selector
+    scene: Selector
     sender: Selector
     account: AbstractAccount
     time: datetime
@@ -56,7 +56,7 @@ class Request(Metadata):
         request_id = self.id
         if self.request_type is not None:
             request_id = f"{self.request_type}:{request_id}"
-        return self.mainline.copy().request(request_id)
+        return self.scene.copy().request(request_id)
 
     def rev(self):
         return self.to_selector().rev()

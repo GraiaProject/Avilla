@@ -84,8 +84,8 @@ class Metadata(Generic[T], metaclass=MetadataMeta):
         METACELL_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
 
     @classmethod
-    def get_default_target(cls, relationship: Context) -> Selector | None:
-        return relationship.client.to_selector()
+    def get_default_target(cls, ctx: Context) -> Selector | None:
+        return ctx.client.to_selector()
 
     @classmethod
     def get_params(cls) -> dict[str, Any] | None:
@@ -117,8 +117,8 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
     def of(self, target: Selector) -> MetadataOf[Self]:
         return MetadataOf(target, self)
 
-    def get_default_target(self, relationship: Context) -> Selector | None:
-        return self.cells[0].get_default_target(relationship)
+    def get_default_target(self, ctx: Context) -> Selector | None:
+        return self.cells[0].get_default_target(ctx)
 
     @overload
     def __rshift__(

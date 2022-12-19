@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 from dataclasses import dataclass
 from functools import reduce
-from typing import Any, Awaitable, Callable, MutableMapping, TypeVar, overload
+from typing import Any, Awaitable, Callable, TypeVar, overload
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias
 
@@ -18,11 +18,11 @@ from .signature import ArtifactSignature, Bounds, Impl
 @dataclass(unsafe_hash=True)
 class Scope:
     land: str
-    mainline: str | None = None
+    scene: str | None = None
     self: str | None = None
 
 
-Artifacts: TypeAlias = "MutableMapping[ArtifactSignature, Any]"
+Artifacts: TypeAlias = "dict[ArtifactSignature, Any]"
 
 ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
 

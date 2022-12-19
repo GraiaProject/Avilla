@@ -1,12 +1,9 @@
 from __future__ import annotations
 
-from typing import ClassVar
-
-from avilla.core.abstract.trait.context import wrap_namespace
+from avilla.core.abstract.trait.context import wrap_artifacts
 from avilla.core.application import Avilla
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
-from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.event_parser import ElizabethEventParser
 from avilla.elizabeth.message_deserializer import ElizabethMessageDeserializer
@@ -42,7 +39,7 @@ class ElizabethProtocol(BaseProtocol):
     ]
     """
 
-    with wrap_namespace() as impl_namespace:
+    with wrap_artifacts() as artifacts:
         import avilla.elizabeth.impl as _
         import avilla.elizabeth.impl.friend as _
         import avilla.elizabeth.impl.group as _

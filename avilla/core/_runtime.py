@@ -24,7 +24,7 @@ def get_current_avilla() -> Avilla:
     if protocol:
         return protocol.avilla
     context = ctx_context.get(None)
-    if relationship:
+    if context:
         return context.protocol.avilla
     raise RuntimeError("no any current avilla")
 

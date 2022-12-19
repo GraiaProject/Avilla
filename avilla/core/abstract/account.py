@@ -24,14 +24,14 @@ class AbstractAccount(ABC):
         self.protocol = protocol
 
     @abstractmethod
-    async def get_relationship(self, target: Selector, *, via: Selector | None = None) -> Context:
+    async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
         ...
 
     @abstractmethod
     async def call(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         ...
 
-    def get_self_relationship(self):
+    def get_self_context(self):
         from avilla.core.context import Context
 
         return Context(

@@ -42,17 +42,17 @@ _Describe: TypeAlias = "type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tup
 
 
 async def _query_depth_generator(
-    rs: Context,
+    context: Context,
     current: Querier,
     predicate: Selector,
     upper_generator: AsyncGenerator[Selector, None] | None = None,
 ):
     if upper_generator is not None:
         async for i in upper_generator:
-            async for j in current(rs, i, predicate):
+            async for j in current(context, i, predicate):
                 yield j
     else:
-        async for j in current(rs, None, predicate):
+        async for j in current(context, None, predicate):
             yield j
 
 

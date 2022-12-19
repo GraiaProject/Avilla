@@ -9,6 +9,7 @@ from avilla.core._runtime import ctx_context, ctx_protocol
 from avilla.core.abstract.account import AbstractAccount
 from avilla.core.abstract.event import AvillaEvent
 from avilla.core.context import Context
+from avilla.core.protocol import BaseProtocol
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -27,9 +28,18 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
 
         if interface.annotation is Avilla:
             return self.avilla
-        elif interface.annotation in self.avilla._protocol_map:
+        if interface.annotation in self.avilla._protocol_map:
             return self.avilla._protocol_map[interface.annotation]
-        elif isinstance(interface.event, AvillaEvent):
-            if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
-                rs: Context = interface.local_storage["relationship"]
-                return rs.account
+        if (
+            isclass(interface.annotation)
+            and issubclass(interface.annotation, BaseProtocol)
+            and isinstance(ctx_protocol.get(None), interface.annotation)
+        ):
+            return ctx_protocol.get(None)
+        if (
+            isinstance(interface.event, AvillaEvent)
+            and isclass(interface.annotation)
+            and issubclass(interface.annotation, AbstractAccount)
+        ):
+            ctx: Context = interface.local_storage["avilla_context"]
+            return ctx.account

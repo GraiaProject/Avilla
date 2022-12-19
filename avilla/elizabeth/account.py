@@ -15,21 +15,21 @@ if TYPE_CHECKING:
 class ElizabethAccount(AbstractAccount):
     protocol: ElizabethProtocol
 
-    async def get_relationship(self, target: Selector, *, via: Selector | None = None) -> Context:
+    async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
         # TODO: 对象存在性检查
         if "land" not in target:
             target = Selector().mixin(f"land.{target.path}", target)
         if target.path == "land.group":
-            return Context(self.protocol, target, target, target.copy().member(self.id), self)
+            return Context(self, target, target, target.copy().member(self.id), self.to_selector())
         elif target.path == "land.friend":
-            return Context(self.protocol, target, target, self.to_selector(), self)
+            return Context(self, target, target, self.to_selector(), self.to_selector())
         elif target.path == "land.group.member":
             return Context(
-                self.protocol,
+                self,
                 target,
                 Selector().land(self.land.name).group(target.pattern["group"]),
                 Selector().land(self.land.name).group(target.pattern["group"]).member(self.id),
-                self,
+                self.to_selector(),
             )
         else:
             raise NotImplementedError()

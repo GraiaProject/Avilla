@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from avilla.core.resource import Resource
+from avilla.core.abstract.resource import Resource
 from avilla.core.utilles.selector import Selector
+from avilla.core.context import ContextSceneSelector
 
 
 class ElizabethResource(Resource[bytes]):
     url: str | None = None
     path: str | None = None
     base64: str | None = None
-    mainline: Selector | None = None
+    scene: ContextSceneSelector | None = None
 
     def __init__(
         self,
@@ -16,13 +17,13 @@ class ElizabethResource(Resource[bytes]):
         url: str | None = None,
         path: str | None = None,
         base64: str | None = None,
-        mainline: Selector | None = None,
+        scene: ContextSceneSelector | None = None,
     ) -> None:
         self.id = id
         self.url = url
         self.path = path
         self.base64 = base64
-        self.mainline = mainline
+        self.scene = scene
 
     @property
     def type(self) -> str:
@@ -30,7 +31,7 @@ class ElizabethResource(Resource[bytes]):
 
     @property
     def selector(self) -> Selector:
-        return (self.mainline.copy() if self.mainline is not None else Selector()).appendix(self.type, self.id)
+        return (self.scene.copy() if self.scene is not None else Selector()).appendix(self.type, self.id)
 
 
 class ElizabethImageResource(ElizabethResource):
@@ -48,10 +49,10 @@ class ElizabethAudioResource(ElizabethResource):
         url: str | None = None,
         path: str | None = None,
         base64: str | None = None,
-        mainline: Selector | None = None,
+        scene: ContextSceneSelector | None = None,
         length: int | None = None,
     ) -> None:
-        super().__init__(id, url, path, base64, mainline)
+        super().__init__(id, url, path, base64, scene)
         self.length = length
 
     @property
