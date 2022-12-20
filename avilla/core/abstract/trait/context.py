@@ -28,8 +28,8 @@ ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
 
 
 @contextmanager
-def wrap_artifacts(*upstraem_artifacts: Artifacts):
-    artifacts = reduce(lambda a, b: {**a, **b}, upstraem_artifacts)
+def wrap_artifacts(*upstream_artifacts: Artifacts):
+    artifacts = reduce(lambda a, b: {**a, **b}, upstream_artifacts)
     token = ctx_artifacts.set(artifacts)
     yield artifacts
     ctx_artifacts.reset(token)

@@ -70,11 +70,11 @@ class Avilla:
         return self.broadcast.loop
 
     def register_global_artifact(self, signature: ArtifactSignature):
-        def warpper(v):
+        def wrapper(v):
             self.global_artifacts[signature] = v
             return v
 
-        return warpper
+        return wrapper
 
     def add_account(self, account: AbstractAccount):
         if account in self.accounts:

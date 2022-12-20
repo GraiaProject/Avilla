@@ -42,14 +42,12 @@ class MetadataBound(Generic[_DescribeT]):
 class MetadataMeta(type):
     @overload
     def __rshift__(cls: type[_MetadataT1], other: type[_MetadataT2]) -> MetadataRoute[_MetadataT1, _MetadataT2]:
-        # sourcery skip: instance-method-first-arg-name
         ...
 
     @overload
     def __rshift__(
         cls: type[_MetadataT1], other: MetadataRoute[Unpack[_TVT1]]
     ) -> MetadataRoute[_MetadataT1, Unpack[_TVT1]]:
-        # sourcery skip: instance-method-first-arg-name
         ...
 
     def __rshift__(cls: Any, other: type[Metadata] | MetadataRoute) -> MetadataRoute:

@@ -14,6 +14,8 @@ AVILLA_ASCII_LOGO = cleandoc(
     /_/   \_\_/ |_|_|_|\__,_|
     """
 )
+AVILLA_ASCII_RAW_LOGO = re.sub(r"\[.*?\]", "", AVILLA_ASCII_LOGO)
+
 
 import random
 
@@ -21,9 +23,9 @@ if random.choice((True, False)):
     AVILLA_ASCII_LOGO += "\n"
     AVILLA_ASCII_LOGO += "[dim]when will I be able to find a place that can be my second hometown...?[/]"
 
-    logger.debug("[dim]but no matter what, the most important thing for me is always to be with my only loved one, so that the journey will not be lonely.[/]")
-
-AVILLA_ASCII_RAW_LOGO = re.sub(r"\[.*?\]", "", AVILLA_ASCII_LOGO)
+    logger.debug(
+        "[dim]but no matter what, the most important thing for me is always to be with my only loved one, so that the journey will not be lonely.[/]"
+    )
 
 
 GRAIA_PROJECT_REPOS = [

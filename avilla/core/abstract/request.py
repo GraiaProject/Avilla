@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from avilla.core.platform import Land
 
 from ...spec.core.request.skeleton import RequestTrait
-
 from .metadata import Metadata
 
 if TYPE_CHECKING:

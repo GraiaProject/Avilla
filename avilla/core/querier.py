@@ -43,7 +43,7 @@ class AbstractQueryHandler:
         cls.prefix = prefix
         for mro in reversed(inspect.getmro(cls)):
             if issubclass(mro, AbstractQueryHandler):
-                cls.queriers.update(mro.queriers)
+                cls.queriers |= mro.queriers
         members = inspect.getmembers(cls, predicate=inspect.isfunction)
         for _, value in members:
             if hasattr(value, "__query_key__"):
