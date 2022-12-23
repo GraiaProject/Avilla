@@ -90,6 +90,10 @@ class Selector:
     def latest_key(self) -> str:
         return list(self.pattern.keys())[-1]
 
+    @property
+    def latest_value(self) -> str:
+        return list(self.pattern.values())[-1]
+
     def land(self, land: Land | str):
         if isinstance(land, Land):
             land = land.name
