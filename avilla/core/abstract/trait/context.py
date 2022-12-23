@@ -11,8 +11,15 @@ from ..resource import Resource
 
 from ...context import Context
 from ...utilles.selector import Selector
-from ..metadata import Metadata, MetadataBound, MetadataRoute
-from . import BoundFn, Fn, FnCall, Trait, UnappliedFnCall
+from ..metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
+from . import (
+    Fn,
+    FnCall,
+    Trait,
+    UnappliedEntityFnCall,
+    UnappliedMetadataFnCall,
+    UnappliedUniversalFnCall,
+)
 from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, VisibleConf
 
 
@@ -71,6 +78,7 @@ def bounds(bound: str | MetadataBound, check: bool = True):
     parent[Bounds(bound)] = override_artifacts
     ctx_artifacts.reset(token)
 
+
 @contextmanager
 def visible(checker: Callable[[Context], bool]):
     parent = get_artifacts()
@@ -91,14 +99,28 @@ RecordCallable = Callable[[_T], _T]
 
 
 @overload
-def implement(fn_call: FnCall[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, _P], Awaitable[_T_co]]]:
+def implement(
+    fn_call: UnappliedEntityFnCall[_P, _T_co]
+) -> RecordCallable[Callable[Concatenate[Context, Selector, _P], Awaitable[_T_co]]]:
     ...
 
 
 @overload
 def implement(
-    fn_call: UnappliedFnCall[_P, _T_co]
-) -> RecordCallable[Callable[Concatenate[Context, Selector | MetadataBound, _P], Awaitable[_T_co]]]:
+    fn_call: UnappliedMetadataFnCall[_P, _T_co]
+) -> RecordCallable[Callable[Concatenate[Context, MetadataOf, _P], Awaitable[_T_co]]]:
+    ...
+
+
+@overload
+def implement(
+    fn_call: UnappliedUniversalFnCall[_P, _T_co]
+) -> RecordCallable[Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T_co]]]:
+    ...
+
+
+@overload
+def implement(fn_call: FnCall[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, _P], Awaitable[_T_co]]]:
     ...
 
 
@@ -113,9 +135,10 @@ def implement(fn_call: FnCall) -> ...:
 
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 
-def pull(route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]) -> RecordCallable[
-    Callable[[Context, Selector], Awaitable[_MetadataT]]
-]:
+
+def pull(
+    route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
+) -> RecordCallable[Callable[[Context, Selector], Awaitable[_MetadataT]]]:
     def wrapper(artifact):
         artifacts = get_artifacts()
         artifacts[Pull(route)] = artifact
@@ -123,9 +146,8 @@ def pull(route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _Metad
 
     return wrapper
 
-def fetch(resource: type[Resource[_T]]) -> RecordCallable[
-    Callable[[Context, Resource[_T]], Awaitable[_T]]
-]:
+
+def fetch(resource: type[Resource[_T]]) -> RecordCallable[Callable[[Context, Resource[_T]], Awaitable[_T]]]:
     def wrapper(artifact):
         artifacts = get_artifacts()
         artifacts[ResourceFetch(resource)] = artifact
@@ -133,5 +155,6 @@ def fetch(resource: type[Resource[_T]]) -> RecordCallable[
 
     return wrapper
 
+
 def complete_rule():
-    ... # TODO
+    ...  # TODO

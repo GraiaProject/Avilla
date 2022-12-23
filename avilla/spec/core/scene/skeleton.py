@@ -5,15 +5,15 @@ from avilla.core.utilles.selector import Selector
 
 
 class SceneTrait(Trait):
-    @Fn.bound
+    @Fn.bound_entity
     async def leave(self) -> None:
         ...
 
-    @Fn.bound
+    @Fn.bound_entity
     async def disband(self) -> None:
         ...
 
-    @Fn.bound
+    @Fn.bound_entity
     async def remove_member(self, reason: str | None = None) -> None:
         ...
 

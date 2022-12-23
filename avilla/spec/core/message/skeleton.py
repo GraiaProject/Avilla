@@ -9,13 +9,13 @@ from avilla.core.utilles.selector import Selector
 
 
 class MessageSend(Trait):
-    @Fn.bound
+    @Fn.bound_entity
     async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:
         ...
 
 
 class MessageRevoke(Trait):
-    @Fn.bound
+    @Fn.bound_entity
     async def revoke(self) -> None:
         ...
 

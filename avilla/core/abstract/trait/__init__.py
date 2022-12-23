@@ -82,8 +82,20 @@ class Fn(Generic[_P, _T]):
         return partial(cls.__new__, **kwargs)
 
     @classmethod
-    def bound(cls, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]) -> BoundFn[_P1, _T1]:
-        return BoundFn(schema)
+    def bound_entity(cls, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]) -> BoundEntityFn[_P1, _T1]:
+        return BoundEntityFn(schema)
+
+    @classmethod
+    def bound_metadata(
+        cls, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]
+    ) -> BoundMetadataFn[_P1, _T1]:
+        return BoundMetadataFn(schema)
+
+    @classmethod
+    def bound_universal(
+        cls, schema: Callable[Concatenate[_TboundTrait, _P1], Awaitable[_T1]]
+    ) -> BoundUniversalFn[_P1, _T1]:
+        return BoundUniversalFn(schema)
 
 
 class FnCall(Generic[_P, _T]):
@@ -109,7 +121,7 @@ class FnCall(Generic[_P, _T]):
         return await impl(self.trait.context, *args, **kwargs)
 
 
-class BoundFn(Fn[_P, _T]):
+class BoundFnCommon(Fn[_P, _T]):
     @overload
     def __init__(self, schema: Callable[Concatenate[_TboundTrait, _P], Awaitable[_T]]):
         ...
@@ -121,59 +133,170 @@ class BoundFn(Fn[_P, _T]):
     def __init__(self, schema: Any):
         self.schema = schema
 
+class BoundEntityFn(BoundFnCommon[_P, _T]):
     def __repr__(self) -> str:
-        return f"<Fn bound-required async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
+        return f"<Fn bound-required entity async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
 
     @overload
-    def __get__(self, instance: Trait, owner: type[Trait]) -> AppliedFnCall[_P, _T]:
+    def __get__(self, instance: Trait, owner: type[Trait]) -> AppliedEntityFnCall[_P, _T]:
         ...
 
     @overload
-    def __get__(self, instance: Any, owner: type[Trait]) -> UnappliedFnCall[_P, _T]:
+    def __get__(self, instance: Any, owner: type[Trait]) -> UnappliedEntityFnCall[_P, _T]:
         ...
 
     @overload
     def __get__(self, instance: Any, owner: type) -> Self:
         ...
 
-    def __get__(self, instance: Any, owner: type) -> Self | UnappliedFnCall | AppliedFnCall:
+    def __get__(self, instance: Any, owner: type):
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
-                return UnappliedFnCall(instance, self)
-            return AppliedFnCall(instance, self)
+                return UnappliedEntityFnCall(instance, self)
+            return AppliedEntityFnCall(instance, self)
         return self
 
 
-class UnappliedFnCall(FnCall[_P, _T]):
+class BoundMetadataFn(BoundFnCommon[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall unbounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<Fn bound-required metadata async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
+
+    @overload
+    def __get__(self, instance: Trait, owner: type[Trait]) -> AppliedMetadataFnCall[_P, _T]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type[Trait]) -> UnappliedMetadataFnCall[_P, _T]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type) -> Self:
+        ...
+
+    def __get__(self, instance: Any, owner: type):
+        if issubclass(owner, Trait):
+            if isinstance(instance, Trait):
+                return UnappliedMetadataFnCall(instance, self)
+            return AppliedMetadataFnCall(instance, self)
+        return self
+
+
+class BoundUniversalFn(BoundFnCommon[_P, _T]):
+    def __repr__(self) -> str:
+        return f"<Fn bound-required universal async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
+
+    @overload
+    def __get__(self, instance: Trait, owner: type[Trait]) -> AppliedUniversalFnCall[_P, _T]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type[Trait]) -> UnappliedUniversalFnCall[_P, _T]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type) -> Self:
+        ...
+
+    def __get__(self, instance: Any, owner: type):
+        if issubclass(owner, Trait):
+            if isinstance(instance, Trait):
+                return UnappliedUniversalFnCall(instance, self)
+            return AppliedUniversalFnCall(instance, self)
+        return self
+
+
+class UnappliedEntityFnCall(FnCall[_P, _T]):
+    def __repr__(self) -> str:
+        return f"<FnCall unbounded entity async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+
+    async def __call__(self, target: Selector, *args: _P.args, **kwargs: _P.kwargs):
+        bounding = target.path_without_land
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        if impl is None:
+            raise NotImplementedError(
+                f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
+            )
+        impl = cast("Callable[Concatenate[Context, Selector, _P], Awaitable[_T]]", impl)
+        return await impl(self.trait.context, target, *args, **kwargs)
+
+
+class UnappliedMetadataFnCall(FnCall[_P, _T]):
+    def __repr__(self) -> str:
+        return f"<FnCall unbounded metadata async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+
+    async def __call__(self, target: MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
+        bounding = target.to_bounding()
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        if impl is None:
+            raise NotImplementedError(
+                f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
+            )
+        impl = cast("Callable[Concatenate[Context, MetadataOf, _P], Awaitable[_T]]", impl)
+        return await impl(self.trait.context, target, *args, **kwargs)
+
+
+class UnappliedUniversalFnCall(FnCall[_P, _T]):
+    def __repr__(self) -> str:
+        return f"<FnCall unbounded universal async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: Selector | MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
         bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(
-            Impl(self.fn)
-        )  # TODO: Signature for Fn refactor
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
-                f'"{identity(self.trait)}::{self.fn.identity}" ' f'for target "{bounding}" ' "is not implemented."
+                f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
         impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.context, target, *args, **kwargs)
 
 
-class AppliedFnCall(FnCall[_P, _T]):
+class AppliedEntityFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall bounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall bounded entity async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+
+    async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
+        target = self.trait.bound
+        if not isinstance(target, Selector):
+            raise TypeError(f'"{identity(self.trait)}::{self.fn.identity}" expected bounds with a entity.')
+        bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        if impl is None:
+            raise NotImplementedError(
+                f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
+            )
+        impl = cast("Callable[Concatenate[Context, Selector, _P], Awaitable[_T]]", impl)
+        return await impl(self.trait.context, target, *args, **kwargs)
+
+
+class AppliedMetadataFnCall(FnCall[_P, _T]):
+    def __repr__(self) -> str:
+        return f"<FnCall bounded metadata async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+
+    async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
+        target = self.trait.bound
+        if not isinstance(target, MetadataOf):
+            raise TypeError(f'"{identity(self.trait)}::{self.fn.identity}" expected bounds with a metadata referring.')
+        bounding = target.to_bounding()
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        if impl is None:
+            raise NotImplementedError(
+                f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
+            )
+        impl = cast("Callable[Concatenate[Context, MetadataOf, _P], Awaitable[_T]]", impl)
+        return await impl(self.trait.context, target, *args, **kwargs)
+
+
+class AppliedUniversalFnCall(FnCall[_P, _T]):
+    def __repr__(self) -> str:
+        return f"<FnCall bounded universal async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
         target = self.trait.bound
         bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(
-            Impl(self.fn)
-        )  # TODO: Signature for Fn refactor
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
-                f'"{identity(self.trait)}::{self.fn.identity}" ' f'for target "{bounding}" ' "is not implemented."
+                f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
         impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.context, target, *args, **kwargs)
