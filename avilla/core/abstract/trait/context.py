@@ -12,7 +12,7 @@ from ..resource import Resource
 from ...context import Context
 from ...utilles.selector import Selector
 from ..metadata import Metadata, MetadataBound, MetadataRoute
-from . import BoundFn, Fn, Trait
+from . import BoundFn, Fn, FnCall, Trait, UnappliedFnCall
 from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, VisibleConf
 
 
@@ -91,21 +91,21 @@ RecordCallable = Callable[[_T], _T]
 
 
 @overload
-def implement(fn: Fn[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, _P], Awaitable[_T_co]]]:
+def implement(fn_call: FnCall[_P, _T_co]) -> RecordCallable[Callable[Concatenate[Context, _P], Awaitable[_T_co]]]:
     ...
 
 
 @overload
 def implement(
-    fn: BoundFn[_P, _T_co]
+    fn_call: UnappliedFnCall[_P, _T_co]
 ) -> RecordCallable[Callable[Concatenate[Context, Selector | MetadataBound, _P], Awaitable[_T_co]]]:
     ...
 
 
-def implement(fn: ...) -> ...:
+def implement(fn_call: FnCall) -> ...:
     def wrapper(artifact):
         artifacts = get_artifacts()
-        artifacts[Impl(fn)] = artifact
+        artifacts[Impl(fn_call.fn)] = artifact
         return artifact
 
     return wrapper
