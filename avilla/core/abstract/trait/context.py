@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from contextvars import ContextVar
-from dataclasses import dataclass
 from functools import reduce
-from typing import Any, Awaitable, Callable, TypeVar, overload
+from typing import Any, Awaitable, Callable, MutableMapping, TypeVar, overload
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
@@ -14,10 +13,10 @@ from ...context import Context
 from ...utilles.selector import Selector
 from ..metadata import Metadata, MetadataBound, MetadataRoute
 from . import BoundFn, Fn, Trait
-from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch
+from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, VisibleConf
 
 
-Artifacts: TypeAlias = "dict[ArtifactSignature, Any]"
+Artifacts: TypeAlias = "MutableMapping[ArtifactSignature, Any]"
 
 ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
 
@@ -70,6 +69,17 @@ def bounds(bound: str | MetadataBound, check: bool = True):
                 raise NotImplementedError(f"missing required implements {unimplemented!r}")
 
     parent[Bounds(bound)] = override_artifacts
+    ctx_artifacts.reset(token)
+
+@contextmanager
+def visible(checker: Callable[[Context], bool]):
+    parent = get_artifacts()
+    override_artifacts = {}
+    token = ctx_artifacts.set(override_artifacts)
+
+    yield
+
+    parent[VisibleConf(checker)] = override_artifacts
     ctx_artifacts.reset(token)
 
 

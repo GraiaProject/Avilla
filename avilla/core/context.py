@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import deque
+from collections import ChainMap, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from functools import cached_property
@@ -25,6 +25,7 @@ from avilla.core.abstract.trait.signature import (
     Pull,
     Query,
     ResourceFetch,
+    VisibleConf,
 )
 from avilla.core.platform import Land
 from avilla.core.utilles import classproperty
@@ -235,7 +236,11 @@ class Context:
     @cached_property
     def _impl_artifacts(self) -> Artifacts:
         # TODO: evaluate override
-        return self.protocol.implementations
+        m = [self.protocol.implementations]
+        for k, v in self.protocol.implementations.items():
+            if isinstance(k, VisibleConf) and k.checker(self):
+                m.append(v)
+        return ChainMap(*m[::-1])
 
     @property
     def request(self) -> ContextRequestSelector:

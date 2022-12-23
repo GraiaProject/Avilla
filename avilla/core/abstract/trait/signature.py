@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
+from typing import TYPE_CHECKING, Callable
+
 
 if TYPE_CHECKING:
     from ..metadata import Metadata, MetadataBound, MetadataRoute
     from ..resource import Resource
-    from ..trait import Fn, Trait
+    from ..trait import Fn
+    from ...context import Context
 
 
 class ArtifactSignature:
@@ -42,6 +44,10 @@ class CompleteRule(ArtifactSignature):
 class Query(ArtifactSignature):
     upper: str | None
     target: str
+
+@dataclass(unsafe_hash=True)
+class VisibleConf(ArtifactSignature):
+    checker: Callable[[Context], bool]
 
 
 """
