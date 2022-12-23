@@ -10,11 +10,12 @@ if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
 
     from avilla.core.context import Context
+    from ..protocol import ElizabethProtocol
 
 # raise_for_no_namespace()
 
 # with scope("qq", "friend"), prefix("friend"):
-with bounds("tencent_qq"):  # maybe problem
+with bounds("friend"):  # maybe problem
 
     # casts(MessageSend)
     # casts(MessageRevoke)
@@ -23,6 +24,8 @@ with bounds("tencent_qq"):  # maybe problem
     async def send_friend_message(
         ctx: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
+        if TYPE_CHECKING:
+            assert isinstance(ctx.protocol, ElizabethProtocol)
         serialized_msg = await ctx.protocol.serialize_message(message)
         result = await ctx.account.call(
             "sendFriendMessage",

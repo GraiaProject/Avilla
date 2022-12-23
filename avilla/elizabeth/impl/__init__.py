@@ -4,10 +4,9 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 
-from avilla.core.abstract.trait.context import bounds, get_artifacts
-from avilla.core.abstract.trait.recorder import fetch
+from avilla.core.abstract.trait.context import bounds, get_artifacts, fetch
 from avilla.core.abstract.trait.signature import CompleteRule
-from avilla.elizabeth.resource import ElizabethAudioResource, ElizabethImageResource
+from avilla.elizabeth.resource import ElizabethAudioResource, ElizabethImageResource, ElizabethResource
 
 # from graia.amnesia.transport.common.http import AbstractClientInterface
 
@@ -21,13 +20,13 @@ if TYPE_CHECKING:
 
 # with scope("group"), prefix("group"):
 #     completes("member", "group.member")
-with bounds("group"):  # maybe problem
+with bounds("group"):
     get_artifacts().setdefault(CompleteRule("member"), "group.member")
 
 
-@fetch(ElizabethImageResource)
+@fetch(ElizabethImageResource) # type: ignore
 @fetch(ElizabethAudioResource)
-async def fetch_from_url(ctx: Context, res: ElizabethAudioResource | ElizabethImageResource) -> bytes:
+async def fetch_from_url(ctx: Context, res: ElizabethResource) -> bytes:
     if not res.url:
         raise NotImplementedError
     # print(ctx.avilla.launch_manager._service_bind)

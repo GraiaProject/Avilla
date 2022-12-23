@@ -5,8 +5,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.abstract.message import Message
-from avilla.core.abstract.trait.context import bounds, implement
-from avilla.core.abstract.trait.recorder import pull, query
+from avilla.core.abstract.trait.context import bounds, implement, pull
 from avilla.core.exceptions import permission_error_message
 from avilla.core.utilles.selector import Selector
 from avilla.spec.core.message import MessageRevoke, MessageSend
@@ -14,15 +13,16 @@ from avilla.spec.core.privilege import MuteAllTrait, MuteTrait, Privilege
 from avilla.spec.core.profile import Nick, Summary, SummaryTrait
 from avilla.spec.core.scene import SceneTrait
 
+from ...core.abstract.metadata import MetadataOf
+
 if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
 
+    from ..protocol import ElizabethProtocol
     from avilla.core.context import Context
 
-# raise_for_no_namespace()
 
-# with scope("qq", "group"), prefix("group"):
-with bounds("tencent_qq"):  # maybe problem
+with bounds("group"):
 
     # casts(MessageSend)
     # casts(MessageRevoke)
@@ -35,6 +35,8 @@ with bounds("tencent_qq"):  # maybe problem
     async def send_group_message(
         ctx: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
+        if TYPE_CHECKING:
+            assert isinstance(ctx.protocol, ElizabethProtocol)
         serialized_msg = await ctx.protocol.serialize_message(message)
         result = await ctx.account.call(
             "sendGroupMessage",
@@ -120,7 +122,7 @@ with bounds("tencent_qq"):  # maybe problem
             },
         )
 
-    @implement(SceneTrait.leave).pin("group")
+    @implement(SceneTrait.leave)
     async def leave(ctx: Context, target: Selector):
         await ctx.account.call("quit", {"__method__": "update", "target": int(target.pattern["group"])})
 
@@ -134,7 +136,7 @@ with bounds("tencent_qq"):  # maybe problem
             {"__method__": "update", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
 
-    @pull(Summary).of("group")
+    @pull(Summary)
     async def get_summary(ctx: Context, target: Selector | None) -> Summary:
         assert target is not None
         result = await ctx.account.call(
@@ -143,14 +145,17 @@ with bounds("tencent_qq"):  # maybe problem
         )
         return Summary(describe=Summary, name=result["name"], description=None)
 
-    @implement(SummaryTrait.set_name).pin("group")
-    async def group_set_name(ctx: Context, target: Selector, name: str):
+    @implement(SummaryTrait.set_name)
+    async def group_set_name(ctx: Context, target: Selector | MetadataOf, name: str):
+        SummaryTrait.set_name.assert_entity(target)
+        if TYPE_CHECKING:
+            assert isinstance(target, Selector)
         await ctx.account.call(
             "groupConfig",
             {"__method__": "update", "target": int(target.pattern["group"]), "config": {"name": name}},
         )
 
-    @pull(Privilege).of("group.member")
+    @pull(Privilege)
     async def group_get_privilege_info(ctx: Context, target: Selector | None) -> Privilege:
         self_info = await ctx.account.call(
             "memberInfo",
@@ -180,7 +185,10 @@ with bounds("tencent_qq"):  # maybe problem
             ),
         )
 
-    @pull(Privilege >> Summary).of("group.member")
+
+with bounds("group.member"):
+
+    @pull(Privilege >> Summary)
     async def group_get_privilege_summary_info(ctx: Context, target: Selector | None) -> Summary:
         privilege_trans = defaultdict(lambda: "group_member", {"OWNER": "group_owner", "ADMINISTRATOR": "group_admin"})
 
@@ -208,7 +216,7 @@ with bounds("tencent_qq"):  # maybe problem
             "the permission info of current account in the group",
         )
 
-    @pull(Nick).of("group.member")
+    @pull(Nick)
     async def get_member_nick(ctx: Context, target: Selector | None) -> Nick:
         assert target is not None
         result = await ctx.account.call(
@@ -217,6 +225,8 @@ with bounds("tencent_qq"):  # maybe problem
         )
         return Nick(Nick, result["memberName"], result["memberName"], result["specialTitle"])
 
+
+"""
     @query(None, "group")
     async def get_groups(ctx: Context, upper: None, predicate: Selector):
         result: list[dict] = await ctx.account.call("groupList", {"__method__": "fetch"})
@@ -234,3 +244,4 @@ with bounds("tencent_qq"):  # maybe problem
             member = Selector().group(str(i["group"]["id"])).member(str(i["id"]))
             if predicate.match(member):
                 yield member
+"""
