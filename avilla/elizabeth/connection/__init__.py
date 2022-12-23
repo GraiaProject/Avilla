@@ -9,7 +9,7 @@ from launart import Launchable, LaunchableStatus
 from loguru import logger
 from statv import Stats
 
-from avilla.core.event.lifecycle import AccountAvailable, AccountUnavailable
+from avilla.spec.core.application import AccountAvailable, AccountUnavailable
 
 from .config import HttpClientConfig, HttpServerConfig, T_Config
 from .config import U_Config as U_Config
