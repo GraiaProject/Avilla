@@ -8,12 +8,13 @@ from typing import (
     Awaitable,
     Callable,
     Generic,
+    NoReturn,
     TypeVar,
     cast,
     overload,
 )
 
-from typing_extensions import Concatenate, ParamSpec, Self
+from typing_extensions import Concatenate, ParamSpec, Self, TypeGuard
 
 from avilla.core.utilles import identity
 from avilla.core.utilles.selector import Selector
@@ -24,6 +25,15 @@ from .signature import Bounds, Impl
 if TYPE_CHECKING:
     from avilla.core.context import Context
 
+
+
+_P = ParamSpec("_P")
+_T = TypeVar("_T")
+
+_P1 = ParamSpec("_P1")
+_T1 = TypeVar("_T1")
+
+_TboundTrait = TypeVar("_TboundTrait", bound="Trait")
 
 class Trait:
     context: Context
@@ -36,16 +46,6 @@ class Trait:
     @classmethod
     def fn(cls) -> list[Fn]:
         return [fn for _, fn in inspect.getmembers(cls, lambda a: isinstance(a, Fn))]
-
-
-_P = ParamSpec("_P")
-_T = TypeVar("_T")
-
-_P1 = ParamSpec("_P1")
-_T1 = TypeVar("_T1")
-
-_TboundTrait = TypeVar("_TboundTrait", bound=Trait)
-
 
 class Fn(Generic[_P, _T]):
     trait: type[Trait]
@@ -248,6 +248,14 @@ class UnappliedUniversalFnCall(FnCall[_P, _T]):
             )
         impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
         return await impl(self.trait.context, target, *args, **kwargs)
+
+    def assert_entity(self, target: Selector | MetadataOf):
+        if not isinstance(target, Selector):
+            raise TypeError(f'"{identity(self.trait)}::{self.fn.identity}" expected bounds with a entity.')
+
+    def assert_metadata(self, target: Selector | MetadataOf):
+        if not isinstance(target, MetadataOf):
+            raise TypeError(f'"{identity(self.trait)}::{self.fn.identity}" expected bounds with a metadata referring.')
 
 
 class AppliedEntityFnCall(FnCall[_P, _T]):

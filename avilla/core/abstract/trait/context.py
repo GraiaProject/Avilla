@@ -146,8 +146,9 @@ def pull(
 
     return wrapper
 
+_ResourceT = TypeVar("_ResourceT", bound=Resource)
 
-def fetch(resource: type[Resource[_T]]) -> RecordCallable[Callable[[Context, Resource[_T]], Awaitable[_T]]]:
+def fetch(resource: type[_ResourceT]) -> RecordCallable[Callable[[Context, _ResourceT], Awaitable[Any]]]:
     def wrapper(artifact):
         artifacts = get_artifacts()
         artifacts[ResourceFetch(resource)] = artifact

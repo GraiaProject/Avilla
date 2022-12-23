@@ -18,7 +18,6 @@ from avilla.core.abstract.trait import Trait
 from avilla.core.abstract.trait.context import Artifacts
 
 # from avilla.core.abstract.trait.extension import ExtensionHandler
-from avilla.core.abstract.trait.recorder import Querier
 from avilla.core.abstract.trait.signature import (
     Bounds,
     CompleteRule,
@@ -39,12 +38,12 @@ _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 _DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
 _TraitT = TypeVar("_TraitT", bound=Trait)
 
+_Querier: TypeAlias = "Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]"
 _Describe: TypeAlias = "type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]"
-
 
 async def _query_depth_generator(
     context: Context,
-    current: Querier,
+    current: _Querier,
     predicate: Selector,
     upper_generator: AsyncGenerator[Selector, None] | None = None,
 ):
@@ -257,8 +256,8 @@ class Context:
 
     @classproperty
     @classmethod
-    def app_current(cls) -> Context | None:
-        return ctx_context.get(None)
+    def app_current(cls) -> Context:
+        return ctx_context.get()
 
     async def query(self, pattern: Selector, with_land: bool = False):
         querier_steps: list[Query] | None = _find_querier_steps(
@@ -268,7 +267,7 @@ class Context:
         if querier_steps is None:
             raise NotImplementedError(f'cannot query "{pattern.path_without_land}" due to unknown step calc.')
 
-        querier = cast("dict[Query, Querier]", {i: self._impl_artifacts[i] for i in querier_steps})
+        querier = cast("dict[Query, _Querier]", {i: self._impl_artifacts[i] for i in querier_steps})
         generators: list[AsyncGenerator[Selector, None]] = []
 
         past = []

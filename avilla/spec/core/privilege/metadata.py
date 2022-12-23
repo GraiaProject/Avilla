@@ -25,4 +25,4 @@ class Privilege(Metadata):
     available: bool
     effective: bool
 
-    duration: timedelta | None
+    duration: timedelta | None = None
