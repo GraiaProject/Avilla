@@ -235,7 +235,6 @@ class Context:
 
     @cached_property
     def _impl_artifacts(self) -> Artifacts:
-        # TODO: evaluate override
         m = [self.protocol.implementations]
         for k, v in self.protocol.implementations.items():
             if isinstance(k, VisibleConf) and k.checker(self):

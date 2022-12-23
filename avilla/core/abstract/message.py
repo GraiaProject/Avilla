@@ -19,10 +19,7 @@ if TYPE_CHECKING:
 class Message(Metadata):
     id: str
     scene: Selector
-    sender: Selector
-    content: MessageChain
     time: datetime
-    reply: Selector | None = None
 
     @property
     def land(self):
@@ -36,3 +33,10 @@ class Message(Metadata):
 
     async def revoke(self):
         return await self.rev().wrap(MessageRevoke).revoke()
+
+@dataclass
+class ChatMessage(Message):
+    sender: Selector
+    content: MessageChain
+    reply: Selector | None = None
+
