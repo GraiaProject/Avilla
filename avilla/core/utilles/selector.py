@@ -4,7 +4,6 @@ from collections import ChainMap
 from itertools import filterfalse
 from typing import (
     TYPE_CHECKING,
-    Any,
     Callable,
     Literal,
     Protocol,

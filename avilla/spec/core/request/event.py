@@ -10,7 +10,7 @@ from avilla.core.abstract.event import AvillaEvent
 from avilla.core.abstract.request import Request
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    pass
 
 
 @dataclass

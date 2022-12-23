@@ -4,7 +4,6 @@ import inspect
 from typing import (
     TYPE_CHECKING,
     AsyncGenerator,
-    AsyncIterator,
     Callable,
     ClassVar,
     Generic,
