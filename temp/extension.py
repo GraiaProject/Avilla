@@ -29,7 +29,7 @@ class ExtensionHandler:
     def __init__(self, rs: Context):
         self.rs = rs
 
-        self._artifacts = {k: v for k, v in rs._artifacts.items() if isinstance(k, ExtensionImpl)}
+        self._artifacts = {k: v for k, v in rs._impl_artifacts.items() if isinstance(k, ExtensionImpl)}
 
     def add_impl(self, signature: ExtensionImpl, impl: Callable[[Context, FnExtension], Awaitable[Any]]):
         self._artifacts[signature] = impl

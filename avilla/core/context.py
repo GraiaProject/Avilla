@@ -233,7 +233,7 @@ class Context:
         return self.protocol.land
 
     @cached_property
-    def _artifacts(self) -> Artifacts:
+    def _impl_artifacts(self) -> Artifacts:
         # TODO: evaluate override
         return self.protocol.implementations
 
@@ -258,13 +258,13 @@ class Context:
 
     async def query(self, pattern: Selector, with_land: bool = False):
         querier_steps: list[Query] | None = _find_querier_steps(
-            self._artifacts, pattern.path if with_land else pattern.path_without_land
+            self._impl_artifacts, pattern.path if with_land else pattern.path_without_land
         )
 
         if querier_steps is None:
             raise NotImplementedError(f'cannot query "{pattern.path_without_land}" due to unknown step calc.')
 
-        querier = cast("dict[Query, Querier]", {i: self._artifacts[i] for i in querier_steps})
+        querier = cast("dict[Query, Querier]", {i: self._impl_artifacts[i] for i in querier_steps})
         generators: list[AsyncGenerator[Selector, None]] = []
 
         past = []
@@ -283,7 +283,7 @@ class Context:
     # TODO: GraiaProject/Avilla#66
 
     def complete(self, selector: Selector, with_land: bool = False):
-        output_rule = self._artifacts.get(CompleteRule(selector.path_without_land))
+        output_rule = self._impl_artifacts.get(CompleteRule(selector.path_without_land))
         if output_rule is not None:
             output_rule = cast(str, output_rule)
             selector = Selector().mixin(output_rule, selector, self.endpoint, self.scene)
@@ -292,7 +292,7 @@ class Context:
         return selector
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        fetcher = self._artifacts.get(ResourceFetch(type(resource)))
+        fetcher = self._impl_artifacts.get(ResourceFetch(type(resource)))
         if fetcher is None:
             raise NotImplementedError(
                 f'cannot fetch "{resource.selector}" '
@@ -317,7 +317,7 @@ class Context:
             elif not route.has_params():
                 return cached[route]
 
-        pull_implement = self._artifacts.get(Bounds(target.path_without_land), {}).get(Pull(route))
+        pull_implement = self._impl_artifacts.get(Bounds(target.path_without_land), {}).get(Pull(route))
         if pull_implement is None:
             raise NotImplementedError(
                 f'cannot pull "{route}"'

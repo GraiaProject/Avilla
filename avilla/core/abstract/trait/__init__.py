@@ -98,7 +98,7 @@ class FnCall(Generic[_P, _T]):
         return f"<FnCall async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
-        impl = self.trait.context._artifacts.get(Impl(self.fn))
+        impl = self.trait.context._impl_artifacts.get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" '
@@ -150,7 +150,7 @@ class UnappliedFnCall(FnCall[_P, _T]):
 
     async def __call__(self, target: Selector | MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
         bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
-        impl = self.trait.context._artifacts.get(Bounds(bounding), {}).get(
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(
             Impl(self.fn)
         )  # TODO: Signature for Fn refactor
         if impl is None:
@@ -163,12 +163,12 @@ class UnappliedFnCall(FnCall[_P, _T]):
 
 class AppliedFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall unbounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall bounded async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
         target = self.trait.bound
         bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
-        impl = self.trait.context._artifacts.get(Bounds(bounding), {}).get(
+        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(
             Impl(self.fn)
         )  # TODO: Signature for Fn refactor
         if impl is None:

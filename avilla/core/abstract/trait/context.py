@@ -6,20 +6,15 @@ from dataclasses import dataclass
 from functools import reduce
 from typing import Any, Awaitable, Callable, TypeVar, overload
 
-from typing_extensions import Concatenate, ParamSpec, TypeAlias
+from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
+
+from ..resource import Resource
 
 from ...context import Context
 from ...utilles.selector import Selector
-from ..metadata import MetadataBound
+from ..metadata import Metadata, MetadataBound, MetadataRoute
 from . import BoundFn, Fn, Trait
-from .signature import ArtifactSignature, Bounds, Impl
-
-
-@dataclass(unsafe_hash=True)
-class Scope:
-    land: str
-    scene: str | None = None
-    self: str | None = None
+from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch
 
 
 Artifacts: TypeAlias = "dict[ArtifactSignature, Any]"
@@ -104,3 +99,29 @@ def implement(fn: ...) -> ...:
         return artifact
 
     return wrapper
+
+
+_MetadataT = TypeVar("_MetadataT", bound=Metadata)
+
+def pull(route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]) -> RecordCallable[
+    Callable[[Context, Selector], Awaitable[_MetadataT]]
+]:
+    def wrapper(artifact):
+        artifacts = get_artifacts()
+        artifacts[Pull(route)] = artifact
+        return artifact
+
+    return wrapper
+
+def fetch(resource: type[Resource[_T]]) -> RecordCallable[
+    Callable[[Context, Resource[_T]], Awaitable[_T]]
+]:
+    def wrapper(artifact):
+        artifacts = get_artifacts()
+        artifacts[ResourceFetch(resource)] = artifact
+        return artifact
+
+    return wrapper
+
+def complete_rule():
+    ... # TODO
