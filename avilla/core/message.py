@@ -29,7 +29,7 @@ class Message(Metadata):
         return Land(cast(str, self.scene.pattern.get("land")))
 
     def to_selector(self) -> Selector:
-        return self.scene.copy().message(self.id)
+        return self.scene.message(self.id)
 
     def rev(self):
         return self.to_selector().rev()

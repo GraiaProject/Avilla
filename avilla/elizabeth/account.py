@@ -18,9 +18,9 @@ class ElizabethAccount(AbstractAccount):
     async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
         # TODO: 对象存在性检查
         if "land" not in target:
-            target = Selector().mixin(f"land.{target.path}", target)
+            target = target.land(self.protocol.land)
         if target.path == "land.group":
-            return Context(self, target, target, target.copy().member(self.id), self.to_selector())
+            return Context(self, target, target, target.member(self.id), self.to_selector())
         elif target.path == "land.friend":
             return Context(self, target, target, self.to_selector(), self.to_selector())
         elif target.path == "land.group.member":

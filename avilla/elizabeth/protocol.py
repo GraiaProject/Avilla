@@ -87,7 +87,7 @@ class ElizabethProtocol(BaseProtocol):
             if isinstance(element, Text):
                 result.append({"type": "Plain", "text": element.text})
             elif isinstance(element, Notice):
-                result.append({"type": "At", "target": int(element.target.latest_value)})
+                result.append({"type": "At", "target": int(element.target.last_value)})
             elif isinstance(element, NoticeAll):
                 result.append({"type": "AtAll"})
             elif isinstance(element, Picture):

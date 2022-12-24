@@ -55,7 +55,7 @@ class Request(Metadata):
         request_id = self.id
         if self.request_type is not None:
             request_id = f"{self.request_type}:{request_id}"
-        return self.scene.copy().request(request_id)
+        return self.scene.request(request_id)
 
     def rev(self):
         return self.to_selector().rev()

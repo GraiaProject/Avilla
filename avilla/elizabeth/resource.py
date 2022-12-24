@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from avilla.core.resource import Resource
 from avilla.core.context import ContextSceneSelector
+from avilla.core.resource import Resource
 from avilla.core.selector import Selector
 
 
@@ -31,7 +31,7 @@ class ElizabethResource(Resource[bytes]):
 
     @property
     def selector(self) -> Selector:
-        return (self.scene.copy() if self.scene is not None else Selector()).appendix(self.type, self.id)
+        return (self.scene or Selector()).appendix(self.type, self.id)
 
 
 class ElizabethImageResource(ElizabethResource):

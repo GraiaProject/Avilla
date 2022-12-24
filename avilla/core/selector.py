@@ -2,7 +2,16 @@ from __future__ import annotations
 
 from collections import ChainMap
 from itertools import filterfalse
-from typing import TYPE_CHECKING, Callable, Literal, Protocol, Union, runtime_checkable
+from types import MappingProxyType
+from typing import (
+    TYPE_CHECKING,
+    Callable,
+    Literal,
+    Mapping,
+    Protocol,
+    Union,
+    runtime_checkable,
+)
 
 from typing_extensions import Self
 
@@ -14,22 +23,17 @@ if TYPE_CHECKING:
 
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
-
+EMPTY_MAP = MappingProxyType({})
 
 class Selector:
-    mode: MatchRule = "exact"
-    pattern: dict[str, str]
-    path_excludes: frozenset[str]
+    pattern: Mapping[str, str]
 
-    def __init__(self, *, mode: MatchRule = "exact", path_excludes: frozenset[str] = frozenset()) -> None:
-        self.mode = mode
-        self.path_excludes = path_excludes
-        self.pattern = {}
+    def __init__(self, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
+        self.pattern = MappingProxyType({**pattern})
 
     def __getattr__(self, name: str) -> Callable[[str], Self]:
         def wrapper(content: str) -> Self:
-            self.pattern[name] = content
-            return self
+            return Selector(pattern={**self.pattern, name: content})
 
         return wrapper
 
@@ -46,7 +50,7 @@ class Selector:
         return self.pattern[key]
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(mode={self.mode}).{'.'.join(f'{k}({v})' for k, v in self.pattern.items())}"
+        return f"{self.__class__.__name__}().{'.'.join(f'{k}({v})' for k, v in self.pattern.items())}"
 
     @property
     def empty(self) -> bool:
@@ -54,49 +58,30 @@ class Selector:
 
     @property
     def path(self) -> str:
-        return ".".join(filterfalse(self.path_excludes.__contains__, self.pattern))
+        return ".".join(self.pattern)
 
     @property
     def path_without_land(self) -> str:
-        return ".".join(filterfalse((self.path_excludes | {"land"}).__contains__, self.pattern))
-
-    @classmethod
-    def exist(cls) -> Self:
-        return cls(mode="exist")
-
-    @classmethod
-    def any(cls) -> Self:
-        return cls(mode="any")
-
-    @classmethod
-    def fragment(cls, *path_excludes: str) -> Self:
-        return cls(mode="fragment", path_excludes=frozenset(path_excludes))
-
-    @classmethod
-    def from_dict(cls, pattern: dict) -> Self:
-        instance = cls()
-        instance.pattern = pattern
-        return instance
+        return ".".join(filterfalse(lambda x: x != "land", self.pattern))
 
     @property
-    def _(self):
-        return self.copy()
+    def last_key(self) -> str:
+        return next(reversed(self.pattern.keys()))
 
     @property
-    def latest_key(self) -> str:
-        return list(self.pattern.keys())[-1]
+    def last_value(self) -> str:
+        return next(reversed(self.pattern.values()))
 
-    @property
-    def latest_value(self) -> str:
-        return list(self.pattern.values())[-1]
+    def appendix(self, key: str, value: str):
+        return Selector(pattern={**self.pattern, key: value})
 
     def land(self, land: Land | str):
         if isinstance(land, Land):
             land = land.name
-        self.pattern["land"] = land
-        return self
 
-    def matches(self, other: Selectable) -> bool:
+        return Selector({"land": land, **self.pattern})
+
+    def matches(self, other: Selectable, *, mode: MatchRule = "exact") -> bool:
         if not isinstance(other, Selector):
             if not isinstance(other, Selectable):
                 return False
@@ -108,9 +93,9 @@ class Selector:
                 "exist": self._match_exist,
                 "fragment": self._match_fragment,
                 "startswith": self._match_startswith,
-            }[self.mode]
+            }[mode]
         except KeyError:
-            raise ValueError(f"Unknown match rule: {self.mode}") from None
+            raise ValueError(f"Unknown match rule: {mode}") from None
 
         return match(other)
 
@@ -142,34 +127,8 @@ class Selector:
 
         return all(fragment[i] == full[i] for i in range(len(fragment)))
 
-    def mix(self, path: str, **pattern: str) -> Self:
-        pattern = self.pattern | pattern
-        instance = self.__class__(mode=self.mode, path_excludes=self.path_excludes)
-
-        try:
-            instance.pattern = {each: pattern[each] for each in path.split(".")}
-        except KeyError:
-            raise ValueError(f"given information cannot mix with {path}") from None
-
-        return instance
-
-    def mixin(self, path: str, *selectors: Self) -> Self:
-        return self.mix(path, **ChainMap(*(x.pattern for x in selectors)))
-
-    def appendix(self, key: str, value: str) -> Self:
-        self.pattern[key] = value
-        return self
-
-    def copy(self) -> Self:
-        instance = self.__class__(mode=self.mode, path_excludes=self.path_excludes)
-        instance.pattern = self.pattern.copy()
-        return instance
-
     def as_dyn(self) -> DynamicSelector:
-        instance = DynamicSelector(mode=self.mode, path_excludes=self.path_excludes)
-        for k, v in self.pattern.items():
-            getattr(instance, k)(v)
-        return instance
+        return DynamicSelector(self.pattern)
 
     def to_selector(self):
         return self

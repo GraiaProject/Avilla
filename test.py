@@ -30,14 +30,8 @@ avilla = Avilla(broadcast, [protocol], [AiohttpClientService()])
 
 @broadcast.receiver(MessageReceived)
 async def on_message_received(event: MessageReceived, rs: Context, account: AbstractAccount):
-    print(
-        event,
-        rs,
-        rs.client.pattern,
-        DynamicSelector(mode="exist").member(lambda x: x == "1846913566").matches(rs.client),
-    )
     print(await rs.pull(Privilege >> Summary, rs.client))
-    if DynamicSelector.fragment().group("*").member("1846913566").matches(rs.client):
+    if rs.client.follows("group.member(1846913566)"):
         # await rs.exec(MessageSend([
         #    "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
         # ]))
@@ -56,9 +50,9 @@ async def on_message_received(event: MessageReceived, rs: Context, account: Abst
         #        "\n本消息将于 10s 后撤回",
         #    ]
         # )
-        print(await rs.wrap(MuteTrait).mute(rs.scene.copy().member("3542335634"), timedelta(minutes=10)))
+        print(await rs.wrap(MuteTrait).mute(rs.scene.member("3542335634"), timedelta(minutes=10)))
         await asyncio.sleep(2)
-        print(await rs.wrap(MuteTrait).unmute(rs.scene.copy().member("3542335634")))
+        print(await rs.wrap(MuteTrait).unmute(rs.scene.member("3542335634")))
         # c = await rs.cast(MessageTrait).revoke(r)
         # print("1")
         # async for i in rs.query(DynamicSelector().group("*").member("*")):

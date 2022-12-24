@@ -4,7 +4,7 @@ from collections import ChainMap, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, TypeVar, cast, overload
+from typing import Any, Mapping, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, Text, __message_chain_class__
 from typing_extensions import Self, TypeAlias, Unpack
@@ -15,6 +15,7 @@ from avilla.core.message import Message
 from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
+from avilla.core.selector import EMPTY_MAP, MatchRule, Selectable, Selector
 from avilla.core.trait import Trait
 from avilla.core.trait.context import Artifacts
 
@@ -28,7 +29,6 @@ from avilla.core.trait.signature import (
     VisibleConf,
 )
 from avilla.core.utilles import classproperty
-from avilla.core.selector import MatchRule, Selectable, Selector
 from avilla.spec.core.message import MessageSend
 from avilla.spec.core.request import RequestTrait
 from avilla.spec.core.scene import SceneTrait
@@ -94,24 +94,13 @@ def _find_querier_steps(artifacts: Artifacts, query_path: str) -> list[Query] | 
 class ContextSelector(Selector):
     context: Context
 
-    def __init__(self, ctx: Context, *, mode: MatchRule = "exact", path_excludes: frozenset[str] = frozenset()) -> None:
-        super().__init__(mode=mode, path_excludes=path_excludes)
+    def __init__(self, ctx: Context, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
+        super().__init__(pattern)
         self.context = ctx
-
-    def __getattr__(self, name: str) -> Callable[[str], Self]:
-        return type(super()).__getattr__(self.copy(), name)  # type: ignore
-
-    def land(self, land: Land | str) -> Self:
-        return type(super()).land(self.copy(), land)  # type: ignore
-
-    def appendix(self, key: str, value: str) -> Self:
-        return type(super()).appendix(self.copy(), key, value)  # type: ignore
 
     @classmethod
     def from_selector(cls, ctx: Context, selector: Selector) -> Self:
-        self = cls(ctx, mode=selector.mode, path_excludes=selector.path_excludes)
-        self.pattern = selector.pattern.copy()
-        return self
+        return cls(ctx, selector.pattern)
 
     def pull(self, metadata: _Describe[_MetadataT]) -> Awaitable[_MetadataT]:
         return self.context.pull(metadata, self)
@@ -155,7 +144,7 @@ class ContextSceneSelector(ContextSelector):
         if isinstance(reply, Message):
             reply = reply.to_selector()
         elif isinstance(reply, str):
-            reply = self.copy().message(reply)
+            reply = self.message(reply)
 
         return self.wrap(MessageSend).send(message, reply=reply)
 
@@ -283,12 +272,14 @@ class Context:
 
         async for i in generators[-1]:
             if with_land:
-                yield Selector.from_dict({"land": self.land.name, **i.pattern})
+                yield Selector({"land": self.land.name, **i.pattern})
             else:
                 yield i
 
     # TODO: GraiaProject/Avilla#66
-
+    # TODO: redesign Context.complete
+    
+    """
     def complete(self, selector: Selector, with_land: bool = False):
         output_rule = self._impl_artifacts.get(CompleteRule(selector.path_without_land))
         if output_rule is not None:
@@ -297,6 +288,7 @@ class Context:
         if with_land and list(selector.pattern.keys())[0] != "land":
             selector.pattern = {"land": self.land.name, **selector.pattern}
         return selector
+    """
 
     async def fetch(self, resource: Resource[_T]) -> _T:
         fetcher = self._impl_artifacts.get(ResourceFetch(type(resource)))
