@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from avilla.core.querier import ProtocolAbstractQueryHandler, query
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
 
 if TYPE_CHECKING:

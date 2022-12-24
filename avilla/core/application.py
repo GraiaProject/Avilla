@@ -7,13 +7,13 @@ from launart import Launart, Service
 
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AbstractAccount
-from avilla.core.resource import LocalFileResource
-from avilla.core.trait.signature import ResourceFetch
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
+from avilla.core.resource import LocalFileResource
+from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
-from avilla.core.utilles.selector import Selector
+from avilla.core.trait.signature import ResourceFetch
 
 if TYPE_CHECKING:
     from avilla.core.trait.signature import ArtifactSignature
@@ -91,7 +91,7 @@ class Avilla:
         for account in self.accounts:
             if account_id is not None and account.id != account_id:
                 continue
-            if selector is not None and not selector.match(account.to_selector()):
+            if selector is not None and not selector.matches(account.to_selector()):
                 continue
             if land is not None and account.land != land:
                 continue
@@ -104,7 +104,7 @@ class Avilla:
         for account in self.accounts:
             if account_id is not None and account.id != account_id:
                 continue
-            if selector is not None and not selector.match(account.to_selector()):
+            if selector is not None and not selector.matches(account.to_selector()):
                 continue
             if land is not None and account.land != land:
                 continue

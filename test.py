@@ -7,20 +7,21 @@ from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast
 
 from avilla.core.account import AbstractAccount
-from avilla.core.message import Message
-from avilla.core.resource import LocalFileResource
 
 # from avilla.core.action import MessageSend
 from avilla.core.application import Avilla
 from avilla.core.context import Context
 from avilla.core.elements import Picture
-from avilla.spec.core.message import MessageReceived, MessageSend
-from avilla.core.utilles.selector import DynamicSelector, Selector
+from avilla.core.message import Message
+from avilla.core.resource import LocalFileResource
+from avilla.core.selector import DynamicSelector, Selector
 from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
+from avilla.spec.core.message import MessageReceived, MessageSend
+
+from .avilla.spec.core.privilege.metadata import Privilege
 from .avilla.spec.core.privilege.skeleton import MuteTrait
 from .avilla.spec.core.profile.metadata import Summary
-from .avilla.spec.core.privilege.metadata import Privilege
 
 protocol = ElizabethProtocol(WebsocketClientConfig("1779309090", "testafafv4fv34v34g3y45"))
 broadcast = create(Broadcast)
@@ -30,10 +31,13 @@ avilla = Avilla(broadcast, [protocol], [AiohttpClientService()])
 @broadcast.receiver(MessageReceived)
 async def on_message_received(event: MessageReceived, rs: Context, account: AbstractAccount):
     print(
-        event, rs, rs.client.pattern, DynamicSelector(mode="exist").member(lambda x: x == "1846913566").match(rs.client)
+        event,
+        rs,
+        rs.client.pattern,
+        DynamicSelector(mode="exist").member(lambda x: x == "1846913566").matches(rs.client),
     )
     print(await rs.pull(Privilege >> Summary, rs.client))
-    if DynamicSelector.fragment().group("*").member("1846913566").match(rs.client):
+    if DynamicSelector.fragment().group("*").member("1846913566").matches(rs.client):
         # await rs.exec(MessageSend([
         #    "Hello, Avilla!", Image(LocalFileResource("development/photo_2022-07-10_22-12-22.jpg"))
         # ]))

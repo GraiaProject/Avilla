@@ -39,6 +39,6 @@ from .querier import AbstractQueryHandler as AbstractQueryHandler
 from .querier import ProtocolAbstractQueryHandler as ProtocolAbstractQueryHandler
 from .service import AvillaService as AvillaService
 from .typing import Ensureable as Ensureable
-from .utilles.selector import DynamicSelector as DynamicSelector
-from .utilles.selector import Selectable as Selectable
-from .utilles.selector import Selector as Selector
+from .selector import DynamicSelector as DynamicSelector
+from .selector import Selectable as Selectable
+from .selector import Selector as Selector

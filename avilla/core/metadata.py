@@ -11,7 +11,7 @@ from avilla.core.utilles import classproperty
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
-    from avilla.core.utilles.selector import Selector
+    from avilla.core.selector import Selector
 
 T = TypeVar("T")
 

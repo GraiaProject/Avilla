@@ -10,7 +10,7 @@ from avilla.core._runtime import ctx_context
 from avilla.core.platform import Land
 
 if TYPE_CHECKING:
-    from ..context import ContextSelector
+    from .context import ContextSelector
 
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
@@ -96,7 +96,7 @@ class Selector:
         self.pattern["land"] = land
         return self
 
-    def match(self, other: Selectable) -> bool:
+    def matches(self, other: Selectable) -> bool:
         if not isinstance(other, Selector):
             if not isinstance(other, Selectable):
                 return False

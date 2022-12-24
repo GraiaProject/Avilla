@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from avilla.core.platform import Land
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

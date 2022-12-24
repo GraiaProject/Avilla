@@ -17,7 +17,7 @@ from typing import (
 from typing_extensions import Concatenate, ParamSpec, Self, TypeGuard
 
 from avilla.core.utilles import identity
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 from ..metadata import MetadataOf
 from .signature import Bounds, Impl

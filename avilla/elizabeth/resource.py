@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from avilla.core.resource import Resource
 from avilla.core.context import ContextSceneSelector
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 
 class ElizabethResource(Resource[bytes]):

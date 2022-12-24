@@ -13,7 +13,7 @@ from .context import Context
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-    from avilla.core.utilles.selector import Selector
+    from avilla.core.selector import Selector
 
     from ._runtime import ctx_context
     from .metadata import MetadataOf

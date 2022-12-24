@@ -9,7 +9,7 @@ from avilla.core.account import AbstractAccount
 from avilla.core.event import AvillaEvent
 from avilla.core.trait.context import Artifacts
 from avilla.core.platform import Abstract, Land, Platform
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla

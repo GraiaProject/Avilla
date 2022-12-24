@@ -28,7 +28,7 @@ from avilla.core.trait.signature import (
     VisibleConf,
 )
 from avilla.core.utilles import classproperty
-from avilla.core.utilles.selector import MatchRule, Selectable, Selector
+from avilla.core.selector import MatchRule, Selectable, Selector
 from avilla.spec.core.message import MessageSend
 from avilla.spec.core.request import RequestTrait
 from avilla.spec.core.scene import SceneTrait

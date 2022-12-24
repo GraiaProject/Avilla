@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from avilla.core.event import AvillaEvent
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface

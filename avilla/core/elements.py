@@ -7,7 +7,7 @@ from graia.amnesia.message import Element
 from graia.amnesia.message.element import Text as Text
 
 from avilla.core.resource import LocalFileResource, Resource
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 
 class Notice(Element):

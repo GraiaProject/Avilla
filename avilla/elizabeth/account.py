@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from avilla.core.account import AbstractAccount
 from avilla.core.context import Context
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 from avilla.elizabeth.connection import ElizabethConnection
 from avilla.elizabeth.connection.util import CallMethod
 

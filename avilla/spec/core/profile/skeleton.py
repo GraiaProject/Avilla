@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from avilla.core.trait import Fn, Trait
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 
 class SummaryTrait(Trait):

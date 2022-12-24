@@ -1,33 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Awaitable, Callable, Coroutine
-from inspect import isawaitable
-from typing import Any, Generic, TypeVar, overload
+from collections.abc import Callable
+from typing import Any, Generic, TypeVar
 
 _T = TypeVar("_T")
 _R_co = TypeVar("_R_co", covariant=True)
-
-
-@overload
-async def run_always_await(callable: Callable[..., _T], *args, **kwargs) -> _T:
-    ...
-
-
-@overload
-async def run_always_await(callable: Callable[..., Awaitable[_T]], *args, **kwargs) -> _T:
-    ...
-
-
-@overload
-async def run_always_await(callable: Callable[..., Coroutine[None, None, _T]], *args, **kwargs) -> _T:
-    ...
-
-
-async def run_always_await(callable, *args, **kwargs):
-    obj = callable(*args, **kwargs)
-    while isawaitable(obj):
-        obj = await obj
-    return obj
 
 
 def identity(obj: Any) -> str:

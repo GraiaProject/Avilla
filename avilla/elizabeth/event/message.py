@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message import __message_chain_class__
 
-from ...core.utilles.selector import Selector
+from ...core.selector import Selector
 from ...core.context import Context
 
 from avilla.elizabeth.util import event

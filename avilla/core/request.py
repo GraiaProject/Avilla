@@ -11,7 +11,7 @@ from .metadata import Metadata
 
 if TYPE_CHECKING:
     from avilla.core.account import AbstractAccount
-    from avilla.core.utilles.selector import Selector
+    from avilla.core.selector import Selector
 
 
 @dataclass

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, AsyncGenerator, Callable, ClassVar, Generic, T
 
 from typing_extensions import Self
 
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

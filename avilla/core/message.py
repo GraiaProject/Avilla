@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.platform import Land
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 from ..spec.core.message.skeleton import MessageRevoke
 from .metadata import Metadata

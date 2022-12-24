@@ -11,8 +11,8 @@ from typing_extensions import ParamSpec, Self
 
 from avilla.core.account import AbstractAccount
 from avilla.core.context import Context
+from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
-from avilla.core.utilles.selector import Selectable, Selector
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -87,22 +87,22 @@ class Filter(BaseDispatcher, Generic[T]):
         return self.assert_true(lambda result: all(func(result) for func in funcs))
 
     def match(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
-        return self.assert_true(lambda result: pattern.match(result))
+        return self.assert_true(lambda result: pattern.matches(result))
 
     def mismatch(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
-        return self.assert_false(lambda result: pattern.match(result))
+        return self.assert_false(lambda result: pattern.matches(result))
 
     def match_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: pattern.match(result) for pattern in patterns)
+        return self.any(lambda result: pattern.matches(result) for pattern in patterns)
 
     def match_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.all(lambda result: pattern.match(result) for pattern in patterns)
+        return self.all(lambda result: pattern.matches(result) for pattern in patterns)
 
     def mismatch_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: not pattern.match(result) for pattern in patterns)
+        return self.any(lambda result: not pattern.matches(result) for pattern in patterns)
 
     def mismatch_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: not pattern.match(result) for pattern in patterns)
+        return self.any(lambda result: not pattern.matches(result) for pattern in patterns)
 
     def follows(self: Filter[Selectable], *patterns: str) -> Filter[Selectable]:
         return self.any(lambda result: result.to_selector().follows(pattern) for pattern in patterns)
