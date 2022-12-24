@@ -43,9 +43,11 @@ class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
         self.status.connected = True
         self.status.alive = True
         self.register_account()  # LINK: hot registration
-        event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
-        if event is not None:
-            self.protocol.post_event(event)
+        try:
+            event, context = await self.protocol.parse_event(self.account, data)
+            self.protocol.post_event(event, context)
+        except:
+            logger.error("error on parsing event: ", data)
         return {"command": "", "data": {}}
 
     async def launch(self, mgr: Launart) -> None:
@@ -141,9 +143,11 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                     continue
                 assert isinstance(data, list)
                 for event_data in data:
-                    event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
-                    if event is not None:
-                        self.protocol.post_event(event)
+                    try:
+                        event, context = await self.protocol.parse_event(self.account, event_data)
+                        self.protocol.post_event(event, context)
+                    except:
+                        logger.error("error on parsing event: ", event_data)
                 await wait_fut(
                     [asyncio.sleep(0.5), mgr.status.wait_for_sigexit()],
                     return_when=asyncio.FIRST_COMPLETED,

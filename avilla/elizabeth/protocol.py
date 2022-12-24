@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import base64
+from datetime import datetime
+from typing import Any, TypedDict, cast
 
 from graia.amnesia.message import MessageChain
-from graia.amnesia.message.element import Text
+from graia.amnesia.message.element import Element, Text
 
 from avilla.core.abstract.trait.context import wrap_artifacts
 from avilla.core.application import Avilla
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
+from ..core.abstract.event import AvillaEvent
 from avilla.elizabeth.connection.config import U_Config
 
 # from avilla.elizabeth.event_parser import ElizabethEventParser
@@ -19,6 +22,15 @@ from avilla.elizabeth.service import ElizabethService
 
 from ..core.context import Context
 from ..spec.qq.elements import FlashImage
+from .account import ElizabethAccount
+from .util import ElementParse, ElementParser, EventParse, EventParser
+
+
+class MessageDeserializeResult(TypedDict):
+    content: list[Element]
+    source: str
+    time: datetime
+    reply: str | None
 
 
 class ElizabethProtocol(BaseProtocol):
@@ -45,6 +57,12 @@ class ElizabethProtocol(BaseProtocol):
         import avilla.elizabeth.impl.friend as _
         import avilla.elizabeth.impl.group as _
 
+    with wrap_artifacts() as event_parsers:
+        import avilla.elizabeth.event.message as _
+
+    with wrap_artifacts() as message_parsers:
+        import avilla.elizabeth.message_parse as _
+
     service: ElizabethService
 
     def __init__(self, *config: U_Config):
@@ -63,7 +81,7 @@ class ElizabethProtocol(BaseProtocol):
 
             # LINK: see avilla.elizabeth.connection.{http|ws} for hot registration
 
-    async def serialize_message(self, message: MessageChain):
+    async def serialize_message(self, message: MessageChain, context: Context | None = None):
         result = []
         for element in message.content:
             if isinstance(element, Text):
@@ -73,7 +91,7 @@ class ElizabethProtocol(BaseProtocol):
             elif isinstance(element, NoticeAll):
                 result.append({"type": "AtAll"})
             elif isinstance(element, Picture):
-                raw = await Context.app_current.fetch(element.resource)
+                raw = await (context or Context.app_current).fetch(element.resource)
                 result.append(
                     {
                         "type": "Image",
@@ -81,7 +99,7 @@ class ElizabethProtocol(BaseProtocol):
                     }
                 )
             elif isinstance(element, FlashImage):
-                raw = await Context.app_current.fetch(element.resource)
+                raw = await (context or Context.app_current).fetch(element.resource)
                 result.append(
                     {
                         "type": "FlashImage",
@@ -89,7 +107,7 @@ class ElizabethProtocol(BaseProtocol):
                     }
                 )
             elif isinstance(element, Audio):
-                raw = await Context.app_current.fetch(element.resource)
+                raw = await (context or Context.app_current).fetch(element.resource)
                 result.append(
                     {
                         "type": "Voice",
@@ -97,3 +115,32 @@ class ElizabethProtocol(BaseProtocol):
                     }
                 )
         return result
+
+    async def deserialize_message(self, context: Context, message: list[dict]):
+        serialized: list[Element] = []
+        result: dict[str, Any] = {
+            "content": serialized,
+            "source": str(message[0]["id"]),
+            "time": datetime.fromtimestamp(message[0]["time"]),
+        }
+        for raw_element in message[1:]:
+            if "type" not in raw_element:
+                raise KeyError(f'expected "type" exists for {raw_element}')
+            element_type = raw_element["type"]
+            if element_type == "Quote":
+                result["reply"] = str(raw_element["id"])
+                continue
+            parser: ElementParser | None = self.message_parsers.get(ElementParse(element_type))
+            if parser is None:
+                raise NotImplementedError(f'expected element "{element_type}" implemented for {raw_element}')
+            serialized.append(await parser(context, raw_element))
+        return cast("MessageDeserializeResult", result)
+
+    async def parse_event(self, account: ElizabethAccount, event: dict) -> tuple[AvillaEvent, Context]:
+        if "type" not in event:
+            raise KeyError(f'expected "type" exists for {event}')
+        event_type = event["type"]
+        parser: EventParser | None = self.message_parsers.get(EventParse(event_type))
+        if parser is None:
+            raise NotImplementedError(f'expected event "{event_type}" implemented for {event}')
+        return await parser(self, account, event)

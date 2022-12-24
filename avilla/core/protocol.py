@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from avilla.core._runtime import ctx_avilla, ctx_protocol
+from avilla.core._runtime import ctx_avilla, ctx_protocol, ctx_context
 from avilla.core.abstract.account import AbstractAccount
 from avilla.core.abstract.event import AvillaEvent
 from avilla.core.abstract.trait.context import Artifacts
@@ -12,6 +13,12 @@ from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
+    from avilla.core.context import Context
+
+
+@contextmanager
+def _empty_ctxmgr():
+    yield
 
 
 class BaseProtocol(metaclass=ABCMeta):
@@ -41,6 +48,8 @@ class BaseProtocol(metaclass=ABCMeta):
     def get_account(self, selector: Selector) -> AbstractAccount | None:
         return self.avilla.get_account(selector=selector, land=self.platform[Land])
 
-    def post_event(self, event: AvillaEvent):
-        with ctx_avilla.use(self.avilla), ctx_protocol.use(self):
+    def post_event(self, event: AvillaEvent, context: Context | None = None):
+        with ctx_avilla.use(self.avilla), ctx_protocol.use(self), (
+            ctx_context.use(context) if context is not None else _empty_ctxmgr()
+        ):
             return self.avilla.broadcast.postEvent(event)

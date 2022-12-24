@@ -79,6 +79,10 @@ class Selector:
         return instance
 
     @property
+    def _(self):
+        return self.copy()
+
+    @property
     def latest_key(self) -> str:
         return list(self.pattern.keys())[-1]
 

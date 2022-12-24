@@ -49,8 +49,8 @@ class ElizabethAudioResource(ElizabethResource):
         url: str | None = None,
         path: str | None = None,
         base64: str | None = None,
-        scene: ContextSceneSelector | None = None,
         length: int | None = None,
+        scene: ContextSceneSelector | None = None,
     ) -> None:
         super().__init__(id, url, path, base64, scene)
         self.length = length

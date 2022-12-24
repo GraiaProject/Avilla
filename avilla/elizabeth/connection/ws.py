@@ -70,9 +70,11 @@ class BaseWebsocketConnection(Transport, ElizabethConnection[T_WebsocketConfig])
             self.futures[sync_id].set_result(data)
         elif "type" in data:
             self.status.alive = True
-            event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
-            if event:
-                self.protocol.post_event(event)
+            try:
+                event, context = await self.protocol.parse_event(self.account, data)
+                self.protocol.post_event(event, context)
+            except:
+                logger.error("error on parsing event: ", data)
         else:
             logger.warning(f"Got unknown data: {raw}")
 
