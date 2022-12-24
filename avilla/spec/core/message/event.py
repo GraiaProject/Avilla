@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message import __message_chain_class__
 
-from avilla.core.abstract.event import AvillaEvent
-from avilla.core.abstract.message import Message
+from avilla.core.event import AvillaEvent
+from avilla.core.message import Message
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:

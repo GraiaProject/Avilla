@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Awaitable, Callable
 from graia.amnesia.message.element import Element
 from typing_extensions import TypeAlias
 
-from avilla.core.abstract.event import AvillaEvent
 from avilla.core.context import Context
+from avilla.core.event import AvillaEvent
 
-from ...core.abstract.trait.context import get_artifacts
-from ...core.abstract.trait.signature import ArtifactSignature
+from ...core.trait.context import get_artifacts
+from ...core.trait.signature import ArtifactSignature
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount

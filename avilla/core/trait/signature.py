@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable
 
 if TYPE_CHECKING:
-    from ...context import Context
+    from ..context import Context
     from ..metadata import Metadata, MetadataBound, MetadataRoute
     from ..resource import Resource
     from ..trait import Fn

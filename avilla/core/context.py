@@ -10,15 +10,16 @@ from graia.amnesia.message import Element, Text, __message_chain_class__
 from typing_extensions import Self, TypeAlias, Unpack
 
 from avilla.core._runtime import ctx_context
-from avilla.core.abstract.account import AbstractAccount
-from avilla.core.abstract.message import Message
-from avilla.core.abstract.metadata import Metadata, MetadataOf, MetadataRoute
-from avilla.core.abstract.resource import Resource
-from avilla.core.abstract.trait import Trait
-from avilla.core.abstract.trait.context import Artifacts
+from avilla.core.account import AbstractAccount
+from avilla.core.message import Message
+from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute
+from avilla.core.platform import Land
+from avilla.core.resource import Resource
+from avilla.core.trait import Trait
+from avilla.core.trait.context import Artifacts
 
-# from avilla.core.abstract.trait.extension import ExtensionHandler
-from avilla.core.abstract.trait.signature import (
+# from avilla.core.trait.extension import ExtensionHandler
+from avilla.core.trait.signature import (
     Bounds,
     CompleteRule,
     Pull,
@@ -26,7 +27,6 @@ from avilla.core.abstract.trait.signature import (
     ResourceFetch,
     VisibleConf,
 )
-from avilla.core.platform import Land
 from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import MatchRule, Selectable, Selector
 from avilla.spec.core.message import MessageSend

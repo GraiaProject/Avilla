@@ -1,6 +1,6 @@
 from graia.amnesia.message import __message_chain_class__ as __message_chain_class__
 
-from .abstract.account import AbstractAccount as AbstractAccount
+from .account import AbstractAccount as AbstractAccount
 from .application import Avilla as Avilla
 from .context import Context as Context
 from .dispatchers import AvillaBuiltinDispatcher as AvillaBuiltinDispatcher

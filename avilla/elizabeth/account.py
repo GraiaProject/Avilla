@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from avilla.core.abstract.account import AbstractAccount
+from avilla.core.account import AbstractAccount
 from avilla.core.context import Context
 from avilla.core.utilles.selector import Selector
 from avilla.elizabeth.connection import ElizabethConnection

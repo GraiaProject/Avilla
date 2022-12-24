@@ -9,7 +9,7 @@ from typing import Any, Awaitable, Generic, TypeVar
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 from typing_extensions import ParamSpec, Self
 
-from avilla.core.abstract.account import AbstractAccount
+from avilla.core.account import AbstractAccount
 from avilla.core.context import Context
 from avilla.core.utilles import classproperty
 from avilla.core.utilles.selector import Selectable, Selector

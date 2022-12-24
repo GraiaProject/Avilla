@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from avilla.core.abstract.trait import Fn, Trait
+from avilla.core.trait import Fn, Trait
 
 
 class RequestTrait(Trait):

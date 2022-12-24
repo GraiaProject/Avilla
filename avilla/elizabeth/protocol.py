@@ -7,11 +7,11 @@ from typing import Any, TypedDict, cast
 from graia.amnesia.message import __message_chain_class__
 from graia.amnesia.message.element import Element, Text
 
-from avilla.core.abstract.trait.context import wrap_artifacts
 from avilla.core.application import Avilla
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
+from avilla.core.trait.context import wrap_artifacts
 from avilla.elizabeth.connection.config import U_Config
 
 # from avilla.elizabeth.event_parser import ElizabethEventParser
@@ -19,8 +19,8 @@ from avilla.elizabeth.connection.config import U_Config
 # from avilla.elizabeth.message_serializer import ElizabethMessageSerializer
 from avilla.elizabeth.service import ElizabethService
 
-from ..core.abstract.event import AvillaEvent
 from ..core.context import Context
+from ..core.event import AvillaEvent
 from ..spec.qq.elements import FlashImage
 from .account import ElizabethAccount
 from .util import ElementParse, ElementParser, EventParse, EventParser

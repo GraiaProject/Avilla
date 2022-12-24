@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.abstract.trait.context import bounds, implement
+from avilla.core.trait.context import bounds, implement
 from avilla.core.utilles.selector import Selector
 from avilla.spec.core.message import MessageRevoke, MessageSend
 

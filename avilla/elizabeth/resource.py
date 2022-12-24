@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from avilla.core.abstract.resource import Resource
+from avilla.core.resource import Resource
 from avilla.core.context import ContextSceneSelector
 from avilla.core.utilles.selector import Selector
 

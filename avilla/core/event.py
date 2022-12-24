@@ -8,14 +8,14 @@ from typing import TYPE_CHECKING, Any
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 
-from ..context import Context
+from .context import Context
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
     from avilla.core.utilles.selector import Selector
 
-    from .._runtime import ctx_context
+    from ._runtime import ctx_context
     from .metadata import MetadataOf
 
 

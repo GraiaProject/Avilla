@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
-from avilla.core.abstract.event import AvillaEvent
-from avilla.core.abstract.request import Request
+from avilla.core.event import AvillaEvent
+from avilla.core.request import Request
 
 if TYPE_CHECKING:
     pass

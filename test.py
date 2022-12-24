@@ -6,9 +6,9 @@ from creart import create
 from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast
 
-from avilla.core.abstract.account import AbstractAccount
-from avilla.core.abstract.message import Message
-from avilla.core.abstract.resource import LocalFileResource
+from avilla.core.account import AbstractAccount
+from avilla.core.message import Message
+from avilla.core.resource import LocalFileResource
 
 # from avilla.core.action import MessageSend
 from avilla.core.application import Avilla

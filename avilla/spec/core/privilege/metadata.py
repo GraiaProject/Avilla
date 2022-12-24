@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from avilla.core.abstract.metadata import Metadata
+from avilla.core.metadata import Metadata
 
 
 @dataclass

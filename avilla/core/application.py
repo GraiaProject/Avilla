@@ -6,9 +6,9 @@ from graia.broadcast import Broadcast
 from launart import Launart, Service
 
 from avilla.core._runtime import get_current_avilla
-from avilla.core.abstract.account import AbstractAccount
-from avilla.core.abstract.resource import LocalFileResource
-from avilla.core.abstract.trait.signature import ResourceFetch
+from avilla.core.account import AbstractAccount
+from avilla.core.resource import LocalFileResource
+from avilla.core.trait.signature import ResourceFetch
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
@@ -16,7 +16,7 @@ from avilla.core.service import AvillaService
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.abstract.trait.signature import ArtifactSignature
+    from avilla.core.trait.signature import ArtifactSignature
 
 
 class Avilla:

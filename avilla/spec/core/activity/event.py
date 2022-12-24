@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from avilla.core.abstract.event import AvillaEvent
+from avilla.core.event import AvillaEvent
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:

@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING
 
 from avilla.core.platform import Land
 
-from ...spec.core.request.skeleton import RequestTrait
+from ..spec.core.request.skeleton import RequestTrait
 from .metadata import Metadata
 
 if TYPE_CHECKING:
-    from avilla.core.abstract.account import AbstractAccount
+    from avilla.core.account import AbstractAccount
     from avilla.core.utilles.selector import Selector
 
 

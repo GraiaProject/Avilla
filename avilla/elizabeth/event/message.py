@@ -8,7 +8,7 @@ from ...core.context import Context
 
 from avilla.elizabeth.util import event
 from avilla.spec.core.message import MessageReceived
-from avilla.core.abstract.message import Message
+from avilla.core.message import Message
 
 if TYPE_CHECKING:
     from ..protocol import ElizabethProtocol

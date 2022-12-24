@@ -4,8 +4,8 @@ from collections import defaultdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
-from avilla.core.abstract.message import Message
-from avilla.core.abstract.trait.context import bounds, implement, pull
+from avilla.core.message import Message
+from avilla.core.trait.context import bounds, implement, pull
 from avilla.core.exceptions import permission_error_message
 from avilla.core.utilles.selector import Selector
 from avilla.spec.core.message import MessageRevoke, MessageSend
@@ -13,7 +13,7 @@ from avilla.spec.core.privilege import MuteAllTrait, MuteTrait, Privilege
 from avilla.spec.core.profile import Nick, Summary, SummaryTrait
 from avilla.spec.core.scene import SceneTrait
 
-from ...core.abstract.metadata import MetadataOf
+from ...core.metadata import MetadataOf
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__

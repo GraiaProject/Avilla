@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 
-from avilla.core.abstract.trait.context import bounds, fetch, get_artifacts
-from avilla.core.abstract.trait.signature import CompleteRule
+from avilla.core.trait.context import bounds, fetch, get_artifacts
+from avilla.core.trait.signature import CompleteRule
 from avilla.elizabeth.resource import (
     ElizabethAudioResource,
     ElizabethImageResource,
