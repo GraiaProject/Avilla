@@ -18,8 +18,9 @@ from ...core.abstract.metadata import MetadataOf
 if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
 
-    from ..protocol import ElizabethProtocol
     from avilla.core.context import Context
+
+    from ..protocol import ElizabethProtocol
 
 
 with bounds("group"):

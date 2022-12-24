@@ -3,10 +3,6 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from graia.amnesia.message import MessageChain
-
-# from avilla.core.action.extension import ActionExtension
-# from avilla.core.action.middleware import ActionMiddleware
 from avilla.core._runtime import ctx_avilla, ctx_protocol
 from avilla.core.abstract.account import AbstractAccount
 from avilla.core.abstract.event import AvillaEvent
@@ -22,9 +18,6 @@ class BaseProtocol(metaclass=ABCMeta):
     avilla: Avilla
     platform: ClassVar[Platform]
 
-    # completion_rules: ClassVar[dict[str, dict[str, str]]] = cast(dict, MappingProxyType({}))
-    # action_middlewares: list[ActionMiddleware] = []
-
     implementations: ClassVar[Artifacts]
 
     def __init__(self):
@@ -38,12 +31,6 @@ class BaseProtocol(metaclass=ABCMeta):
     def abstract(self):
         return self.platform[Abstract]
 
-    """
-    @property
-    def resource_labels(self) -> set[str]:
-        return {pattern.path_without_land for pattern in self.resource_providers.keys()}
-    """
-
     @abstractmethod
     def ensure(self, avilla: Avilla) -> Any:
         ...
@@ -56,4 +43,4 @@ class BaseProtocol(metaclass=ABCMeta):
 
     def post_event(self, event: AvillaEvent):
         with ctx_avilla.use(self.avilla), ctx_protocol.use(self):
-            self.avilla.broadcast.postEvent(event)
+            return self.avilla.broadcast.postEvent(event)

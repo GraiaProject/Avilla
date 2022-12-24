@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from avilla.core.utilles.selector import Selector
 
-    from .._runtime import ctx_avilla, ctx_context, ctx_protocol
+    from .._runtime import ctx_context
     from .metadata import MetadataOf
 
 

@@ -26,7 +26,6 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
 
 
-
 _P = ParamSpec("_P")
 _T = TypeVar("_T")
 
@@ -34,6 +33,7 @@ _P1 = ParamSpec("_P1")
 _T1 = TypeVar("_T1")
 
 _TboundTrait = TypeVar("_TboundTrait", bound="Trait")
+
 
 class Trait:
     context: Context
@@ -46,6 +46,7 @@ class Trait:
     @classmethod
     def fn(cls) -> list[Fn]:
         return [fn for _, fn in inspect.getmembers(cls, lambda a: isinstance(a, Fn))]
+
 
 class Fn(Generic[_P, _T]):
     trait: type[Trait]
@@ -133,9 +134,12 @@ class BoundFnCommon(Fn[_P, _T]):
     def __init__(self, schema: Any):
         self.schema = schema
 
+
 class BoundEntityFn(BoundFnCommon[_P, _T]):
     def __repr__(self) -> str:
-        return f"<Fn bound-required entity async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
+        return (
+            f"<Fn bound-required entity async {self.trait.__name__}::{self.identity} {inspect.signature(self.schema)}>"
+        )
 
     @overload
     def __get__(self, instance: Trait, owner: type[Trait]) -> AppliedEntityFnCall[_P, _T]:

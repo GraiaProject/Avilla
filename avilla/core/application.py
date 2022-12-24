@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any
 
 from graia.broadcast import Broadcast
 from launart import Launart, Service
-from loguru import logger
 
 from avilla.core._runtime import get_current_avilla
 from avilla.core.abstract.account import AbstractAccount

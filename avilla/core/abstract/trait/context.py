@@ -7,11 +7,10 @@ from typing import Any, Awaitable, Callable, MutableMapping, TypeVar, overload
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
-from ..resource import Resource
-
 from ...context import Context
 from ...utilles.selector import Selector
 from ..metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
+from ..resource import Resource
 from . import (
     Fn,
     FnCall,
@@ -21,7 +20,6 @@ from . import (
     UnappliedUniversalFnCall,
 )
 from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, VisibleConf
-
 
 Artifacts: TypeAlias = "MutableMapping[ArtifactSignature, Any]"
 
@@ -41,9 +39,6 @@ def get_artifacts() -> Artifacts:
         return ctx_artifacts.get()
     except LookupError:
         raise ValueError("cannot access artifacts due to undefined") from None
-
-
-# TODO: 重新整理一遍 bounds 的形式
 
 
 @contextmanager
@@ -146,7 +141,9 @@ def pull(
 
     return wrapper
 
+
 _ResourceT = TypeVar("_ResourceT", bound=Resource)
+
 
 def fetch(resource: type[_ResourceT]) -> RecordCallable[Callable[[Context, _ResourceT], Awaitable[Any]]]:
     def wrapper(artifact):

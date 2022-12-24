@@ -41,6 +41,7 @@ _TraitT = TypeVar("_TraitT", bound=Trait)
 _Querier: TypeAlias = "Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]"
 _Describe: TypeAlias = "type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]"
 
+
 async def _query_depth_generator(
     context: Context,
     current: _Querier,

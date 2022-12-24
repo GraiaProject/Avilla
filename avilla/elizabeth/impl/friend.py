@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
 
     from avilla.core.context import Context
+
     from ..protocol import ElizabethProtocol
 
 # raise_for_no_namespace()

@@ -35,8 +35,6 @@ class NickTrait(Trait):
     async def unset_nickname(self) -> None:
         ...
 
-    # TODO: recheck badge operators
-
     @Fn.bound_entity
     async def set_badge(self, badge: str) -> None:
         ...

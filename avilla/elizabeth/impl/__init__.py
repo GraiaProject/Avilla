@@ -4,9 +4,13 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 
-from avilla.core.abstract.trait.context import bounds, get_artifacts, fetch
+from avilla.core.abstract.trait.context import bounds, fetch, get_artifacts
 from avilla.core.abstract.trait.signature import CompleteRule
-from avilla.elizabeth.resource import ElizabethAudioResource, ElizabethImageResource, ElizabethResource
+from avilla.elizabeth.resource import (
+    ElizabethAudioResource,
+    ElizabethImageResource,
+    ElizabethResource,
+)
 
 # from graia.amnesia.transport.common.http import AbstractClientInterface
 
@@ -24,7 +28,7 @@ with bounds("group"):
     get_artifacts().setdefault(CompleteRule("member"), "group.member")
 
 
-@fetch(ElizabethImageResource) # type: ignore
+@fetch(ElizabethImageResource)  # type: ignore
 @fetch(ElizabethAudioResource)
 async def fetch_from_url(ctx: Context, res: ElizabethResource) -> bytes:
     if not res.url:

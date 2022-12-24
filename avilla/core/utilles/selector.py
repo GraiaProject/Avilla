@@ -2,14 +2,7 @@ from __future__ import annotations
 
 from collections import ChainMap
 from itertools import filterfalse
-from typing import (
-    TYPE_CHECKING,
-    Callable,
-    Literal,
-    Protocol,
-    Union,
-    runtime_checkable,
-)
+from typing import TYPE_CHECKING, Callable, Literal, Protocol, Union, runtime_checkable
 
 from typing_extensions import Self
 
