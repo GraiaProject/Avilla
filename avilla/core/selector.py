@@ -83,8 +83,6 @@ class Selector:
 
     def matches(self, other: Selectable, *, mode: MatchRule = "exact") -> bool:
         if not isinstance(other, Selector):
-            if not isinstance(other, Selectable):
-                return False
             other = other.to_selector()
         try:
             match = {
