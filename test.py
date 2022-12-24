@@ -14,10 +14,7 @@ from avilla.core.abstract.resource import LocalFileResource
 from avilla.core.application import Avilla
 from avilla.core.context import Context
 from avilla.core.elements import Picture
-from avilla.core.event.message import MessageReceived
-from avilla.core.metadata.cells import Privilege, Summary
-from avilla.core.skeleton.message import MessageSend
-from avilla.core.skeleton.privilege import MuteTrait
+from avilla.spec.core.message import MessageReceived, MessageSend
 from avilla.core.utilles.selector import DynamicSelector, Selector
 from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
@@ -40,7 +37,7 @@ async def on_message_received(event: MessageReceived, rs: Context, account: Abst
         # t = rs.complete(Selector().friend("1846913566"))
         # print(t)
         # rs2 = await account.get_relationship(t)
-        a = event.message.content.get(Picture)
+        a = event.message..get(Picture)
         print(a, event.message.content)
         if a:
             b = await rs.fetch(a[0].resource)

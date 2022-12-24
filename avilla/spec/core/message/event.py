@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message import MessageChain
+from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.abstract.event import AvillaEvent
-from avilla.core.abstract.message import ChatMessage, Message
+from avilla.core.abstract.message import Message
 from avilla.core.utilles.selector import Selector
 
 if TYPE_CHECKING:
@@ -22,25 +22,24 @@ class MessageReceived(AvillaEvent):
         async def catch(interface: DispatcherInterface["MessageReceived"]):
             if interface.annotation is interface.event.message.__class__:
                 return interface.event.message
-            elif interface.annotation is MessageChain:
-                if isinstance(interface.event.message, ChatMessage):
-                    return interface.event.message.content
+            elif interface.annotation is __message_chain_class__:
+                return interface.event.message.content
             return await super().catch(interface)
 
 
 @dataclass
 class MessageEdited(AvillaEvent):
-    message: ChatMessage
+    message: Message
     operator: Selector
-    past: MessageChain
-    current: MessageChain
+    past: __message_chain_class__
+    current: __message_chain_class__
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MessageEdited"]):
             if interface.annotation is Message:
                 return interface.event.message
-            elif interface.annotation is MessageChain:
+            elif interface.annotation is __message_chain_class__:
                 return interface.event.current
             return await super().catch(interface)
 

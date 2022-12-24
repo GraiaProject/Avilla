@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from functools import cached_property
 from typing import Any, TypeVar, cast, overload
 
-from graia.amnesia.message import Element, MessageChain, Text
+from graia.amnesia.message import Element, Text, __message_chain_class__
 from typing_extensions import Self, TypeAlias, Unpack
 
 from avilla.core._runtime import ctx_context
@@ -140,14 +140,17 @@ class ContextSceneSelector(ContextSelector):
         return self.wrap(SceneTrait).disband()
 
     def send_message(
-        self, message: MessageChain | str | Iterable[str | Element], *, reply: Message | Selector | str | None = None
+        self,
+        message: __message_chain_class__ | str | Iterable[str | Element],
+        *,
+        reply: Message | Selector | str | None = None,
     ):
         if isinstance(message, str):
-            message = MessageChain([Text(message)])
-        elif not isinstance(message, MessageChain):
-            message = MessageChain([]).extend(list(message))
+            message = __message_chain_class__([Text(message)])
+        elif not isinstance(message, __message_chain_class__):
+            message = __message_chain_class__([]).extend(list(message))
         else:
-            message = MessageChain([i if isinstance(i, Element) else Text(i) for i in message])
+            message = __message_chain_class__([i if isinstance(i, Element) else Text(i) for i in message])
 
         if isinstance(reply, Message):
             reply = reply.to_selector()

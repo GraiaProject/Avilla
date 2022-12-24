@@ -1,4 +1,4 @@
-from graia.amnesia.message import MessageChain as MessageChain
+from graia.amnesia.message import __message_chain_class__ as __message_chain_class__
 
 from .abstract.account import AbstractAccount as AbstractAccount
 from .application import Avilla as Avilla

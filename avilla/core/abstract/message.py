@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
-from graia.amnesia.message import MessageChain
+from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.platform import Land
 from avilla.core.utilles.selector import Selector
@@ -19,7 +19,10 @@ if TYPE_CHECKING:
 class Message(Metadata):
     id: str
     scene: Selector
+    sender: Selector
+    content: __message_chain_class__
     time: datetime
+    reply: Selector | None = None
 
     @property
     def land(self):
@@ -33,10 +36,3 @@ class Message(Metadata):
 
     async def revoke(self):
         return await self.rev().wrap(MessageRevoke).revoke()
-
-
-@dataclass
-class ChatMessage(Message):
-    sender: Selector
-    content: MessageChain
-    reply: Selector | None = None

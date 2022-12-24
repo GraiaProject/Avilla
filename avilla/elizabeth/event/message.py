@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from graia.amnesia.message import __message_chain_class__
+
 from ...core.utilles.selector import Selector
 from ...core.context import Context
 
@@ -16,16 +18,24 @@ if TYPE_CHECKING:
 @event("GroupMessage")
 async def group_message(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict):
     group = Selector().land(protocol.land.name).group(str(raw["sender"]["group"]["id"]))
+    member = group._.member(str(raw["sender"]["id"]))
     context = Context(
         account=account,
-        client=group._.member(str(raw["sender"]["id"])),
+        client=member,
         endpoint=group,
         scene=group,
         selft=group._.member(account.id),
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     event = MessageReceived(
-        context, Message(describe=Message, id=message_result["source"], scene=group, time=message_result["time"])
+        context, Message(
+            describe=Message,
+            id=message_result["source"],
+            scene=group,
+            sender=member,
+            content=__message_chain_class__(message_result["content"]),
+            time=message_result["time"],
+        ),
     )
     return event, context
 
@@ -42,7 +52,14 @@ async def friend_message(protocol: ElizabethProtocol, account: ElizabethAccount,
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     event = MessageReceived(
-        context, Message(describe=Message, id=message_result["source"], scene=friend, time=message_result["time"])
+        context, Message(
+            describe=Message,
+            id=message_result["source"],
+            scene=friend,
+            sender=friend,
+            content=__message_chain_class__(message_result["content"]),
+            time=message_result["time"],
+        ),
     )
     return event, context
 
@@ -60,6 +77,14 @@ async def temp_message(protocol: ElizabethProtocol, account: ElizabethAccount, r
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     event = MessageReceived(
-        context, Message(describe=Message, id=message_result["source"], scene=member, time=message_result["time"])
+        context,
+        Message(
+            describe=Message,
+            id=message_result["source"],
+            scene=member,
+            sender=member,
+            content=__message_chain_class__(message_result["content"]),
+            time=message_result["time"],
+        ),
     )
     return event, context

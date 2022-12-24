@@ -16,7 +16,7 @@ from avilla.spec.core.scene import SceneTrait
 from ...core.abstract.metadata import MetadataOf
 
 if TYPE_CHECKING:
-    from graia.amnesia.message import MessageChain
+    from graia.amnesia.message import __message_chain_class__
 
     from avilla.core.context import Context
 
@@ -34,7 +34,7 @@ with bounds("group"):
 
     @implement(MessageSend.send)
     async def send_group_message(
-        ctx: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
+        ctx: Context, target: Selector, message: __message_chain_class__, *, reply: Selector | None = None
     ) -> Selector:
         if TYPE_CHECKING:
             assert isinstance(ctx.protocol, ElizabethProtocol)

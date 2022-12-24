@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from graia.amnesia.message import MessageChain
+from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.abstract.trait import Fn, Trait
 from avilla.core.utilles.selector import Selector
@@ -10,7 +10,7 @@ from avilla.core.utilles.selector import Selector
 
 class MessageSend(Trait):
     @Fn.bound_entity
-    async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:
+    async def send(self, message: __message_chain_class__, *, reply: Selector | None = None) -> Selector:
         ...
 
 
@@ -22,5 +22,5 @@ class MessageRevoke(Trait):
 
 class MessageEdit(Trait):
     @Fn
-    async def edit(self, message: Selector, content: MessageChain) -> None:
+    async def edit(self, message: Selector, content: __message_chain_class__) -> None:
         ...
