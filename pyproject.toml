@@ -82,16 +82,43 @@ raw-dependencies = [
 
 [tool.mina.packages.elizabeth.project]
 name = "avilla-elizabeth"
-version = "1.0.0rc4" # WIP for release.
+version = "1.0.0-alpha.5" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
-dependencies = []
+dependencies = [
+  "avilla-core >= 1.0.0-alpha.5",
+  "avilla-spec-qq >= 1.0.0-alpha.5"
+]
 description = ""
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
 
 [tool.mina.packages.elizabeth.project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
+
+[tool.mina.packages."spec/qq"]
+includes = ["avilla/spec/qq"]
+
+[tool.mina.packages."spec/qq".project]
+name = "avilla-spec-qq"
+version = "1.0.0-alpha.5"
+authors = [
+  {name = "GreyElaina", email = "GreyElaina@outlook.com"},
+  {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
+  {name = "ProgramRipper", email = "programripper@foxmail.com"},
+  {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
+]
+dependencies = [
+  "avilla-core >= 1.0.0-alpha.5"
+]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.mina.packages."spec/qq".project.urls]
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
