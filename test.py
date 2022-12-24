@@ -18,6 +18,9 @@ from avilla.spec.core.message import MessageReceived, MessageSend
 from avilla.core.utilles.selector import DynamicSelector, Selector
 from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
+from .avilla.spec.core.privilege.skeleton import MuteTrait
+from .avilla.spec.core.profile.metadata import Summary
+from .avilla.spec.core.privilege.metadata import Privilege
 
 protocol = ElizabethProtocol(WebsocketClientConfig("1779309090", "testafafv4fv34v34g3y45"))
 broadcast = create(Broadcast)
@@ -37,7 +40,7 @@ async def on_message_received(event: MessageReceived, rs: Context, account: Abst
         # t = rs.complete(Selector().friend("1846913566"))
         # print(t)
         # rs2 = await account.get_relationship(t)
-        a = event.message..get(Picture)
+        a = event.message.content.get(Picture)
         print(a, event.message.content)
         if a:
             b = await rs.fetch(a[0].resource)
