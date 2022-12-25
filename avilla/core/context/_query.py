@@ -13,10 +13,7 @@ from avilla.core.trait.context import Artifacts
 from avilla.core.trait.signature import Query
 
 if TYPE_CHECKING:
-    from . import Context
-
-_Querier: TypeAlias = Callable[["Context", Selector | None, Selector], AsyncGenerator[Selector, None]]
-
+    from . import Context, _Querier
 
 async def query_depth_generator(
     context: Context,
