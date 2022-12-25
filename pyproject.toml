@@ -77,7 +77,8 @@ repository = "https://github.com/GraiaProject/Avilla"
 [tool.mina.packages.elizabeth]
 includes = ["avilla/elizabeth"]
 raw-dependencies = [
-  "avilla-core>=1.0.0rc4"
+  "avilla-core >= 1.0.0-alpha.5",
+  "avilla-spec-qq >= 1.0.0-alpha.5"
 ]
 
 [tool.mina.packages.elizabeth.project]
@@ -86,10 +87,7 @@ version = "1.0.0-alpha.5" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
-dependencies = [
-  "avilla-core >= 1.0.0-alpha.5",
-  "avilla-spec-qq >= 1.0.0-alpha.5"
-]
+dependencies = []
 description = ""
 license = {text = "MIT"}
 readme = "README.md"
@@ -101,6 +99,9 @@ repository = "https://github.com/GraiaProject/Avilla"
 
 [tool.mina.packages."spec/qq"]
 includes = ["avilla/spec/qq"]
+raw_dependencies = [
+  "avilla-core >= 1.0.0-alpha.5",
+]
 
 [tool.mina.packages."spec/qq".project]
 name = "avilla-spec-qq"
@@ -111,9 +112,7 @@ authors = [
   {name = "ProgramRipper", email = "programripper@foxmail.com"},
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
-dependencies = [
-  "avilla-core >= 1.0.0-alpha.5"
-]
+dependencies = []
 description = ""
 license = {text = "MIT"}
 readme = "README.md"
