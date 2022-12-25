@@ -39,7 +39,7 @@ _Querier: TypeAlias = Callable[["Context", Selector | None, Selector], AsyncGene
 _Describe: TypeAlias = type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]
 
 
-class ContextCache(TypedDict, total=True):
+class ContextCache(TypedDict):
     meta: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]]
 
 
