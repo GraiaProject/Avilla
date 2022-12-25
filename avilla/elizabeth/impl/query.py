@@ -3,8 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core.selector import Selector
-from avilla.core.trait.context import bounds, implement
-from avilla.spec.core.message import MessageRevoke
 from avilla.core.trait.context import query
 
 if TYPE_CHECKING:
@@ -20,6 +18,7 @@ async def get_groups(ctx: Context, upper: None, predicate: Selector):
         group = Selector().group(str(i["id"]))
         if predicate.matches(group):
             yield group
+
 
 @query("group", "member")
 async def get_group_members(ctx: Context, upper: Selector, predicate: Selector):

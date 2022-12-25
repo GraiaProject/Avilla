@@ -15,6 +15,7 @@ from avilla.core.trait.signature import Query
 if TYPE_CHECKING:
     from . import Context, _Querier
 
+
 async def query_depth_generator(
     context: Context,
     current: _Querier,

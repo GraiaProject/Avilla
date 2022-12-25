@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
 
 with bounds("group.message"):
+
     @implement(MessageRevoke.revoke)
     async def revoke_group_message(ctx: Context, message_selector: Selector):
         await ctx.account.call(
@@ -19,8 +20,6 @@ with bounds("group.message"):
             {
                 "__method__": "update",
                 "messageId": int(message_selector.last_value),
-                "target": int(message_selector['group'])
+                "target": int(message_selector["group"]),
             },
         )
-
-    

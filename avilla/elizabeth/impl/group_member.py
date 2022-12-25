@@ -10,9 +10,9 @@ from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
 from avilla.spec.core.privilege import MuteAllTrait, MuteTrait, Privilege
 from avilla.spec.core.profile import Nick, Summary
-from ...spec.core.scene.skeleton import SceneTrait
 
 from ...core.metadata import MetadataOf
+from ...spec.core.scene.skeleton import SceneTrait
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__
@@ -20,7 +20,6 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
 
     from ..protocol import ElizabethProtocol
-
 
 
 privilege_trans = defaultdict(lambda: "group_member", {"OWNER": "group_owner", "ADMINISTRATOR": "group_admin"})
@@ -72,18 +71,26 @@ with bounds("group.member"):
 
     @pull(Privilege)
     async def group_member_get_privilege(ctx: Context, target: Selector):
-        self_info = (await ctx.account.call(
-            "memberInfo",
-            {
-                "__method__": "fetch",
-                "target": int(ctx.self.pattern["group"]),
-                "memberId": int(ctx.self.pattern["member"]),
-            },
-        ))['permission']
-        target_info = (await ctx.account.call(
-            "memberInfo",
-            {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
-        ))['permission']
+        self_info = (
+            await ctx.account.call(
+                "memberInfo",
+                {
+                    "__method__": "fetch",
+                    "target": int(ctx.self.pattern["group"]),
+                    "memberId": int(ctx.self.pattern["member"]),
+                },
+            )
+        )["permission"]
+        target_info = (
+            await ctx.account.call(
+                "memberInfo",
+                {
+                    "__method__": "fetch",
+                    "target": int(target.pattern["group"]),
+                    "memberId": int(target.pattern["member"]),
+                },
+            )
+        )["permission"]
         return Privilege(
             Privilege, privilege_level[self_info] > 0, privilege_level[self_info] > privilege_level[target_info]
         )
@@ -132,4 +139,3 @@ with bounds("group.member"):
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
         return Nick(Nick, result["memberName"], result["memberName"], result["specialTitle"])
-

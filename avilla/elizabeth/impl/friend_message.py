@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
 
 with bounds("friend.message"):
+
     @implement(MessageRevoke.revoke)
     async def revoke_friend_message(ctx: Context, message_selector: Selector):
         await ctx.account.call(
@@ -19,6 +20,6 @@ with bounds("friend.message"):
             {
                 "__method__": "update",
                 "messageId": int(message_selector.last_value),
-                "target": int(message_selector['friend'])
+                "target": int(message_selector["friend"]),
             },
         )
