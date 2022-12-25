@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from avilla.core.context import ContextSceneSelector
 from avilla.core.resource import Resource
 from avilla.core.selector import Selector
 
@@ -9,7 +8,7 @@ class ElizabethResource(Resource[bytes]):
     url: str | None = None
     path: str | None = None
     base64: str | None = None
-    scene: ContextSceneSelector | None = None
+    scene: Selector | None = None
 
     def __init__(
         self,
@@ -17,7 +16,7 @@ class ElizabethResource(Resource[bytes]):
         url: str | None = None,
         path: str | None = None,
         base64: str | None = None,
-        scene: ContextSceneSelector | None = None,
+        scene: Selector | None = None,
     ) -> None:
         self.id = id
         self.url = url
@@ -50,7 +49,7 @@ class ElizabethAudioResource(ElizabethResource):
         path: str | None = None,
         base64: str | None = None,
         length: int | None = None,
-        scene: ContextSceneSelector | None = None,
+        scene: Selector | None = None,
     ) -> None:
         super().__init__(id, url, path, base64, scene)
         self.length = length
