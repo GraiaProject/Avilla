@@ -13,6 +13,9 @@ from avilla.core import Avilla, Context, MessageReceived
 from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
 
+import richuru
+richuru.install()
+
 broadcast = create(Broadcast)
 launart = Launart()
 launart.add_service(AiohttpClientService())
@@ -23,9 +26,8 @@ avilla = Avilla(broadcast, launart, [ElizabethProtocol(WebsocketClientConfig("17
 async def on_message_received(ctx: Context, event: MessageReceived):
     print(event, ctx.client, ctx.client.follows("group.member(208924405)"))
     if ctx.client.follows("group.member(208924405)"):
-        message = await ctx.scene.send_message("well.")
-        await asyncio.sleep(5)
-        await ctx.wrap(MessageRevoke).revoke(message)
+        async for i in ctx.query(f"group({ctx.scene['group']}).member"):
+            print(i)
 
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

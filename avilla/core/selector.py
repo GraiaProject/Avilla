@@ -17,6 +17,7 @@ MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
 EMPTY_MAP = MappingProxyType({})
 
+
 def _get_follows_pattern(pattern: str):
     patterns: dict[str, str] = {}
     bracket_depth: int = 0
@@ -44,6 +45,7 @@ def _get_follows_pattern(pattern: str):
     if path_buf:
         patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
     return patterns
+
 
 class Selector:
     pattern: Mapping[str, str]
@@ -146,7 +148,9 @@ class Selector:
         return all(fragment[i] == full[i] for i in range(len(fragment)))
 
     def as_dyn(self) -> DynamicSelector:
-        return DynamicSelector(self.pattern)
+        return DynamicSelector(
+            {k: (lambda _: True) if v == "*" else (lambda v1: lambda x: v1 == x)(v) for k, v in self.pattern.items()}
+        )
 
     def to_selector(self):
         return self
@@ -175,15 +179,17 @@ class Selector:
 
 
 class DynamicSelector(Selector):
-    pattern: dict[str, Pattern]
+    pattern: Mapping[str, Pattern]
+
+    def __init__(self, pattern: dict[str, Pattern] | None = None) -> None:
+        self.pattern = MappingProxyType({**(pattern or {})})
 
     def __getattr__(self, name: str, /):
         def wrapper(content: Pattern | Literal["*"]):
             if content == "*":
                 content = lambda _: True
 
-            self.pattern[name] = content
-            return self
+            return DynamicSelector({**self.pattern, name: content})
 
         return wrapper
 
