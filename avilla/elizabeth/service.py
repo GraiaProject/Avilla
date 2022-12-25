@@ -3,6 +3,8 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
+from graia.amnesia.transport.common.client import AbstractClientInterface
+
 from launart import Launart, Service
 
 from avilla.elizabeth.account import ElizabethAccount
@@ -54,8 +56,8 @@ class ElizabethService(Service):
             ...  # TODO
 
     @property
-    def required(self) -> set[str]:
-        return {"http.universal_client"}
+    def required(self):
+        return {AbstractClientInterface}
 
     @property
     def stages(self):

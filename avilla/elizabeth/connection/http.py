@@ -8,6 +8,7 @@ from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.json import Json
 from graia.amnesia.transport import Transport
 from graia.amnesia.transport.common.http import AbstractServerRequestIO, HttpEndpoint
+from graia.amnesia.transport.common.server import AbstractRouter
 from graia.amnesia.transport.common.http.extra import HttpRequest
 from launart import Launart
 from launart.utilles import wait_fut
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
 class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
     """HTTP 服务器连接"""
 
-    dependencies = frozenset(["http.universal_server"])
+    dependencies = frozenset([AbstractRouter])
 
     def __init__(self, protocol: ElizabethProtocol, config: HttpServerConfig) -> None:
         super().__init__(protocol, config)
@@ -46,7 +47,7 @@ class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
         try:
             event, context = await self.protocol.parse_event(self.account, data)
             self.protocol.post_event(event, context)
-        except:
+        except Exception:
             logger.error("error on parsing event: ", data)
         return {"command": "", "data": {}}
 
@@ -58,7 +59,7 @@ class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
 class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
     """HTTP 客户端连接"""
 
-    dependencies = frozenset(["http.universal_client"])
+    dependencies = frozenset([AiohttpClientInterface])
     http_interface: AiohttpClientInterface
 
     def __init__(self, protocol: ElizabethProtocol, config: HttpClientConfig) -> None:
@@ -147,7 +148,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                         event, context = await self.protocol.parse_event(self.account, event_data)
                         self.protocol.post_event(event, context)
                     except:
-                        logger.error("error on parsing event: ", event_data)
+                        logger.exception("error on parsing event: ", event_data)
                 await wait_fut(
                     [asyncio.sleep(0.5), mgr.status.wait_for_sigexit()],
                     return_when=asyncio.FIRST_COMPLETED,

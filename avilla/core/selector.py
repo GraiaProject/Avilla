@@ -62,7 +62,7 @@ class Selector:
 
     @property
     def path_without_land(self) -> str:
-        return ".".join(filterfalse(lambda x: x != "land", self.pattern))
+        return ".".join(filterfalse(lambda x: x == "land", self.pattern))
 
     @property
     def last_key(self) -> str:

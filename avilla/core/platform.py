@@ -24,6 +24,9 @@ class Platform:
     def __getitem__(self, item: type[PD]) -> PD:
         return self.description[item]  # type: ignore
 
+    def __str__(self):
+        return f"<Platform {' '.join([str(i) for i in self.description.values()])}>"
+
 
 class Maintainer(TypedDict):
     name: str

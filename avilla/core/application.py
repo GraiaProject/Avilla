@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from .trait.context import wrap_artifacts
 
 from graia.broadcast import Broadcast
 from launart import Launart, Service
@@ -25,7 +26,9 @@ class Avilla:
     protocols: list[BaseProtocol]
     accounts: list[AbstractAccount]
     service: AvillaService
-    global_artifacts: dict[ArtifactSignature, Any]
+
+    with wrap_artifacts() as global_artifacts:
+        import avilla.core.builtins.resource_fetch as _
 
     def __init__(
         self,

@@ -228,10 +228,12 @@ class Context:
     @cached_property
     def _impl_artifacts(self) -> Artifacts:
         m = [self.protocol.implementations]
-        for k, v in self.protocol.implementations.items():
-            if isinstance(k, VisibleConf) and k.checker(self):
-                m.append(v)
-        return ChainMap(*m[::-1])
+        m.extend(
+            v
+            for k, v in self.protocol.implementations.items()
+            if isinstance(k, VisibleConf) and k.checker(self)
+        )
+        return ChainMap(*m[::-1], self.avilla.global_artifacts)
 
     @property
     def request(self) -> ContextRequestSelector:

@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.event import AvillaEvent
-from avilla.core.message import Message
-from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
+    from avilla.core.message import Message
+    from avilla.core.selector import Selector
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
@@ -18,8 +18,8 @@ class MessageReceived(AvillaEvent):
     message: Message
 
     class Dispatcher(AvillaEvent.Dispatcher):
-        @staticmethod
-        async def catch(interface: DispatcherInterface["MessageReceived"]):
+        @classmethod
+        async def catch(cls, interface: DispatcherInterface["MessageReceived"]):
             if interface.annotation is interface.event.message.__class__:
                 return interface.event.message
             elif interface.annotation is __message_chain_class__:
@@ -35,8 +35,8 @@ class MessageEdited(AvillaEvent):
     current: __message_chain_class__
 
     class Dispatcher(AvillaEvent.Dispatcher):
-        @staticmethod
-        async def catch(interface: DispatcherInterface["MessageEdited"]):
+        @classmethod
+        async def catch(cls, interface: DispatcherInterface["MessageEdited"]):
             if interface.annotation is Message:
                 return interface.event.message
             elif interface.annotation is __message_chain_class__:
@@ -50,6 +50,6 @@ class MessageRevoked(AvillaEvent):
     operator: Selector
 
     class Dispatcher(AvillaEvent.Dispatcher):
-        @staticmethod
-        async def catch(interface: DispatcherInterface["MessageRevoked"]):
+        @classmethod
+        async def catch(cls, interface: DispatcherInterface["MessageRevoked"]):
             return await super().catch(interface)

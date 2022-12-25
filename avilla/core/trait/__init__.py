@@ -156,8 +156,8 @@ class BoundEntityFn(BoundFnCommon[_P, _T]):
     def __get__(self, instance: Any, owner: type):
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
-                return UnappliedEntityFnCall(instance, self)
-            return AppliedEntityFnCall(instance, self)
+                return AppliedEntityFnCall(instance, self)
+            return UnappliedEntityFnCall(instance, self)
         return self
 
 
@@ -180,8 +180,8 @@ class BoundMetadataFn(BoundFnCommon[_P, _T]):
     def __get__(self, instance: Any, owner: type):
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
-                return UnappliedMetadataFnCall(instance, self)
-            return AppliedMetadataFnCall(instance, self)
+                return AppliedMetadataFnCall(instance, self)
+            return UnappliedMetadataFnCall(instance, self)
         return self
 
 
@@ -204,8 +204,8 @@ class BoundUniversalFn(BoundFnCommon[_P, _T]):
     def __get__(self, instance: Any, owner: type):
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
-                return UnappliedUniversalFnCall(instance, self)
-            return AppliedUniversalFnCall(instance, self)
+                return AppliedUniversalFnCall(instance, self)
+            return UnappliedUniversalFnCall(instance, self)
         return self
 
 

@@ -140,7 +140,7 @@ class ElizabethProtocol(BaseProtocol):
         if "type" not in event:
             raise KeyError(f'expected "type" exists for {event}')
         event_type = event["type"]
-        parser: EventParser | None = self.message_parsers.get(EventParse(event_type))
+        parser: EventParser | None = self.event_parsers.get(EventParse(event_type))
         if parser is None:
             raise NotImplementedError(f'expected event "{event_type}" implemented for {event}')
         return await parser(self, account, event)

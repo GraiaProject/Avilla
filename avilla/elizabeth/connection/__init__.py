@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Generic, Optional, Set
 from graia.amnesia.transport.common.status import (
     ConnectionStatus as BaseConnectionStatus,
 )
-from launart import Launchable, LaunchableStatus
+from launart import Launchable, LaunchableStatus, ExportInterface
 from loguru import logger
 from statv import Stats
 
@@ -59,12 +59,12 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
     status: ConnectionStatus
     protocol: ElizabethProtocol
     config: T_Config
-    dependencies: frozenset[str]
+    dependencies: frozenset[str | type[ExportInterface]]
 
     http_conn: Optional["HttpClientConnection"]
 
     @property
-    def required(self) -> Set[str]:
+    def required(self):
         return set(self.dependencies)
 
     @property

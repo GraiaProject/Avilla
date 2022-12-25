@@ -3,11 +3,10 @@ from __future__ import annotations
 from contextlib import contextmanager
 from contextvars import ContextVar
 from functools import reduce
-from typing import Any, Awaitable, Callable, MutableMapping, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, MutableMapping, TypeVar, overload
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
-from ..context import Context
 from ..metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
 from ..resource import Resource
 from ..selector import Selector
@@ -21,6 +20,8 @@ from . import (
 )
 from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, VisibleConf
 
+if TYPE_CHECKING:
+    from ..context import Context
 Artifacts: TypeAlias = "MutableMapping[ArtifactSignature, Any]"
 
 ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
@@ -28,7 +29,10 @@ ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
 
 @contextmanager
 def wrap_artifacts(*upstream_artifacts: Artifacts):
-    artifacts = reduce(lambda a, b: {**a, **b}, upstream_artifacts)
+    if upstream_artifacts:
+        artifacts = reduce(lambda a, b: {**a, **b}, upstream_artifacts)
+    else:
+        artifacts = {}
     token = ctx_artifacts.set(artifacts)
     yield artifacts
     ctx_artifacts.reset(token)

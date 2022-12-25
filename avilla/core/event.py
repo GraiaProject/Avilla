@@ -8,14 +8,14 @@ from typing import TYPE_CHECKING, Any
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 
-from .context import Context
+from ._runtime import ctx_context
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
     from avilla.core.selector import Selector
 
-    from ._runtime import ctx_context
+    from .context import Context
     from .metadata import MetadataOf
 
 
@@ -32,6 +32,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):
+            from .context import Context
             if interface.annotation is Context:
                 return interface.event.context
 
