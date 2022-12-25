@@ -1,4 +1,4 @@
-from graia.amnesia.message import __message_chain_class__ as __message_chain_class__
+from graia.amnesia.message import __message_chain_class__ as MessageChain
 
 from avilla.spec.core.activity import ActivityAvailable as ActivityAvailable
 from avilla.spec.core.activity import ActivityEvent as ActivityEvent
