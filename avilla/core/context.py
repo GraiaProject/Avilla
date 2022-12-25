@@ -225,7 +225,7 @@ class Context:
             self.protocol.implementations,
             *[v for k, v in self.protocol.implementations.items() if isinstance(k, VisibleConf) and k.checker(self)],
         ]
-        return ChainMap(*m[::-1])
+        return ChainMap(*m[::-1], self.avilla.global_artifacts)
 
     @property
     def request(self) -> ContextRequestSelector:
@@ -317,8 +317,7 @@ class Context:
         fetcher = self._impl_artifacts.get(ResourceFetch(type(resource)))
         if fetcher is None:
             raise NotImplementedError(
-                f'cannot fetch "{resource.selector}" '
-                + f' because no available fetch implement found in "{self.protocol.__class__.__name__}"'
+                f'cannot fetch "{resource.selector}" because no available fetch implement found in "{self.protocol.__class__.__name__}"'
             )
         return await fetcher(self, resource)
 
