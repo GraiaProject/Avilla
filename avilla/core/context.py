@@ -12,7 +12,7 @@ from typing_extensions import Self, TypeAlias, Unpack
 from avilla.core._runtime import ctx_context
 from avilla.core.account import AbstractAccount
 from avilla.core.message import Message
-from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute
+from avilla.core.metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
 from avilla.core.selector import EMPTY_MAP, MatchRule, Selectable, Selector
@@ -249,6 +249,31 @@ class Context:
     def _collect_metadatas(self, target: Selector | Selectable, *metadatas: Metadata):
         scope = self.cache['meta'].setdefault(target.to_selector(), {})
         scope.update({type(i): i for i in metadatas})
+
+    def _get_entity_bound_scope(self, target: Selector):
+        return next(
+            (
+                v
+                for k, v in self._impl_artifacts.items()
+                if isinstance(k, Bounds)
+                and isinstance(k.bound, str)
+                and target.follows(k.bound)
+            ),
+            {},
+        )
+
+    def _get_metadata_bound_scope(self, reference: MetadataOf):
+        return next(
+            (
+                v
+                for k, v in self._impl_artifacts.items()
+                if isinstance(k, Bounds)
+                and isinstance(k.bound, MetadataBound)
+                and reference.target.follows(k.bound.target)
+                and reference.describe == k.bound.describe
+            ),
+            {},
+        )
 
     """
     @property

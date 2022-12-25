@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.exceptions import permission_error_message
@@ -48,7 +48,17 @@ with bounds("group"):
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
-        return Selector().land(ctx.land).group(target.pattern["group"]).message(result["messageId"])
+        message_metadata = Message(
+            describe=Message,
+            id=str(result['messageId']),
+            scene=Selector().land(ctx.land).group(str(target.pattern["group"])),
+            content=message,
+            time=datetime.now(),
+            sender=Selector().land(ctx.land).group(str(target.pattern["group"])).member(ctx.account.id)
+        )
+        message_selector = message_metadata.to_selector()
+        ctx._collect_metadatas(message_selector, message_metadata)
+        return message_selector
 
     @implement(MessageRevoke.revoke)
     async def revoke_group_message(ctx: Context, message: Selector):

@@ -1,6 +1,8 @@
 from __future__ import annotations
+from datetime import datetime
 
 from typing import TYPE_CHECKING
+from ...core.message import Message
 
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement
@@ -13,10 +15,8 @@ if TYPE_CHECKING:
 
     from ..protocol import ElizabethProtocol
 
-# raise_for_no_namespace()
 
-# with scope("qq", "friend"), prefix("friend"):
-with bounds("friend"):  # maybe problem
+with bounds("friend"):
 
     # casts(MessageSend)
     # casts(MessageRevoke)
@@ -37,7 +37,17 @@ with bounds("friend"):  # maybe problem
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
-        return Selector().land(ctx.land).group(target.pattern["friend"]).message(result["messageId"])
+        message_metadata = Message(
+            describe=Message,
+            id=str(result['messageId']),
+            scene=Selector().land(ctx.land).friend(str(target.pattern["friend"])),
+            content=message,
+            time=datetime.now(),
+            sender=ctx.account.to_selector()
+        )
+        message_selector = message_metadata.to_selector()
+        ctx._collect_metadatas(message_selector, message_metadata)
+        return message_selector
 
     @implement(MessageRevoke.revoke)
     async def revoke_friend_message(ctx: Context, message: Selector):

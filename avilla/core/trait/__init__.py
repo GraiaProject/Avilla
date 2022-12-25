@@ -214,8 +214,7 @@ class UnappliedEntityFnCall(FnCall[_P, _T]):
         return f"<FnCall unbounded entity async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: Selector, *args: _P.args, **kwargs: _P.kwargs):
-        bounding = target.path_without_land
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        impl = self.trait.context._get_entity_bound_scope(target).get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
@@ -229,8 +228,7 @@ class UnappliedMetadataFnCall(FnCall[_P, _T]):
         return f"<FnCall unbounded metadata async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
-        bounding = target.to_bounding()
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        impl = self.trait.context._get_metadata_bound_scope(target).get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
@@ -244,8 +242,11 @@ class UnappliedUniversalFnCall(FnCall[_P, _T]):
         return f"<FnCall unbounded universal async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: Selector | MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
-        bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        if isinstance(target, Selector):
+            scope = self.trait.context._get_entity_bound_scope(target)
+        else:
+            scope = self.trait.context._get_metadata_bound_scope(target)
+        impl = scope.get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
@@ -270,8 +271,7 @@ class AppliedEntityFnCall(FnCall[_P, _T]):
         target = self.trait.bound
         if not isinstance(target, Selector):
             raise TypeError(f'"{identity(self.trait)}::{self.fn.identity}" expected bounds with a entity.')
-        bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        impl = self.trait.context._get_entity_bound_scope(target).get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
@@ -288,8 +288,7 @@ class AppliedMetadataFnCall(FnCall[_P, _T]):
         target = self.trait.bound
         if not isinstance(target, MetadataOf):
             raise TypeError(f'"{identity(self.trait)}::{self.fn.identity}" expected bounds with a metadata referring.')
-        bounding = target.to_bounding()
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        impl = self.trait.context._get_metadata_bound_scope(target).get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
@@ -304,8 +303,11 @@ class AppliedUniversalFnCall(FnCall[_P, _T]):
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
         target = self.trait.bound
-        bounding = target.path_without_land if isinstance(target, Selector) else target.to_bounding()
-        impl = self.trait.context._impl_artifacts.get(Bounds(bounding), {}).get(Impl(self.fn))
+        if isinstance(target, Selector):
+            scope = self.trait.context._get_entity_bound_scope(target)
+        else:
+            scope = self.trait.context._get_metadata_bound_scope(target)
+        impl = scope.get(Impl(self.fn))
         if impl is None:
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
