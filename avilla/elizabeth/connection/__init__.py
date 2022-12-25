@@ -84,7 +84,7 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
 
     def on_connected_update(self, statv: ConnectionStatus, stats: Stats[bool], past: bool, current: bool) -> None:
         if past != current:
-            logger.warning(f"Account: {'Connected' if current else 'Disconnected'}")
+            logger.warning(f"Account({self.account.id}): {'Connected' if current else 'Disconnected'}")
             proto = self.account.protocol
             proto.avilla.broadcast.postEvent(
                 (AccountAvailable if current else AccountUnavailable)(proto.avilla, self.account)
