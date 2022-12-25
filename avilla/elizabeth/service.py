@@ -6,8 +6,6 @@ from typing import TYPE_CHECKING
 from graia.amnesia.transport.common.client import AbstractClientInterface
 from launart import Launart, Service
 
-from avilla.elizabeth.account import ElizabethAccount
-
 from .connection import ElizabethConnection
 from .connection.config import U_Config
 
@@ -39,7 +37,7 @@ class ElizabethService(Service):
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
             # TODO: lifecycle event for account
-            # 主要有几点 - 配置的读取, 应用; 子任务(Launchable) 的堵塞 - 这个交给 blocking;
+            # 主要有几点 - 配置的读取，应用; 子任务 (Launchable) 的堵塞 - 这个交给 blocking;
             ...
 
         async with self.stage("blocking"):

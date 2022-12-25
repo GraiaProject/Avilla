@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from graia.broadcast import Broadcast
-from launart import Launart, Service
+from launart import Launart
 
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AbstractAccount

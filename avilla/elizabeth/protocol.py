@@ -13,10 +13,6 @@ from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.trait.context import wrap_artifacts
 from avilla.elizabeth.connection.config import U_Config
-
-# from avilla.elizabeth.event_parser import ElizabethEventParser
-# from avilla.elizabeth.message_deserializer import ElizabethMessageDeserializer
-# from avilla.elizabeth.message_serializer import ElizabethMessageSerializer
 from avilla.elizabeth.service import ElizabethService
 
 from ..core.context import Context

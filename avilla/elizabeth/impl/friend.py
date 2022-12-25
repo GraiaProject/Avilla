@@ -1,12 +1,13 @@
 from __future__ import annotations
-from datetime import datetime
 
+from datetime import datetime
 from typing import TYPE_CHECKING
-from ...core.message import Message
 
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement
 from avilla.spec.core.message import MessageRevoke, MessageSend
+
+from ...core.message import Message
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__
@@ -39,11 +40,11 @@ with bounds("friend"):
         )
         message_metadata = Message(
             describe=Message,
-            id=str(result['messageId']),
+            id=str(result["messageId"]),
             scene=Selector().land(ctx.land).friend(str(target.pattern["friend"])),
             content=message,
             time=datetime.now(),
-            sender=ctx.account.to_selector()
+            sender=ctx.account.to_selector(),
         )
         message_selector = message_metadata.to_selector()
         ctx._collect_metadatas(message_selector, message_metadata)
