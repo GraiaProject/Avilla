@@ -16,13 +16,11 @@ from avilla.spec.core.request import RequestTrait
 from avilla.spec.core.scene import SceneTrait
 
 if TYPE_CHECKING:
-    from . import Context
+    from . import Context, _Describe
 
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 _DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
 _TraitT = TypeVar("_TraitT", bound=Trait)
-
-_Describe: TypeAlias = type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]
 
 
 class ContextSelector(Selector):
