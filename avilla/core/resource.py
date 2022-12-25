@@ -11,7 +11,6 @@ from .metadata import Metadata
 
 T = TypeVar("T")
 
-BlobResource: TypeAlias = "Resource[bytes]"
 
 
 class Resource(Metadata, Generic[T]):
@@ -23,6 +22,7 @@ class Resource(Metadata, Generic[T]):
     def to_selector(self):
         return self.selector
 
+BlobResource = Resource[bytes]
 
 class LocalFileResource(BlobResource):
     file: Path
