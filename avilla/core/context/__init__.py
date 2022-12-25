@@ -1,27 +1,33 @@
 from __future__ import annotations
 
-from collections import ChainMap, deque
-from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable, Mapping
-from dataclasses import dataclass
+from collections import ChainMap
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from functools import cached_property
 from typing import Any, TypedDict, TypeVar, cast, overload
 
-from graia.amnesia.message import Element, Text, __message_chain_class__
-from typing_extensions import Self, TypeAlias, Unpack
+from graia.amnesia.message import __message_chain_class__
+from typing_extensions import TypeAlias, Unpack
 
 from avilla.core._runtime import ctx_context
 from avilla.core.account import AbstractAccount
-from avilla.core.message import Message
 from avilla.core.metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
 from avilla.core.resource import Resource
-from avilla.core.selector import EMPTY_MAP, Selectable, Selector
+from avilla.core.selector import Selectable, Selector
 from avilla.core.trait import Trait
 from avilla.core.trait.context import Artifacts
 from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch, VisibleConf
 from avilla.core.utilles import classproperty
-from avilla.spec.core.message import MessageSend
-from avilla.spec.core.request import RequestTrait
-from avilla.spec.core.scene import SceneTrait
+
+from ._query import query_depth_generator as _query_depth_generator, find_querier_steps as _find_querier_steps
+from ._selector import (
+    ContextSelector,
+    ContextClientSelector,
+    ContextEndpointSelector,
+    ContextMedium,
+    ContextRequestSelector,
+    ContextSceneSelector,
+    ContextWrappedMetadataOf,
+)
 
 _T = TypeVar("_T")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
@@ -30,146 +36,6 @@ _TraitT = TypeVar("_TraitT", bound=Trait)
 
 _Querier: TypeAlias = Callable[["Context", Selector | None, Selector], AsyncGenerator[Selector, None]]
 _Describe: TypeAlias = type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]
-
-
-async def _query_depth_generator(
-    context: Context,
-    current: _Querier,
-    predicate: Selector,
-    upper_generator: AsyncGenerator[Selector, None] | None = None,
-):
-    if upper_generator is not None:
-        async for i in upper_generator:
-            async for j in current(context, i, predicate):
-                yield j
-    else:
-        async for j in current(context, None, predicate):
-            yield j
-
-
-@dataclass
-class _MatchStep:
-    upper: str
-    start: int
-    history: tuple[Query, ...]
-
-
-def _find_querier_steps(artifacts: Artifacts, query_path: str) -> list[Query] | None:
-    result: list[Query] | None = None
-    frags: list[str] = query_path.split(".")
-    queue: deque[_MatchStep] = deque([_MatchStep("", 0, ())])
-    while queue:
-        head: _MatchStep = queue.popleft()
-        current_steps: list[str] = []
-        for curr_frag in frags[head.start :]:
-            current_steps.append(curr_frag)
-            steps = ".".join(current_steps)
-            full_path = f"{head.upper}.{steps}" if head.upper else steps
-            head.start += 1
-            if (query := Query(head.upper or None, steps)) in artifacts:
-                if full_path == query_path:
-                    if result is None or len(result) > len(head.history) + 1:
-                        result = [*head.history, query]
-                else:
-                    queue.append(
-                        _MatchStep(
-                            full_path,
-                            head.start,
-                            head.history + (query,),
-                        )
-                    )
-    return result
-
-
-class ContextSelector(Selector):
-    context: Context
-
-    def __init__(self, ctx: Context, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
-        super().__init__(pattern)
-        self.context = ctx
-
-    @classmethod
-    def from_selector(cls, ctx: Context, selector: Selector) -> Self:
-        return cls(ctx, selector.pattern)
-
-    def pull(self, metadata: _Describe[_MetadataT]) -> Awaitable[_MetadataT]:
-        return self.context.pull(metadata, self)
-
-    def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return trait(self.context, self)
-
-
-class ContextClientSelector(ContextSelector):
-    ...
-
-
-class ContextEndpointSelector(ContextSelector):
-    def expects_request(self) -> ContextRequestSelector:
-        if "request" in self.pattern:
-            return ContextRequestSelector.from_selector(self.context, self)
-
-        raise ValueError(f"endpoint {self!r} is not a request endpoint")
-
-
-class ContextSceneSelector(ContextSelector):
-    def leave_scene(self):
-        return self.wrap(SceneTrait).leave()
-
-    def disband_scene(self):
-        return self.wrap(SceneTrait).disband()
-
-    def send_message(
-        self,
-        message: __message_chain_class__ | str | Iterable[str | Element],
-        *,
-        reply: Message | Selector | str | None = None,
-    ):
-        if isinstance(message, str):
-            message = __message_chain_class__([Text(message)])
-        elif not isinstance(message, __message_chain_class__):
-            message = __message_chain_class__([]).extend(list(message))
-        else:
-            message = __message_chain_class__([i if isinstance(i, Element) else Text(i) for i in message])
-
-        if isinstance(reply, Message):
-            reply = reply.to_selector()
-        elif isinstance(reply, str):
-            reply = self.message(reply)
-
-        return self.wrap(MessageSend).send(message, reply=reply)
-
-    def remove_member(self, target: Selector, reason: str | None = None):
-        return self.wrap(SceneTrait).remove_member(reason)
-
-
-class ContextRequestSelector(ContextEndpointSelector):
-    def accept_request(self):
-        return self.wrap(RequestTrait).accept()
-
-    def reject_request(self, reason: str | None = None, forever: bool = False):
-        return self.wrap(RequestTrait).reject(reason, forever)
-
-    def cancel_request(self):
-        return self.wrap(RequestTrait).cancel()
-
-    def ignore_request(self):
-        return self.wrap(RequestTrait).ignore()
-
-
-@dataclass
-class ContextMedium:
-    selector: ContextSelector
-
-
-@dataclass
-class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
-    context: Context
-
-    def pull(self) -> Awaitable[_DescribeT]:
-        return self.context.pull(self.describe, self.target)
-
-    def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return trait(self.context, self)
 
 
 class ContextCache(TypedDict, total=True):
@@ -315,7 +181,7 @@ class Context:
         fetcher = self._impl_artifacts.get(ResourceFetch(type(resource)))
         if fetcher is None:
             raise NotImplementedError(
-                f'cannot fetch "{resource.selector}" because no available fetch implement found in "{self.protocol.__class__.__name__}"'
+                f'cannot fetch "{resource}" because no available fetch implement found in "{self.protocol.__class__.__name__}"'
             )
         return await fetcher(self, resource)
 
