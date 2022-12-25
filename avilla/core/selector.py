@@ -17,6 +17,33 @@ MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
 EMPTY_MAP = MappingProxyType({})
 
+def _get_follows_pattern(pattern: str):
+    patterns: dict[str, str] = {}
+    bracket_depth: int = 0
+    path_buf: list[str] = []
+    pattern_buf: list[str] = []
+    for ch in pattern:
+        if ch == "." and bracket_depth == 0:
+            patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+            path_buf.clear()
+            pattern_buf.clear()
+        elif ch == "(":
+            if bracket_depth:
+                pattern_buf.append(ch)
+            bracket_depth += 1
+        elif ch == ")":
+            if not bracket_depth:
+                raise ValueError("Found unmatched bracket.")
+            bracket_depth -= 1
+            if bracket_depth:
+                pattern_buf.append(ch)
+        else:
+            (pattern_buf if bracket_depth else path_buf).append(ch)
+    if bracket_depth:
+        raise ValueError("Found unmatched bracket.")
+    if path_buf:
+        patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+    return patterns
 
 class Selector:
     pattern: Mapping[str, str]
@@ -124,32 +151,12 @@ class Selector:
     def to_selector(self):
         return self
 
+    @classmethod
+    def from_follows_pattern(cls, pattern: str):
+        return cls(_get_follows_pattern(pattern))
+
     def follows(self, pattern: str) -> bool:
-        patterns: dict[str, str] = {}
-        bracket_depth: int = 0
-        path_buf: list[str] = []
-        pattern_buf: list[str] = []
-        for ch in pattern:
-            if ch == "." and bracket_depth == 0:
-                patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
-                path_buf.clear()
-                pattern_buf.clear()
-            elif ch == "(":
-                if bracket_depth:
-                    pattern_buf.append(ch)
-                bracket_depth += 1
-            elif ch == ")":
-                if not bracket_depth:
-                    raise ValueError("Found unmatched bracket.")
-                bracket_depth -= 1
-                if bracket_depth:
-                    pattern_buf.append(ch)
-            else:
-                (pattern_buf if bracket_depth else path_buf).append(ch)
-        if bracket_depth:
-            raise ValueError("Found unmatched bracket.")
-        if path_buf:
-            patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+        patterns = _get_follows_pattern(pattern)
         return (self.path if "land" in patterns else self.path_without_land) == ".".join(patterns) and all(
             k in self.pattern and v in ("*", self.pattern[k]) for k, v in patterns.items()
         )
@@ -202,7 +209,7 @@ class DynamicSelector(Selector):
                 callable(own_pattern)
                 and not own_pattern(other.pattern[k])
                 or not callable(own_pattern)
-                and own_pattern != other.pattern[k]
+                and own_pattern not in {other.pattern[k], "*"}
             ):
                 return False
         return True

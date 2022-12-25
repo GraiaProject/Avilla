@@ -140,7 +140,10 @@ class Context:
     def current(cls) -> Context:
         return ctx_context.get()
 
-    async def query(self, pattern: Selector, with_land: bool = False):
+    async def query(self, pattern: str | Selector, with_land: bool = False):
+        if isinstance(pattern, str):
+            pattern = Selector.from_follows_pattern(pattern).as_dyn()
+
         querier_steps: list[Query] | None = _find_querier_steps(
             self._impl_artifacts, pattern.path if with_land else pattern.path_without_land
         )

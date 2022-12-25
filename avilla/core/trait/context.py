@@ -4,7 +4,7 @@ from collections.abc import Awaitable, Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from itertools import chain
-from typing import TYPE_CHECKING, Any, MutableMapping, TypeVar, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, MutableMapping, TypeVar, overload
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
@@ -19,7 +19,7 @@ from . import (
     UnappliedMetadataFnCall,
     UnappliedUniversalFnCall,
 )
-from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, VisibleConf
+from .signature import ArtifactSignature, Bounds, Impl, Pull, Query, ResourceFetch, VisibleConf
 
 if TYPE_CHECKING:
     from ..context import Context
@@ -154,6 +154,20 @@ def fetch(resource: type[_ResourceT]) -> RecordCallable[Callable[[Context, _Reso
 
     return wrapper
 
+@overload
+def query(pattern: str, /) -> RecordCallable[Callable[[Context, None, Selector], AsyncGenerator[Selector, None]]]:
+    ...
+
+@overload
+def query(*pattern: str) -> RecordCallable[Callable[[Context, Selector, Selector], AsyncGenerator[Selector, None]]]:
+    ...
+
+def query(*pattern: ...) -> ...:
+    def wrapper(artifact):
+        artifacts = get_artifacts()
+        artifacts[Query(".".join(pattern[:-1]) or None, pattern[-1])] = artifact
+        return artifact
+    return wrapper
 
 def complete_rule():
     ...  # TODO
