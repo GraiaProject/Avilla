@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, Optional, Set
+from typing import TYPE_CHECKING, Any, Generic, Optional
 
 from graia.amnesia.transport.common.status import (
     ConnectionStatus as BaseConnectionStatus,
 )
-from launart import Launchable, LaunchableStatus, ExportInterface
+from launart import ExportInterface, Launchable, LaunchableStatus
 from loguru import logger
 from statv import Stats
 

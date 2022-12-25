@@ -34,12 +34,13 @@ class AbstractAccount(ABC):
     def get_self_context(self):
         from avilla.core.context import Context
 
+        selector = self.to_selector()
         return Context(
             self,
-            self.to_selector(),
-            self.to_selector(),
+            selector,
+            selector,
             Selector().land(self.land.name),
-            self.to_selector(),
+            selector,
         )
 
     @property

@@ -1,20 +1,11 @@
 from __future__ import annotations
 
 import inspect
+from collections.abc import Awaitable, Callable
 from functools import partial
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    Generic,
-    NoReturn,
-    TypeVar,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
 
-from typing_extensions import Concatenate, ParamSpec, Self, TypeGuard
+from typing_extensions import Concatenate, ParamSpec, Self
 
 from avilla.core.selector import Selector
 from avilla.core.utilles import identity
@@ -118,7 +109,7 @@ class FnCall(Generic[_P, _T]):
                 f'in "{identity(self.trait.context.protocol)}" '
                 "is not implemented."
             )
-        impl = cast("Callable[Concatenate[Context, _P], Awaitable[_T]]", impl)
+        impl = cast(Callable[Concatenate["Context", _P], Awaitable[_T]], impl)
         return await impl(self.trait.context, *args, **kwargs)
 
 
@@ -220,7 +211,7 @@ class UnappliedEntityFnCall(FnCall[_P, _T]):
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
-        impl = cast("Callable[Concatenate[Context, Selector, _P], Awaitable[_T]]", impl)
+        impl = cast(Callable[Concatenate["Context", Selector, _P], Awaitable[_T]], impl)
         return await impl(self.trait.context, target, *args, **kwargs)
 
 
@@ -235,7 +226,7 @@ class UnappliedMetadataFnCall(FnCall[_P, _T]):
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
-        impl = cast("Callable[Concatenate[Context, MetadataOf, _P], Awaitable[_T]]", impl)
+        impl = cast(Callable[Concatenate["Context", MetadataOf, _P], Awaitable[_T]], impl)
         return await impl(self.trait.context, target, *args, **kwargs)
 
 
@@ -250,7 +241,7 @@ class UnappliedUniversalFnCall(FnCall[_P, _T]):
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
-        impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
+        impl = cast(Callable[Concatenate["Context", "Selector | MetadataOf", _P], Awaitable[_T]], impl)
         return await impl(self.trait.context, target, *args, **kwargs)
 
     def assert_entity(self, target: Selector | MetadataOf):
@@ -276,7 +267,7 @@ class AppliedEntityFnCall(FnCall[_P, _T]):
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
-        impl = cast("Callable[Concatenate[Context, Selector, _P], Awaitable[_T]]", impl)
+        impl = cast(Callable[Concatenate["Context", Selector, _P], Awaitable[_T]], impl)
         return await impl(self.trait.context, target, *args, **kwargs)
 
 
@@ -294,7 +285,7 @@ class AppliedMetadataFnCall(FnCall[_P, _T]):
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
-        impl = cast("Callable[Concatenate[Context, MetadataOf, _P], Awaitable[_T]]", impl)
+        impl = cast(Callable[Concatenate["Context", MetadataOf, _P], Awaitable[_T]], impl)
         return await impl(self.trait.context, target, *args, **kwargs)
 
 
@@ -310,5 +301,5 @@ class AppliedUniversalFnCall(FnCall[_P, _T]):
             raise NotImplementedError(
                 f'"{identity(self.trait)}::{self.fn.identity}" for target "{target!r}" is not implemented.'
             )
-        impl = cast("Callable[Concatenate[Context, Selector | MetadataOf, _P], Awaitable[_T]]", impl)
+        impl = cast(Callable[Concatenate["Context", "Selector | MetadataOf", _P], Awaitable[_T]], impl)
         return await impl(self.trait.context, target, *args, **kwargs)

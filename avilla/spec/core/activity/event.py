@@ -17,7 +17,7 @@ class ActivityEvent(AvillaEvent):
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
-        async def catch(interface: "DispatcherInterface[ActivityEvent]"):
+        async def catch(interface: DispatcherInterface[ActivityEvent]):
             ...
 
 

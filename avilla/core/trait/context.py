@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from collections.abc import Awaitable, Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
-from functools import reduce
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, MutableMapping, TypeVar, overload
+from itertools import chain
+from typing import TYPE_CHECKING, Any, MutableMapping, TypeVar, overload
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
@@ -22,17 +23,16 @@ from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, Vis
 
 if TYPE_CHECKING:
     from ..context import Context
-Artifacts: TypeAlias = "MutableMapping[ArtifactSignature, Any]"
+Artifacts: TypeAlias = MutableMapping[ArtifactSignature, Any]
 
 ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
 
 
 @contextmanager
 def wrap_artifacts(*upstream_artifacts: Artifacts):
-    if upstream_artifacts:
-        artifacts = reduce(lambda a, b: {**a, **b}, upstream_artifacts)
-    else:
-        artifacts = {}
+    artifacts = {}
+    for upstream in upstream_artifacts:
+        artifacts |= upstream
     token = ctx_artifacts.set(artifacts)
     yield artifacts
     ctx_artifacts.reset(token)
@@ -53,29 +53,26 @@ def bounds(bound: str | MetadataBound, check: bool = True):
 
     yield
 
+    ctx_artifacts.reset(token)
+
     if check:
         referred_traits: dict[type[Trait], set[Fn]] = {}
         implemented_trait_fns: dict[type[Trait], set[Fn]] = {}
 
         for k in override_artifacts:
             if isinstance(k, Impl):
+                implemented_trait_fns.setdefault(k.fn.trait, set()).add(k.fn)
                 if k.fn.trait not in referred_traits:
-                    referred_fn = set()
-                    referred_traits[k.fn.trait] = referred_fn
-                else:
-                    referred_fn = referred_traits[k.fn.trait]
-                referred_fn.update(k.fn.trait.fn())
+                    referred_traits[k.fn.trait] = set(k.fn.trait.fn())
 
-                implemented_fn = implemented_trait_fns.setdefault(k.fn.trait, set())
-                implemented_fn.add(k.fn)
-
-        for trait, fn_definations in referred_traits.items():
-            if not implemented_trait_fns[trait].issuperset(fn_definations):
-                unimplemented = list(fn_definations - implemented_trait_fns[trait])
-                raise NotImplementedError(f"missing required implements {unimplemented!r}")
+        if unimplemented := list(
+            chain.from_iterable(
+                fn_definations - implemented_trait_fns[trait] for trait, fn_definations in referred_traits.items()
+            )
+        ):
+            raise NotImplementedError(f"missing required implements {unimplemented!r}")
 
     parent[Bounds(bound)] = override_artifacts
-    ctx_artifacts.reset(token)
 
 
 @contextmanager

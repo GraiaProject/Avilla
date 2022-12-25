@@ -20,7 +20,7 @@ class AvillaLifecycleEvent(Dispatchable):
 
     class Dispatcher(BaseDispatcher):
         @classmethod
-        async def catch(cls, interface: "DispatcherInterface[AvillaLifecycleEvent]"):
+        async def catch(cls, interface: DispatcherInterface[AvillaLifecycleEvent]):
             from avilla.core.application import Avilla
 
             if interface.annotation is Avilla:
@@ -51,7 +51,7 @@ class AccountStatusChanged(AvillaLifecycleEvent):
 
     class Dispatcher(BaseDispatcher):
         @classmethod
-        async def catch(cls, interface: "DispatcherInterface[AccountStatusChanged]"):
+        async def catch(cls, interface: DispatcherInterface[AccountStatusChanged]):
             from avilla.core.account import AbstractAccount
 
             if issubclass(interface.annotation, AbstractAccount):

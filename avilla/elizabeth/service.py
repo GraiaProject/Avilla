@@ -4,7 +4,6 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from graia.amnesia.transport.common.client import AbstractClientInterface
-
 from launart import Launart, Service
 
 from avilla.elizabeth.account import ElizabethAccount

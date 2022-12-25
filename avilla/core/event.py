@@ -33,6 +33,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):
             from .context import Context
+
             if interface.annotation is Context:
                 return interface.event.context
 

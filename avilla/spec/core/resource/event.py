@@ -19,7 +19,7 @@ class ResourceEvent(AvillaEvent):
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
-        async def catch(interface: "DispatcherInterface[ResourceEvent]"):
+        async def catch(interface: DispatcherInterface[ResourceEvent]):
             if issubclass((get_origin(interface.annotation)) or interface.annotation, Resource):
                 return interface.event.resource
             return await super().catch(interface)
