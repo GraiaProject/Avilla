@@ -1,14 +1,13 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
-
-from .resource import ElizabethAudioResource, ElizabethImageResource
-
-from .util import element
-
 
 from graia.amnesia.message.element import Text
 
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
+
+from .resource import ElizabethAudioResource, ElizabethImageResource
+from .util import element
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

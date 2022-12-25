@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, Optional, Set, Type
+from typing import TYPE_CHECKING, Any, Generic, Optional, Set
 
 from graia.amnesia.transport.common.status import (
     ConnectionStatus as BaseConnectionStatus,

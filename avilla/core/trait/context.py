@@ -8,9 +8,9 @@ from typing import Any, Awaitable, Callable, MutableMapping, TypeVar, overload
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
 from ..context import Context
-from ..selector import Selector
 from ..metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
 from ..resource import Resource
+from ..selector import Selector
 from . import (
     Fn,
     FnCall,

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from itertools import filterfalse
 from types import MappingProxyType
 from typing import (
@@ -24,6 +23,7 @@ if TYPE_CHECKING:
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
 EMPTY_MAP = MappingProxyType({})
+
 
 class Selector:
     pattern: Mapping[str, str]

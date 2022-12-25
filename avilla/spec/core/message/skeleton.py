@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from graia.amnesia.message import __message_chain_class__
 
-from avilla.core.trait import Fn, Trait
 from avilla.core.selector import Selector
+from avilla.core.trait import Fn, Trait
 
 # MessageFetch => rs.pull(Message, target=...)
 

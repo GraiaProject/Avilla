@@ -278,7 +278,7 @@ class Context:
 
     # TODO: GraiaProject/Avilla#66
     # TODO: redesign Context.complete
-    
+
     """
     def complete(self, selector: Selector, with_land: bool = False):
         output_rule = self._impl_artifacts.get(CompleteRule(selector.path_without_land))

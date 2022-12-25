@@ -27,6 +27,8 @@ from .exceptions import TooLongMessage as TooLongMessage
 from .exceptions import UnknownError as UnknownError
 from .exceptions import UnknownTarget as UnknownTarget
 from .exceptions import UnsupportedOperation as UnsupportedOperation
+from .message import Message as Message
+from .metadata import Metadata as Metadata
 from .platform import Abstract as Abstract
 from .platform import Branch as Branch
 from .platform import Land as Land
@@ -37,8 +39,13 @@ from .platform import Version as Version
 from .protocol import BaseProtocol as BaseProtocol
 from .querier import AbstractQueryHandler as AbstractQueryHandler
 from .querier import ProtocolAbstractQueryHandler as ProtocolAbstractQueryHandler
-from .service import AvillaService as AvillaService
-from .typing import Ensureable as Ensureable
+from .resource import BlobResource as BlobResource
+from .resource import LocalFileResource as LocalFileResource
+from .resource import Resource as Resource
 from .selector import DynamicSelector as DynamicSelector
 from .selector import Selectable as Selectable
 from .selector import Selector as Selector
+from .service import AvillaService as AvillaService
+from .trait import Fn as Fn
+from .trait import Trait as Trait
+from .typing import Ensureable as Ensureable

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from avilla.core.trait import Fn, Trait
 from avilla.core.selector import Selector
+from avilla.core.trait import Fn, Trait
 
 
 class PrivilegeTrait(Trait):
