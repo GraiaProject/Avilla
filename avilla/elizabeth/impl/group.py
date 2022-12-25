@@ -60,59 +60,6 @@ with bounds("group"):
         ctx._collect_metadatas(message_selector, message_metadata)
         return message_selector
 
-    @implement(MessageRevoke.revoke)
-    async def revoke_group_message(ctx: Context, message: Selector):
-        await ctx.account.call(
-            "recall",
-            {
-                "__method__": "update",
-                "messageId": int(message.pattern["message"]),
-                "target": int(message.pattern["group"]),
-            },
-        )
-
-    @implement(MuteTrait.mute)
-    async def mute_member(ctx: Context, target: Selector, duration: timedelta):
-        privilege_info = await ctx.pull(Privilege, target)
-        if not privilege_info.effective:
-            self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
-            raise PermissionError(
-                permission_error_message(
-                    f"Mute.mute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
-                )
-            )
-        time = max(0, min(int(duration.total_seconds()), 2592000))  # Fix time parameter
-        if not time:
-            return
-        await ctx.account.call(
-            "mute",
-            {
-                "__method__": "update",
-                "target": int(target.pattern["group"]),
-                "memberId": int(target.pattern["member"]),
-                "time": time,
-            },
-        )
-
-    @implement(MuteTrait.unmute)
-    async def unmute_member(ctx: Context, target: Selector):
-        privilege_info = await ctx.pull(Privilege, target)
-        if not privilege_info.effective:
-            self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
-            raise PermissionError(
-                permission_error_message(
-                    f"Mute.unmute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
-                )
-            )
-        await ctx.account.call(
-            "unmute",
-            {
-                "__method__": "update",
-                "target": int(target.pattern["group"]),
-                "memberId": int(target.pattern["member"]),
-            },
-        )
-
     @implement(MuteAllTrait.mute_all)
     async def group_mute_all(ctx: Context, target: Selector):
         await ctx.account.call(
@@ -136,16 +83,6 @@ with bounds("group"):
     @implement(SceneTrait.leave)
     async def leave(ctx: Context, target: Selector):
         await ctx.account.call("quit", {"__method__": "update", "target": int(target.pattern["group"])})
-
-    @implement(SceneTrait.remove_member)
-    async def remove_member(ctx: Context, target: Selector, reason: str | None = None):
-        privilege_info = await ctx.pull(Privilege, target)
-        if not privilege_info.effective:
-            raise PermissionError()  # TODO: error message, including Summary info
-        await ctx.account.call(
-            "kick",
-            {"__method__": "update", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
-        )
 
     @pull(Summary)
     async def get_summary(ctx: Context, target: Selector | None) -> Summary:
@@ -196,63 +133,3 @@ with bounds("group"):
             ),
         )
 
-
-with bounds("group.member"):
-
-    @pull(Privilege >> Summary)
-    async def group_get_privilege_summary_info(ctx: Context, target: Selector | None) -> Summary:
-        privilege_trans = defaultdict(lambda: "group_member", {"OWNER": "group_owner", "ADMINISTRATOR": "group_admin"})
-
-        if target is None:
-            self_info = await ctx.account.call(
-                "memberInfo",
-                {
-                    "__method__": "fetch",
-                    "target": int(ctx.self.pattern["group"]),
-                    "memberId": int(ctx.self.pattern["member"]),
-                },
-            )
-            return Summary(
-                Privilege >> Summary,
-                privilege_trans[self_info["permission"]],
-                "the permission info of current account in the group",
-            )
-        target_info = await ctx.account.call(
-            "memberInfo",
-            {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
-        )
-        return Summary(
-            Privilege >> Summary,
-            privilege_trans[target_info["permission"]],
-            "the permission info of current account in the group",
-        )
-
-    @pull(Nick)
-    async def get_member_nick(ctx: Context, target: Selector | None) -> Nick:
-        assert target is not None
-        result = await ctx.account.call(
-            "memberInfo",
-            {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
-        )
-        return Nick(Nick, result["memberName"], result["memberName"], result["specialTitle"])
-
-
-"""
-    @query(None, "group")
-    async def get_groups(ctx: Context, upper: None, predicate: Selector):
-        result: list[dict] = await ctx.account.call("groupList", {"__method__": "fetch"})
-        for i in result:
-            group = Selector().group(str(i["id"]))
-            if predicate.match(group):
-                yield group
-
-    @query("group", "member")
-    async def get_group_members(ctx: Context, upper: Selector, predicate: Selector):
-        result: list[dict] = await ctx.account.call(
-            "memberList", {"__method__": "fetch", "target": int(upper.pattern["group"])}
-        )
-        for i in result:
-            member = Selector().group(str(i["group"]["id"])).member(str(i["id"]))
-            if predicate.match(member):
-                yield member
-"""
