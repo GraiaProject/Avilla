@@ -1,13 +1,4 @@
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    Coroutine,
-    Generic,
-    Protocol,
-    TypeVar,
-    runtime_checkable,
-)
+from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, runtime_checkable
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol

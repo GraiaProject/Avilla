@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Generic, Optional, Set, Type
+from typing import TYPE_CHECKING, Any, Generic, Optional
 
 from graia.amnesia.transport.common.status import (
     ConnectionStatus as BaseConnectionStatus,
 )
-from launart import Launchable, LaunchableStatus
+from launart import ExportInterface, Launchable, LaunchableStatus
 from loguru import logger
 from statv import Stats
 
-from avilla.core.event.lifecycle import AccountAvailable, AccountUnavailable
+from avilla.spec.core.application import AccountAvailable, AccountUnavailable
 
 from .config import HttpClientConfig, HttpServerConfig, T_Config
 from .config import U_Config as U_Config
@@ -59,12 +59,12 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
     status: ConnectionStatus
     protocol: ElizabethProtocol
     config: T_Config
-    dependencies: frozenset[str]
+    dependencies: frozenset[str | type[ExportInterface]]
 
     http_conn: Optional["HttpClientConnection"]
 
     @property
-    def required(self) -> Set[str]:
+    def required(self):
         return set(self.dependencies)
 
     @property
@@ -84,7 +84,7 @@ class ElizabethConnection(Launchable, Generic[T_Config]):
 
     def on_connected_update(self, statv: ConnectionStatus, stats: Stats[bool], past: bool, current: bool) -> None:
         if past != current:
-            logger.warning(f"Account: {'Connected' if current else 'Disconnected'}")
+            logger.warning(f"Account({self.account.id}): {'Connected' if current else 'Disconnected'}")
             proto = self.account.protocol
             proto.avilla.broadcast.postEvent(
                 (AccountAvailable if current else AccountUnavailable)(proto.avilla, self.account)

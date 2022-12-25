@@ -1,23 +1,16 @@
 from __future__ import annotations
 
 import inspect
-from typing import (
-    TYPE_CHECKING,
-    AsyncGenerator,
-    AsyncIterator,
-    Callable,
-    ClassVar,
-    Generic,
-    TypeVar,
-)
+from collections.abc import AsyncGenerator, Callable
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from typing_extensions import Self
 
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
+    from avilla.core.context import Context
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import Relationship
 
 
 def query(target: str):
@@ -33,7 +26,7 @@ class AbstractQueryHandler:
     queriers: ClassVar[
         dict[
             str,
-            Callable[[Self, Relationship, Selector, Callable[[Selector], bool]], AsyncGenerator[Selector, None]],
+            Callable[[Self, Context, Selector, Callable[[Selector], bool]], AsyncGenerator[Selector, None]],
         ]
     ] = {}
 
@@ -43,11 +36,11 @@ class AbstractQueryHandler:
         cls.prefix = prefix
         for mro in reversed(inspect.getmro(cls)):
             if issubclass(mro, AbstractQueryHandler):
-                cls.queriers.update(mro.queriers)
+                cls.queriers |= mro.queriers
         members = inspect.getmembers(cls, predicate=inspect.isfunction)
         for _, value in members:
-            if hasattr(value, "__query_key__"):
-                cls.queriers[value.__query_key__] = value
+            if query_key := getattr(value, "__query_key__", None):
+                cls.queriers[query_key] = value
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
@@ -58,6 +51,3 @@ class ProtocolAbstractQueryHandler(AbstractQueryHandler, Generic[TProtocol]):
 
     def __init__(self, protocol: TProtocol) -> None:
         self.protocol = protocol
-
-    def __init_subclass__(cls, prefix: str | None = None):
-        super().__init_subclass__(prefix)

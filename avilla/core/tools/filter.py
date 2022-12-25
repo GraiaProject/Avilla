@@ -1,17 +1,18 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Container, Iterable
+from collections.abc import Awaitable, Callable, Container, Iterable
 from functools import partial
 from inspect import isawaitable
 from operator import contains, eq, is_, is_not, ne
-from typing import Any, Awaitable, Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 from typing_extensions import ParamSpec, Self
 
 from avilla.core.account import AbstractAccount
-from avilla.core.relationship import Relationship
-from avilla.core.utilles.selector import Selectable, Selector
+from avilla.core.context import Context
+from avilla.core.selector import Selectable, Selector
+from avilla.core.utilles import classproperty
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -86,46 +87,46 @@ class Filter(BaseDispatcher, Generic[T]):
         return self.assert_true(lambda result: all(func(result) for func in funcs))
 
     def match(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
-        return self.assert_true(lambda result: pattern.match(result))
+        return self.assert_true(lambda result: pattern.matches(result))
 
     def mismatch(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
-        return self.assert_false(lambda result: pattern.match(result))
+        return self.assert_false(lambda result: pattern.matches(result))
 
     def match_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: pattern.match(result) for pattern in patterns)
+        return self.any(lambda result: pattern.matches(result) for pattern in patterns)
 
     def match_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.all(lambda result: pattern.match(result) for pattern in patterns)
+        return self.all(lambda result: pattern.matches(result) for pattern in patterns)
 
     def mismatch_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: not pattern.match(result) for pattern in patterns)
+        return self.any(lambda result: not pattern.matches(result) for pattern in patterns)
 
     def mismatch_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: not pattern.match(result) for pattern in patterns)
+        return self.any(lambda result: not pattern.matches(result) for pattern in patterns)
 
     def follows(self: Filter[Selectable], *patterns: str) -> Filter[Selectable]:
         return self.any(lambda result: result.to_selector().follows(pattern) for pattern in patterns)
 
+    @classproperty
     @classmethod
-    @property
-    def rs(cls) -> Filter[Relationship]:
-        return cls().fetch(Relationship)
+    def ctx(cls) -> Filter[Context]:
+        return cls().fetch(Context)
 
     @property
-    def ctx(self: Filter[Relationship]) -> Filter[Selectable]:
-        return self.rs.step(lambda rs: rs.ctx)
+    def client(self: Filter[Context]) -> Filter[Selectable]:
+        return self.ctx.step(lambda ctx: ctx.client)
 
     @property
-    def mainline(self: Filter[Relationship]) -> Filter[Selector]:
-        return self.rs.step(lambda rs: rs.mainline)
+    def scene(self: Filter[Context]) -> Filter[Selector]:
+        return self.ctx.step(lambda ctx: ctx.scene)
 
     @property
-    def current(self: Filter[Relationship]) -> Filter[AbstractAccount]:
-        return self.rs.step(lambda rs: rs.account)
+    def account(self: Filter[Context]) -> Filter[AbstractAccount]:
+        return self.ctx.step(lambda ctx: ctx.account)
 
     @property
-    def via(self: Filter[Relationship]) -> Filter[Selector | None]:
-        return self.rs.step(lambda rs: rs.via)
+    def mediums_first(self: Filter[Context]) -> Filter[Selector | None]:
+        return self.ctx.step(lambda ctx: ctx.mediums[0].selector if ctx.mediums else None)
 
     async def beforeExecution(self, interface: DispatcherInterface):
         result: Awaitable[Any] | Any = interface  # type: ignore

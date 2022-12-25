@@ -5,11 +5,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from avilla.core.platform import Land
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
+    from avilla.core.context import Context
     from avilla.core.protocol import BaseProtocol
-    from avilla.core.relationship import Relationship
 
 
 @dataclass
@@ -24,17 +24,23 @@ class AbstractAccount(ABC):
         self.protocol = protocol
 
     @abstractmethod
-    async def get_relationship(self, target: Selector, *, via: Selector | None = None) -> Relationship:
+    async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
         ...
 
     @abstractmethod
     async def call(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         ...
 
-    def get_self_relationship(self):
-        from avilla.core.relationship import Relationship
-        return Relationship(
-            self.protocol, self.to_selector(), Selector().land(self.land.name), self.to_selector(), self
+    def get_self_context(self):
+        from avilla.core.context import Context
+
+        selector = self.to_selector()
+        return Context(
+            self,
+            selector,
+            selector,
+            Selector().land(self.land.name),
+            selector,
         )
 
     @property

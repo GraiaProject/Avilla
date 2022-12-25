@@ -39,26 +39,27 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 
 ```py
 from creart import create
-from graia.amnesia.builtins.aiohttp import AiohttpService
+from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast
 
-from avilla.core import Avilla, MessageReceived, Relationship, Selector
+from avilla.core import Avilla, Context, MessageReceived
 from avilla.elizabeth.connection.config import WebsocketClientConfig
 from avilla.elizabeth.protocol import ElizabethProtocol
 
 broadcast = create(Broadcast)
-avilla = Avilla(broadcast, [
-    ElizabethProtocol(
-        WebsocketClientConfig("bot-account", "mah-verify-code")
-    )
-], [AiohttpService()])
+avilla = Avilla(
+    broadcast, [ElizabethProtocol(WebsocketClientConfig("bot-account", "mah-verify-code"))], [AiohttpClientService()]
+)
+
 
 @broadcast.receiver(MessageReceived)
-async def on_message_received(event: MessageReceived, rs: Relationship):
-    if rs.ctx.follows("group.member(<master-account>)")
-        await rs.send_message("Hello, Avilla!")
+async def on_message_received(ctx: Context, event: MessageReceived):
+    if ctx.client.follows("group.member(<master-account>)"):
+        await ctx.scene.send_message("Hello, Avilla!")
+
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)
+
 ```
 
 ## 部件发布情况

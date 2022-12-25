@@ -72,7 +72,7 @@ class DeprecatedError(Exception):
 
 def permission_error_message(operator: str, current: str, required: list[str]):
     return (
-        f'missing permission: {operator} required ' +
-        " or ".join(f'"{i}"' for i in required) +
-        f" but current is {current}"
+        f"missing permission: {operator} required "
+        + " or ".join(f'"{i}"' for i in required)
+        + f" but current is {current}"
     )

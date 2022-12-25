@@ -1,13 +1,14 @@
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Generic, Hashable, TypeVar
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from avilla.core.cell import Cell, CellOf
-    from avilla.core.resource import Resource
-    from avilla.core.trait import Fn, Trait
-    from avilla.core.trait.extension import FnExtension
+    from ..context import Context
+    from ..metadata import Metadata, MetadataBound, MetadataRoute
+    from ..resource import Resource
+    from ..trait import Fn
 
 
 class ArtifactSignature:
@@ -15,16 +16,18 @@ class ArtifactSignature:
 
 
 @dataclass(unsafe_hash=True)
+class Bounds(ArtifactSignature):
+    bound: str | MetadataBound
+
+
+@dataclass(unsafe_hash=True)
 class Impl(ArtifactSignature):
-    trait_call: Fn
-    target: str | None
-    path: type[Cell] | CellOf | None
+    fn: Fn
 
 
 @dataclass(unsafe_hash=True)
 class Pull(ArtifactSignature):
-    target: str | None
-    path: type[Cell] | CellOf
+    route: type[Metadata] | MetadataRoute
 
 
 @dataclass(unsafe_hash=True)
@@ -33,19 +36,8 @@ class ResourceFetch(ArtifactSignature):
 
 
 @dataclass(unsafe_hash=True)
-class Allow(ArtifactSignature):
-    content: Hashable
-
-
-@dataclass(unsafe_hash=True)
 class CompleteRule(ArtifactSignature):
     relative: str
-
-
-@dataclass(unsafe_hash=True)
-class ImplDefaultTarget(ArtifactSignature):
-    path: type[Cell] | CellOf | None
-    trait_call: Fn
 
 
 @dataclass(unsafe_hash=True)
@@ -53,18 +45,17 @@ class Query(ArtifactSignature):
     upper: str | None
     target: str
 
+
 @dataclass(unsafe_hash=True)
-class Check(ArtifactSignature):
-    target: str
+class VisibleConf(ArtifactSignature):
+    checker: Callable[[Context], bool]
 
 
+"""
 E = TypeVar("E", bound="FnExtension")
+
 
 @dataclass(unsafe_hash=True)
 class ExtensionImpl(ArtifactSignature, Generic[E]):
     ext: type[E]
-
-@dataclass(unsafe_hash=True)
-class CastAllow(ArtifactSignature):
-    trait: type[Trait]
-    target: str | None = None
+"""

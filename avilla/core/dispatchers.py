@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 from inspect import isclass
-from types import TracebackType
 from typing import TYPE_CHECKING
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 
+from avilla.core._runtime import ctx_protocol
 from avilla.core.account import AbstractAccount
-from avilla.core.cell import Cell
-from avilla.core.context import ctx_protocol, ctx_relationship
+from avilla.core.context import Context
 from avilla.core.event import AvillaEvent
-from avilla.core.relationship import Relationship
+from avilla.core.protocol import BaseProtocol
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -29,46 +28,18 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
 
         if interface.annotation is Avilla:
             return self.avilla
-        elif interface.annotation in self.avilla._protocol_map:
+        if interface.annotation in self.avilla._protocol_map:
             return self.avilla._protocol_map[interface.annotation]
-        elif isinstance(interface.event, AvillaEvent):
-            if isclass(interface.annotation) and issubclass(interface.annotation, AbstractAccount):
-                rs: Relationship = interface.local_storage["relationship"]
-                return interface.event.account
-
-
-class RelationshipDispatcher(BaseDispatcher):
-    @staticmethod
-    async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
-        protocol = ctx_protocol.get()
-        if protocol is not None:
-            rs = await interface.event.account.get_relationship(interface.event.ctx, via=interface.event.get_via())
-            token = ctx_relationship.set(rs)
-            rs.cache["meta"] = interface.event.extra.get("meta", {})
-            interface.local_storage["relationship"] = rs
-            interface.local_storage["_ctxtoken_rs"] = token
-
-    @staticmethod
-    async def afterExecution(
-        interface: DispatcherInterface[AvillaEvent],
-        exception: Exception | None,
-        tb: TracebackType | None,
-    ):
-        ctx_relationship.reset(interface.local_storage["_ctxtoken_rs"])
-
-    @staticmethod
-    async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if isinstance(interface.event, AvillaEvent):
-            if interface.annotation is Relationship:
-                return interface.local_storage["relationship"]
-
-
-"""
-class MetadataDispatcher(BaseDispatcher):
-    @staticmethod
-    async def catch(interface: DispatcherInterface[AvillaEvent]):
-        if isinstance(interface.event, AvillaEvent):
-            if isinstance(interface.annotation, type) and issubclass(interface.annotation, Cell):
-                relationship: Relationship = interface.local_storage["relationship"]
-                return await relationship.meta(interface.annotation)
-"""
+        if (
+            isclass(interface.annotation)
+            and issubclass(interface.annotation, BaseProtocol)
+            and isinstance(ctx_protocol.get(None), interface.annotation)
+        ):
+            return ctx_protocol.get(None)
+        if (
+            isinstance(interface.event, AvillaEvent)
+            and isclass(interface.annotation)
+            and issubclass(interface.annotation, AbstractAccount)
+        ):
+            ctx: Context = interface.local_storage["avilla_context"]
+            return ctx.account

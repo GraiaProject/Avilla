@@ -1,36 +1,35 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.message import Message
-from avilla.core.skeleton.message import MessageRevoke, MessageSend
-from avilla.core.trait.context import prefix, raise_for_no_namespace, scope
-from avilla.core.trait.recorder import casts, default_target, impl, pull
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
+from avilla.core.trait.context import bounds, implement
+from avilla.spec.core.message import MessageRevoke, MessageSend
+
+from ...core.message import Message
 
 if TYPE_CHECKING:
-    from graia.amnesia.message import MessageChain
+    from graia.amnesia.message import __message_chain_class__
 
-    from avilla.core.relationship import Relationship
+    from avilla.core.context import Context
+
+    from ..protocol import ElizabethProtocol
 
 
-raise_for_no_namespace()
+with bounds("friend"):
 
-with scope("qq", "friend"), prefix("friend"):
+    # casts(MessageSend)
+    # casts(MessageRevoke)
 
-    casts(MessageSend)
-    casts(MessageRevoke)
-
-    @default_target(MessageSend.send)
-    def send_friend_message_default_target(rs: Relationship):
-        return rs.ctx
-
-    @impl(MessageSend.send)
+    @implement(MessageSend.send)
     async def send_friend_message(
-        rs: Relationship, target: Selector, message: MessageChain, *, reply: Selector | None = None
+        ctx: Context, target: Selector, message: __message_chain_class__, *, reply: Selector | None = None
     ) -> Selector:
-        serialized_msg = await rs.protocol.serialize_message(message)
-        result = await rs.account.call(
+        if TYPE_CHECKING:
+            assert isinstance(ctx.protocol, ElizabethProtocol)
+        serialized_msg = await ctx.protocol.serialize_message(message)
+        result = await ctx.account.call(
             "sendFriendMessage",
             {
                 "__method__": "post",
@@ -39,11 +38,21 @@ with scope("qq", "friend"), prefix("friend"):
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
-        return Selector().land(rs.land).group(target.pattern["friend"]).message(result["messageId"])
+        message_metadata = Message(
+            describe=Message,
+            id=str(result["messageId"]),
+            scene=Selector().land(ctx.land).friend(str(target.pattern["friend"])),
+            content=message,
+            time=datetime.now(),
+            sender=ctx.account.to_selector(),
+        )
+        message_selector = message_metadata.to_selector()
+        ctx._collect_metadatas(message_selector, message_metadata)
+        return message_selector
 
-    @impl(MessageRevoke.revoke)
-    async def revoke_friend_message(rs: Relationship, message: Selector):
-        await rs.account.call(
+    @implement(MessageRevoke.revoke)
+    async def revoke_friend_message(ctx: Context, message: Selector):
+        await ctx.account.call(
             "recall",
             {
                 "__method__": "post",

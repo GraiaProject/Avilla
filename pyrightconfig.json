@@ -1,3 +1,4 @@
 {
-    "exclude": ["__pypackages__", ".venv"]
+    "exclude": ["__pypackages__", ".venv"],
+    "reportShadowedImports": false,
 }

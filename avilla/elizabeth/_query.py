@@ -3,16 +3,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Callable
 
 from avilla.core.querier import ProtocolAbstractQueryHandler, query
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
 
 if TYPE_CHECKING:
-    from avilla.core.relationship import Relationship
+    from avilla.core.context import Context
 
 
 class ElizabethRootQuery(ProtocolAbstractQueryHandler):
     @query("group")
-    async def query_group(self, rs: Relationship, prefix: Selector, checker: Callable[[Selector], bool]):
+    async def query_group(self, rs: Context, prefix: Selector, checker: Callable[[Selector], bool]):
         account = rs.account
         assert isinstance(account, ElizabethAccount)
         result: list[dict] = await account.call("groupList", {"__method__": "get"})
@@ -24,7 +24,7 @@ class ElizabethRootQuery(ProtocolAbstractQueryHandler):
 
 class ElizabethGroupQuery(ProtocolAbstractQueryHandler, prefix="group"):
     @query("member")
-    async def query_member(self, rs: Relationship, prefix: Selector, checker: Callable[[Selector], bool]):
+    async def query_member(self, rs: Context, prefix: Selector, checker: Callable[[Selector], bool]):
         account = rs.account
         assert isinstance(account, ElizabethAccount)
         result: list[dict] = await account.call(

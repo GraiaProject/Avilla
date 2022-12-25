@@ -7,7 +7,7 @@ from graia.amnesia.message import Element
 from graia.amnesia.message.element import Text as Text
 
 from avilla.core.resource import LocalFileResource, Resource
-from avilla.core.utilles.selector import Selector
+from avilla.core.selector import Selector
 
 
 class Notice(Element):
@@ -16,7 +16,7 @@ class Notice(Element):
     target: Selector
 
     def __init__(self, target: Selector) -> None:
-        """实例化一个 Notice 消息元素, 用于承载消息中用于提醒/呼唤特定用户的部分.
+        """实例化一个 Notice 消息元素，用于承载消息中用于提醒/呼唤特定用户的部分。
 
         Args:
             target (str): 需要提醒/呼唤的特定用户的 ID.

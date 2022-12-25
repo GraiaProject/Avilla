@@ -9,6 +9,7 @@ from graia.amnesia.json import Json
 from graia.amnesia.transport import Transport
 from graia.amnesia.transport.common.http import AbstractServerRequestIO, HttpEndpoint
 from graia.amnesia.transport.common.http.extra import HttpRequest
+from graia.amnesia.transport.common.server import AbstractRouter
 from launart import Launart
 from launart.utilles import wait_fut
 from loguru import logger
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
 class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
     """HTTP 服务器连接"""
 
-    dependencies = frozenset(["http.universal_server"])
+    dependencies = frozenset([AbstractRouter])
 
     def __init__(self, protocol: ElizabethProtocol, config: HttpServerConfig) -> None:
         super().__init__(protocol, config)
@@ -43,9 +44,11 @@ class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
         self.status.connected = True
         self.status.alive = True
         self.register_account()  # LINK: hot registration
-        event = await self.protocol.event_parser.parse_event(self.protocol, self.account, data)
-        if event is not None:
-            self.protocol.post_event(event)
+        try:
+            event, context = await self.protocol.parse_event(self.account, data)
+            self.protocol.post_event(event, context)
+        except Exception:
+            logger.exception("error on parsing event: ", data)
         return {"command": "", "data": {}}
 
     async def launch(self, mgr: Launart) -> None:
@@ -56,7 +59,7 @@ class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
 class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
     """HTTP 客户端连接"""
 
-    dependencies = frozenset(["http.universal_client"])
+    dependencies = frozenset([AiohttpClientInterface])
     http_interface: AiohttpClientInterface
 
     def __init__(self, protocol: ElizabethProtocol, config: HttpClientConfig) -> None:
@@ -141,9 +144,11 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                     continue
                 assert isinstance(data, list)
                 for event_data in data:
-                    event = await self.protocol.event_parser.parse_event(self.protocol, self.account, event_data)
-                    if event is not None:
-                        self.protocol.post_event(event)
+                    try:
+                        event, context = await self.protocol.parse_event(self.account, event_data)
+                        self.protocol.post_event(event, context)
+                    except Exception:
+                        logger.exception("error on parsing event: ", event_data)
                 await wait_fut(
                     [asyncio.sleep(0.5), mgr.status.wait_for_sigexit()],
                     return_when=asyncio.FIRST_COMPLETED,
