@@ -12,7 +12,7 @@ from typing_extensions import Self, TypeAlias, Unpack
 from avilla.core._runtime import ctx_context
 from avilla.core.account import AbstractAccount
 from avilla.core.message import Message
-from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute, MetadataBound
+from avilla.core.metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
 from avilla.core.resource import Resource
 from avilla.core.selector import EMPTY_MAP, Selectable, Selector
 from avilla.core.trait import Trait
@@ -244,9 +244,7 @@ class Context:
             (
                 v
                 for k, v in self._impl_artifacts.items()
-                if isinstance(k, Bounds)
-                and isinstance(k.bound, str)
-                and target.follows(k.bound)
+                if isinstance(k, Bounds) and isinstance(k.bound, str) and target.follows(k.bound)
             ),
             {},
         )
@@ -272,7 +270,7 @@ class Context:
 
     @classproperty
     @classmethod
-    def app_current(cls) -> Context:
+    def current(cls) -> Context:
         return ctx_context.get()
 
     async def query(self, pattern: Selector, with_land: bool = False):

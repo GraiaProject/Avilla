@@ -91,7 +91,7 @@ class ElizabethProtocol(BaseProtocol):
             elif isinstance(element, NoticeAll):
                 result.append({"type": "AtAll"})
             elif isinstance(element, Picture):
-                raw = await (context or Context.app_current).fetch(element.resource)
+                raw = await (context or Context.current).fetch(element.resource)
                 result.append(
                     {
                         "type": "Image",
@@ -99,7 +99,7 @@ class ElizabethProtocol(BaseProtocol):
                     }
                 )
             elif isinstance(element, FlashImage):
-                raw = await (context or Context.app_current).fetch(element.resource)
+                raw = await (context or Context.current).fetch(element.resource)
                 result.append(
                     {
                         "type": "FlashImage",
@@ -107,7 +107,7 @@ class ElizabethProtocol(BaseProtocol):
                     }
                 )
             elif isinstance(element, Audio):
-                raw = await (context or Context.app_current).fetch(element.resource)
+                raw = await (context or Context.current).fetch(element.resource)
                 result.append(
                     {
                         "type": "Voice",
