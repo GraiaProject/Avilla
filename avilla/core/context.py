@@ -4,7 +4,7 @@ from collections import ChainMap, deque
 from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Mapping, TypeVar, cast, overload
+from typing import Any, Mapping, TypeVar, TypedDict, cast, overload
 
 from graia.amnesia.message import Element, Text, __message_chain_class__
 from typing_extensions import Self, TypeAlias, Unpack
@@ -182,6 +182,9 @@ class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
         return trait(self.context, self)
 
 
+class ContextCache(TypedDict, total=True):
+    meta: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]]
+
 class Context:
     account: AbstractAccount
 
@@ -191,7 +194,7 @@ class Context:
     self: Selector
     mediums: list[ContextMedium]
 
-    cache: dict[str, Any]
+    cache: ContextCache | dict[str, Any]
 
     def __init__(
         self,
@@ -201,7 +204,7 @@ class Context:
         scene: Selector,
         selft: Selector,
         mediums: list[Selector] | None = None,
-        prelude_metadatas: dict[Selector | MetadataRoute, Metadata] | None = None,
+        prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
         self.account = account
 
@@ -242,6 +245,10 @@ class Context:
     @property
     def is_resource(self) -> bool:
         return any(isinstance(i, Resource) for i in self.cache["meta"].get(self.endpoint, {}).values())
+
+    def _collect_metadatas(self, target: Selector | Selectable, *metadatas: Metadata):
+        scope = self.cache['meta'].setdefault(target.to_selector(), {})
+        scope.update({type(i): i for i in metadatas})
 
     """
     @property
@@ -316,7 +323,7 @@ class Context:
             if flush:
                 del cached[route]
             elif not route.has_params():
-                return cached[route]
+                return cast("_MetadataT", cached[route])
 
         pull_implement = self._impl_artifacts.get(Bounds(target.path_without_land), {}).get(Pull(route))
         if pull_implement is None:

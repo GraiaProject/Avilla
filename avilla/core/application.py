@@ -33,23 +33,19 @@ class Avilla:
     def __init__(
         self,
         broadcast: Broadcast,
+        launch_manager: Launart,
         protocols: list[BaseProtocol],
-        services: list[Service],
-        launch_manager: Launart | None = None,
     ):
         if len({type(i) for i in protocols}) != len(protocols):
             raise ValueError("protocol must be unique, and the config should be passed by config.")
 
         self.broadcast = broadcast
-        self.launch_manager = launch_manager or Launart()
+        self.launch_manager = launch_manager
         self.protocols = protocols
         self._protocol_map = {type(i): i for i in protocols}
         self.accounts = []
         self.global_artifacts = {}
         self.service = AvillaService(self)
-
-        for service in services:
-            self.launch_manager.add_service(service)
 
         self.launch_manager.add_service(self.service)
 

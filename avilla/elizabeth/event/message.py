@@ -28,17 +28,16 @@ async def group_message(protocol: ElizabethProtocol, account: ElizabethAccount, 
         selft=group.member(account.id),
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
-    event = MessageReceived(
-        context,
-        Message(
-            describe=Message,
-            id=message_result["source"],
-            scene=group,
-            sender=member,
-            content=__message_chain_class__(message_result["content"]),
-            time=message_result["time"],
-        ),
+    message = Message(
+        describe=Message,
+        id=message_result["source"],
+        scene=group,
+        sender=member,
+        content=__message_chain_class__(message_result["content"]),
+        time=message_result["time"],
     )
+    context._collect_metadatas(message, message)
+    event = MessageReceived(context, message)
     return event, context
 
 
@@ -53,17 +52,16 @@ async def friend_message(protocol: ElizabethProtocol, account: ElizabethAccount,
         selft=account.to_selector(),
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
-    event = MessageReceived(
-        context,
-        Message(
-            describe=Message,
-            id=message_result["source"],
-            scene=friend,
-            sender=friend,
-            content=__message_chain_class__(message_result["content"]),
-            time=message_result["time"],
-        ),
+    message = Message(
+        describe=Message,
+        id=message_result["source"],
+        scene=friend,
+        sender=friend,
+        content=__message_chain_class__(message_result["content"]),
+        time=message_result["time"],
     )
+    context._collect_metadatas(message, message)
+    event = MessageReceived(context, message)
     return event, context
 
 
@@ -79,15 +77,14 @@ async def temp_message(protocol: ElizabethProtocol, account: ElizabethAccount, r
         selft=group.member(account.id),
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
-    event = MessageReceived(
-        context,
-        Message(
-            describe=Message,
-            id=message_result["source"],
-            scene=member,
-            sender=member,
-            content=__message_chain_class__(message_result["content"]),
-            time=message_result["time"],
-        ),
+    message = Message(
+        describe=Message,
+        id=message_result["source"],
+        scene=member,
+        sender=member,
+        content=__message_chain_class__(message_result["content"]),
+        time=message_result["time"],
     )
+    context._collect_metadatas(message, message)
+    event = MessageReceived(context, message)
     return event, context
