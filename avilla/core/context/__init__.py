@@ -18,14 +18,15 @@ from avilla.core.trait.context import Artifacts
 from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch, VisibleConf
 from avilla.core.utilles import classproperty
 
-from ._query import query_depth_generator as _query_depth_generator, find_querier_steps as _find_querier_steps
+from ._query import find_querier_steps as _find_querier_steps
+from ._query import query_depth_generator as _query_depth_generator
 from ._selector import (
-    ContextSelector,
     ContextClientSelector,
     ContextEndpointSelector,
     ContextMedium,
     ContextRequestSelector,
     ContextSceneSelector,
+    ContextSelector,
     ContextWrappedMetadataOf,
 )
 

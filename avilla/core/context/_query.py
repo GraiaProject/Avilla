@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message import __message_chain_class__
 from typing_extensions import TypeAlias
+
 from avilla.core.selector import Selector
 from avilla.core.trait.context import Artifacts
 from avilla.core.trait.signature import Query

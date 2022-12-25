@@ -50,11 +50,11 @@ with bounds("group"):
         )
         message_metadata = Message(
             describe=Message,
-            id=str(result['messageId']),
+            id=str(result["messageId"]),
             scene=Selector().land(ctx.land).group(str(target.pattern["group"])),
             content=message,
             time=datetime.now(),
-            sender=Selector().land(ctx.land).group(str(target.pattern["group"])).member(ctx.account.id)
+            sender=Selector().land(ctx.land).group(str(target.pattern["group"])).member(ctx.account.id),
         )
         message_selector = message_metadata.to_selector()
         ctx._collect_metadatas(message_selector, message_metadata)
