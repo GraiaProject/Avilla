@@ -7,8 +7,8 @@ from weakref import WeakValueDictionary
 
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.transport import Transport
-from graia.amnesia.transport.common.http.extra import HttpRequest
 from graia.amnesia.transport.common.client import AbstractClientInterface
+from graia.amnesia.transport.common.http.extra import HttpRequest
 from graia.amnesia.transport.common.websocket import (
     AbstractWebsocketIO,
     WebsocketCloseEvent,
@@ -74,8 +74,8 @@ class BaseWebsocketConnection(Transport, ElizabethConnection[T_WebsocketConfig])
             try:
                 event, context = await self.protocol.parse_event(self.account, data)
                 self.protocol.post_event(event, context)
-            except Exception as e:
-                logger.exception(f"error on parsing event: {data}")
+            except Exception:
+                logger.exception("error on parsing event: ", data)
         else:
             logger.warning(f"Got unknown data: {raw}")
 

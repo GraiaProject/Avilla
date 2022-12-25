@@ -8,8 +8,8 @@ from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.json import Json
 from graia.amnesia.transport import Transport
 from graia.amnesia.transport.common.http import AbstractServerRequestIO, HttpEndpoint
-from graia.amnesia.transport.common.server import AbstractRouter
 from graia.amnesia.transport.common.http.extra import HttpRequest
+from graia.amnesia.transport.common.server import AbstractRouter
 from launart import Launart
 from launart.utilles import wait_fut
 from loguru import logger
@@ -48,7 +48,7 @@ class HttpServerConnection(ElizabethConnection[HttpServerConfig], Transport):
             event, context = await self.protocol.parse_event(self.account, data)
             self.protocol.post_event(event, context)
         except Exception:
-            logger.error("error on parsing event: ", data)
+            logger.exception("error on parsing event: ", data)
         return {"command": "", "data": {}}
 
     async def launch(self, mgr: Launart) -> None:
@@ -147,7 +147,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
                     try:
                         event, context = await self.protocol.parse_event(self.account, event_data)
                         self.protocol.post_event(event, context)
-                    except:
+                    except Exception:
                         logger.exception("error on parsing event: ", event_data)
                 await wait_fut(
                     [asyncio.sleep(0.5), mgr.status.wait_for_sigexit()],

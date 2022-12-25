@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from collections import ChainMap, deque
-from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
+from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable, Mapping
 from dataclasses import dataclass
 from functools import cached_property
-from typing import Any, Mapping, TypeVar, TypedDict, cast, overload
+from typing import Any, TypedDict, TypeVar, cast, overload
 
 from graia.amnesia.message import Element, Text, __message_chain_class__
 from typing_extensions import Self, TypeAlias, Unpack
@@ -12,22 +12,12 @@ from typing_extensions import Self, TypeAlias, Unpack
 from avilla.core._runtime import ctx_context
 from avilla.core.account import AbstractAccount
 from avilla.core.message import Message
-from avilla.core.metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
-from avilla.core.platform import Land
+from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute, MetadataBound
 from avilla.core.resource import Resource
-from avilla.core.selector import EMPTY_MAP, MatchRule, Selectable, Selector
+from avilla.core.selector import EMPTY_MAP, Selectable, Selector
 from avilla.core.trait import Trait
 from avilla.core.trait.context import Artifacts
-
-# from avilla.core.trait.extension import ExtensionHandler
-from avilla.core.trait.signature import (
-    Bounds,
-    CompleteRule,
-    Pull,
-    Query,
-    ResourceFetch,
-    VisibleConf,
-)
+from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch, VisibleConf
 from avilla.core.utilles import classproperty
 from avilla.spec.core.message import MessageSend
 from avilla.spec.core.request import RequestTrait
@@ -38,8 +28,8 @@ _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 _DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
 _TraitT = TypeVar("_TraitT", bound=Trait)
 
-_Querier: TypeAlias = "Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]"
-_Describe: TypeAlias = "type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]"
+_Querier: TypeAlias = Callable[["Context", Selector | None, Selector], AsyncGenerator[Selector, None]]
+_Describe: TypeAlias = type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]
 
 
 async def _query_depth_generator(
@@ -185,6 +175,7 @@ class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
 class ContextCache(TypedDict, total=True):
     meta: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]]
 
+
 class Context:
     account: AbstractAccount
 
@@ -230,13 +221,11 @@ class Context:
 
     @cached_property
     def _impl_artifacts(self) -> Artifacts:
-        m = [self.protocol.implementations]
-        m.extend(
-            v
-            for k, v in self.protocol.implementations.items()
-            if isinstance(k, VisibleConf) and k.checker(self)
-        )
-        return ChainMap(*m[::-1], self.avilla.global_artifacts)
+        m = [
+            self.protocol.implementations,
+            *[v for k, v in self.protocol.implementations.items() if isinstance(k, VisibleConf) and k.checker(self)],
+        ]
+        return ChainMap(*m[::-1])
 
     @property
     def request(self) -> ContextRequestSelector:
@@ -247,7 +236,7 @@ class Context:
         return any(isinstance(i, Resource) for i in self.cache["meta"].get(self.endpoint, {}).values())
 
     def _collect_metadatas(self, target: Selector | Selectable, *metadatas: Metadata):
-        scope = self.cache['meta'].setdefault(target.to_selector(), {})
+        scope = self.cache["meta"].setdefault(target.to_selector(), {})
         scope.update({type(i): i for i in metadatas})
 
     def _get_entity_bound_scope(self, target: Selector):
@@ -357,7 +346,7 @@ class Context:
                 + (f' for "{target.path_without_land}"' if target is not None else "")
                 + f' because no available implement found in "{self.protocol.__class__.__name__}"'
             )
-        pull_implement = cast("Callable[[Context, Selector | None], Awaitable[_MetadataT]]", pull_implement)
+        pull_implement = cast(Callable[[Context, "Selector | None"], Awaitable[_MetadataT]], pull_implement)
         result = await pull_implement(self, target)
         if target is not None and not route.has_params():
             cached = self.cache["meta"].setdefault(target, {})

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from collections.abc import Callable, Container, Iterable
+from collections.abc import Awaitable, Callable, Container, Iterable
 from functools import partial
 from inspect import isawaitable
 from operator import contains, eq, is_, is_not, ne
-from typing import Any, Awaitable, Generic, TypeVar
+from typing import Any, Generic, TypeVar
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 from typing_extensions import ParamSpec, Self

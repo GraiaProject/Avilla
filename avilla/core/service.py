@@ -49,7 +49,7 @@ class AvillaService(Service):
             for protocol in self.avilla.protocols:
                 logger.info(
                     f"Using platform: {protocol.__class__.platform}",
-                    #alt=f"[magenta]Using platform: [/][dark_orange]{protocol.__class__.platform}[/]",
+                    # alt=f"[magenta]Using platform: [/][dark_orange]{protocol.__class__.platform}[/]",
                 )
 
         await self.avilla.broadcast.postEvent(ApplicationReady(self.avilla))

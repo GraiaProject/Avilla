@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, AsyncGenerator, Callable, ClassVar, Generic, TypeVar
+from collections.abc import AsyncGenerator, Callable
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from typing_extensions import Self
 
@@ -38,8 +39,8 @@ class AbstractQueryHandler:
                 cls.queriers |= mro.queriers
         members = inspect.getmembers(cls, predicate=inspect.isfunction)
         for _, value in members:
-            if hasattr(value, "__query_key__"):
-                cls.queriers[value.__query_key__] = value
+            if query_key := getattr(value, "__query_key__", None):
+                cls.queriers[query_key] = value
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
@@ -50,6 +51,3 @@ class ProtocolAbstractQueryHandler(AbstractQueryHandler, Generic[TProtocol]):
 
     def __init__(self, protocol: TProtocol) -> None:
         self.protocol = protocol
-
-    def __init_subclass__(cls, prefix: str | None = None):
-        super().__init_subclass__(prefix)
