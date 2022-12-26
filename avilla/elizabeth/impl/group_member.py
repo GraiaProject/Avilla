@@ -9,6 +9,8 @@ from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
 from avilla.spec.core.privilege import MuteAllTrait, MuteTrait, Privilege
+from ...spec.core.privilege.skeleton import PrivilegeTrait
+from ...spec.core.privilege.metadata import MuteInfo
 from avilla.spec.core.profile import Nick, Summary
 
 from ...core.metadata import MetadataOf
@@ -27,6 +29,20 @@ privilege_level = defaultdict(lambda: 0, {"OWNER": 2, "ADMINISTRATOR": 1})
 
 with bounds("group.member"):
 
+    @pull(MuteInfo)
+    async def get_member_mute_info(ctx: Context, target: Selector):
+        assert target is not None
+        result = await ctx.account.call(
+            "memberInfo",
+            {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
+        )
+        return MuteInfo(
+            MuteInfo,
+            result.get("mutetimeRemaining") is not None,
+            timedelta(seconds=(result.get("mutetimeRemaining") or 0)),
+            None,
+        )
+
     @implement(MuteTrait.mute)
     async def mute_member(ctx: Context, target: Selector, duration: timedelta):
         privilege_info = await ctx.pull(Privilege, target)
@@ -34,7 +50,7 @@ with bounds("group.member"):
             self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
             raise PermissionError(
                 permission_error_message(
-                    f"Mute.mute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
+                    f"mute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
                 )
             )
         time = max(0, min(int(duration.total_seconds()), 2592000))  # Fix time parameter
@@ -57,7 +73,7 @@ with bounds("group.member"):
             self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
             raise PermissionError(
                 permission_error_message(
-                    f"Mute.unmute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
+                    f"unmute@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
                 )
             )
         await ctx.account.call(
@@ -70,7 +86,7 @@ with bounds("group.member"):
         )
 
     @pull(Privilege)
-    async def group_member_get_privilege(ctx: Context, target: Selector):
+    async def get_member_privilege(ctx: Context, target: Selector):
         self_info = (
             await ctx.account.call(
                 "memberInfo",
@@ -96,7 +112,7 @@ with bounds("group.member"):
         )
 
     @pull(Privilege >> Summary)
-    async def group_member_get_privilege_summary_info(ctx: Context, target: Selector | None) -> Summary:
+    async def get_member_privilege_summary_info(ctx: Context, target: Selector | None) -> Summary:
         if target is None:
             self_info = await ctx.account.call(
                 "memberInfo",
@@ -121,21 +137,91 @@ with bounds("group.member"):
             "the permission info of current account in the group",
         )
 
+    @pull(Privilege >> Privilege)
+    async def get_member_privilege_of_privilege(ctx: Context, target: Selector):
+        self_info = (
+            await ctx.account.call(
+                "memberInfo",
+                {
+                    "__method__": "fetch",
+                    "target": int(ctx.self.pattern["group"]),
+                    "memberId": int(ctx.self.pattern["member"]),
+                },
+            )
+        )["permission"]
+        return Privilege(Privilege >> Privilege, privilege_level[self_info] == 2, privilege_level[self_info] == 2)
+
+    @pull(Privilege >> Privilege >> Summary)
+    async def get_member_privilege_of_privilege_summary(ctx: Context, target: Selector):
+        self_info = (
+            await ctx.account.call(
+                "memberInfo",
+                {
+                    "__method__": "fetch",
+                    "target": int(ctx.self.pattern["group"]),
+                    "memberId": int(ctx.self.pattern["member"]),
+                },
+            )
+        )["permission"]
+        return Summary(
+            Privilege >> Privilege >> Summary,
+            privilege_trans[self_info["permission"]],
+            "the permission of controling administration of the group, to be noticed that is only group owner could do this.",
+        )
+
+    @implement(PrivilegeTrait.upgrade)
+    async def upgrade_member(ctx: Context, target: Selector, dest: str | None = None):
+        if not (await get_member_privilege_of_privilege(ctx, target)).available:
+            self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
+            raise PermissionError(permission_error_message(
+                f"upgrade_permission@{target.path}", self_privilege_info.name,['group_owner']
+            ))
+        await ctx.account.call(
+            "memberAdmin",
+            {
+                "__method__": "update",
+                "target": int(ctx.self.pattern["group"]),
+                "memberId": int(ctx.self.pattern["member"]),
+                "assign": True
+            },
+        )
+
+    @implement(PrivilegeTrait.downgrade)
+    async def downgrade_member(ctx: Context, target: Selector, dest: str | None = None):
+        if not (await get_member_privilege_of_privilege(ctx, target)).available:
+            self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
+            raise PermissionError(permission_error_message(
+                f"upgrade_permission@{target.path}", self_privilege_info.name,['group_owner']
+            ))
+        await ctx.account.call(
+            "memberAdmin",
+            {
+                "__method__": "update",
+                "target": int(ctx.self.pattern["group"]),
+                "memberId": int(ctx.self.pattern["member"]),
+                "assign": False
+            },
+        )
+
     @implement(SceneTrait.remove_member)
     async def remove_member(ctx: Context, target: Selector, reason: str | None = None):
         privilege_info = await ctx.pull(Privilege, target)
         if not privilege_info.effective:
-            raise PermissionError()  # TODO: error message, including Summary info
+            self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
+            raise PermissionError(
+                permission_error_message(
+                    f"remove@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
+                )
+            )
         await ctx.account.call(
             "kick",
             {"__method__": "update", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
 
     @pull(Nick)
-    async def get_member_nick(ctx: Context, target: Selector | None) -> Nick:
-        assert target is not None
+    async def get_member_nick(ctx: Context, target: Selector) -> Nick:
         result = await ctx.account.call(
             "memberInfo",
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
-        return Nick(Nick, result["memberName"], result["memberName"], result["specialTitle"])
+        return Nick(Nick, result["memberName"], result["memberName"], result.get("specialTitle"))

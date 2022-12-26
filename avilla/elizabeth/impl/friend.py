@@ -4,8 +4,9 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.selector import Selector
-from avilla.core.trait.context import bounds, implement
+from avilla.core.trait.context import bounds, implement, pull
 from avilla.spec.core.message import MessageRevoke, MessageSend
+from ...spec.core.profile.metadata import Nick, Summary
 
 from ...core.message import Message
 
@@ -60,3 +61,25 @@ with bounds("friend"):
                 "target": int(message.pattern["friend"]),
             },
         )
+
+    @pull(Summary)
+    async def get_friend_summary(ctx: Context, target: Selector):
+        result = await ctx.account.call(
+            "friendProfile",
+            {
+                "__method__": "fetch",
+                "target": int(target.pattern["friend"]),
+            },
+        )
+        return Summary(Summary, result["nickname"], "a friend contact assigned to this account")
+
+    @pull(Nick)
+    async def get_friend_nick(ctx: Context, target: Selector):
+        result = await ctx.account.call(
+            "friendProfile",
+            {
+                "__method__": "fetch",
+                "target": int(target.pattern["friend"]),
+            },
+        )
+        return Nick(Nick, result["nickname"], result["nickname"], None)
