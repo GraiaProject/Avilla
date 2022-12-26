@@ -20,7 +20,10 @@ class BaseProtocol(metaclass=ABCMeta):
     avilla: Avilla
     platform: ClassVar[Platform]
 
+    event_parsers: ClassVar[Artifacts]
     implementations: ClassVar[Artifacts]
+    message_parses: ClassVar[Artifacts]
+    context_sources: ClassVar[Artifacts]
 
     def __init__(self):
         ...

@@ -4,7 +4,16 @@ from collections.abc import Awaitable, Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from itertools import chain
-from typing import TYPE_CHECKING, Any, AsyncGenerator, MutableMapping, TypeVar, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Generic,
+    MutableMapping,
+    Protocol,
+    TypeVar,
+    overload,
+)
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
@@ -22,6 +31,9 @@ from . import (
 from .signature import (
     ArtifactSignature,
     Bounds,
+    ContextSourceSign,
+    ElementParse,
+    EventParse,
     Impl,
     Pull,
     Query,
@@ -30,7 +42,12 @@ from .signature import (
 )
 
 if TYPE_CHECKING:
+    from ..account import AbstractAccount
     from ..context import Context
+    from graia.amnesia.message import Element
+    from ..event import AvillaEvent
+    from ..protocol import BaseProtocol
+
 Artifacts: TypeAlias = MutableMapping[ArtifactSignature, Any]
 
 ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
@@ -184,3 +201,45 @@ def query(*pattern: ...) -> ...:
 
 def complete_rule():
     ...  # TODO
+
+
+_ProtocolT = TypeVar("_ProtocolT", bound="BaseProtocol", contravariant=True)
+_AccountT = TypeVar("_AccountT", bound="AbstractAccount", contravariant=True)
+
+
+class _ContextSourceArtifact(Protocol[_AccountT]):
+    async def __call__(self, account: _AccountT, target: Selector, *, via: Selector | None = None) -> Context:
+        ...
+
+
+class ContextSourceRecorder(Generic[_AccountT]):
+    def __new__(cls, pattern: str):
+        def wrapper(artifact: _ContextSourceArtifact[_AccountT]):
+            artifacts = get_artifacts()
+            artifacts[ContextSourceSign(pattern)] = artifact
+            return artifact
+
+        return wrapper
+
+EventParser: TypeAlias = "Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple[AvillaEvent, Context]]]"
+
+class EventParserRecorder(Generic[_ProtocolT, _AccountT]):
+    def __new__(cls, event_type: str):
+        def wrapper(handler: Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple[AvillaEvent, Context]]]):
+            artifacts = get_artifacts()
+            artifacts[EventParse(event_type)] = handler
+            return handler
+
+        return wrapper
+
+
+ElementParser: TypeAlias = Callable[[Context, dict], Awaitable[Element]]
+
+
+def element(element_type: str):
+    def wrapper(handler: ElementParser):
+        artifacts = get_artifacts()
+        artifacts[ElementParse(element_type)] = handler
+        return handler
+
+    return wrapper

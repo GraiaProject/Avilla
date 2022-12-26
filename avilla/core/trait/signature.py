@@ -51,6 +51,21 @@ class VisibleConf(ArtifactSignature):
     checker: Callable[[Context], bool]
 
 
+@dataclass(unsafe_hash=True)
+class ContextSourceSign(ArtifactSignature):
+    pattern: str
+
+
+@dataclass(unsafe_hash=True)
+class EventParse(ArtifactSignature):
+    event_type: str
+
+
+
+@dataclass(unsafe_hash=True)
+class ElementParse(ArtifactSignature):
+    element_type: str
+
 """
 E = TypeVar("E", bound="FnExtension")
 

@@ -101,7 +101,7 @@ class Selector:
         if isinstance(land, Land):
             land = land.name
 
-        return Selector({"land": land, **self.pattern})
+        return Selector({"land": land, **{k: v for k, v in self.pattern.items() if k != "land"}})
 
     def matches(self, other: Selectable, *, mode: MatchRule = "exact") -> bool:
         if not isinstance(other, Selector):
