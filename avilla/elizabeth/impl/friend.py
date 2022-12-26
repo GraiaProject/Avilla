@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
+from ...spec.core.activity.skeleton import ActivityTrigger
 from avilla.spec.core.message import MessageRevoke, MessageSend
 
 from ...core.message import Message
@@ -33,7 +34,7 @@ with bounds("friend"):
         result = await ctx.account.call(
             "sendFriendMessage",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "target": int(target.pattern["friend"]),
                 "messageChain": serialized_msg,
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
@@ -56,7 +57,7 @@ with bounds("friend"):
         await ctx.account.call(
             "recall",
             {
-                "__method__": "post",
+                "__method__": "update",
                 "messageId": int(message.pattern["message"]),
                 "target": int(message.pattern["friend"]),
             },
@@ -83,3 +84,16 @@ with bounds("friend"):
             },
         )
         return Nick(Nick, result["nickname"], result["nickname"], None)
+
+with bounds("friend.nudge"):
+    @implement(ActivityTrigger.trigger)
+    async def send_member_nudge(ctx: Context, target: Selector):
+        await ctx.account.call(
+            "sendNudge",
+            {
+                "__method__": "update",
+                "target": int(target['friend']),
+                "subject": int(target['friend']),
+                "kind": "Friend"
+            }
+        )

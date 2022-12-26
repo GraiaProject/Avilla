@@ -8,6 +8,7 @@ from avilla.core.exceptions import permission_error_message
 from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
+from ...spec.core.activity.skeleton import ActivityTrigger
 from avilla.spec.core.privilege import MuteAllTrait, MuteTrait, Privilege
 from avilla.spec.core.profile import Nick, Summary
 
@@ -225,3 +226,16 @@ with bounds("group.member"):
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
         return Nick(Nick, result["memberName"], result["memberName"], result.get("specialTitle"))
+
+with bounds("group.member.nudge"):
+    @implement(ActivityTrigger.trigger)
+    async def send_member_nudge(ctx: Context, target: Selector):
+        await ctx.account.call(
+            "sendNudge",
+            {
+                "__method__": "update",
+                "target": int(target['member']),
+                "subject": int(target['group']),
+                "kind": "Group"
+            }
+        )
