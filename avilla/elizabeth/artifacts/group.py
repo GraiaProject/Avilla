@@ -4,14 +4,13 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.message import Message
+from avilla.core.metadata import MetadataOf
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
 from avilla.spec.core.message import MessageSend
 from avilla.spec.core.privilege import MuteAllTrait, Privilege
 from avilla.spec.core.profile import Summary, SummaryTrait
 from avilla.spec.core.scene import SceneTrait
-
-from ...core.metadata import MetadataOf
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__

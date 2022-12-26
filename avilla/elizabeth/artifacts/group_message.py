@@ -2,18 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
-
-from ...core.message import Message
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__
 
     from avilla.core.context import Context
     from avilla.spec.core.message import MessageRevoke
+    from avilla.spec.core.message.event import MessageReceived
 
-    from ...spec.core.message.event import MessageReceived
     from ..account import ElizabethAccount
     from ..protocol import ElizabethProtocol
 

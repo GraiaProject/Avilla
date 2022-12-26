@@ -3,13 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
+from avilla.spec.core.activity.skeleton import ActivityTrigger
 from avilla.spec.core.message import MessageRevoke, MessageSend
-
-from ...core.message import Message
-from ...spec.core.activity.skeleton import ActivityTrigger
-from ...spec.core.profile.metadata import Nick, Summary
+from avilla.spec.core.profile.metadata import Nick, Summary
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__

@@ -8,17 +8,17 @@ from graia.amnesia.message import __message_chain_class__
 from graia.amnesia.message.element import Element, Text
 
 from avilla.core.application import Avilla
+from avilla.core.context import Context
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
+from avilla.core.event import AvillaEvent
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.trait.context import wrap_artifacts
+from avilla.core.trait.signature import ElementParse, EventParse
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.service import ElizabethService
+from avilla.spec.qq.elements import FlashImage
 
-from ..core.context import Context
-from ..core.event import AvillaEvent
-from ..core.trait.signature import ElementParse, EventParse
-from ..spec.qq.elements import FlashImage
 from .account import ElizabethAccount
 
 if TYPE_CHECKING:

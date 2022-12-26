@@ -6,16 +6,15 @@ from typing import TYPE_CHECKING
 
 from avilla.core.exceptions import permission_error_message
 from avilla.core.message import Message
+from avilla.core.metadata import MetadataOf
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
+from avilla.spec.core.activity.skeleton import ActivityTrigger
 from avilla.spec.core.privilege import MuteAllTrait, MuteTrait, Privilege
+from avilla.spec.core.privilege.metadata import MuteInfo
+from avilla.spec.core.privilege.skeleton import PrivilegeTrait
 from avilla.spec.core.profile import Nick, Summary
-
-from ...core.metadata import MetadataOf
-from ...spec.core.activity.skeleton import ActivityTrigger
-from ...spec.core.privilege.metadata import MuteInfo
-from ...spec.core.privilege.skeleton import PrivilegeTrait
-from ...spec.core.scene.skeleton import SceneTrait
+from avilla.spec.core.scene.skeleton import SceneTrait
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__
