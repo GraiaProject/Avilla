@@ -49,20 +49,23 @@ class ElizabethProtocol(BaseProtocol):
     )
 
     with wrap_artifacts() as implementations:
-        import avilla.elizabeth.impl as _
-        import avilla.elizabeth.impl.contact as _
-        import avilla.elizabeth.impl.friend as _
-        import avilla.elizabeth.impl.friend_message as _
-        import avilla.elizabeth.impl.group as _
-        import avilla.elizabeth.impl.group_member as _
-        import avilla.elizabeth.impl.group_message as _
-        import avilla.elizabeth.impl.query as _
+        import avilla.elizabeth.artifacts as _
+        import avilla.elizabeth.artifacts.contact as _
+        import avilla.elizabeth.artifacts.friend as _
+        import avilla.elizabeth.artifacts.friend_message as _
+        import avilla.elizabeth.artifacts.group as _
+        import avilla.elizabeth.artifacts.group_member as _
+        import avilla.elizabeth.artifacts.group_message as _
+        import avilla.elizabeth.artifacts.query as _
 
     with wrap_artifacts() as event_parsers:
         import avilla.elizabeth.event.message as _
 
     with wrap_artifacts() as message_parsers:
         import avilla.elizabeth.message_parse as _
+
+    with wrap_artifacts() as context_sources:
+        ...
 
     service: ElizabethService
 
