@@ -7,7 +7,7 @@ from graia.amnesia.message.element import Text
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
 
 from .resource import ElizabethAudioResource, ElizabethImageResource
-from .util import element
+from avilla.core.trait.context import element
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

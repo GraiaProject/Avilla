@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import base64
 from datetime import datetime
-from typing import Any, TypedDict, cast
+from typing import TYPE_CHECKING, Any, TypedDict, cast
+from ..core.trait.signature import ElementParse, EventParse
 
 from graia.amnesia.message import __message_chain_class__
 from graia.amnesia.message.element import Element, Text
@@ -19,7 +20,9 @@ from ..core.context import Context
 from ..core.event import AvillaEvent
 from ..spec.qq.elements import FlashImage
 from .account import ElizabethAccount
-from .util import ElementParse, ElementParser, EventParse, EventParser
+
+if TYPE_CHECKING:
+    from avilla.core.trait.context import EventParser
 
 
 class MessageDeserializeResult(TypedDict):
@@ -65,7 +68,7 @@ class ElizabethProtocol(BaseProtocol):
         import avilla.elizabeth.message_parse as _
 
     with wrap_artifacts() as context_sources:
-        ...
+        import avilla.elizabeth.artifacts.context_source as _
 
     service: ElizabethService
 
@@ -134,7 +137,7 @@ class ElizabethProtocol(BaseProtocol):
             if element_type == "Quote":
                 result["reply"] = str(raw_element["id"])
                 continue
-            parser: ElementParser | None = self.message_parsers.get(ElementParse(element_type))
+            parser: ElementParse | None = self.message_parsers.get(ElementParse(element_type))
             if parser is None:
                 raise NotImplementedError(f'expected element "{element_type}" implemented for {raw_element}')
             serialized.append(await parser(context, raw_element))
