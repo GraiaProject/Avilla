@@ -9,11 +9,11 @@ from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
 from avilla.spec.core.privilege import MuteAllTrait, MuteTrait, Privilege
-from ...spec.core.privilege.skeleton import PrivilegeTrait
-from ...spec.core.privilege.metadata import MuteInfo
 from avilla.spec.core.profile import Nick, Summary
 
 from ...core.metadata import MetadataOf
+from ...spec.core.privilege.metadata import MuteInfo
+from ...spec.core.privilege.skeleton import PrivilegeTrait
 from ...spec.core.scene.skeleton import SceneTrait
 
 if TYPE_CHECKING:
@@ -173,16 +173,16 @@ with bounds("group.member"):
     async def upgrade_member(ctx: Context, target: Selector, dest: str | None = None):
         if not (await get_member_privilege_of_privilege(ctx, target)).available:
             self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
-            raise PermissionError(permission_error_message(
-                f"upgrade_permission@{target.path}", self_privilege_info.name,['group_owner']
-            ))
+            raise PermissionError(
+                permission_error_message(f"upgrade_permission@{target.path}", self_privilege_info.name, ["group_owner"])
+            )
         await ctx.account.call(
             "memberAdmin",
             {
                 "__method__": "update",
                 "target": int(ctx.self.pattern["group"]),
                 "memberId": int(ctx.self.pattern["member"]),
-                "assign": True
+                "assign": True,
             },
         )
 
@@ -190,16 +190,16 @@ with bounds("group.member"):
     async def downgrade_member(ctx: Context, target: Selector, dest: str | None = None):
         if not (await get_member_privilege_of_privilege(ctx, target)).available:
             self_privilege_info = await ctx.pull(Privilege >> Summary, ctx.self)
-            raise PermissionError(permission_error_message(
-                f"upgrade_permission@{target.path}", self_privilege_info.name,['group_owner']
-            ))
+            raise PermissionError(
+                permission_error_message(f"upgrade_permission@{target.path}", self_privilege_info.name, ["group_owner"])
+            )
         await ctx.account.call(
             "memberAdmin",
             {
                 "__method__": "update",
                 "target": int(ctx.self.pattern["group"]),
                 "memberId": int(ctx.self.pattern["member"]),
-                "assign": False
+                "assign": False,
             },
         )
 

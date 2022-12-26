@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
 from avilla.spec.core.message import MessageRevoke, MessageSend
-from ...spec.core.profile.metadata import Nick, Summary
 
 from ...core.message import Message
+from ...spec.core.profile.metadata import Nick, Summary
 
 if TYPE_CHECKING:
     from graia.amnesia.message import __message_chain_class__
