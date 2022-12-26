@@ -15,53 +15,53 @@ class ArtifactSignature:
     pass
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class Bounds(ArtifactSignature):
     bound: str | MetadataBound
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class Impl(ArtifactSignature):
     fn: Fn
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class Pull(ArtifactSignature):
     route: type[Metadata] | MetadataRoute
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class ResourceFetch(ArtifactSignature):
     target: type[Resource]
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class CompleteRule(ArtifactSignature):
     relative: str
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class Query(ArtifactSignature):
     upper: str | None
     target: str
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class VisibleConf(ArtifactSignature):
     checker: Callable[[Context], bool]
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class ContextSourceSign(ArtifactSignature):
     pattern: str
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class EventParse(ArtifactSignature):
     event_type: str
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class ElementParse(ArtifactSignature):
     element_type: str
 
@@ -70,7 +70,7 @@ class ElementParse(ArtifactSignature):
 E = TypeVar("E", bound="FnExtension")
 
 
-@dataclass(unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class ExtensionImpl(ArtifactSignature, Generic[E]):
     ext: type[E]
 """

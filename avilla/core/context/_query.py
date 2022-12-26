@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from graia.amnesia.message import __message_chain_class__
-from typing_extensions import TypeAlias
 
 from avilla.core.selector import Selector
 from avilla.core.trait.context import Artifacts

@@ -11,7 +11,7 @@ from avilla.core.selector import Selector
 from avilla.core.utilles import identity
 
 from ..metadata import MetadataOf
-from .signature import Bounds, Impl
+from .signature import Impl
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
