@@ -42,9 +42,10 @@ from .signature import (
 )
 
 if TYPE_CHECKING:
+    from graia.amnesia.message import Element
+
     from ..account import AbstractAccount
     from ..context import Context
-    from graia.amnesia.message import Element
     from ..event import AvillaEvent
     from ..protocol import BaseProtocol
 
@@ -221,7 +222,9 @@ class ContextSourceRecorder(Generic[_AccountT]):
 
         return wrapper
 
+
 EventParser: TypeAlias = "Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple[AvillaEvent, Context]]]"
+
 
 class EventParserRecorder(Generic[_ProtocolT, _AccountT]):
     def __new__(cls, event_type: str):

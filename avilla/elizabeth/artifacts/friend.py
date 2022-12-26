@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
-from ...spec.core.activity.skeleton import ActivityTrigger
 from avilla.spec.core.message import MessageRevoke, MessageSend
 
 from ...core.message import Message
+from ...spec.core.activity.skeleton import ActivityTrigger
 from ...spec.core.profile.metadata import Nick, Summary
 
 if TYPE_CHECKING:
@@ -85,15 +85,17 @@ with bounds("friend"):
         )
         return Nick(Nick, result["nickname"], result["nickname"], None)
 
+
 with bounds("friend.nudge"):
+
     @implement(ActivityTrigger.trigger)
     async def send_member_nudge(ctx: Context, target: Selector):
         await ctx.account.call(
             "sendNudge",
             {
                 "__method__": "update",
-                "target": int(target['friend']),
-                "subject": int(target['friend']),
-                "kind": "Friend"
-            }
+                "target": int(target["friend"]),
+                "subject": int(target["friend"]),
+                "kind": "Friend",
+            },
         )

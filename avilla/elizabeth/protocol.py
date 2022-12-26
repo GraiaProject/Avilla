@@ -3,7 +3,6 @@ from __future__ import annotations
 import base64
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, TypedDict, cast
-from ..core.trait.signature import ElementParse, EventParse
 
 from graia.amnesia.message import __message_chain_class__
 from graia.amnesia.message.element import Element, Text
@@ -18,6 +17,7 @@ from avilla.elizabeth.service import ElizabethService
 
 from ..core.context import Context
 from ..core.event import AvillaEvent
+from ..core.trait.signature import ElementParse, EventParse
 from ..spec.qq.elements import FlashImage
 from .account import ElizabethAccount
 

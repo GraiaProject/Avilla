@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.message import Message
-from avilla.spec.core.message import MessageReceived
 from avilla.core.trait.context import EventParserRecorder
+from avilla.spec.core.message import MessageReceived
 
 from ...core.context import Context
 from ...core.selector import Selector
@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 
 
 event = EventParserRecorder["ElizabethProtocol", "ElizabethAccount"]
+
 
 @event("GroupMessage")
 async def group_message(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict):

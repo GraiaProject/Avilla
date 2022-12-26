@@ -61,10 +61,10 @@ class EventParse(ArtifactSignature):
     event_type: str
 
 
-
 @dataclass(unsafe_hash=True)
 class ElementParse(ArtifactSignature):
     element_type: str
+
 
 """
 E = TypeVar("E", bound="FnExtension")

@@ -1,4 +1,5 @@
-from avilla.core.trait import Trait, Fn
+from avilla.core.trait import Fn, Trait
+
 
 class ActivityTrigger(Trait):
     @Fn.bound_entity
