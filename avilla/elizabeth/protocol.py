@@ -50,6 +50,7 @@ class ElizabethProtocol(BaseProtocol):
 
     with wrap_artifacts() as implementations:
         import avilla.elizabeth.impl as _
+        import avilla.elizabeth.impl.contact as _
         import avilla.elizabeth.impl.friend as _
         import avilla.elizabeth.impl.friend_message as _
         import avilla.elizabeth.impl.group as _
