@@ -16,7 +16,7 @@ from avilla.core.selector import DynamicSelector, Selectable, Selector
 from avilla.core.trait import Trait
 from avilla.core.trait.context import Artifacts
 from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch, VisibleConf
-from avilla.core.utilles import classproperty
+from avilla.core.utilles import classproperty, handle_visible
 
 from ._query import find_querier_steps as _find_querier_steps
 from ._query import query_depth_generator as _query_depth_generator
@@ -88,11 +88,10 @@ class Context:
 
     @cached_property
     def _impl_artifacts(self) -> Artifacts:
-        m = [
-            self.protocol.implementations,
-            *[v for k, v in self.protocol.implementations.items() if isinstance(k, VisibleConf) and k.checker(self)],
-        ]
-        return ChainMap(*m[::-1], self.avilla.global_artifacts)
+        return ChainMap(
+            *handle_visible(self.protocol.implementations, self)[::-1],
+            *handle_visible(self.avilla.global_artifacts, self)[::-1],
+        )
 
     @property
     def request(self) -> ContextRequestSelector:
