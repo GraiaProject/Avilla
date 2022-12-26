@@ -157,7 +157,6 @@ class BoundEntityFn(BoundFnCommon[_P, _T]):
         ...
 
     def __get__(self, instance: Any, owner: type):
-        print(instance, owner)
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
                 return AppliedEntityFnCall(instance, self)

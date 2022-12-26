@@ -223,7 +223,7 @@ class ContextSourceRecorder(Generic[_AccountT]):
         return wrapper
 
 
-EventParser: TypeAlias = "Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple[AvillaEvent, Context]]]"
+EventParser: TypeAlias = Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple["AvillaEvent", "Context"]]]
 
 
 class EventParserRecorder(Generic[_ProtocolT, _AccountT]):
@@ -236,7 +236,7 @@ class EventParserRecorder(Generic[_ProtocolT, _AccountT]):
         return wrapper
 
 
-ElementParser: TypeAlias = Callable[[Context, dict], Awaitable[Element]]
+ElementParser: TypeAlias = Callable[["Context", dict], Awaitable["Element"]]
 
 
 def element(element_type: str):
