@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from datetime import datetime
 
 
-@dataclass
+@dataclass(slots=True)
 class Message(Metadata):
     id: str
     scene: Selector
