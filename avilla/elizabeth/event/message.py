@@ -31,7 +31,6 @@ async def group_message(protocol: ElizabethProtocol, account: ElizabethAccount, 
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     message = Message(
-        describe=Message,
         id=message_result["source"],
         scene=group,
         sender=member,
@@ -55,7 +54,6 @@ async def friend_message(protocol: ElizabethProtocol, account: ElizabethAccount,
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     message = Message(
-        describe=Message,
         id=message_result["source"],
         scene=friend,
         sender=friend,
@@ -80,7 +78,6 @@ async def temp_message(protocol: ElizabethProtocol, account: ElizabethAccount, r
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     message = Message(
-        describe=Message,
         id=message_result["source"],
         scene=member,
         sender=member,

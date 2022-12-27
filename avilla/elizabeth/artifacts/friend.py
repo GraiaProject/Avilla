@@ -40,7 +40,6 @@ with bounds("friend"):
             },
         )
         message_metadata = Message(
-            describe=Message,
             id=str(result["messageId"]),
             scene=Selector().land(ctx.land).friend(str(target.pattern["friend"])),
             content=message,
@@ -71,7 +70,7 @@ with bounds("friend"):
                 "target": int(target.pattern["friend"]),
             },
         )
-        return Summary(Summary, result["nickname"], "a friend contact assigned to this account")
+        return Summary(result["nickname"], "a friend contact assigned to this account")
 
     @pull(Nick)
     async def get_friend_nick(ctx: Context, target: Selector):
@@ -82,7 +81,7 @@ with bounds("friend"):
                 "target": int(target.pattern["friend"]),
             },
         )
-        return Nick(Nick, result["nickname"], result["nickname"], None)
+        return Nick(result["nickname"], result["nickname"], None)
 
 
 with bounds("friend.nudge"):

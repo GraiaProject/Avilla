@@ -46,7 +46,6 @@ with bounds("group"):
             },
         )
         message_metadata = Message(
-            describe=Message,
             id=str(result["messageId"]),
             scene=Selector().land(ctx.land).group(str(target.pattern["group"])),
             content=message,
@@ -88,7 +87,7 @@ with bounds("group"):
             "groupConfig",
             {"__method__": "fetch", "target": int(target.pattern["group"])},
         )
-        return Summary(describe=Summary, name=result["name"], description=None)
+        return Summary(name=result["name"], description=None)
 
     @implement(SummaryTrait.set_name)
     async def group_set_name(ctx: Context, target: Selector | MetadataOf, name: str):
@@ -112,7 +111,6 @@ with bounds("group"):
         )
         if target is None:
             return Privilege(
-                Privilege,
                 self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
                 self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
             )
@@ -121,7 +119,6 @@ with bounds("group"):
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
         return Privilege(
-            Privilege,
             self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
             (self_info["permission"] == "OWNER" and target_info["permission"] != "OWNER")
             or (

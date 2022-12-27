@@ -48,6 +48,7 @@ if TYPE_CHECKING:
     from ..context import Context
     from ..event import AvillaEvent
     from ..protocol import BaseProtocol
+    from avilla.spec.core.application.event import AvillaLifecycleEvent
 
 Artifacts: TypeAlias = MutableMapping[ArtifactSignature, Any]
 
@@ -223,12 +224,12 @@ class ContextSourceRecorder(Generic[_AccountT]):
         return wrapper
 
 
-EventParser: TypeAlias = Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple["AvillaEvent", "Context"]]]
+EventParser: TypeAlias = Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple["AvillaEvent | AvillaLifecycleEvent", "Context"]]]
 
 
 class EventParserRecorder(Generic[_ProtocolT, _AccountT]):
     def __new__(cls, event_type: str):
-        def wrapper(handler: Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple[AvillaEvent, Context]]]):
+        def wrapper(handler: Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple[AvillaEvent | AvillaLifecycleEvent, Context]]]):
             artifacts = get_artifacts()
             artifacts[EventParse(event_type)] = handler
             return handler

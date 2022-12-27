@@ -53,7 +53,7 @@ class ElizabethProtocol(BaseProtocol):
 
     with wrap_artifacts() as implementations:
         import avilla.elizabeth.artifacts as _
-        import avilla.elizabeth.artifacts.contact as _
+        import avilla.elizabeth.artifacts.account as _
         import avilla.elizabeth.artifacts.friend as _
         import avilla.elizabeth.artifacts.friend_message as _
         import avilla.elizabeth.artifacts.group as _

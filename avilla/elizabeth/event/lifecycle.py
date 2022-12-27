@@ -27,9 +27,7 @@ async def bot_online(protocol: ElizabethProtocol, account: ElizabethAccount, raw
 @event("BotOfflineEventActive")
 @event("BotOfflineEventForce")
 @event("BotOfflineEventDropped")
-async def bot_offline(
-    protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]
-) -> tuple[AvillaEvent, Context]:
+async def bot_offline(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
     return AccountUnavailable(protocol.avilla, account), Context(
         account, account.to_selector(), account.to_selector(), Selector().land(protocol.land), account.to_selector()
     )

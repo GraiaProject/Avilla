@@ -11,18 +11,18 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
 
 
-with bounds("contact"):
+with bounds("account"):
 
     @pull(Summary)
-    async def get_friend_summary(ctx: Context, target: Selector):
+    async def get_account_summary(ctx: Context, target: Selector):
         result = await ctx.account.call(
             "userProfile",
             {
                 "__method__": "fetch",
-                "target": int(target.pattern["contact"]),
+                "target": int(target.pattern["account"]),
             },
         )
-        return Summary(Summary, result["nickname"], "a contact on platform qq")
+        return Summary(result["nickname"], "a account stranger on platform qq")
 
     @pull(Nick)
     async def get_friend_nick(ctx: Context, target: Selector):
@@ -30,7 +30,7 @@ with bounds("contact"):
             "userProfile",
             {
                 "__method__": "fetch",
-                "target": int(target.pattern["contact"]),
+                "target": int(target.pattern["account"]),
             },
         )
-        return Nick(Nick, result["nickname"], result["nickname"], None)
+        return Nick(result["nickname"], result["nickname"], None)

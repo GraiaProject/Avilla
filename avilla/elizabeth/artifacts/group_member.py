@@ -19,7 +19,6 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
 
 
-
 privilege_trans = defaultdict(lambda: "group_member", {"OWNER": "group_owner", "ADMINISTRATOR": "group_admin"})
 privilege_level = defaultdict(lambda: 0, {"OWNER": 2, "ADMINISTRATOR": 1})
 
@@ -33,7 +32,6 @@ with bounds("group.member"):
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
         return MuteInfo(
-            MuteInfo,
             result.get("mutetimeRemaining") is not None,
             timedelta(seconds=(result.get("mutetimeRemaining") or 0)),
             None,
@@ -103,9 +101,7 @@ with bounds("group.member"):
                 },
             )
         )["permission"]
-        return Privilege(
-            Privilege, privilege_level[self_info] > 0, privilege_level[self_info] > privilege_level[target_info]
-        )
+        return Privilege(privilege_level[self_info] > 0, privilege_level[self_info] > privilege_level[target_info])
 
     @pull(Privilege >> Summary)
     async def get_member_privilege_summary_info(ctx: Context, target: Selector | None) -> Summary:
@@ -119,19 +115,17 @@ with bounds("group.member"):
                 },
             )
             return Summary(
-                Privilege >> Summary,
                 privilege_trans[self_info["permission"]],
                 "the permission info of current account in the group",
-            )
+            ).route(Privilege >> Summary)
         target_info = await ctx.account.call(
             "memberInfo",
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
         return Summary(
-            Privilege >> Summary,
             privilege_trans[target_info["permission"]],
             "the permission info of current account in the group",
-        )
+        ).route(Privilege >> Summary)
 
     @pull(Privilege >> Privilege)
     async def get_member_privilege_of_privilege(ctx: Context, target: Selector):
@@ -145,7 +139,7 @@ with bounds("group.member"):
                 },
             )
         )["permission"]
-        return Privilege(Privilege >> Privilege, privilege_level[self_info] == 2, privilege_level[self_info] == 2)
+        return Privilege(privilege_level[self_info] == 2, privilege_level[self_info] == 2).route(Privilege >> Summary)
 
     @pull(Privilege >> Privilege >> Summary)
     async def get_member_privilege_of_privilege_summary(ctx: Context, target: Selector):
@@ -160,10 +154,9 @@ with bounds("group.member"):
             )
         )["permission"]
         return Summary(
-            Privilege >> Privilege >> Summary,
             privilege_trans[self_info["permission"]],
             "the permission of controling administration of the group, to be noticed that is only group owner could do this.",
-        )
+        ).route(Privilege >> Privilege >> Summary)
 
     @implement(PrivilegeTrait.upgrade)
     async def upgrade_member(ctx: Context, target: Selector, dest: str | None = None):
@@ -220,7 +213,7 @@ with bounds("group.member"):
             "memberInfo",
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )
-        return Nick(Nick, result["memberName"], result["memberName"], result.get("specialTitle"))
+        return Nick(result["memberName"], result["memberName"], result.get("specialTitle"))
 
 
 with bounds("group.member.nudge"):

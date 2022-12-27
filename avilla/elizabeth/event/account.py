@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 event = EventParserRecorder["ElizabethProtocol", "ElizabethAccount"]
 
-
+"""
 @event("BotGroupPermissionChangeEvent")
 async def account_permission_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
     group = Selector().group(raw["group"]["id"])
@@ -37,3 +37,4 @@ async def account_permission_change(protocol: ElizabethProtocol, account: Elizab
     return MetadataModified(
         context, context.endpoint, [MetadataModify(Privilege.of(account_member), "available", "")], operator
     )
+"""
