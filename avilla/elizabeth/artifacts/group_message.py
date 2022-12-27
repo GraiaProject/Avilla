@@ -34,6 +34,10 @@ with bounds("group.message"):
         if TYPE_CHECKING:
             assert isinstance(ctx.account, ElizabethAccount)
             assert isinstance(ctx.protocol, ElizabethProtocol)
+        if ctx.avilla.service.enabled_cache_message:
+            result = ctx.avilla.service.message_cache[ctx.account.to_selector()].get(message_selector)
+            if result is not None:
+                return result
         result = await ctx.account.call(
             "messageFromId",
             {
