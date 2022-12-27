@@ -36,7 +36,7 @@ class Avilla:
         broadcast: Broadcast,
         launch_manager: Launart,
         protocols: list[BaseProtocol],
-        message_cache_size: int = 0
+        message_cache_size: int = 300
     ):
         if len({type(i) for i in protocols}) != len(protocols):
             raise ValueError("protocol must be unique, and the config should be passed by config.")
