@@ -5,7 +5,6 @@ from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-
 from avilla.core.selector import Selector
 from avilla.core.trait.context import Artifacts
 from avilla.core.trait.signature import Query

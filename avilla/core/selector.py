@@ -187,7 +187,7 @@ class DynamicSelector(Selector):
     def __getattr__(self, name: str, /):
         def wrapper(content: Pattern | Literal["*"]):
             if content == "*":
-                content = lambda _: True
+                content = lambda _: True  # noqa: E731
 
             return DynamicSelector({**self.pattern, name: content})
 
