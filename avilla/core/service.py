@@ -1,12 +1,12 @@
 from __future__ import annotations
-from collections import defaultdict
 
+from collections import defaultdict
 from typing import TYPE_CHECKING
-from avilla.core.utilles.message_cache import MessageCacheDeque
 
 from launart import Launart, Service
 from loguru import logger
 
+from avilla.core.utilles.message_cache import MessageCacheDeque
 from avilla.spec.core.application import (
     ApplicationClosed,
     ApplicationClosing,
@@ -17,8 +17,8 @@ from avilla.spec.core.application import (
 from .graia import AVILLA_ASCII_LOGO, AVILLA_ASCII_RAW_LOGO, log_telemetry
 
 if TYPE_CHECKING:
-    from .selector import Selector
     from .application import Avilla
+    from .selector import Selector
 
 
 class AvillaService(Service):

@@ -1,21 +1,20 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from avilla.core.event import MetadataModified, MetadataModify
-from avilla.spec.core.privilege.metadata import Privilege
-from avilla.spec.core.profile.metadata import Nick, Summary
-from loguru import logger
-
-from pyparsing import Any
-from avilla.spec.core.application.event import AccountAvailable, AccountUnavailable
 
 from graia.amnesia.message import __message_chain_class__
+from loguru import logger
+from pyparsing import Any
 
 from avilla.core.context import Context
+from avilla.core.event import MetadataModified, MetadataModify
 from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
+from avilla.spec.core.application.event import AccountAvailable, AccountUnavailable
 from avilla.spec.core.message import MessageReceived
+from avilla.spec.core.privilege.metadata import Privilege
+from avilla.spec.core.profile.metadata import Nick, Summary
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
@@ -24,9 +23,10 @@ if TYPE_CHECKING:
 
 event = EventParserRecorder["ElizabethProtocol", "ElizabethAccount"]
 
+
 @event("BotGroupPermissionChangeEvent")
 async def account_permission_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().group(raw['group']['id'])
+    group = Selector().group(raw["group"]["id"])
     group_ctx = await account.get_context(group)
     async for mem in group_ctx.query(f"group({raw['group']['id']}).member"):
         mem_priv_info = await group_ctx.pull(Privilege >> Summary, mem)
@@ -37,11 +37,7 @@ async def account_permission_change(protocol: ElizabethProtocol, account: Elizab
         logger.warning("cannot found group owner for permission changed event")
         operator = account.to_selector()
     account_member = group.member(account.id)
-    context = Context(
-        account, operator, account_member, group, account_member
-    )
+    context = Context(account, operator, account_member, group, account_member)
     return MetadataModified(
-        context, context.endpoint, [
-            MetadataModify(Privilege.of(account_member), "available", "")
-        ], operator
+        context, context.endpoint, [MetadataModify(Privilege.of(account_member), "available", "")], operator
     )

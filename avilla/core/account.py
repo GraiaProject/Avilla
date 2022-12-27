@@ -9,6 +9,7 @@ from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
     from typing import ClassVar
+
     from avilla.core.context import Context
     from avilla.core.protocol import BaseProtocol
 
