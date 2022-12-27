@@ -6,7 +6,6 @@ from avilla.core.selector import Selector
 from avilla.core.trait.context import query
 
 if TYPE_CHECKING:
-    from graia.amnesia.message import __message_chain_class__
 
     from avilla.core.context import Context
 

@@ -5,7 +5,6 @@ from collections.abc import AsyncGenerator, Awaitable, Callable
 from functools import cached_property
 from typing import Any, TypedDict, TypeVar, cast, overload
 
-from graia.amnesia.message import __message_chain_class__
 from typing_extensions import TypeAlias, Unpack
 
 from avilla.core._runtime import ctx_context
@@ -15,7 +14,7 @@ from avilla.core.resource import Resource
 from avilla.core.selector import DynamicSelector, Selectable, Selector
 from avilla.core.trait import Trait
 from avilla.core.trait.context import Artifacts
-from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch, VisibleConf
+from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch
 from avilla.core.utilles import classproperty, handle_visible
 
 from ._query import find_querier_steps as _find_querier_steps

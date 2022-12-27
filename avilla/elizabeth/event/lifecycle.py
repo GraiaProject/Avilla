@@ -2,14 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.context import Context
-from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.application.event import AccountAvailable, AccountUnavailable
-from avilla.spec.core.message import MessageReceived
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent

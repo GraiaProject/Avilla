@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message import __message_chain_class__
 from pyparsing import Any
 
 from avilla.core.context import Context

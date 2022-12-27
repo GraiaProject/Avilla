@@ -2,19 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message import __message_chain_class__
 from loguru import logger
 from pyparsing import Any
 
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, MetadataModify
-from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
-from avilla.spec.core.application.event import AccountAvailable, AccountUnavailable
-from avilla.spec.core.message import MessageReceived
 from avilla.spec.core.privilege.metadata import Privilege
-from avilla.spec.core.profile.metadata import Nick, Summary
+from avilla.spec.core.profile.metadata import Summary
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount

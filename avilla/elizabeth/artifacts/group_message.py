@@ -9,7 +9,6 @@ from avilla.spec.core.message import MessageRevoke
 from avilla.spec.core.message.event import MessageReceived
 
 if TYPE_CHECKING:
-    from graia.amnesia.message import __message_chain_class__
 
     from avilla.core.context import Context
 
