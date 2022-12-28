@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, overload
 from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
@@ -39,6 +39,11 @@ class MetadataBound(Generic[_DescribeT]):
     describe: _DescribeT
 
 
+class _SetItemAgent:
+    def __init__(self, setitem):
+        self.__setitem__ = setitem
+
+
 class MetadataMeta(type):
     @overload
     def __rshift__(cls: type[_MetadataT1], other: type[_MetadataT2]) -> MetadataRoute[_MetadataT1, _MetadataT2]:
@@ -66,13 +71,13 @@ METACELL_PARAMS_CTX: WeakKeyDictionary[type[Metadata], ContextVar[dict[str, Any]
 
 
 @dataclass
-class Metadata(Generic[T], metaclass=MetadataMeta):
+class Metadata(metaclass=MetadataMeta):
     route: type[Self] | MetadataRoute = field(init=False)
 
     def infers(self, route: type[Self] | MetadataRoute):
         self.route = route
         return self
-    
+
     def __post_init__(self):
         self.route = type(self)
 
@@ -88,9 +93,14 @@ class Metadata(Generic[T], metaclass=MetadataMeta):
     def __init_subclass__(cls) -> None:
         METACELL_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
 
+    @classproperty
     @classmethod
-    def get_default_target(cls, ctx: Context) -> Selector | None:
-        return ctx.client.to_selector()
+    def _(cls):
+        @_SetItemAgent
+        def wrapper(operator: Callable[[Self], T]) -> MetadataFieldReference[Self, T]:
+            return MetadataFieldReference(cls, operator)
+
+        return wrapper
 
     @classmethod
     def get_params(cls) -> dict[str, Any] | None:
@@ -118,12 +128,6 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
 
     def __init__(self, cells: tuple[type[Metadata], ...]) -> None:
         self.cells = cells
-
-    def of(self, target: Selector) -> MetadataOf[Self]:
-        return MetadataOf(target, self)
-
-    def get_default_target(self, ctx: Context) -> Selector | None:
-        return self.cells[0].get_default_target(ctx)
 
     @overload
     def __rshift__(
@@ -153,9 +157,29 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
     def __eq__(self, o: object) -> bool:
         return isinstance(o, MetadataRoute) and o.cells == self.cells
 
+    def of(self, target: Selector) -> MetadataOf[Self]:
+        return MetadataOf(target, self)
+
     def clear_params(self) -> None:
         for cell in self.cells:
             cell.clear_params()
 
+    @property
+    def _(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]):
+        @_SetItemAgent
+        def wrapper(operator: Callable[[_MetadataT1], T]) -> MetadataFieldReference[_MetadataT1, T]:
+            return MetadataFieldReference(self, operator)
+
+        return wrapper
+
     def has_params(self) -> bool:
         return any(cell.has_params() for cell in self.cells)
+
+
+@dataclass
+class MetadataFieldReference(Generic[_MetadataT1, T]):
+    define: type[_MetadataT1] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]
+    operator: Callable[[_MetadataT1], T]
+
+    def __hash__(self):
+        return ("field-ref", self.define, self.operator.__name__, self.operator.__code__)
