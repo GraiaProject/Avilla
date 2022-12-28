@@ -182,4 +182,4 @@ class MetadataFieldReference(Generic[_MetadataT1, T]):
     operator: Callable[[_MetadataT1], T]
 
     def __hash__(self):
-        return ("field-ref", self.define, self.operator.__name__, self.operator.__code__)
+        return hash(("field-ref", self.define, self.operator.__name__, self.operator.__code__))
