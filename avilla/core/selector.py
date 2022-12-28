@@ -3,15 +3,16 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from itertools import filterfalse
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Literal, Protocol, Union, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar, Union, runtime_checkable
 
-from typing_extensions import Self
+from typing_extensions import Self, Unpack
 
 from avilla.core._runtime import ctx_context
 from avilla.core.platform import Land
 
 if TYPE_CHECKING:
     from .context import ContextSelector
+    from .metadata import Metadata, MetadataOf, MetadataRoute
 
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
@@ -176,6 +177,13 @@ class Selector:
         if ctx is None:
             raise LookupError
         return ctx.wrap(self)
+
+    _MetadataT = TypeVar("_MetadataT", bound="Metadata")
+
+    def route(
+        self, metadata_route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
+    ) -> MetadataOf[type[_MetadataT]] | MetadataOf[MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]]:
+        return metadata_route.of(self)
 
 
 class DynamicSelector(Selector):
