@@ -4,21 +4,22 @@ from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
-from avilla.core.trait import UnappliedFnCall
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
+
+from avilla.core.trait import UnappliedFnCall
 
 from ._runtime import ctx_context
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
+    from avilla.core.metadata import MetadataFieldReference
     from avilla.core.selector import Selector
 
     from .context import Context
     from .metadata import MetadataOf
-    from avilla.core.metadata import MetadataFieldReference
 
 
 @dataclass
@@ -49,26 +50,33 @@ class Op:
     operator: UnappliedFnCall
     effects: dict[MetadataOf, list[Effect]]
 
+
 T = TypeVar("T")
+
 
 @dataclass
 class Effect(Generic[T]):
     field: MetadataFieldReference[Any, T]
 
+
 @dataclass
 class Bind(Effect[T]):
     value: T
 
+
 @dataclass
 class Unbind(Effect):
     ...
+
 
 @dataclass
 class Update(Effect[T]):
     present: T
     past: T | None = None
 
+
 # TODO: Metadata Effect 原语补充
+
 
 @dataclass
 class MetadataModified(AvillaEvent):

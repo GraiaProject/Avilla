@@ -3,7 +3,15 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from itertools import filterfalse
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar, Union, runtime_checkable
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Literal,
+    Protocol,
+    TypeVar,
+    Union,
+    runtime_checkable,
+)
 
 from typing_extensions import Self, Unpack
 

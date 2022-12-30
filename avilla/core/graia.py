@@ -18,7 +18,6 @@ AVILLA_ASCII_LOGO = cleandoc(
 AVILLA_ASCII_RAW_LOGO = re.sub(r"\[.*?\]", "", AVILLA_ASCII_LOGO)
 
 
-
 if random.choice((True, False)):
     AVILLA_ASCII_LOGO += "\n"
     AVILLA_ASCII_LOGO += "[dim]when will I be able to find a place that can be my second hometown...?[/]"
