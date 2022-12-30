@@ -35,8 +35,8 @@ _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 _DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
 _TraitT = TypeVar("_TraitT", bound=Trait)
 
-_Querier: TypeAlias = 'Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]'
-_Describe: TypeAlias = 'type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]'
+_Querier: TypeAlias = "Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]"
+_Describe: TypeAlias = "type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]"
 
 
 class ContextCache(TypedDict):

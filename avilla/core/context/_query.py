@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from collections import deque
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from graia.amnesia.message import __message_chain_class__
-from typing_extensions import TypeAlias
 
 from avilla.core.selector import Selector
 from avilla.core.trait.context import Artifacts
@@ -14,6 +13,7 @@ from avilla.core.trait.signature import Query
 
 if TYPE_CHECKING:
     from . import Context, _Querier
+
 
 async def query_depth_generator(
     context: Context,
@@ -54,11 +54,5 @@ def find_querier_steps(artifacts: Artifacts, query_path: str) -> list[Query] | N
                     if result is None or len(result) > len(head.history) + 1:
                         result = [*head.history, query]
                 else:
-                    queue.append(
-                        _MatchStep(
-                            full_path,
-                            head.start,
-                            head.history + (query,),
-                        )
-                    )
+                    queue.append(_MatchStep(full_path, head.start, head.history + (query,)))
     return result
