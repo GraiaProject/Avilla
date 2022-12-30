@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from launart import Launart, Service
 from loguru import logger
 
+from avilla.core.utilles.message_cache import MessageCacheDeque
 from avilla.spec.core.application import (
     ApplicationClosed,
     ApplicationClosing,
@@ -16,6 +18,7 @@ from .graia import AVILLA_ASCII_LOGO, AVILLA_ASCII_RAW_LOGO, log_telemetry
 
 if TYPE_CHECKING:
     from .application import Avilla
+    from .selector import Selector
 
 
 class AvillaService(Service):
@@ -23,9 +26,14 @@ class AvillaService(Service):
     supported_interface_types = set()
 
     avilla: Avilla
+    enabled_cache_message: bool
+    message_cache: defaultdict[Selector, MessageCacheDeque]
 
-    def __init__(self, avilla: Avilla):
+    def __init__(self, avilla: Avilla, cache_size: int):
         self.avilla = avilla
+        if cache_size > 0:
+            self.enabled_cache_message = True
+            self.message_cache = defaultdict(lambda: MessageCacheDeque(cache_size))
         super().__init__()
 
     @property

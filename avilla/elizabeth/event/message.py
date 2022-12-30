@@ -4,16 +4,18 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message import __message_chain_class__
 
+from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.elizabeth.util import event
+from avilla.core.selector import Selector
+from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.message import MessageReceived
-
-from ...core.context import Context
-from ...core.selector import Selector
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
     from ..protocol import ElizabethProtocol
+
+
+event = EventParserRecorder["ElizabethProtocol", "ElizabethAccount"]
 
 
 @event("GroupMessage")
@@ -29,7 +31,6 @@ async def group_message(protocol: ElizabethProtocol, account: ElizabethAccount, 
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     message = Message(
-        describe=Message,
         id=message_result["source"],
         scene=group,
         sender=member,
@@ -53,7 +54,6 @@ async def friend_message(protocol: ElizabethProtocol, account: ElizabethAccount,
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     message = Message(
-        describe=Message,
         id=message_result["source"],
         scene=friend,
         sender=friend,
@@ -78,7 +78,6 @@ async def temp_message(protocol: ElizabethProtocol, account: ElizabethAccount, r
     )
     message_result = await protocol.deserialize_message(context, raw["messageChain"])
     message = Message(
-        describe=Message,
         id=message_result["source"],
         scene=member,
         sender=member,

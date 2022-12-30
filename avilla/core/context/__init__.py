@@ -5,18 +5,17 @@ from collections.abc import AsyncGenerator, Awaitable, Callable
 from functools import cached_property
 from typing import Any, TypedDict, TypeVar, cast, overload
 
-from graia.amnesia.message import __message_chain_class__
 from typing_extensions import TypeAlias, Unpack
 
 from avilla.core._runtime import ctx_context
 from avilla.core.account import AbstractAccount
 from avilla.core.metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
 from avilla.core.resource import Resource
-from avilla.core.selector import Selectable, Selector
+from avilla.core.selector import DynamicSelector, Selectable, Selector
 from avilla.core.trait import Trait
 from avilla.core.trait.context import Artifacts
-from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch, VisibleConf
-from avilla.core.utilles import classproperty
+from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch
+from avilla.core.utilles import classproperty, handle_visible
 
 from ._query import find_querier_steps as _find_querier_steps
 from ._query import query_depth_generator as _query_depth_generator
@@ -88,11 +87,10 @@ class Context:
 
     @cached_property
     def _impl_artifacts(self) -> Artifacts:
-        m = [
-            self.protocol.implementations,
-            *[v for k, v in self.protocol.implementations.items() if isinstance(k, VisibleConf) and k.checker(self)],
-        ]
-        return ChainMap(*m[::-1], self.avilla.global_artifacts)
+        return ChainMap(
+            *handle_visible(self.protocol.implementations, self)[::-1],
+            *handle_visible(self.avilla.global_artifacts, self)[::-1],
+        )
 
     @property
     def request(self) -> ContextRequestSelector:
@@ -140,7 +138,12 @@ class Context:
     def current(cls) -> Context:
         return ctx_context.get()
 
-    async def query(self, pattern: Selector, with_land: bool = False):
+    async def query(self, pattern: str | Selector, with_land: bool = False):
+        if isinstance(pattern, str):
+            pattern = DynamicSelector.from_follows_pattern(pattern)
+        else:
+            pattern = pattern.as_dyn()
+
         querier_steps: list[Query] | None = _find_querier_steps(
             self._impl_artifacts, pattern.path if with_land else pattern.path_without_land
         )
@@ -151,10 +154,10 @@ class Context:
         querier = cast("dict[Query, _Querier]", {i: self._impl_artifacts[i] for i in querier_steps})
         generators: list[AsyncGenerator[Selector, None]] = []
 
-        past = []
+        past: list[str] = []
         for k, v in querier.items():
             past.append(k.target)
-            pred = pattern.mixin(".".join(past))
+            pred = DynamicSelector({i: pattern.pattern[i] for i in past})
             current = _query_depth_generator(self, v, pred, generators[-1] if generators else None)
             generators.append(current)
 

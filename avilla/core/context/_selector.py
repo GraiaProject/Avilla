@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Iterable, Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 from graia.amnesia.message import Element, Text, __message_chain_class__
-from typing_extensions import Self, TypeAlias, Unpack
+from typing_extensions import Self
 
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute

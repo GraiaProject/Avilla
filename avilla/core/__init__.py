@@ -37,10 +37,6 @@ from avilla.core.platform import Platform as Platform
 from avilla.core.platform import PlatformDescription as PlatformDescription
 from avilla.core.platform import Version as Version
 from avilla.core.protocol import BaseProtocol as BaseProtocol
-from avilla.core.querier import AbstractQueryHandler as AbstractQueryHandler
-from avilla.core.querier import (
-    ProtocolAbstractQueryHandler as ProtocolAbstractQueryHandler,
-)
 from avilla.core.resource import BlobResource as BlobResource
 from avilla.core.resource import LocalFileResource as LocalFileResource
 from avilla.core.resource import Resource as Resource

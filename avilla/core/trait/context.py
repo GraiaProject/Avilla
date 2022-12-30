@@ -4,7 +4,16 @@ from collections.abc import Awaitable, Callable
 from contextlib import contextmanager
 from contextvars import ContextVar
 from itertools import chain
-from typing import TYPE_CHECKING, Any, MutableMapping, TypeVar, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Generic,
+    MutableMapping,
+    Protocol,
+    TypeVar,
+    overload,
+)
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
@@ -19,10 +28,28 @@ from . import (
     UnappliedMetadataFnCall,
     UnappliedUniversalFnCall,
 )
-from .signature import ArtifactSignature, Bounds, Impl, Pull, ResourceFetch, VisibleConf
+from .signature import (
+    ArtifactSignature,
+    Bounds,
+    ContextSourceSign,
+    ElementParse,
+    EventParse,
+    Impl,
+    Pull,
+    Query,
+    ResourceFetch,
+    VisibleConf,
+)
 
 if TYPE_CHECKING:
+    from graia.amnesia.message import Element
+
+    from ..account import AbstractAccount
     from ..context import Context
+    from ..event import AvillaEvent
+    from ..protocol import BaseProtocol
+    from avilla.spec.core.application.event import AvillaLifecycleEvent
+
 Artifacts: TypeAlias = MutableMapping[ArtifactSignature, Any]
 
 ctx_artifacts: ContextVar[Artifacts] = ContextVar("artifacts")
@@ -155,5 +182,68 @@ def fetch(resource: type[_ResourceT]) -> RecordCallable[Callable[[Context, _Reso
     return wrapper
 
 
+@overload
+def query(pattern: str, /) -> RecordCallable[Callable[[Context, None, Selector], AsyncGenerator[Selector, None]]]:
+    ...
+
+
+@overload
+def query(*pattern: str) -> RecordCallable[Callable[[Context, Selector, Selector], AsyncGenerator[Selector, None]]]:
+    ...
+
+
+def query(*pattern: ...) -> ...:
+    def wrapper(artifact):
+        artifacts = get_artifacts()
+        artifacts[Query(".".join(pattern[:-1]) or None, pattern[-1])] = artifact
+        return artifact
+
+    return wrapper
+
+
 def complete_rule():
     ...  # TODO
+
+
+_ProtocolT = TypeVar("_ProtocolT", bound="BaseProtocol", contravariant=True)
+_AccountT = TypeVar("_AccountT", bound="AbstractAccount", contravariant=True)
+
+
+class _ContextSourceArtifact(Protocol[_AccountT]):
+    async def __call__(self, account: _AccountT, target: Selector, *, via: Selector | None = None) -> Context:
+        ...
+
+
+class ContextSourceRecorder(Generic[_AccountT]):
+    def __new__(cls, pattern: str):
+        def wrapper(artifact: _ContextSourceArtifact[_AccountT]):
+            artifacts = get_artifacts()
+            artifacts[ContextSourceSign(pattern)] = artifact
+            return artifact
+
+        return wrapper
+
+
+EventParser: TypeAlias = Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple["AvillaEvent | AvillaLifecycleEvent", "Context"]]]
+
+
+class EventParserRecorder(Generic[_ProtocolT, _AccountT]):
+    def __new__(cls, event_type: str):
+        def wrapper(handler: Callable[[_ProtocolT, _AccountT, dict], Awaitable[tuple[AvillaEvent | AvillaLifecycleEvent, Context]]]):
+            artifacts = get_artifacts()
+            artifacts[EventParse(event_type)] = handler
+            return handler
+
+        return wrapper
+
+
+ElementParser: TypeAlias = Callable[["Context", dict], Awaitable["Element"]]
+
+
+def element(element_type: str):
+    def wrapper(handler: ElementParser):
+        artifacts = get_artifacts()
+        artifacts[ElementParse(element_type)] = handler
+        return handler
+
+    return wrapper

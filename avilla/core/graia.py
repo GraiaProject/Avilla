@@ -1,4 +1,5 @@
 import importlib.metadata
+import random
 import re
 from inspect import cleandoc
 
@@ -17,7 +18,6 @@ AVILLA_ASCII_LOGO = cleandoc(
 AVILLA_ASCII_RAW_LOGO = re.sub(r"\[.*?\]", "", AVILLA_ASCII_LOGO)
 
 
-import random
 
 if random.choice((True, False)):
     AVILLA_ASCII_LOGO += "\n"

@@ -1,19 +1,23 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
+    from typing import ClassVar
+
     from avilla.core.context import Context
     from avilla.core.protocol import BaseProtocol
 
 
 @dataclass
 class AbstractAccount(ABC):
+    enabled_message_cache: ClassVar[bool] = field(default=False, init=False)
+
     id: str
     land: Land
     protocol: BaseProtocol

@@ -7,15 +7,15 @@ from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
+from avilla.spec.core.message.skeleton import MessageRevoke
 
-from ..spec.core.message.skeleton import MessageRevoke
 from .metadata import Metadata
 
 if TYPE_CHECKING:
     from datetime import datetime
 
 
-@dataclass
+@dataclass(slots=True)
 class Message(Metadata):
     id: str
     scene: Selector

@@ -36,6 +36,7 @@ class Avilla:
         broadcast: Broadcast,
         launch_manager: Launart,
         protocols: list[BaseProtocol],
+        message_cache_size: int = 300,
     ):
         if len({type(i) for i in protocols}) != len(protocols):
             raise ValueError("protocol must be unique, and the config should be passed by config.")
@@ -46,7 +47,7 @@ class Avilla:
         self._protocol_map = {type(i): i for i in protocols}
         self.accounts = []
         self.global_artifacts = {}
-        self.service = AvillaService(self)
+        self.service = AvillaService(self, message_cache_size)
 
         self.launch_manager.add_service(self.service)
 
@@ -59,6 +60,16 @@ class Avilla:
         @self.register_global_artifact(ResourceFetch(LocalFileResource))
         async def _fetch_local_file(_, res: LocalFileResource):
             return res.file.read_bytes()
+
+        if message_cache_size > 0:
+            from avilla.core.context import Context
+            from avilla.core.message import Message
+            from avilla.spec.core.message import MessageReceived
+
+            @broadcast.receiver(MessageReceived)
+            async def message_cacher(context: Context, message: Message):
+                if context.account.enabled_message_cache:
+                    self.service.message_cache[context.account.to_selector()].push(message)
 
     @classmethod
     def current(cls) -> "Avilla":

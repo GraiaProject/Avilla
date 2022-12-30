@@ -2,24 +2,27 @@ from __future__ import annotations
 
 import base64
 from datetime import datetime
-from typing import Any, TypedDict, cast
+from typing import TYPE_CHECKING, Any, TypedDict, cast
 
 from graia.amnesia.message import __message_chain_class__
 from graia.amnesia.message.element import Element, Text
 
 from avilla.core.application import Avilla
+from avilla.core.context import Context
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
+from avilla.core.event import AvillaEvent
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.trait.context import wrap_artifacts
+from avilla.core.trait.signature import ElementParse, EventParse
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.service import ElizabethService
+from avilla.spec.qq.elements import FlashImage
 
-from ..core.context import Context
-from ..core.event import AvillaEvent
-from ..spec.qq.elements import FlashImage
 from .account import ElizabethAccount
-from .util import ElementParse, ElementParser, EventParse, EventParser
+
+if TYPE_CHECKING:
+    from avilla.core.trait.context import EventParser
 
 
 class MessageDeserializeResult(TypedDict):
@@ -49,15 +52,23 @@ class ElizabethProtocol(BaseProtocol):
     )
 
     with wrap_artifacts() as implementations:
-        import avilla.elizabeth.impl as _
-        import avilla.elizabeth.impl.friend as _
-        import avilla.elizabeth.impl.group as _
+        import avilla.elizabeth.artifacts as _
+        import avilla.elizabeth.artifacts.account as _
+        import avilla.elizabeth.artifacts.friend as _
+        import avilla.elizabeth.artifacts.friend_message as _
+        import avilla.elizabeth.artifacts.group as _
+        import avilla.elizabeth.artifacts.group_member as _
+        import avilla.elizabeth.artifacts.group_message as _
+        import avilla.elizabeth.artifacts.query as _
 
     with wrap_artifacts() as event_parsers:
         import avilla.elizabeth.event.message as _
 
     with wrap_artifacts() as message_parsers:
         import avilla.elizabeth.message_parse as _
+
+    with wrap_artifacts() as context_sources:
+        import avilla.elizabeth.artifacts.context_source as _
 
     service: ElizabethService
 
@@ -126,7 +137,7 @@ class ElizabethProtocol(BaseProtocol):
             if element_type == "Quote":
                 result["reply"] = str(raw_element["id"])
                 continue
-            parser: ElementParser | None = self.message_parsers.get(ElementParse(element_type))
+            parser: ElementParse | None = self.message_parsers.get(ElementParse(element_type))
             if parser is None:
                 raise NotImplementedError(f'expected element "{element_type}" implemented for {raw_element}')
             serialized.append(await parser(context, raw_element))

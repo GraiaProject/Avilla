@@ -11,7 +11,7 @@ from avilla.core.selector import Selector
 from avilla.core.utilles import identity
 
 from ..metadata import MetadataOf
-from .signature import Bounds, Impl
+from .signature import Impl
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -113,6 +113,18 @@ class FnCall(Generic[_P, _T]):
         return await impl(self.trait.context, *args, **kwargs)
 
 
+class UnappliedFnCall(FnCall[_P, _T]):
+    trait: type[Trait]
+    fn: Fn[_P, _T]
+
+    def __init__(self, trait: type[Trait], fn: Fn[_P, _T]):
+        self.trait = trait
+        self.fn = fn
+
+    def __repr__(self) -> str:
+        return f"<FnCall unbound async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+
+
 class BoundFnCommon(Fn[_P, _T]):
     @overload
     def __init__(self, schema: Callable[Concatenate[_TboundTrait, _P], Awaitable[_T]]):
@@ -148,7 +160,7 @@ class BoundEntityFn(BoundFnCommon[_P, _T]):
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
                 return AppliedEntityFnCall(instance, self)
-            return UnappliedEntityFnCall(instance, self)
+            return UnappliedEntityFnCall(owner, self)
         return self
 
 
@@ -172,7 +184,7 @@ class BoundMetadataFn(BoundFnCommon[_P, _T]):
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
                 return AppliedMetadataFnCall(instance, self)
-            return UnappliedMetadataFnCall(instance, self)
+            return UnappliedMetadataFnCall(owner, self)
         return self
 
 
@@ -196,13 +208,13 @@ class BoundUniversalFn(BoundFnCommon[_P, _T]):
         if issubclass(owner, Trait):
             if isinstance(instance, Trait):
                 return AppliedUniversalFnCall(instance, self)
-            return UnappliedUniversalFnCall(instance, self)
+            return UnappliedUniversalFnCall(owner, self)
         return self
 
 
-class UnappliedEntityFnCall(FnCall[_P, _T]):
+class UnappliedEntityFnCall(UnappliedFnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall unbounded entity async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall unbounded entity async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: Selector, *args: _P.args, **kwargs: _P.kwargs):
         impl = self.trait.context._get_entity_bound_scope(target).get(Impl(self.fn))
@@ -214,9 +226,9 @@ class UnappliedEntityFnCall(FnCall[_P, _T]):
         return await impl(self.trait.context, target, *args, **kwargs)
 
 
-class UnappliedMetadataFnCall(FnCall[_P, _T]):
+class UnappliedMetadataFnCall(UnappliedFnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall unbounded metadata async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall unbounded metadata async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
         impl = self.trait.context._get_metadata_bound_scope(target).get(Impl(self.fn))
@@ -228,9 +240,9 @@ class UnappliedMetadataFnCall(FnCall[_P, _T]):
         return await impl(self.trait.context, target, *args, **kwargs)
 
 
-class UnappliedUniversalFnCall(FnCall[_P, _T]):
+class UnappliedUniversalFnCall(UnappliedFnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall unbounded universal async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall unbounded universal async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, target: Selector | MetadataOf, *args: _P.args, **kwargs: _P.kwargs):
         if isinstance(target, Selector):
@@ -256,7 +268,7 @@ class UnappliedUniversalFnCall(FnCall[_P, _T]):
 
 class AppliedEntityFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall bounded entity async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall bounded entity async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
         target = self.trait.bound
@@ -273,7 +285,7 @@ class AppliedEntityFnCall(FnCall[_P, _T]):
 
 class AppliedMetadataFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall bounded metadata async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall bounded metadata async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
         target = self.trait.bound
@@ -290,7 +302,7 @@ class AppliedMetadataFnCall(FnCall[_P, _T]):
 
 class AppliedUniversalFnCall(FnCall[_P, _T]):
     def __repr__(self) -> str:
-        return f"<FnCall bounded universal async {self.trait.__class__.__name__}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
+        return f"<FnCall bounded universal async {identity(self.trait)}::{self.fn.identity} {inspect.signature(self.fn.schema)}>"
 
     async def __call__(self, *args: _P.args, **kwargs: _P.kwargs):
         target = self.trait.bound

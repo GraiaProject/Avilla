@@ -3,19 +3,49 @@ from __future__ import annotations
 from collections.abc import Callable, Mapping
 from itertools import filterfalse
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Literal, Protocol, Union, runtime_checkable
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar, Union, runtime_checkable
 
-from typing_extensions import Self
+from typing_extensions import Self, Unpack
 
 from avilla.core._runtime import ctx_context
 from avilla.core.platform import Land
 
 if TYPE_CHECKING:
     from .context import ContextSelector
+    from .metadata import Metadata, MetadataOf, MetadataRoute
 
 MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
 Pattern = Union[str, Callable[[str], bool]]
 EMPTY_MAP = MappingProxyType({})
+
+
+def _get_follows_pattern(pattern: str):
+    patterns: dict[str, str] = {}
+    bracket_depth: int = 0
+    path_buf: list[str] = []
+    pattern_buf: list[str] = []
+    for ch in pattern:
+        if ch == "." and bracket_depth == 0:
+            patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+            path_buf.clear()
+            pattern_buf.clear()
+        elif ch == "(":
+            if bracket_depth:
+                pattern_buf.append(ch)
+            bracket_depth += 1
+        elif ch == ")":
+            if not bracket_depth:
+                raise ValueError("Found unmatched bracket.")
+            bracket_depth -= 1
+            if bracket_depth:
+                pattern_buf.append(ch)
+        else:
+            (pattern_buf if bracket_depth else path_buf).append(ch)
+    if bracket_depth:
+        raise ValueError("Found unmatched bracket.")
+    if path_buf:
+        patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+    return patterns
 
 
 class Selector:
@@ -72,7 +102,7 @@ class Selector:
         if isinstance(land, Land):
             land = land.name
 
-        return Selector({"land": land, **self.pattern})
+        return Selector({"land": land, **{k: v for k, v in self.pattern.items() if k != "land"}})
 
     def matches(self, other: Selectable, *, mode: MatchRule = "exact") -> bool:
         if not isinstance(other, Selector):
@@ -119,37 +149,19 @@ class Selector:
         return all(fragment[i] == full[i] for i in range(len(fragment)))
 
     def as_dyn(self) -> DynamicSelector:
-        return DynamicSelector(self.pattern)
+        return DynamicSelector(
+            {k: (lambda _: True) if v == "*" else (lambda v1: lambda x: v1 == x)(v) for k, v in self.pattern.items()}
+        )
 
     def to_selector(self):
         return self
 
+    @classmethod
+    def from_follows_pattern(cls, pattern: str):
+        return cls(_get_follows_pattern(pattern))
+
     def follows(self, pattern: str) -> bool:
-        patterns: dict[str, str] = {}
-        bracket_depth: int = 0
-        path_buf: list[str] = []
-        pattern_buf: list[str] = []
-        for ch in pattern:
-            if ch == "." and bracket_depth == 0:
-                patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
-                path_buf.clear()
-                pattern_buf.clear()
-            elif ch == "(":
-                if bracket_depth:
-                    pattern_buf.append(ch)
-                bracket_depth += 1
-            elif ch == ")":
-                if not bracket_depth:
-                    raise ValueError("Found unmatched bracket.")
-                bracket_depth -= 1
-                if bracket_depth:
-                    pattern_buf.append(ch)
-            else:
-                (pattern_buf if bracket_depth else path_buf).append(ch)
-        if bracket_depth:
-            raise ValueError("Found unmatched bracket.")
-        if path_buf:
-            patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
+        patterns = _get_follows_pattern(pattern)
         return (self.path if "land" in patterns else self.path_without_land) == ".".join(patterns) and all(
             k in self.pattern and v in ("*", self.pattern[k]) for k, v in patterns.items()
         )
@@ -166,17 +178,26 @@ class Selector:
             raise LookupError
         return ctx.wrap(self)
 
+    _MetadataT = TypeVar("_MetadataT", bound="Metadata")
+
+    def route(
+        self, metadata_route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
+    ) -> MetadataOf[type[_MetadataT]] | MetadataOf[MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]]:
+        return metadata_route.of(self)
+
 
 class DynamicSelector(Selector):
-    pattern: dict[str, Pattern]
+    pattern: Mapping[str, Pattern]
+
+    def __init__(self, pattern: dict[str, Pattern] | None = None) -> None:
+        self.pattern = MappingProxyType({**(pattern or {})})
 
     def __getattr__(self, name: str, /):
         def wrapper(content: Pattern | Literal["*"]):
             if content == "*":
-                content = lambda _: True
+                content = lambda _: True  # noqa: E731
 
-            self.pattern[name] = content
-            return self
+            return DynamicSelector({**self.pattern, name: content})
 
         return wrapper
 
@@ -202,7 +223,7 @@ class DynamicSelector(Selector):
                 callable(own_pattern)
                 and not own_pattern(other.pattern[k])
                 or not callable(own_pattern)
-                and own_pattern != other.pattern[k]
+                and own_pattern not in {other.pattern[k], "*"}
             ):
                 return False
         return True
