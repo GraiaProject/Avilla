@@ -1,25 +1,27 @@
 from __future__ import annotations
-from datetime import datetime, timedelta
 
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
 from loguru import logger
-from avilla.spec.core.activity.event import ActivityTrigged
-from avilla.spec.core.message.event import MessageRevoked
-
-from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.context import Context
-from avilla.core.message import Message
+from avilla.core.event import (
+    Bind,
+    MetadataModified,
+    Op,
+    RelationshipCreated,
+    RelationshipDestroyed,
+    Unbind,
+    Update,
+)
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
-from avilla.spec.core.message import MessageReceived
-from avilla.core.event import Bind, MetadataModified, Op, RelationshipCreated, RelationshipDestroyed, Unbind, Update
+from avilla.elizabeth.const import privilege_level
 from avilla.spec.core.privilege.metadata import MuteInfo, Privilege
-from avilla.spec.core.privilege.skeleton import MuteAllTrait, MuteTrait, PrivilegeTrait
+from avilla.spec.core.privilege.skeleton import MuteTrait, PrivilegeTrait
 from avilla.spec.core.profile.metadata import Nick, Summary
 from avilla.spec.core.profile.skeleton import NickTrait
-from avilla.elizabeth.const import privilege_level
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
@@ -89,6 +91,7 @@ async def member_card_change(protocol: ElizabethProtocol, account: ElizabethAcco
         context,
     )
 
+
 @event("MemberSpecialTitleChangeEvent")
 async def member_special_title_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
     group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
@@ -119,6 +122,7 @@ async def member_special_title_change(protocol: ElizabethProtocol, account: Eliz
         context,
     )
 
+
 @event("MemberPermissionChangeEvent")
 async def member_perm_changed_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
     group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
@@ -146,68 +150,77 @@ async def member_perm_changed_change(protocol: ElizabethProtocol, account: Eliza
             context=context,
             endpoint=member,
             client=operator,
+            modifies=[Op(op, {Privilege.of(member): [Update(Privilege.inh(lambda x: x.available), present, past)]})],
+        ),
+        context,
+    )
+
+
+@event("MemberMuteEvent")
+async def member_mute_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
+    group = Selector().land(protocol.land).group(raw["member"]["group"]["id"])
+    target = group.member(str(raw["member"]["id"]))
+    selft = group.member(account.id)
+    if raw["operator"] is None:
+        operator = selft
+    else:
+        operator = group.member(str(raw["operator"]["id"]))
+    context = Context(account, operator, selft, group, selft)
+    context._collect_metadatas(
+        target,
+        MuteInfo(True, timedelta(seconds=raw["durationSeconds"]), datetime.now()),
+    )
+    context._collect_metadatas(operator, Privilege(True, False))
+    return (
+        MetadataModified(
+            context=context,
+            endpoint=selft,
+            client=operator,
             modifies=[
-                Op(op, {Privilege.of(member): [Update(Privilege.inh(lambda x: x.available), present, past)]})
+                Op(
+                    MuteTrait.mute,
+                    {
+                        MuteInfo.of(target): [
+                            Bind(MuteInfo.inh(lambda x: x.muted), True),
+                            Bind(MuteInfo.inh(lambda x: x.duration), timedelta(seconds=raw["duration"])),
+                            Bind(MuteInfo.inh(lambda x: x.time), datetime.now()),
+                        ]
+                    },
+                )
             ],
         ),
         context,
     )
 
-@event('MemberMuteEvent')
-async def member_mute_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().land(protocol.land).group(raw["member"]["group"]["id"])
-    target = group.member(str(raw['member']['id']))
-    selft = group.member(account.id)
-    if raw["operator"] is None:
-        operator = selft
-    else:
-        operator = group.member(str(raw["operator"]["id"]))
-    context = Context(account, operator, selft, group, selft)
-    context._collect_metadatas(target,
-        MuteInfo(True, timedelta(seconds=raw['durationSeconds']), datetime.now()),
-    )
-    context._collect_metadatas(operator,
-        Privilege(True, False)
-    )
-    return MetadataModified(
-        context=context,
-        endpoint=selft,
-        client=operator,
-        modifies=[
-            Op(MuteTrait.mute, {
-                MuteInfo.of(target): [
-                    Bind(MuteInfo.inh(lambda x: x.muted), True),
-                    Bind(MuteInfo.inh(lambda x: x.duration), timedelta(seconds=raw['duration'])),
-                    Bind(MuteInfo.inh(lambda x: x.time), datetime.now())
-                ]
-            })
-        ]
-    ), context
 
-@event('MemberUnmuteEvent')
+@event("MemberUnmuteEvent")
 async def member_unmute_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
     group = Selector().land(protocol.land).group(raw["member"]["group"]["id"])
-    target = group.member(str(raw['member']['id']))
+    target = group.member(str(raw["member"]["id"]))
     selft = group.member(account.id)
     if raw["operator"] is None:
         operator = selft
     else:
         operator = group.member(str(raw["operator"]["id"]))
     context = Context(account, operator, selft, group, selft)
-    context._collect_metadatas(operator,
-        Privilege(True, False)
+    context._collect_metadatas(operator, Privilege(True, False))
+    return (
+        MetadataModified(
+            context=context,
+            endpoint=selft,
+            client=operator,
+            modifies=[
+                Op(
+                    MuteTrait.mute,
+                    {
+                        MuteInfo.of(target): [
+                            Unbind(MuteInfo.inh(lambda x: x.muted)),
+                            Unbind(MuteInfo.inh(lambda x: x.duration)),
+                            Unbind(MuteInfo.inh(lambda x: x.time)),
+                        ]
+                    },
+                )
+            ],
+        ),
+        context,
     )
-    return MetadataModified(
-        context=context,
-        endpoint=selft,
-        client=operator,
-        modifies=[
-            Op(MuteTrait.mute, {
-                MuteInfo.of(target): [
-                    Unbind(MuteInfo.inh(lambda x: x.muted)),
-                    Unbind(MuteInfo.inh(lambda x: x.duration)),
-                    Unbind(MuteInfo.inh(lambda x: x.time))
-                ]
-            })
-        ]
-    ), context

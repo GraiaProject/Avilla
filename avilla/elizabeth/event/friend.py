@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
-from avilla.spec.core.profile.skeleton import NickTrait
 
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, Op, Update
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.profile.metadata import Nick
+from avilla.spec.core.profile.skeleton import NickTrait
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount

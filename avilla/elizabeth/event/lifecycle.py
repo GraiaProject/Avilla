@@ -8,7 +8,6 @@ from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.application.event import AccountAvailable, AccountUnavailable
 
 if TYPE_CHECKING:
-    from avilla.core.event import AvillaEvent
 
     from ..account import ElizabethAccount
     from ..protocol import ElizabethProtocol

@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.exceptions import permission_error_message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
+from avilla.elizabeth.const import privilege_level, privilege_trans
 from avilla.spec.core.activity.skeleton import ActivityTrigger
 from avilla.spec.core.privilege import MuteTrait, Privilege
 from avilla.spec.core.privilege.metadata import MuteInfo
 from avilla.spec.core.privilege.skeleton import PrivilegeTrait
 from avilla.spec.core.profile import Nick, Summary
 from avilla.spec.core.scene.skeleton import SceneTrait
-from avilla.elizabeth.const import privilege_level, privilege_trans
 
 if TYPE_CHECKING:
 

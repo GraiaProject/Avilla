@@ -4,7 +4,6 @@ from collections import deque
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message import __message_chain_class__
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from avilla.spec.core.message.event import MessageRevoked
 
 from graia.amnesia.message import __message_chain_class__
 
@@ -10,6 +9,7 @@ from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.message import MessageReceived
+from avilla.spec.core.message.event import MessageRevoked
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
@@ -103,9 +103,10 @@ async def group_recall(protocol: ElizabethProtocol, account: ElizabethAccount, r
 
     return MessageRevoked(context, message, operator), context
 
+
 @event("FriendRecallEvent")
 async def friend_recall(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict):
-    friend = Selector().land(protocol.land).group(str(raw['operator']))
+    friend = Selector().land(protocol.land).group(str(raw["operator"]))
     message = friend.message(str(raw["message_id"]))
     context = Context(account, friend, message, friend, account.to_selector())
 

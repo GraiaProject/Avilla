@@ -10,7 +10,6 @@ from typing_extensions import Self, TypeVarTuple, Unpack
 from avilla.core.utilles import classproperty
 
 if TYPE_CHECKING:
-    from avilla.core.context import Context
     from avilla.core.selector import Selector
 
 T = TypeVar("T")

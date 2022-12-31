@@ -29,7 +29,7 @@ class Avilla:
     service: AvillaService
 
     with wrap_artifacts() as global_artifacts:
-        import avilla.core.builtins.resource_fetch as _
+        pass
 
     def __init__(
         self,

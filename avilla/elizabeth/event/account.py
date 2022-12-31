@@ -32,7 +32,7 @@ event = EventParserRecorder["ElizabethProtocol", "ElizabethAccount"]
 
 @event("BotGroupPermissionChangeEvent")
 async def account_permission_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().land(protocol.land).group(str(raw['group']['id']))
+    group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
     group_ctx = await account.get_context(group)
     async for mem in group_ctx.query(f"group({raw['group']['id']}).member"):
         mem_priv_info = await group_ctx.pull(Privilege >> Summary, mem)
@@ -70,26 +70,31 @@ async def account_muted(protocol: ElizabethProtocol, account: ElizabethAccount, 
     operator = group.member(raw["operator"]["id"])
     account_member = group.member(account.id)
     context = Context(account, operator, account_member, group, account_member)
-    context._collect_metadatas(account_member,
-        MuteInfo(True, timedelta(seconds=raw['duration']), datetime.now()),
+    context._collect_metadatas(
+        account_member,
+        MuteInfo(True, timedelta(seconds=raw["duration"]), datetime.now()),
     )
-    context._collect_metadatas(operator,
-        Privilege(True, False)
+    context._collect_metadatas(operator, Privilege(True, False))
+    return (
+        MetadataModified(
+            context=context,
+            endpoint=account_member,
+            client=operator,
+            modifies=[
+                Op(
+                    MuteTrait.mute,
+                    {
+                        MuteInfo.of(account_member): [
+                            Bind(MuteInfo.inh(lambda x: x.muted), True),
+                            Bind(MuteInfo.inh(lambda x: x.duration), timedelta(seconds=raw["duration"])),
+                            Bind(MuteInfo.inh(lambda x: x.time), datetime.now()),
+                        ]
+                    },
+                )
+            ],
+        ),
+        context,
     )
-    return MetadataModified(
-        context=context,
-        endpoint=account_member,
-        client=operator,
-        modifies=[
-            Op(MuteTrait.mute, {
-                MuteInfo.of(account_member): [
-                    Bind(MuteInfo.inh(lambda x: x.muted), True),
-                    Bind(MuteInfo.inh(lambda x: x.duration), timedelta(seconds=raw['duration'])),
-                    Bind(MuteInfo.inh(lambda x: x.time), datetime.now())
-                ]
-            })
-        ]
-    ), context
 
 
 @event("BotUnmuteEvent")
@@ -98,59 +103,68 @@ async def account_unmuted(protocol: ElizabethProtocol, account: ElizabethAccount
     operator = group.member(raw["operator"]["id"])
     account_member = group.member(account.id)
     context = Context(account, operator, account_member, group, account_member)
-    context._collect_metadatas(account_member,
-        MuteInfo(True, timedelta(seconds=raw['duration']), datetime.now()),
+    context._collect_metadatas(
+        account_member,
+        MuteInfo(True, timedelta(seconds=raw["duration"]), datetime.now()),
     )
-    context._collect_metadatas(operator,
-        Privilege(True, False)
+    context._collect_metadatas(operator, Privilege(True, False))
+    return (
+        MetadataModified(
+            context=context,
+            endpoint=account_member,
+            client=operator,
+            modifies=[
+                Op(
+                    MuteTrait.mute,
+                    {
+                        MuteInfo.of(account_member): [
+                            Update(MuteInfo.inh(lambda x: x.muted), True, False),
+                            Unbind(MuteInfo.inh(lambda x: x.duration)),
+                            Unbind(MuteInfo.inh(lambda x: x.time)),
+                        ]
+                    },
+                )
+            ],
+        ),
+        context,
     )
-    return MetadataModified(
-        context=context,
-        endpoint=account_member,
-        client=operator,
-        modifies=[
-            Op(MuteTrait.mute, {
-                MuteInfo.of(account_member): [
-                    Update(MuteInfo.inh(lambda x: x.muted), True, False),
-                    Unbind(MuteInfo.inh(lambda x: x.duration)),
-                    Unbind(MuteInfo.inh(lambda x: x.time))
-                ]
-            })
-        ]
-    ), context
 
 
-@event('BotJoinGroupEvent')
+@event("BotJoinGroupEvent")
 async def account_join_group(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().land(protocol.land).group(str(raw['group']['id']))
-    if raw['inviter'] is not None:
-        inviter = group.member(raw['inviter']['id'])
+    group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
+    if raw["inviter"] is not None:
+        inviter = group.member(raw["inviter"]["id"])
     else:
         inviter = None
     account_member = group.member(account.id)
-    context = Context(account, account_member, account_member, group, account_member, [inviter] if inviter is not None else None)
+    context = Context(
+        account, account_member, account_member, group, account_member, [inviter] if inviter is not None else None
+    )
     return RelationshipCreated(context), context
 
-@event('BotLeaveGroupEventActive')
+
+@event("BotLeaveGroupEventActive")
 async def account_leave_group_active(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().land(protocol.land).group(str(raw['group']['id']))
+    group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
     account_member = group.member(account.id)
     context = Context(account, account_member, account_member, group, account_member)
     return RelationshipDestroyed(context, True), context
 
-@event('BotLeaveGroupEventKick')
+
+@event("BotLeaveGroupEventKick")
 async def account_leave_group_kick(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().land(protocol.land).group(str(raw['group']['id']))
+    group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
     account_member = group.member(account.id)
     operator = group.member(raw["operator"]["id"])
     context = Context(account, operator, account_member, group, account_member)
     return RelationshipDestroyed(context, False), context
 
+
 @event("BotLeaveGroupEventDisband")
 async def account_leave_group_disband(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().land(protocol.land).group(str(raw['group']['id']))
+    group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
     account_member = group.member(account.id)
     operator = group.member(raw["operator"]["id"])
     context = Context(account, operator, account_member, group, account_member)
     return RelationshipDestroyed(context, False, True), context
-
