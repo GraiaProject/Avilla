@@ -13,14 +13,11 @@ from avilla.spec.core.privilege.metadata import MuteInfo
 from avilla.spec.core.privilege.skeleton import PrivilegeTrait
 from avilla.spec.core.profile import Nick, Summary
 from avilla.spec.core.scene.skeleton import SceneTrait
+from avilla.elizabeth.const import privilege_level, privilege_trans
 
 if TYPE_CHECKING:
 
     from avilla.core.context import Context
-
-
-privilege_trans = defaultdict(lambda: "group_member", {"OWNER": "group_owner", "ADMINISTRATOR": "group_admin"})
-privilege_level = defaultdict(lambda: 0, {"OWNER": 2, "ADMINISTRATOR": 1})
 
 with bounds("group.member"):
 

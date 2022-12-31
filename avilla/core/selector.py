@@ -69,7 +69,7 @@ class Selector:
         return wrapper
 
     def __hash__(self) -> int:
-        return hash("Selector") + hash(tuple(self.pattern.items()))
+        return hash(("Selector", *self.pattern.items()))
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, Selector) and o.pattern == self.pattern

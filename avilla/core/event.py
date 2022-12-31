@@ -3,7 +3,8 @@ from __future__ import annotations
 from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Generic
+from typing_extensions import TypeVar
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
@@ -50,8 +51,12 @@ class Op:
     operator: UnappliedFnCall
     effects: dict[MetadataOf, list[Effect]]
 
+@dataclass
+class NamelessOp:
+    effects: dict[MetadataOf, list[Effect]]
 
-T = TypeVar("T")
+
+T = TypeVar("T", infer_variance=True)
 
 
 @dataclass
@@ -81,7 +86,7 @@ class Update(Effect[T]):
 @dataclass
 class MetadataModified(AvillaEvent):
     endpoint: Selector
-    modifies: list[Op]
+    modifies: list[Op | NamelessOp]
     client: Selector | None = None
 
     class Dispatcher(AvillaEvent.Dispatcher):

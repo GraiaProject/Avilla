@@ -24,7 +24,7 @@ _TVT1 = TypeVarTuple("_TVT1")
 _TVT2 = TypeVarTuple("_TVT2")
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class MetadataOf(Generic[_DescribeT]):
     target: Selector
     describe: _DescribeT
@@ -39,9 +39,11 @@ class MetadataBound(Generic[_DescribeT]):
     describe: _DescribeT
 
 
-class _SetItemAgent:
-    def __init__(self, setitem):
-        self.__setitem__ = setitem
+class _GetItemAgent(Generic[T]):
+    __getitem__: T
+
+    def __init__(self, getitem: T):
+        self.__getitem__ = getitem
 
 
 class MetadataMeta(type):
@@ -93,14 +95,9 @@ class Metadata(metaclass=MetadataMeta):
     def __init_subclass__(cls) -> None:
         METACELL_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
 
-    @classproperty
     @classmethod
-    def _(cls):
-        @_SetItemAgent
-        def wrapper(operator: Callable[[Self], T]) -> MetadataFieldReference[Self, T]:
-            return MetadataFieldReference(cls, operator)
-
-        return wrapper
+    def inh(cls: type[_MetadataT1], operator: Callable[[_MetadataT1], T]) -> MetadataFieldReference[_MetadataT1, T]:
+        return MetadataFieldReference(cls, operator)
 
     @classmethod
     def get_params(cls) -> dict[str, Any] | None:
@@ -166,7 +163,7 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
 
     @property
     def _(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]):
-        @_SetItemAgent
+        @_GetItemAgent
         def wrapper(operator: Callable[[_MetadataT1], T]) -> MetadataFieldReference[_MetadataT1, T]:
             return MetadataFieldReference(self, operator)
 

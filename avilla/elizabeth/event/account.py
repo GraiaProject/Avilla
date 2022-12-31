@@ -1,16 +1,17 @@
 from __future__ import annotations
+from collections import defaultdict
 
-from typing import TYPE_CHECKING
-
-from loguru import logger
-from pyparsing import Any
+from typing import TYPE_CHECKING, Any
 
 from avilla.core.context import Context
-from avilla.core.event import MetadataModified, MetadataModify
+from avilla.core.event import MetadataModified, Op, Update
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.privilege.metadata import Privilege
+from avilla.spec.core.privilege.skeleton import PrivilegeTrait
 from avilla.spec.core.profile.metadata import Summary
+from loguru import logger
+from avilla.elizabeth.const import privilege_level
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
@@ -19,7 +20,7 @@ if TYPE_CHECKING:
 
 event = EventParserRecorder["ElizabethProtocol", "ElizabethAccount"]
 
-"""
+
 @event("BotGroupPermissionChangeEvent")
 async def account_permission_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
     group = Selector().group(raw["group"]["id"])
@@ -34,7 +35,20 @@ async def account_permission_change(protocol: ElizabethProtocol, account: Elizab
         operator = account.to_selector()
     account_member = group.member(account.id)
     context = Context(account, operator, account_member, group, account_member)
-    return MetadataModified(
-        context, context.endpoint, [MetadataModify(Privilege.of(account_member), "available", "")], operator
+    if privilege_level[raw["current"]] > privilege_level[raw["origin"]]:
+        past, present = False, True
+        op = PrivilegeTrait.upgrade
+    else:
+        past, present = True, False
+        op = PrivilegeTrait.downgrade
+    return (
+        MetadataModified(
+            context=context,
+            endpoint=context.endpoint,
+            client=operator,
+            modifies=[
+                Op(op, {Privilege.of(account_member): [Update(Privilege.inh(lambda x: x.available), present, past)]})
+            ],
+        ),
+        context,
     )
-"""

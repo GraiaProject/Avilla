@@ -103,7 +103,7 @@ class ContextMedium:
     selector: ContextSelector
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
     context: Context
 

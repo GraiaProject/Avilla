@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-from pyparsing import Any
+from typing import TYPE_CHECKING, Any
+from avilla.spec.core.profile.skeleton import NickTrait
 
 from avilla.core.context import Context
-from avilla.core.event import MetadataModified, MetadataModify
+from avilla.core.event import MetadataModified, Op, Update
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.profile.metadata import Nick
@@ -24,7 +23,19 @@ async def friend_nick_changed(protocol: ElizabethProtocol, account: ElizabethAcc
     context = Context(account, friend, friend, friend, account.to_selector())
     return (
         MetadataModified(
-            context, friend, [MetadataModify(Nick.of(friend), "name", "set", raw["from"], raw["to"])], friend
+            context=context,
+            endpoint=friend,
+            client=friend,
+            modifies=[
+                Op(
+                    NickTrait.set_name,
+                    {
+                        Nick.of(friend): [
+                            Update(field=Nick.inh(lambda x: x.name), past=raw["from_name"], present=raw["to_name"])
+                        ]
+                    },
+                )
+            ],
         ),
         context,
     )
