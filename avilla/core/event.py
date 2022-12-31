@@ -97,10 +97,7 @@ class MetadataModified(AvillaEvent):
 
 @dataclass
 class RelationshipCreated(AvillaEvent):
-    client: Selector
-    scene: Selector
-    self: Selector
-    mediums: list[Selector] = field(default_factory=list)
+    ...
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
@@ -110,10 +107,8 @@ class RelationshipCreated(AvillaEvent):
 
 @dataclass
 class RelationshipDestroyed(AvillaEvent):
-    client: Selector
-    scene: Selector
-    self: Selector
-    mediums: list[Selector] = field(default_factory=list)
+    active: bool
+    indirect: bool = False
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod

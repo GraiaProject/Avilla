@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
+from avilla.spec.core.message.event import MessageRevoked
 
 from graia.amnesia.message import __message_chain_class__
 
@@ -87,3 +88,25 @@ async def temp_message(protocol: ElizabethProtocol, account: ElizabethAccount, r
     context._collect_metadatas(message, message)
     event = MessageReceived(context, message)
     return event, context
+
+
+@event("GroupRecallEvent")
+async def group_recall(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict):
+    group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
+    message = group.message(str(raw["message_id"]))
+    selft = group.member(account.id)
+    if raw["operator"] is None:
+        operator = group.member(account.id)
+    else:
+        operator = group.member(str(raw["operator"]["id"]))
+    context = Context(account, operator, message, group, selft)
+
+    return MessageRevoked(context, message, operator), context
+
+@event("FriendRecallEvent")
+async def friend_recall(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict):
+    friend = Selector().land(protocol.land).group(str(raw['operator']))
+    message = friend.message(str(raw["message_id"]))
+    context = Context(account, friend, message, friend, account.to_selector())
+
+    return MessageRevoked(context, message, friend), context
