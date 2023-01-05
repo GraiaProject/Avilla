@@ -93,6 +93,7 @@ class Metadata(metaclass=MetadataMeta):
 
     def __init_subclass__(cls) -> None:
         METACELL_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
+        super().__init_subclass__()
 
     @classmethod
     def inh(cls: type[_MetadataT1], operator: Callable[[_MetadataT1], T]) -> MetadataFieldReference[_MetadataT1, T]:
