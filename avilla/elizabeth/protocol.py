@@ -22,7 +22,7 @@ from avilla.spec.qq.elements import FlashImage
 from .account import ElizabethAccount
 
 if TYPE_CHECKING:
-    from avilla.core.trait.context import EventParser
+    from avilla.core.trait.context import EventParser, ElementParser
 
 
 class MessageDeserializeResult(TypedDict):
@@ -52,16 +52,23 @@ class ElizabethProtocol(BaseProtocol):
     )
 
     with wrap_artifacts() as implementations:
-        pass
+        import avilla.elizabeth.artifacts as _  # noqa
+        import avilla.elizabeth.artifacts.account as _  # noqa
+        import avilla.elizabeth.artifacts.friend as _  # noqa
+        import avilla.elizabeth.artifacts.friend_message as _  # noqa
+        import avilla.elizabeth.artifacts.group as _  # noqa
+        import avilla.elizabeth.artifacts.group_member as _  # noqa
+        import avilla.elizabeth.artifacts.group_message as _  # noqa
+        import avilla.elizabeth.artifacts.query as _  # noqa
 
     with wrap_artifacts() as event_parsers:
-        pass
+        import avilla.elizabeth.event.message as _  # noqa
 
     with wrap_artifacts() as message_parsers:
-        pass
+        import avilla.elizabeth.message_parse as _  # noqa
 
     with wrap_artifacts() as context_sources:
-        pass
+        import avilla.elizabeth.artifacts.context_source as _  # noqa
 
     service: ElizabethService
 
@@ -130,7 +137,7 @@ class ElizabethProtocol(BaseProtocol):
             if element_type == "Quote":
                 result["reply"] = str(raw_element["id"])
                 continue
-            parser: ElementParse | None = self.message_parsers.get(ElementParse(element_type))
+            parser: ElementParser | None = self.message_parsers.get(ElementParse(element_type))
             if parser is None:
                 raise NotImplementedError(f'expected element "{element_type}" implemented for {raw_element}')
             serialized.append(await parser(context, raw_element))
