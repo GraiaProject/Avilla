@@ -8,6 +8,7 @@ import re
 import sys
 import types
 from types import FunctionType, GenericAlias
+from typing import Any
 
 __all__ = [
     "dataclass",
@@ -1312,7 +1313,7 @@ def _add_slots(cls, is_frozen, weakref_slot):
         raise TypeError(f"{cls.__name__} already specifies __slots__")
 
     # Create a new dict for our new class.
-    cls_dict = dict(cls.__dict__)
+    cls_dict: dict[str, Any] = dict(cls.__dict__)
     field_names = tuple(f.name for f in fields(cls))
     # Make sure slots don't overlap with those in base classes.
     inherited_slots = set(itertools.chain.from_iterable(map(_get_slots, cls.__mro__[1:-1])))
