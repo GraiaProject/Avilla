@@ -89,6 +89,7 @@ class MetadataModified(AvillaEvent):
     endpoint: Selector
     modifies: list[Op | NamelessOp]
     client: Selector | None = None
+    scene: Selector | None = None
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
