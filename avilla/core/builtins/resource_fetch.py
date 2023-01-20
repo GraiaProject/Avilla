@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..resource import LocalFileResource
+from ..resource import LocalFileResource, RawResource
 from ..trait.context import fetch
 
 if TYPE_CHECKING:
@@ -12,3 +12,8 @@ if TYPE_CHECKING:
 @fetch(LocalFileResource)
 async def fetch_localfile(ctx: Context, res: LocalFileResource):
     return res.file.read_bytes()
+
+
+@fetch(RawResource)
+async def fetch_raw(ctx: Context, res: RawResource):
+    return res.data
