@@ -1,6 +1,6 @@
 from __future__ import annotations
-from collections import ChainMap
 
+from collections import ChainMap
 from collections.abc import Awaitable, Callable, Container, Iterable
 from functools import partial
 from inspect import isawaitable
@@ -16,9 +16,8 @@ from avilla.core.context import Context
 from avilla.core.event import MetadataModified, Op
 from avilla.core.metadata import MetadataFieldReference, MetadataOf
 from avilla.core.selector import Selectable, Selector
-from avilla.core.utilles import classproperty
-
 from avilla.core.trait import UnappliedFnCall
+from avilla.core.utilles import classproperty
 
 T = TypeVar("T", covariant=True)
 R = TypeVar("R")
@@ -39,6 +38,9 @@ class _SceneSpecified(Protocol[R]):
 
 class Filter(BaseDispatcher, Generic[T]):
     middlewares: list[Callable[[Any], Awaitable[Any] | Any]]
+
+    def __init__(self):
+        self.middlewares = []
 
     def dispatch(self, annotation: type[R]) -> Filter[R]:
         @self.middlewares.append
@@ -152,11 +154,8 @@ class Filter(BaseDispatcher, Generic[T]):
     @classproperty
     @classmethod
     def mod(cls) -> Filter[MetadataModified]:
-        return (
-            cls()
-            .dispatch(MetadataModified)
-        )
-    
+        return cls().dispatch(MetadataModified)
+
     def influen(self: Filter[MetadataModified], *fields: tuple[MetadataOf, MetadataFieldReference]):
         def _check(x: MetadataModified):
             if not fields:
@@ -166,10 +165,10 @@ class Filter(BaseDispatcher, Generic[T]):
             for of, refs in grouped.items():
                 if of not in links:
                     return False
-                
+
                 if not {i.field for i in links[of]}.issuperset(refs):
                     return False
-            
+
             return True
 
         return self.assert_true(_check)
@@ -189,3 +188,7 @@ class Filter(BaseDispatcher, Generic[T]):
 
     async def catch(self, interface: DispatcherInterface):
         return interface.local_storage.get("__filter_fetch__", {}).get(interface.annotation)
+
+
+if __name__ == "__main__":
+    print(Filter().scene.follows("group").middlewares)

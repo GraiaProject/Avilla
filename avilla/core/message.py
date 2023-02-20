@@ -4,7 +4,10 @@ from typing import TYPE_CHECKING, cast
 
 from graia.amnesia.message import __message_chain_class__
 
-from avilla.core._vendor.dataclasses import dataclass
+if TYPE_CHECKING:
+    from dataclasses import dataclass
+else:
+    from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
 from avilla.spec.core.message.skeleton import MessageRevoke
