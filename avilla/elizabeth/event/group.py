@@ -2,13 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-
 from avilla.core.context import Context
-from avilla.core.event import (
-    MetadataModified,
-    Op,
-    Update,
-)
+from avilla.core.event import MetadataModified, Op, Update
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.spec.core.privilege.metadata import MuteInfo

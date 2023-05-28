@@ -4,7 +4,6 @@ from collections import deque
 from collections.abc import AsyncGenerator
 from typing import TYPE_CHECKING
 
-
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector
 from avilla.core.trait.context import Artifacts

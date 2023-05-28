@@ -19,7 +19,6 @@ if TYPE_CHECKING:
 
 
 with bounds("friend"):
-
     # casts(MessageSend)
     # casts(MessageRevoke)
 

@@ -3,7 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from graia.amnesia.message import Element, Text as Text
+from graia.amnesia.message import Element
+from graia.amnesia.message import Text as Text
 
 from avilla.core.resource import LocalFileResource, Resource
 from avilla.core.selector import Selector

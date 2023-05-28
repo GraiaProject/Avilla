@@ -21,7 +21,6 @@ if TYPE_CHECKING:
 
 
 with bounds("group"):
-
     # casts(MessageSend)
     # casts(MessageRevoke)
     # casts(MuteTrait)
