@@ -1,7 +1,3 @@
-from __future__ import annotations
-
-from typing import TYPE_CHECKING
-
 from graia.broadcast import Broadcast
 from launart import Launart
 
@@ -13,12 +9,8 @@ from avilla.core.protocol import BaseProtocol
 from avilla.core.resource import LocalFileResource
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
-from avilla.core.trait.signature import ResourceFetch
-
-from .trait.context import wrap_artifacts
-
-if TYPE_CHECKING:
-    from avilla.core.trait.signature import ArtifactSignature
+from avilla.core.trait.context import wrap_artifacts
+from avilla.core.trait.signature import ArtifactSignature, ResourceFetch
 
 
 class Avilla:
