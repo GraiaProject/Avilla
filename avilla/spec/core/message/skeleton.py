@@ -3,12 +3,12 @@ from __future__ import annotations
 from graia.amnesia.message import __message_chain_class__
 
 from avilla.core.selector import Selector
-from avilla.core.trait import Fn, Trait
+from avilla.core.trait import Fn, Trait, _Tbound1
 
 # MessageFetch => rs.pull(Message, target=...)
 
 
-class MessageSend(Trait):
+class MessageSend(Trait[_Tbound1]):
     @Fn.bound_entity
     async def send(self, message: __message_chain_class__, *, reply: Selector | None = None) -> Selector:
         ...

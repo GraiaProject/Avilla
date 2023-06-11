@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Awaitable, Iterable, Mapping
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeVar
 
 from graia.amnesia.message import Element, Text, __message_chain_class__
 from typing_extensions import Self
@@ -22,6 +22,12 @@ _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 _DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
 _TraitT = TypeVar("_TraitT", bound=Trait)
 
+_R = TypeVar("_R", covariant=True)
+
+class _SelectorBoundReturnAgent(Protocol[_R]):
+    @classmethod
+    def renew(cls, context: Context, bound: Selector) -> _R:
+        ...
 
 class ContextSelector(Selector):
     context: Context
@@ -37,8 +43,8 @@ class ContextSelector(Selector):
     def pull(self, metadata: _Describe[_MetadataT]) -> Awaitable[_MetadataT]:
         return self.context.pull(metadata, self)
 
-    def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return trait(self.context, self)
+    def wrap(self, trait: type[_SelectorBoundReturnAgent[_R]]) -> _R:
+        return trait.renew(self.context, self)
 
 
 class ContextClientSelector(ContextSelector):

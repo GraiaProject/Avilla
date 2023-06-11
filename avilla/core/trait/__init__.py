@@ -3,7 +3,7 @@ from __future__ import annotations
 import inspect
 from collections.abc import Awaitable, Callable
 from functools import partial
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union, cast, overload
 
 from typing_extensions import Concatenate, ParamSpec, Self
 
@@ -24,20 +24,24 @@ _P1 = ParamSpec("_P1")
 _T1 = TypeVar("_T1")
 
 _TboundTrait = TypeVar("_TboundTrait", bound="Trait")
+_Tbound1 = TypeVar("_Tbound1", bound=Union[Selector, MetadataOf])
+_Tbound2 = TypeVar("_Tbound2", bound=Union[Selector, MetadataOf])
 
-
-class Trait:
+class Trait(Generic[_Tbound1]):
     context: Context
-    bound: Selector | MetadataOf
+    bound: _Tbound1
 
-    def __init__(self, context: Context, bound: Selector | MetadataOf) -> None:
+    def __init__(self, context: Context, bound: _Tbound1):
         self.context = context
         self.bound = bound
 
     @classmethod
+    def renew(cls, context: Context, bound: Selector):
+        reveal_type(cls(context, bound))
+
+    @classmethod
     def fn(cls) -> list[Fn]:
         return [fn for _, fn in inspect.getmembers(cls, lambda a: isinstance(a, Fn))]
-
 
 class Fn(Generic[_P, _T]):
     trait: type[Trait]

@@ -15,6 +15,7 @@ from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.trait.context import wrap_artifacts
 from avilla.core.trait.signature import ElementParse, EventParse
+from loguru import logger
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.service import ElizabethService
 from avilla.spec.qq.elements import FlashImage
@@ -63,6 +64,13 @@ class ElizabethProtocol(BaseProtocol):
 
     with wrap_artifacts() as event_parsers:
         import avilla.elizabeth.event.message as _  # noqa
+        import avilla.elizabeth.event.account as _ # noqa
+        import avilla.elizabeth.event.friend as _ # noqa
+        import avilla.elizabeth.event.group as _ # noqa
+        import avilla.elizabeth.event.lifecycle as _ # noqa
+        import avilla.elizabeth.event.nudge as _ # noqa
+        import avilla.elizabeth.event.request as _ # noqa
+        import avilla.elizabeth.event.member as _ # noqa
 
     with wrap_artifacts() as message_parsers:
         import avilla.elizabeth.message_parse as _  # noqa
@@ -150,4 +158,6 @@ class ElizabethProtocol(BaseProtocol):
         parser: EventParser | None = self.event_parsers.get(EventParse(event_type))
         if parser is None:
             raise NotImplementedError(f'expected event "{event_type}" implemented for {event}')
-        return await parser(self, account, event)
+        result = await parser(self, account, event)
+        logger.debug("{}", result[0])
+        return result

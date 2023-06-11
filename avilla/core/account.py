@@ -26,6 +26,10 @@ class AbstractAccount(ABC):
         self.id = id
         self.land = land or protocol.land
         self.protocol = protocol
+        self.__post_init__()
+
+    def __post_init__(self):
+        ...
 
     @abstractmethod
     async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:

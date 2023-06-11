@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from graia.amnesia.message import __message_chain_class__
+from graia.amnesia.message import MessageChain
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
@@ -20,7 +20,7 @@ class Message(Metadata):
     id: str
     scene: Selector
     sender: Selector
-    content: __message_chain_class__
+    content: MessageChain
     time: datetime
     reply: Selector | None = None
 

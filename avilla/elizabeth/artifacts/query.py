@@ -12,7 +12,9 @@ if TYPE_CHECKING:
 
 @query("group")
 async def get_groups(ctx: Context, upper: None, predicate: Selector):
+    print(111, ctx.account)
     result: list[dict] = await ctx.account.call("groupList", {"__method__": "fetch"})
+    print(result)
     for i in result:
         group = Selector().group(str(i["id"]))
         if predicate.matches(group):
@@ -21,6 +23,7 @@ async def get_groups(ctx: Context, upper: None, predicate: Selector):
 
 @query("group", "member")
 async def get_group_members(ctx: Context, upper: Selector, predicate: Selector):
+    print(4)
     result: list[dict] = await ctx.account.call(
         "memberList", {"__method__": "fetch", "target": int(upper.pattern["group"])}
     )

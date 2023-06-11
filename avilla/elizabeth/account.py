@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from asyncio import Lock
 from typing import TYPE_CHECKING, Any
 
 from avilla.core.account import AbstractAccount
@@ -20,7 +21,7 @@ class ElizabethAccount(AbstractAccount):
         if "land" not in target:
             target = target.land(self.protocol.land)
         if target.path == "land.group":
-            return Context(self, target, target, target.member(self.id), self.to_selector())
+            return Context(self, self.to_selector(), target, target, target.member(self.id))
         elif target.path == "land.friend":
             return Context(self, target, target, self.to_selector(), self.to_selector())
         elif target.path == "land.group.member":

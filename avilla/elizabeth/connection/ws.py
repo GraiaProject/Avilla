@@ -52,6 +52,7 @@ class BaseWebsocketConnection(Transport, ElizabethConnection[T_WebsocketConfig])
     @data_type(str)
     @json_require
     async def _(self, _: AbstractWebsocketIO, raw: Any) -> None:  # event pass and callback
+        print(raw)
         assert isinstance(raw, dict)
         if "code" in raw:  # something went wrong
             validate_response(raw)  # raise it
