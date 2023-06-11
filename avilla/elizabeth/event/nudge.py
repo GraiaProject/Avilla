@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-
 from avilla.core.context import Context
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder

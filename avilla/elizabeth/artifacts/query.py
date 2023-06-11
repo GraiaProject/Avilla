@@ -6,7 +6,6 @@ from avilla.core.selector import Selector
 from avilla.core.trait.context import query
 
 if TYPE_CHECKING:
-
     from avilla.core.context import Context
 
 

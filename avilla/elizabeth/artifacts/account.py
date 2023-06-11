@@ -7,7 +7,6 @@ from avilla.core.trait.context import bounds, pull
 from avilla.spec.core.profile.metadata import Nick, Summary
 
 if TYPE_CHECKING:
-
     from avilla.core.context import Context
 
 

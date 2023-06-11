@@ -9,7 +9,6 @@ from avilla.spec.core.message import MessageRevoke
 from avilla.spec.core.message.event import MessageReceived
 
 if TYPE_CHECKING:
-
     from avilla.core.context import Context
 
     from ..account import ElizabethAccount

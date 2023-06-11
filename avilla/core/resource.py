@@ -37,12 +37,13 @@ class LocalFileResource(BlobResource):
     def selector(self) -> Selector:
         return Selector().land("avilla-core").local_file(str(self.file))
 
+
 class RawResource(Resource[T]):
     data: T
 
     def __init__(self, data: T):
         self.data = data
-    
+
     @property
     def selector(self):
         return Selector().land("avilla-core").raw_data(str(id(self)))

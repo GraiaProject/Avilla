@@ -8,7 +8,6 @@ from avilla.core.trait.context import bounds, implement, pull
 from avilla.spec.core.message import MessageRevoke
 
 if TYPE_CHECKING:
-
     from avilla.core.context import Context
     from avilla.spec.core.message.event import MessageReceived
 

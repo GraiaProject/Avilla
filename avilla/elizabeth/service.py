@@ -43,10 +43,9 @@ class ElizabethService(Service):
         async with self.stage("blocking"):
             if self.connections:
                 await asyncio.wait(
-                    [
-                        asyncio.create_task(conn.status.wait_for("blocking-completed", "waiting-for-cleanup", "cleanup", "finished"))
-                        for conn in self.connections
-                    ]
+                    map(
+                        asyncio.ensure_future, (conn.status.wait_for("blocking-completed") for conn in self.connections)
+                    )
                 )
 
         async with self.stage("cleanup"):

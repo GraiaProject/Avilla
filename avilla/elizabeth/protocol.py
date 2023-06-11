@@ -23,7 +23,7 @@ from avilla.spec.qq.elements import FlashImage
 from .account import ElizabethAccount
 
 if TYPE_CHECKING:
-    from avilla.core.trait.context import EventParser, ElementParser
+    from avilla.core.trait.context import ElementParser, EventParser
 
 
 class MessageDeserializeResult(TypedDict):

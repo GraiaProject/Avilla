@@ -15,7 +15,6 @@ from avilla.spec.core.profile import Nick, Summary
 from avilla.spec.core.scene.skeleton import SceneTrait
 
 if TYPE_CHECKING:
-
     from avilla.core.context import Context
 
 with bounds("group.member"):
