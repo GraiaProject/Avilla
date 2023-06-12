@@ -1,17 +1,11 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from itertools import filterfalse
 from types import MappingProxyType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Literal,
-    Protocol,
-    TypeVar,
-    Union,
-    runtime_checkable,
-)
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, runtime_checkable
 
 from typing_extensions import Self, Unpack
 
@@ -22,39 +16,62 @@ if TYPE_CHECKING:
     from .context import ContextSelector
     from .metadata import Metadata, MetadataOf, MetadataRoute
 
-MatchRule = Literal["any", "exact", "exist", "fragment", "startswith"]
-Pattern = Union[str, Callable[[str], bool]]
 EMPTY_MAP = MappingProxyType({})
 
+@dataclass
+class _FollowItem:
+    name: str
+    literal: str | None = None
+    predicate: Callable[[str], bool] | None = None
 
-def _get_follows_pattern(pattern: str):
-    patterns: dict[str, str] = {}
-    bracket_depth: int = 0
-    path_buf: list[str] = []
-    pattern_buf: list[str] = []
-    for ch in pattern:
-        if ch == "." and bracket_depth == 0:
-            patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
-            path_buf.clear()
-            pattern_buf.clear()
-        elif ch == "(":
-            if bracket_depth:
-                pattern_buf.append(ch)
-            bracket_depth += 1
-        elif ch == ")":
-            if not bracket_depth:
-                raise ValueError("Found unmatched bracket.")
-            bracket_depth -= 1
-            if bracket_depth:
-                pattern_buf.append(ch)
-        else:
-            (pattern_buf if bracket_depth else path_buf).append(ch)
-    if bracket_depth:
-        raise ValueError("Found unmatched bracket.")
-    if path_buf:
-        patterns["".join(path_buf)] = "".join(pattern_buf) or "*"
-    return patterns
 
+_follows_pattern = re.compile(r"(?P<name>(\w+?|\*))(#(?P<predicate>\w+))?(\((?P<literal>[^#]+?)\))?")
+
+ESCAPE = {")": "\\)", "(": "\\(", "]": "\\]", "[": "\\[", "}": "\\}", "{": "\\{"}
+
+
+def _parse_follows_item(item: str, items: dict[str, _FollowItem], predicates: dict[str, Callable[[Any], bool]]):
+    if item.startswith("::"):
+        if "land" in items:
+            raise ValueError("land already exists")
+        item = item[2:]
+        items["land"] = _FollowItem("land")
+    if "*" in items:
+        raise ValueError("wildcard already exists, no more items allowed")
+    if not (m := _follows_pattern.fullmatch(item)):
+        raise ValueError(f"invalid item: {item}")
+    name = m["name"]
+    if m["literal"] and m["predicate"]:
+        raise ValueError(f"duplicate literal and predicate: {item}")
+    if m["literal"] is not None:
+        literal = m["literal"].translate(str.maketrans(ESCAPE))
+    else:
+        literal = None
+    predicate = predicates.get(m["predicate"]) if m["predicate"] else None
+    items[name] = _FollowItem(name, literal, predicate)
+
+
+def _parse_follows(pattern: str, **kwargs: Callable[[str], bool]) -> list[_FollowItem]:
+    items = {}
+    item = ""
+    bracket_stack = []
+    for i, char in enumerate(pattern):
+        if char == "." and not bracket_stack:
+            _parse_follows_item(item, items, kwargs)
+            item = ""
+            continue
+        if char == "(":
+            bracket_stack.append(i)
+        elif char == ")":
+            if not bracket_stack:
+                raise ValueError(f"Unclosed parenthesis: {item})")
+            bracket_stack.pop()
+        item += char
+    if bracket_stack:
+        raise ValueError(f"Unclosed parenthesis: {pattern[bracket_stack[0]:]}")
+    if item:
+        _parse_follows_item(item, items, kwargs)
+    return list(items.values())
 
 class Selector:
     pattern: Mapping[str, str]
@@ -112,67 +129,37 @@ class Selector:
 
         return Selector({"land": land, **{k: v for k, v in self.pattern.items() if k != "land"}})
 
-    def matches(self, other: Selectable, *, mode: MatchRule = "exact") -> bool:
-        if not isinstance(other, Selector):
-            other = other.to_selector()
-        try:
-            match = {
-                "any": self._match_any,
-                "exact": self._match_exact,
-                "exist": self._match_exist,
-                "fragment": self._match_fragment,
-                "startswith": self._match_startswith,
-            }[mode]
-        except KeyError:
-            raise ValueError(f"Unknown match rule: {mode}") from None
-
-        return match(other)
-
-    def _match_any(self, other: Selector) -> bool:
-        return True
-
-    def _match_exact(self, other: Selector) -> bool:
-        return type(other) is Selector and self.path == other.path and self.pattern == other.pattern
-
-    def _match_exist(self, other: Selector) -> bool:
-        return set(self.pattern.items()).issubset(other.pattern.items())
-
-    def _match_fragment(self, other: Selector) -> bool:
-        fragment = list(self.pattern.items())
-        full = list(other.pattern.items())
-
-        try:
-            start = full.index(fragment[0])
-        except IndexError:
-            return True
-        except ValueError:
-            return False
-
-        return full[start : start + len(fragment)] == fragment
-
-    def _match_startswith(self, other: Selector) -> bool:
-        fragment = list(self.pattern.items())
-        full = list(other.pattern.items())
-
-        return all(fragment[i] == full[i] for i in range(len(fragment)))
-
-    def as_dyn(self) -> DynamicSelector:
-        return DynamicSelector(
-            {k: (lambda _: True) if v == "*" else (lambda v1: lambda x: v1 == x)(v) for k, v in self.pattern.items()}
-        )
-
     def to_selector(self):
         return self
 
     @classmethod
     def from_follows_pattern(cls, pattern: str):
-        return cls(_get_follows_pattern(pattern))
+        items = _parse_follows(pattern)
+        mapping = {}
+        for i in items:
+            if i.literal is None:
+                raise ValueError("literal expected")
+            mapping[i.name] = i.literal
+        return cls(mapping)
 
-    def follows(self, pattern: str) -> bool:
-        patterns = _get_follows_pattern(pattern)
-        return (self.path if "land" in patterns else self.path_without_land) == ".".join(patterns) and all(
-            k in self.pattern and v in ("*", self.pattern[k]) for k, v in patterns.items()
-        )
+    def follows(self, pattern: str, **kwargs: Callable[[str], bool]) -> bool:
+        items = _parse_follows(pattern, **kwargs)
+        index = 0
+        for index, (item, name, value) in enumerate(zip(items, self.pattern.keys(), self.pattern.values())):
+            if item.name == "*":
+                return True
+            
+            if item.name != name:
+                return False
+
+            if item.literal is not None and value != item.literal:
+                return False
+            if item.predicate is not None and not item.predicate(value):
+                return False
+        if index + 1 != len(self.pattern):
+            return False
+        return True
+
 
     def expects(self, pattern: str) -> Self:
         if not self.follows(pattern):
@@ -180,7 +167,8 @@ class Selector:
 
         return self
 
-    def rev(self) -> ContextSelector:
+    @property
+    def dip(self) -> ContextSelector:
         ctx = ctx_context.get(None)
         if ctx is None:
             raise LookupError
@@ -192,102 +180,6 @@ class Selector:
         self, metadata_route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
     ) -> MetadataOf[type[_MetadataT]] | MetadataOf[MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]]:
         return metadata_route.of(self)
-
-
-class DynamicSelector(Selector):
-    pattern: Mapping[str, Pattern]
-
-    def __init__(self, pattern: dict[str, Pattern] | None = None) -> None:
-        self.pattern = MappingProxyType({**(pattern or {})})
-
-    def __getattr__(self, name: str, /):
-        def wrapper(content: Pattern | Literal["*"]):
-            if content == "*":
-                content = lambda _: True  # noqa: E731
-
-            return DynamicSelector({**self.pattern, name: content})
-
-        return wrapper
-
-    def __hash__(self) -> int:
-        raise TypeError("Dynamic Selector is unhashable.")
-
-    __getitem__: Callable[[str], Pattern]
-
-    @classmethod
-    def way(cls, path: str) -> Selector:
-        instance = cls()
-        instance.pattern = {i: lambda _: True for i in path.split(".")}
-        return instance
-
-    def _match_exact(self, other: Selector) -> bool:
-        if isinstance(other, DynamicSelector):
-            raise TypeError("Can't match dynamic selector with another dynamic selector")
-        for k in other.pattern:
-            if k not in self.pattern:
-                return False
-            own_pattern = self.pattern[k]
-            if (
-                callable(own_pattern)
-                and not own_pattern(other.pattern[k])
-                or not callable(own_pattern)
-                and own_pattern not in {other.pattern[k], "*"}
-            ):
-                return False
-        return True
-
-    def _match_exist(self, other: Selector) -> bool:
-        for a, b in ((self.pattern[path], other.pattern[path]) for path in self.pattern):
-            if callable(a):
-                if callable(b):
-                    raise TypeError("Can't partially match dynamic selector with another dynamic selector")
-                elif not a(b):
-                    return False
-            elif a != b:
-                return False
-
-        return True
-
-    def _match_fragment(self, other: Selector) -> bool:
-        fragment = list(self.pattern)
-        full = list(other.pattern)
-
-        try:
-            start = full.index(fragment[0])
-        except IndexError:
-            return True
-        except ValueError:
-            return False
-
-        full = full[start : start + len(fragment)]
-        if fragment != full:
-            return False
-
-        for a, b in ((self.pattern[path], other.pattern[path]) for path in fragment):
-            if callable(a):
-                if callable(b):
-                    raise TypeError("Can't partially match dynamic selector with another dynamic selector")
-                elif not a(b):
-                    return False
-            elif a != b:
-                return False
-
-        return True
-
-    def _match_startswith(self, other: Selector) -> bool:
-        if not other.path.startswith(self.path):
-            return False
-
-        for a, b in ((self.pattern[path], other.pattern[path]) for path in self.pattern):
-            if callable(a):
-                if callable(b):
-                    raise TypeError("Can't partially match dynamic selector with another dynamic selector")
-                elif not a(b):
-                    return False
-            elif a != b:
-                return False
-
-        return True
 
 
 @runtime_checkable
