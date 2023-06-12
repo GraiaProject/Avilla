@@ -3,10 +3,11 @@ from __future__ import annotations
 from .protocol import SupportsCollect
 
 from contextlib import AbstractContextManager
-from typing import TYPE_CHECKING, Callable, Any, TypeVar
+from typing import TYPE_CHECKING, Callable, Any, ClassVar, TypeVar
 from typing_extensions import ParamSpec, Self
 
 if TYPE_CHECKING:
+    from .protocol import Ring3
     from .isolate import Isolate
 
 
@@ -16,18 +17,18 @@ T = TypeVar("T")
 
 class Collector:
     artifacts: dict[Any, Any]
-    ring3_callbacks: list[Callable[[type], Any]]
+    ring3_callbacks: list[Callable[[type[Ring3]], Any]]
 
     def __init__(self):
         self.artifacts = {}
-        self.ring3_callbacks = []
+        self.ring3_callbacks = [self.__post_collect__]
 
     def entity(self, signature: SupportsCollect[Self, P, R], *args: P.args, **kwargs: P.kwargs) -> R:
         return signature.collect(self, *args, **kwargs)
 
     def _base_ring3(self):
         class collect_ring3:
-            __collector__ = self
+            __collector__: ClassVar[Collector] = self
 
             def __init_subclass__(cls) -> None:
                 for i in self.ring3_callbacks:
@@ -44,3 +45,6 @@ class Collector:
 
     def apply(self, isolate: Isolate):
         self.defer(lambda x: isolate.apply(x))
+
+    def __post_collect__(self, cls: type[Ring3]):
+        ...
