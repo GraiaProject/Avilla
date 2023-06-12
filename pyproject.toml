@@ -12,6 +12,7 @@ dependencies = [
     "aiohttp>=3.8.1",
     "creart>=0.2.1",
     "creart-graia>=0.1.5",
+    "funcparserlib>=1.0.1",
 ]
 version = "0"
 requires-python = ">=3.9"

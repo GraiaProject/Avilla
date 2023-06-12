@@ -72,7 +72,8 @@
         "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
     },
     "files.exclude": {
-        "__pypackages__": true
+        "__pypackages__": true,
+        ".venv": true
     },
     "search.exclude": {
         "__pypackages__": true
