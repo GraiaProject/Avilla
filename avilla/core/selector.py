@@ -162,6 +162,19 @@ class Selector:
             return False
         return True
 
+    def into(self, pattern: str) -> Selector | None:
+        items = _parse_follows(pattern)
+        new_patterns = {}
+        iterator = iter(self.pattern)
+        for item in items:
+            if item.name == "*":
+                raise TypeError("expected no wildcard")
+            current_key = next(iterator)
+            if item.name != current_key:
+                return
+            new_patterns[current_key] = item.literal or self.pattern[current_key]
+        return Selector(new_patterns)
+
     def expects(self, pattern: str, **kwargs: Callable[[str], bool]) -> Self:
         if not self.follows(pattern, **kwargs):
             raise ValueError(f"Selector {self} does not follow {pattern}")
