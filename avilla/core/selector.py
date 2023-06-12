@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 EMPTY_MAP = MappingProxyType({})
 
+
 @dataclass
 class _FollowItem:
     name: str
@@ -72,6 +73,7 @@ def _parse_follows(pattern: str, **kwargs: Callable[[str], bool]) -> list[_Follo
     if item:
         _parse_follows_item(item, items, kwargs)
     return list(items.values())
+
 
 class Selector:
     pattern: Mapping[str, str]
@@ -148,7 +150,7 @@ class Selector:
         for index, (item, name, value) in enumerate(zip(items, self.pattern.keys(), self.pattern.values())):
             if item.name == "*":
                 return True
-            
+
             if item.name != name:
                 return False
 
@@ -160,26 +162,11 @@ class Selector:
             return False
         return True
 
-
-    def expects(self, pattern: str) -> Self:
-        if not self.follows(pattern):
+    def expects(self, pattern: str, **kwargs: Callable[[str], bool]) -> Self:
+        if not self.follows(pattern, **kwargs):
             raise ValueError(f"Selector {self} does not follow {pattern}")
 
         return self
-
-    @property
-    def dip(self) -> ContextSelector:
-        ctx = ctx_context.get(None)
-        if ctx is None:
-            raise LookupError
-        return ctx.wrap(self)
-
-    _MetadataT = TypeVar("_MetadataT", bound="Metadata")
-
-    def route(
-        self, metadata_route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
-    ) -> MetadataOf[type[_MetadataT]] | MetadataOf[MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]]:
-        return metadata_route.of(self)
 
 
 @runtime_checkable
