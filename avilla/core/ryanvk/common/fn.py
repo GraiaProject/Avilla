@@ -1,12 +1,13 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Generic, TypeVar
+
 from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
-    from .collect import Collector
     from .capability import Capability
+    from .collect import BaseCollector
     from .runner import Runner
 
 P = ParamSpec("P")
@@ -31,7 +32,7 @@ class BaseFn(Generic[P, T]):
     def signature(self):
         return FnImplement(self)
 
-    def collect(self, collector: Collector):
+    def collect(self, collector: BaseCollector):
         def wrapper(entity: Callable[P, T]):
             collector.artifacts[self.signature] = entity
             return entity

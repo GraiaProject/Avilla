@@ -1,21 +1,23 @@
 from __future__ import annotations
 
-from .protocol import SupportsCollect
-
 from contextlib import AbstractContextManager
-from typing import TYPE_CHECKING, Callable, Any, ClassVar, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, TypeVar
+
 from typing_extensions import ParamSpec, Self
 
+from .protocol import SupportsCollect
+
 if TYPE_CHECKING:
-    from .protocol import Ring3
     from .isolate import Isolate
+    from .protocol import Ring3
 
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
 T = TypeVar("T")
 
-class Collector:
+
+class BaseCollector:
     artifacts: dict[Any, Any]
     ring3_callbacks: list[Callable[[type[Ring3]], Any]]
 
@@ -28,9 +30,13 @@ class Collector:
 
     def _base_ring3(self):
         class collect_ring3:
-            __collector__: ClassVar[Collector] = self
+            __collector__: ClassVar[BaseCollector] = self
 
             def __init_subclass__(cls) -> None:
+                if getattr(cls, "__native__", False):
+                    delattr(cls, "__native__")
+                    return
+
                 for i in self.ring3_callbacks:
                     i(cls)
 
