@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Protocol, TypeVar
+from typing import TYPE_CHECKING, ClassVar, Protocol, TypeVar
 
-from typing_extensions import ParamSpec, Self
+from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
     from .collect import BaseCollector

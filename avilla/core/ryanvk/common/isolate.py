@@ -3,6 +3,7 @@ from typing import Any
 
 from .protocol import Ring3
 
+
 @dataclass
 class Isolate:
     artifacts: dict[Any, Any] = field(default_factory=dict)

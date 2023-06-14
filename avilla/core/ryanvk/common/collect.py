@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import AbstractContextManager
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Protocol, TypeVar
 
 from typing_extensions import ParamSpec, Self
 
@@ -17,9 +17,20 @@ R = TypeVar("R", covariant=True)
 T = TypeVar("T")
 
 
+class _ResultCollect(Protocol[R]):
+    @property
+    def _(self) -> R:
+        ...
+
 class BaseCollector:
     artifacts: dict[Any, Any]
     ring3_callbacks: list[Callable[[type[Ring3]], Any]]
+
+    @property
+    def cls(self: _ResultCollect[R]) -> R:
+        if TYPE_CHECKING:
+            return self._
+        return self._cls
 
     def __init__(self):
         self.artifacts = {}
@@ -53,4 +64,4 @@ class BaseCollector:
         self.defer(lambda x: isolate.apply(x))
 
     def __post_collect__(self, cls: type[Ring3]):
-        ...
+        self._cls = cls

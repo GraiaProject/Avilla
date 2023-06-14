@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Any, ChainMap, TypeVar
+
 from typing_extensions import ParamSpec, Self
 
 if TYPE_CHECKING:
