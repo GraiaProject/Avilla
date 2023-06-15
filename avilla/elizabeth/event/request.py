@@ -3,11 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
+from avilla.spec.core.request.event import RequestReceived
+
 from avilla.core.context import Context
 from avilla.core.request import Request
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
-from avilla.spec.core.request.event import RequestReceived
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount

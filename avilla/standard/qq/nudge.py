@@ -1,9 +1,12 @@
 from __future__ import annotations
 
-from avilla.core.trait import Fn, Trait
+from avilla.core.ryanvk import Capability, TargetFn
 
 
-class QQNudge(Trait):
-    @Fn.bound_entity
+class NudgeCapability(Capability):
+    @TargetFn
     async def nudge(self):
         ...
+
+
+# TODO: other qq capabilities

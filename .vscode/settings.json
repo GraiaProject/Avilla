@@ -64,7 +64,7 @@
         ".vscode/*.py",
         "__pypackages__"
     ],
-    "python.languageServer": "Pylance",
+    "python.languageServer": "Pyright",
     "yaml.schemas": {
         "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
     },

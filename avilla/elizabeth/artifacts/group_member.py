@@ -3,16 +3,17 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from avilla.spec.core.activity.skeleton import ActivityTrigger
+from avilla.spec.core.privilege import MuteCapability, Privilege
+from avilla.spec.core.privilege.metadata import MuteInfo
+from avilla.spec.core.privilege.skeleton import PrivilegeCapability
+from avilla.spec.core.profile import Nick, Summary
+from avilla.spec.core.scene.skeleton import SceneCapability
+
 from avilla.core.exceptions import permission_error_message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
 from avilla.elizabeth.const import privilege_level, privilege_trans
-from avilla.spec.core.activity.skeleton import ActivityTrigger
-from avilla.spec.core.privilege import MuteTrait, Privilege
-from avilla.spec.core.privilege.metadata import MuteInfo
-from avilla.spec.core.privilege.skeleton import PrivilegeTrait
-from avilla.spec.core.profile import Nick, Summary
-from avilla.spec.core.scene.skeleton import SceneTrait
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -32,7 +33,7 @@ with bounds("group.member"):
             None,
         )
 
-    @implement(MuteTrait.mute)
+    @implement(MuteCapability.mute)
     async def mute_member(cx: Context, target: Selector, duration: timedelta):
         privilege_info = await cx.pull(Privilege, target)
         if not privilege_info.effective:
@@ -55,7 +56,7 @@ with bounds("group.member"):
             },
         )
 
-    @implement(MuteTrait.unmute)
+    @implement(MuteCapability.unmute)
     async def unmute_member(cx: Context, target: Selector):
         privilege_info = await cx.pull(Privilege, target)
         if not privilege_info.effective:
@@ -153,7 +154,7 @@ with bounds("group.member"):
             "the permission of controling administration of the group, to be noticed that is only group owner could do this.",
         ).infers(Privilege >> Privilege >> Summary)
 
-    @implement(PrivilegeTrait.upgrade)
+    @implement(PrivilegeCapability.upgrade)
     async def upgrade_member(cx: Context, target: Selector, dest: str | None = None):
         if not (await get_member_privilege_of_privilege(cx, target)).available:
             self_privilege_info = await cx.pull(Privilege >> Summary, cx.self)
@@ -170,7 +171,7 @@ with bounds("group.member"):
             },
         )
 
-    @implement(PrivilegeTrait.downgrade)
+    @implement(PrivilegeCapability.downgrade)
     async def downgrade_member(cx: Context, target: Selector, dest: str | None = None):
         if not (await get_member_privilege_of_privilege(cx, target)).available:
             self_privilege_info = await cx.pull(Privilege >> Summary, cx.self)
@@ -187,7 +188,7 @@ with bounds("group.member"):
             },
         )
 
-    @implement(SceneTrait.remove_member)
+    @implement(SceneCapability.remove_member)
     async def remove_member(cx: Context, target: Selector, reason: str | None = None):
         privilege_info = await cx.pull(Privilege, target)
         if not privilege_info.effective:

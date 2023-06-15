@@ -1,8 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
-
+from typing import Any, Generic, TypeVar
 
 _T = TypeVar("_T")
 _R_co = TypeVar("_R_co", covariant=True)
@@ -19,8 +18,7 @@ class classproperty(Generic[_T, _R_co]):
         if not isinstance(fget, classmethod):
             fget = classmethod(fget)
 
-        self.fget = fget,
+        self.fget = (fget,)
 
     def __get__(self, __obj: _T, __type: type[_T] | None = None, /) -> _R_co:
         return self.fget[0].__get__(__obj, __type)()
-

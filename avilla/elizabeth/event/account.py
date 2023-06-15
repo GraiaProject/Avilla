@@ -3,6 +3,9 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
+from avilla.spec.core.privilege.metadata import MuteInfo, Privilege
+from avilla.spec.core.privilege.skeleton import MuteCapability, PrivilegeCapability
+from avilla.spec.core.profile.metadata import Summary
 from loguru import logger
 
 from avilla.core.context import Context
@@ -18,9 +21,6 @@ from avilla.core.event import (
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.elizabeth.const import privilege_level
-from avilla.spec.core.privilege.metadata import MuteInfo, Privilege
-from avilla.spec.core.privilege.skeleton import MuteTrait, PrivilegeTrait
-from avilla.spec.core.profile.metadata import Summary
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
@@ -46,10 +46,10 @@ async def account_permission_change(protocol: ElizabethProtocol, account: Elizab
     context = Context(account, operator, account_member, group, account_member)
     if privilege_level[raw["current"]] > privilege_level[raw["origin"]]:
         past, present = False, True
-        op = PrivilegeTrait.upgrade
+        op = PrivilegeCapability.upgrade
     else:
         past, present = True, False
-        op = PrivilegeTrait.downgrade
+        op = PrivilegeCapability.downgrade
     context._collect_metadatas(account_member, Privilege(present, present, None))
     return (
         MetadataModified(
@@ -82,7 +82,7 @@ async def account_muted(protocol: ElizabethProtocol, account: ElizabethAccount, 
             client=operator,
             modifies=[
                 Op(
-                    MuteTrait.mute,
+                    MuteCapability.mute,
                     {
                         MuteInfo.of(account_member): [
                             Bind(MuteInfo.inh(lambda x: x.muted), True),
@@ -115,7 +115,7 @@ async def account_unmuted(protocol: ElizabethProtocol, account: ElizabethAccount
             client=operator,
             modifies=[
                 Op(
-                    MuteTrait.mute,
+                    MuteCapability.mute,
                     {
                         MuteInfo.of(account_member): [
                             Update(MuteInfo.inh(lambda x: x.muted), True, False),

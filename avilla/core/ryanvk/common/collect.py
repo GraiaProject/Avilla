@@ -22,6 +22,7 @@ class _ResultCollect(Protocol[R]):
     def _(self) -> R:
         ...
 
+
 class BaseCollector:
     artifacts: dict[Any, Any]
     ring3_callbacks: list[Callable[[type[Ring3]], Any]]

@@ -6,3 +6,6 @@ from avilla.core.elements import Picture
 class FlashImage(Picture):
     def __str__(self) -> str:
         return "[$FlashImage]"
+
+
+# TODO: other qq elements

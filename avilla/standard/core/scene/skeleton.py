@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from avilla.core.ryanvk import TargetFn, Capability
+from avilla.core.ryanvk import Capability, TargetFn
 
 
-class SceneCapabilty(Capability):
+class SceneCapability(Capability):
     @TargetFn
     async def leave(self) -> None:
         ...

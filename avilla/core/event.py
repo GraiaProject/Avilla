@@ -9,7 +9,8 @@ from graia.broadcast.entities.event import Dispatchable
 from typing_extensions import TypeVar
 
 from avilla.core._vendor.dataclasses import dataclass, field
-from avilla.core.trait import UnappliedFnCall
+from avilla.core.metadata import MetadataRoute
+from avilla.core.ryanvk import Fn
 
 from ._runtime import cx_context
 
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
     from avilla.core.selector import Selector
 
     from .context import Context
-    from .metadata import MetadataOf
 
 
 @dataclass
@@ -48,16 +48,16 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
 @dataclass
 class Op:
-    operator: UnappliedFnCall
-    effects: dict[MetadataOf, list[Effect]]
+    operator: Fn
+    effects: dict[tuple[Selector, MetadataRoute], list[Effect]]
 
 
 @dataclass
 class NamelessOp:
-    effects: dict[MetadataOf, list[Effect]]
+    effects: dict[tuple[Selector, MetadataRoute], list[Effect]]
 
 
-T = TypeVar("T", infer_variance=True)
+T = TypeVar("T")
 
 
 @dataclass

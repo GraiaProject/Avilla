@@ -3,6 +3,10 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
+from avilla.spec.core.privilege.metadata import MuteInfo, Privilege
+from avilla.spec.core.privilege.skeleton import MuteCapability, PrivilegeCapability
+from avilla.spec.core.profile.metadata import Nick, Summary
+from avilla.spec.core.profile.skeleton import NickCapability
 from loguru import logger
 
 from avilla.core.context import Context
@@ -18,10 +22,6 @@ from avilla.core.event import (
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
 from avilla.elizabeth.const import privilege_level
-from avilla.spec.core.privilege.metadata import MuteInfo, Privilege
-from avilla.spec.core.privilege.skeleton import MuteTrait, PrivilegeTrait
-from avilla.spec.core.profile.metadata import Nick, Summary
-from avilla.spec.core.profile.skeleton import NickTrait
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
@@ -82,7 +82,7 @@ async def member_card_change(protocol: ElizabethProtocol, account: ElizabethAcco
             endpoint=member,
             modifies=[
                 Op(
-                    NickTrait.set_nickname,
+                    NickCapability.set_nickname,
                     {Nick.of(member): [Update(Nick.inh(lambda x: x.nickname), raw["current"], raw["origin"])]},
                 )
             ],
@@ -114,7 +114,7 @@ async def member_special_title_change(protocol: ElizabethProtocol, account: Eliz
             client=operator,
             modifies=[
                 Op(
-                    NickTrait.set_badge,
+                    NickCapability.set_badge,
                     {Nick.of(member): [Update(Nick.inh(lambda x: x.badge), raw["current"], raw["origin"])]},
                 )
             ],
@@ -150,10 +150,10 @@ async def member_perm_changed_change(protocol: ElizabethProtocol, account: Eliza
     context = Context(account, operator, member, group, selft)
     if privilege_level[raw["current"]] > privilege_level[raw["origin"]]:
         past, present = False, True
-        op = PrivilegeTrait.upgrade
+        op = PrivilegeCapability.upgrade
     else:
         past, present = True, False
-        op = PrivilegeTrait.downgrade
+        op = PrivilegeCapability.downgrade
     context._collect_metadatas(selft, Privilege(present, present, None))
     return (
         MetadataModified(
@@ -188,7 +188,7 @@ async def member_mute_change(protocol: ElizabethProtocol, account: ElizabethAcco
             client=operator,
             modifies=[
                 Op(
-                    MuteTrait.mute,
+                    MuteCapability.mute,
                     {
                         MuteInfo.of(target): [
                             Bind(MuteInfo.inh(lambda x: x.muted), True),
@@ -221,7 +221,7 @@ async def member_unmute_change(protocol: ElizabethProtocol, account: ElizabethAc
             client=operator,
             modifies=[
                 Op(
-                    MuteTrait.mute,
+                    MuteCapability.mute,
                     {
                         MuteInfo.of(target): [
                             Unbind(MuteInfo.inh(lambda x: x.muted)),

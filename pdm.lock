@@ -632,7 +632,7 @@ summary = "Tornado is a Python web framework and asynchronous networking library
 name = "traitlets"
 version = "5.9.0"
 requires_python = ">=3.7"
-summary = "Traitlets Python configuration system"
+summary = "Capabilitylets Python configuration system"
 
 [[package]]
 name = "typing-extensions"

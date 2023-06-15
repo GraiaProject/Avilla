@@ -4,6 +4,7 @@ import base64
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, TypedDict, cast
 
+from avilla.spec.qq.elements import FlashImage
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Element, Text
 from loguru import logger
@@ -18,7 +19,6 @@ from avilla.core.trait.context import wrap_artifacts
 from avilla.core.trait.signature import ElementParse, EventParse
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.service import ElizabethService
-from avilla.spec.qq.elements import FlashImage
 
 from .account import ElizabethAccount
 

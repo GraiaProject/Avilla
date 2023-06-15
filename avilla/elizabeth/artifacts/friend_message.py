@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.spec.core.message import MessageRevoke
+
 from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
-from avilla.spec.core.message import MessageRevoke
 
 if TYPE_CHECKING:
-    from avilla.core.context import Context
     from avilla.spec.core.message.event import MessageReceived
+
+    from avilla.core.context import Context
 
     from ..account import ElizabethAccount
     from ..protocol import ElizabethProtocol

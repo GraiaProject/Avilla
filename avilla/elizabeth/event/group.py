@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from avilla.spec.core.privilege.metadata import MuteInfo
+from avilla.spec.core.privilege.skeleton import MuteAllCapability
+from avilla.spec.core.profile.metadata import Nick
+from avilla.spec.core.profile.skeleton import NickCapability
+
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, Op, Update
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
-from avilla.spec.core.privilege.metadata import MuteInfo
-from avilla.spec.core.privilege.skeleton import MuteAllTrait
-from avilla.spec.core.profile.metadata import Nick
-from avilla.spec.core.profile.skeleton import NickTrait
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount
@@ -34,7 +35,7 @@ async def group_name_changed(protocol: ElizabethProtocol, account: ElizabethAcco
             endpoint=group,
             modifies=[
                 Op(
-                    NickTrait.set_name,
+                    NickCapability.set_name,
                     {Nick.of(group): [Update(Nick.inh(lambda x: x.name), raw["current"], raw["origin"])]},
                 )
             ],
@@ -59,7 +60,7 @@ async def group_muteall(protocol: ElizabethProtocol, account: ElizabethAccount, 
             endpoint=group,
             modifies=[
                 Op(
-                    MuteAllTrait.mute_all,
+                    MuteAllCapability.mute_all,
                     {MuteInfo.of(group): [Update(MuteInfo.inh(lambda x: x.muted), raw["current"], raw["origin"])]},
                 )
             ],

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from asyncio import Lock
 from typing import TYPE_CHECKING, Any
 
 from avilla.core.account import AbstractAccount

@@ -3,14 +3,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from avilla.spec.core.message import MessageSend
+from avilla.spec.core.privilege import MuteAllCapability, Privilege
+from avilla.spec.core.profile import Summary, SummaryCapability
+from avilla.spec.core.scene import SceneCapability
+
 from avilla.core.message import Message
 from avilla.core.metadata import MetadataOf
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
-from avilla.spec.core.message import MessageSend
-from avilla.spec.core.privilege import MuteAllTrait, Privilege
-from avilla.spec.core.profile import Summary, SummaryTrait
-from avilla.spec.core.scene import SceneTrait
 
 if TYPE_CHECKING:
     from graia.amnesia.message import MessageChain
@@ -23,10 +24,10 @@ if TYPE_CHECKING:
 with bounds("group"):
     # casts(MessageSend)
     # casts(MessageRevoke)
-    # casts(MuteTrait)
-    # casts(MuteAllTrait)
-    # casts(SceneTrait)
-    # casts(SummaryTrait)
+    # casts(MuteCapability)
+    # casts(MuteAllCapability)
+    # casts(SceneCapability)
+    # casts(SummaryCapability)
 
     @implement(MessageSend.send)
     async def send_group_message(
@@ -55,7 +56,7 @@ with bounds("group"):
         cx._collect_metadatas(message_selector, message_metadata)
         return message_selector
 
-    @implement(MuteAllTrait.mute_all)
+    @implement(MuteAllCapability.mute_all)
     async def group_mute_all(cx: Context, target: Selector):
         await cx.account.call(
             "muteAll",
@@ -65,7 +66,7 @@ with bounds("group"):
             },
         )
 
-    @implement(MuteAllTrait.unmute_all)
+    @implement(MuteAllCapability.unmute_all)
     async def group_unmute_all(cx: Context, target: Selector):
         await cx.account.call(
             "unmuteAll",
@@ -75,7 +76,7 @@ with bounds("group"):
             },
         )
 
-    @implement(SceneTrait.leave)
+    @implement(SceneCapability.leave)
     async def leave(cx: Context, target: Selector):
         await cx.account.call("quit", {"__method__": "update", "target": int(target.pattern["group"])})
 
@@ -88,9 +89,9 @@ with bounds("group"):
         )
         return Summary(name=result["name"], description=None)
 
-    @implement(SummaryTrait.set_name)
+    @implement(SummaryCapability.set_name)
     async def group_set_name(cx: Context, target: Selector | MetadataOf, name: str):
-        SummaryTrait.set_name.assert_entity(target)
+        SummaryCapability.set_name.assert_entity(target)
         if TYPE_CHECKING:
             assert isinstance(target, Selector)
         await cx.account.call(

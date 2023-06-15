@@ -2,25 +2,25 @@ from __future__ import annotations
 
 from graia.amnesia.message import MessageChain
 
+from avilla.core.ryanvk import Capability, Fn, TargetFn
 from avilla.core.selector import Selector
-from avilla.core.ryanvk import Capability, TargetFn, Fn
 
 # MessageFetch => rs.pull(Message, target=...)
 
 
 class MessageSend(Capability):
     @TargetFn
-    async def send(self, target: Selector, message: MessageChain, *, reply: Selector | None = None) -> Selector:
+    async def send(self, message: MessageChain, *, reply: Selector | None = None) -> Selector:
         ...
 
 
 class MessageRevoke(Capability):
     @TargetFn
-    async def revoke(self, target: Selector) -> None:
+    async def revoke(self) -> None:
         ...
 
 
 class MessageEdit(Capability):
     @Fn
-    async def edit(self, message: Selector, content: MessageChain) -> None:
+    async def edit(self, content: MessageChain) -> None:
         ...

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.spec.core.profile.metadata import Nick, Summary
+
 from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, pull
-from avilla.spec.core.profile.metadata import Nick, Summary
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

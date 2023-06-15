@@ -4,14 +4,15 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core._vendor.dataclasses import dataclass
-from avilla.core.platform import Land
-from avilla.spec.core.request.skeleton import RequestTrait
+from avilla.standard.core.request.skeleton import RequestCapability
 
+from ._runtime import cx_context
 from .metadata import Metadata
+from .platform import Land
 
 if TYPE_CHECKING:
-    from avilla.core.account import AbstractAccount
-    from avilla.core.selector import Selector
+    from .account import AbstractAccount
+    from .selector import Selector
 
 
 @dataclass
@@ -58,13 +59,13 @@ class Request(Metadata):
         return self.scene.request(request_id)
 
     async def accept(self):
-        ...  # TODO
+        return await cx_context.get()[RequestCapability.accept](self)
 
     async def reject(self, reason: str | None = None, forever: bool = False):
-        ...  # TODO
+        return await cx_context.get()[RequestCapability.reject](self, reason, forever)
 
     async def cancel(self):
-        ...  # TODO
+        return await cx_context.get()[RequestCapability.cancel](self)
 
     async def ignore(self):
-        ...  # TODO
+        return await cx_context.get()[RequestCapability.ignore](self)

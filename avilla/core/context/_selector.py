@@ -1,24 +1,23 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Iterable, Mapping
-from typing import TYPE_CHECKING, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from graia.amnesia.message import Element, MessageChain, Text
-from typing_extensions import Self
+from typing_extensions import Self, Unpack
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.selector import EMPTY_MAP, Selector
+from avilla.standard.core.message import MessageSend
+from avilla.standard.core.request import RequestCapability
+from avilla.standard.core.scene import SceneCapability
 
 if TYPE_CHECKING:
-    from . import Context, _Describe
+    from . import Context
 
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
-_DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
-
-_R = TypeVar("_R", covariant=True)
-
 
 
 class ContextSelector(Selector):
@@ -32,7 +31,9 @@ class ContextSelector(Selector):
     def from_selector(cls, cx: Context, selector: Selector) -> Self:
         return cls(cx, selector.pattern)
 
-    def pull(self, metadata: _Describe[_MetadataT]) -> Awaitable[_MetadataT]:
+    def pull(
+        self, metadata: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]
+    ) -> Awaitable[_MetadataT]:
         return self.context.pull(metadata, self)
 
 
@@ -50,10 +51,10 @@ class ContextEndpointSelector(ContextSelector):
 
 class ContextSceneSelector(ContextSelector):
     def leave_scene(self):
-        return self.wrap(SceneTrait).leave()
+        return self.context[SceneCapability.leave](self)
 
     def disband_scene(self):
-        return self.wrap(SceneTrait).disband()
+        return self.context[SceneCapability.disband](self)
 
     def send_message(
         self,
@@ -73,24 +74,24 @@ class ContextSceneSelector(ContextSelector):
         elif isinstance(reply, str):
             reply = self.message(reply)
 
-        return self.wrap(MessageSend).send(message, reply=reply)
+        return self.context[MessageSend.send](self, message, reply=reply)
 
     def remove_member(self, target: Selector, reason: str | None = None):
-        return self.wrap(SceneTrait).remove_member(reason)
+        return self.context[SceneCapability.remove_member](target, reason)
 
 
 class ContextRequestSelector(ContextEndpointSelector):
     def accept_request(self):
-        return self.wrap(RequestTrait).accept()
+        return self.context[RequestCapability.accept](self)
 
     def reject_request(self, reason: str | None = None, forever: bool = False):
-        return self.wrap(RequestTrait).reject(reason, forever)
+        return self.context[RequestCapability.reject](self, reason, forever)
 
     def cancel_request(self):
-        return self.wrap(RequestTrait).cancel()
+        return self.context[RequestCapability.cancel](self)
 
     def ignore_request(self):
-        return self.wrap(RequestTrait).ignore()
+        return self.context[RequestCapability.ignore](self)
 
 
 @dataclass

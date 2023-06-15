@@ -3,8 +3,6 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Generic, TypeVar
 
-from typing_extensions import TypeAlias
-
 from avilla.core.selector import Selector
 
 from .metadata import Metadata
@@ -22,10 +20,7 @@ class Resource(Metadata, Generic[T]):
         return self.selector
 
 
-BlobResource: TypeAlias = Resource[bytes]
-
-
-class LocalFileResource(BlobResource):
+class LocalFileResource(Resource[bytes]):
     file: Path
 
     def __init__(self, file: Path | str):

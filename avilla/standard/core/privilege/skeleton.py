@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 
-from avilla.core.ryanvk import Capability, TargetFn, Fn
-
+from avilla.core.ryanvk import Capability, TargetFn
 from avilla.core.selector import Selector
 
 

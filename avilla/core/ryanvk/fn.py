@@ -1,28 +1,11 @@
 from __future__ import annotations
 
 import inspect
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    Generic,
-    MutableMapping,
-    TypedDict,
-    TypeVar,
-    cast,
-    Protocol,
-    NoReturn as Never,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, MutableMapping
+from typing import NoReturn as Never
+from typing import Protocol, TypedDict, TypeVar, cast, overload
 
-from typing_extensions import (
-    Concatenate,
-    ParamSpec,
-    TypeAlias,
-    TypeVar,
-    Unpack,
-)
+from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
 
 from avilla.core.resource import Resource
 
@@ -52,6 +35,7 @@ N = TypeVar("N", bound="Ring3")
 C = TypeVar("C", bound="Capability")
 H = TypeVar("H", bound="AvillaPerformTemplate")
 T = TypeVar("T")
+X = TypeVar("X")
 
 
 class Fn(BaseFn[P, R]):
@@ -100,7 +84,7 @@ class TargetEntityProtocol(Protocol[P, T]):
 
     def __post_collected__(self, artifact: TargetArtifactStore[T]):
         ...
-    
+
     def __post_received__(self, entity: T):
         ...
 
@@ -182,9 +166,11 @@ class TargetEntity:
 
             yield branch
 
-    def get_artifacts(self: TargetEntityProtocol[Any, T], artifacts: dict[Any, Any], signature: Any) -> TargetArtifactStore[T]:
+    def get_artifacts(
+        self: TargetEntityProtocol[Any, T], artifacts: dict[Any, Any], signature: Any
+    ) -> TargetArtifactStore[T]:
         return artifacts[signature]
-  
+
 
 # the Inbound & Outbound!
 # Inbound: 用户看到的 Capability 侧
@@ -193,11 +179,11 @@ class TargetEntity:
 
 class TargetFn(
     TargetEntity,
-    Fn[Concatenate["Selector", P], Awaitable[R]],
+    Fn[P, Awaitable[R]],
 ):
-    def __post_received__(self, entity: Callable[Concatenate[Never, "Selector", P], Awaitable[R]]):
+    def __post_received__(self, entity: Callable[Concatenate[AvillaPerformTemplate, "Selector", P], Awaitable[R]]):
         ...
-    
+
     def execute(self, runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs):
         for branch in self.iter_branches(runner.artifacts.maps, target.to_selector()):
             artifact = self.get_artifacts(branch["artifacts"], FnImplement(self.capability, self.name))
@@ -218,11 +204,7 @@ R1 = TypeVar("R1", covariant=True)
 R2 = TypeVar("R2", covariant=True)
 
 
-class CustomCallable(Protocol[P, R]):
-    def __call__(self, *args: P.args, **kwargs: P.kwargs) -> R:
-        ...
-
-class UnitedFnPerformBranch(CustomCallable, Protocol[P, R1, R2]):
+class UnitedFnPerformBranch(Protocol[P, R1, R2]):
     @overload
     def __call__(self, target: Selector, metadata: None = None, *args: P.args, **kwargs: P.kwargs) -> R1:
         ...
@@ -238,29 +220,34 @@ class UnitedFnPerformBranch(CustomCallable, Protocol[P, R1, R2]):
     ) -> R1 | R2:
         ...
 
+
 @dataclass
 class UnitedFnImplement:
     capability: type[Capability]
     name: str
     metadata: type[Metadata] | MetadataRoute | None = None
 
+
 class PostReceivedCallback(Protocol[R1, R2]):
     def __post_received__(self, entity: UnitedFnPerformBranch[Any, R1, R2]):
         ...
 
+
 class TargetMetadataUnitedFn(
     TargetEntity,
-    Fn[Concatenate["Selector", "type[Metadata] | MetadataRoute | None", P], Awaitable[Any]],
+    Fn[P, Awaitable[Any]],
 ):
-    def __init__(self, template: Callable[Concatenate[C, "Selector", P], R]) -> None:
-        self.template = template  # type: ignore
-
     def __post_received__(self, entity: UnitedFnPerformBranch[P, R1, R2]):  # type: ignore
         ...
 
     @overload
     def execute(
-        self: PostReceivedCallback[R1, Any], runner: Context, target: Selectable, metadata: None = None, *args: P.args, **kwargs: P.kwargs
+        self: PostReceivedCallback[R1, Any],
+        runner: Context,
+        target: Selectable,
+        metadata: None = None,
+        *args: P.args,
+        **kwargs: P.kwargs,
     ) -> R1:
         ...
 
@@ -282,7 +269,7 @@ class TargetMetadataUnitedFn(
         metadata: type[Metadata] | MetadataRoute | None = None,
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> R1 | R2:
+    ):
         for branch in self.iter_branches(runner.artifacts.maps, target.to_selector()):
             artifact = self.get_artifacts(branch["artifacts"], UnitedFnImplement(self.capability, self.name, metadata))
             if artifact is not None:
@@ -305,7 +292,7 @@ M = TypeVar("M", bound="Metadata")
 
 
 @dataclass(unsafe_hash=True)
-class PullImplements(Generic[M]):
+class PullImplement(Generic[M]):
     route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]
 
 
@@ -316,17 +303,17 @@ class PullFn(
     def __init__(self):
         ...
 
-    def __post_received__(self, entity: Callable[[Never, "Selector"], Awaitable[M]]):
+    def __post_received__(self, entity: Callable[[AvillaPerformTemplate, "Selector"], Awaitable[M]]):
         ...
 
     def signature_on_collect(self, route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]):
-        return PullImplements(route)
+        return PullImplement(route)
 
     def execute(
         self, runner: Context, target: Selectable, route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]
     ):
         for branch in self.iter_branches(runner.artifacts.maps, target.to_selector()):
-            artifact = self.get_artifacts(branch["artifacts"], PullImplements(route))
+            artifact = self.get_artifacts(branch["artifacts"], PullImplement(route))
             if artifact is not None:
                 collector = artifact["collector"]
                 entity = artifact["entity"]
@@ -347,13 +334,16 @@ class FetchImplement:
 
 
 class FetchFn(
-    Fn[["Resource[T]"], Awaitable[T]],
+    Fn[["type[Resource[T]]"], Awaitable[T]],
 ):
     def __init__(self):
         ...
 
+    def into(self, resource_type: type[Resource[X]]) -> FetchFn[X]:
+        return self  # type: ignore[reportGeneralTypeIssues]
+
     def collect(self, collector: Collector, resource_type: type[Resource[T]]):
-        def receive(entity: Callable[[H, Resource[T]], Awaitable[T]]):
+        def receive(entity: Callable[[H, Never], Awaitable[T]]):
             collector.artifacts[FetchImplement(resource_type)] = (collector, entity)
             return entity
 

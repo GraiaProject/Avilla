@@ -1,11 +1,10 @@
 from __future__ import annotations
 
-from collections import ChainMap
-from collections.abc import AsyncGenerator, Awaitable, Callable
-from functools import cached_property, partial
+from collections.abc import Callable
+from functools import partial
 from typing import Any, TypedDict, TypeVar, cast, overload
 
-from typing_extensions import ParamSpec, TypeAlias, Unpack
+from typing_extensions import ParamSpec, Unpack
 
 from avilla.core._runtime import cx_context
 from avilla.core.account import AbstractAccount
@@ -15,13 +14,8 @@ from avilla.core.ryanvk.capability import CoreCapability
 from avilla.core.ryanvk.common.protocol import Executable
 from avilla.core.ryanvk.common.runner import Runner as BaseRunner
 from avilla.core.selector import Selectable, Selector
-from avilla.core.trait import Trait
-from avilla.core.trait.context import Artifacts
-from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch
 from avilla.core.utilles import classproperty
 
-from ._query import find_querier_steps as _find_querier_steps
-from ._query import query_depth_generator as _query_depth_generator
 from ._selector import (
     ContextClientSelector,
     ContextEndpointSelector,
@@ -35,11 +29,6 @@ P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
 _T = TypeVar("_T")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
-_DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
-_TraitT = TypeVar("_TraitT", bound=Trait)
-
-_Querier: TypeAlias = "Callable[[Context, Selector | None, Selector], AsyncGenerator[Selector, None]]"
-_Describe: TypeAlias = "type[_MetadataT] | MetadataRoute[Unpack[tuple[Unpack[tuple[Any, ...]], _MetadataT]]]"
 
 
 class ContextCache(TypedDict):
@@ -108,34 +97,8 @@ class Context(BaseRunner):
     def current(cls) -> Context:
         return cx_context.get()
 
-    async def query(self, pattern: str | Selector, with_land: bool = False):
-        if isinstance(pattern, str):
-            pattern = DynamicSelector.from_follows_pattern(pattern)
-        else:
-            pattern = pattern.as_dyn()
-
-        querier_steps: list[Query] | None = _find_querier_steps(
-            self._impl_artifacts, pattern.path if with_land else pattern.path_without_land
-        )
-
-        if querier_steps is None:
-            raise NotImplementedError(f'cannot query "{pattern.path_without_land}" due to unknown step calc.')
-
-        querier = cast("dict[Query, _Querier]", {i: self._impl_artifacts[i] for i in querier_steps})
-        generators: list[AsyncGenerator[Selector, None]] = []
-
-        past: list[str] = []
-        for k, v in querier.items():
-            past.append(k.target)
-            pred = DynamicSelector({i: pattern.pattern[i] for i in past})
-            current = _query_depth_generator(self, v, pred, generators[-1] if generators else None)
-            generators.append(current)
-
-        async for i in generators[-1]:
-            if with_land:
-                yield Selector({"land": self.land.name, **i.pattern})
-            else:
-                yield i
+    async def query(self, pattern: str | Selector):
+        ...
 
     async def fetch(self, resource: Resource[_T]) -> _T:
         return await self[CoreCapability.fetch](resource)

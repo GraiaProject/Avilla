@@ -6,8 +6,6 @@ from typing import TYPE_CHECKING
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector
-from avilla.core.trait.context import Artifacts
-from avilla.core.trait.signature import Query
 
 if TYPE_CHECKING:
     from . import Context, _Querier

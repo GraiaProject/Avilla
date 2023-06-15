@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar
 
-from avilla.core.trait import Fn, Trait
+from avilla.core.trait import Fn, Capability
 from avilla.core.trait.signature import ExtensionImpl
 
 if TYPE_CHECKING:

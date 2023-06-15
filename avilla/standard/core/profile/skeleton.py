@@ -1,7 +1,7 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
 
-from avilla.core.ryanvk import TargetMetadataUnitedFn, Capability, TargetFn
+from avilla.core.ryanvk import Capability, TargetFn, TargetMetadataUnitedFn
+
 
 class SummaryCapability(Capability):
     @TargetMetadataUnitedFn
@@ -23,19 +23,19 @@ class SummaryCapability(Capability):
 
 class NickCapability(Capability):
     @TargetMetadataUnitedFn
-    async def set_name(self, selector, metadata, name: str) -> None:
+    async def set_name(self, name: str) -> None:
         ...
 
     @TargetFn
-    async def set_nickname(self, selector, nickname: str) -> None:
+    async def set_nickname(self, nickname: str) -> None:
         ...
 
     @TargetFn
-    async def unset_nickname(self, selector) -> None:
+    async def unset_nickname(self) -> None:
         ...
 
     @TargetFn
-    async def set_badge(self, selector, badge: str) -> None:
+    async def set_badge(self, badge: str) -> None:
         ...
 
     @TargetFn

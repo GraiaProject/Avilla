@@ -6,13 +6,9 @@ from launart import Launart
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AbstractAccount
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
-from avilla.core.platform import Land
 from avilla.core.protocol import BaseProtocol
-from avilla.core.resource import LocalFileResource
-from avilla.core.selector import Selector
+from avilla.core.ryanvk import Isolate
 from avilla.core.service import AvillaService
-from avilla.core.trait.context import wrap_artifacts
-from avilla.core.trait.signature import ArtifactSignature, ResourceFetch
 
 
 class Avilla:
@@ -21,9 +17,7 @@ class Avilla:
     protocols: list[BaseProtocol]
     accounts: list[AbstractAccount]
     service: AvillaService
-
-    with wrap_artifacts() as global_artifacts:
-        pass
+    isolate: Isolate
 
     def __init__(
         self,
@@ -42,6 +36,7 @@ class Avilla:
         self.accounts = []
         self.global_artifacts = {}
         self.service = AvillaService(self, message_cache_size)
+        self.isolate = Isolate()
 
         self.launch_manager.add_service(self.service)
 
@@ -51,14 +46,12 @@ class Avilla:
 
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
 
-        @self.register_global_artifact(ResourceFetch(LocalFileResource))
-        async def _fetch_local_file(_, res: LocalFileResource):
-            return res.file.read_bytes()
+        self.__init_isolate__()
 
         if message_cache_size > 0:
             from avilla.core.context import Context
             from avilla.core.message import Message
-            from avilla.spec.core.message import MessageReceived
+            from avilla.standard.core.message import MessageReceived
 
             @broadcast.receiver(MessageReceived)
             async def message_cacher(context: Context, message: Message):
@@ -73,13 +66,14 @@ class Avilla:
     def loop(self):
         return self.broadcast.loop
 
-    def register_global_artifact(self, signature: ArtifactSignature):
-        def wrapper(v):
-            self.global_artifacts[signature] = v
-            return v
+    def __init_isolate__(self):
+        from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
 
-        return wrapper
+        self.isolate.apply(CoreResourceFetchPerform)
 
+    # TODO: AccountInfo
+
+    """
     def add_account(self, account: AbstractAccount):
         if account in self.accounts:
             raise ValueError("account already exists.")
@@ -115,3 +109,4 @@ class Avilla:
                 continue
             result.append(account)
         return result
+    """

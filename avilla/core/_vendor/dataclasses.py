@@ -646,7 +646,7 @@ def _frozen_get_del_attr(cls, fields, globals):
             (
                 f"if type(self) is cls or name in {fields_str}:",
                 ' raise FrozenInstanceError(f"cannot assign to field {name!r}")',
-                f"super(cls, self).__setattr__(name, value)",
+                "super(cls, self).__setattr__(name, value)",
             ),
             locals=locals,
             globals=globals,
@@ -657,7 +657,7 @@ def _frozen_get_del_attr(cls, fields, globals):
             (
                 f"if type(self) is cls or name in {fields_str}:",
                 ' raise FrozenInstanceError(f"cannot delete field {name!r}")',
-                f"super(cls, self).__delattr__(name)",
+                "super(cls, self).__delattr__(name)",
             ),
             locals=locals,
             globals=globals,
@@ -1158,7 +1158,7 @@ def _process_class(cls, init, repr, eq, order, unsafe_hash, frozen, match_args, 
 
     # Do we have any Field members that don't also have annotations?
     for name, value in cls.__dict__.items():
-        if isinstance(value, Field) and not name in cls_annotations:
+        if isinstance(value, Field) and name not in cls_annotations:
             raise TypeError(f"{name!r} is a field but has no type annotation")
 
     # Check rules that apply if we are derived from any dataclasses.

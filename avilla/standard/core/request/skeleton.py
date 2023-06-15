@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from avilla.core.ryanvk import Capability, TargetFn
 
+
 class RequestCapability(Capability):
     @TargetFn
     async def accept(self):

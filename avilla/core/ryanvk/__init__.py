@@ -19,7 +19,7 @@ from .fn import LookupBranches as LookupBranches
 from .fn import LookupBranchMetadata as LookupBranchMetadata
 from .fn import LookupCollection as LookupCollection
 from .fn import PullFn as PullFn
-from .fn import PullImplements as PullImplements
+from .fn import PullImplement as PullImplement
 from .fn import TargetArtifactStore as TargetArtifactStore
 from .fn import TargetEntity as TargetEntity
 from .fn import TargetFn as TargetFn

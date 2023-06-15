@@ -7,7 +7,7 @@ from launart import Launart, Service
 from loguru import logger
 
 from avilla.core.utilles.message_cache import MessageCacheDeque
-from avilla.spec.core.application import (
+from avilla.standard.core.application import (
     ApplicationClosed,
     ApplicationClosing,
     ApplicationPreparing,
