@@ -1,7 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import TypedDict, TypeVar
+
+from avilla.core._vendor.dataclasses import dataclass, field
 
 
 @dataclass

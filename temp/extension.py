@@ -15,7 +15,7 @@ class FnExtension:
         ...
 
 
-ctx_fnextensions: ContextVar[dict[str, list[FnExtension]]] = ContextVar("fnextensions")
+cx_fnextensions: ContextVar[dict[str, list[FnExtension]]] = ContextVar("fnextensions")
 
 
 E = TypeVar("E", bound=FnExtension)
@@ -42,7 +42,7 @@ class ExtensionHandler:
         return wrapper
 
     async def handle_extensions(self):
-        ext = ctx_fnextensions.get()
+        ext = cx_fnextensions.get()
         impl_map = {}
         failed_group = []
         for group, exts in ext.items():

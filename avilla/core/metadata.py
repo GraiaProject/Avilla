@@ -1,41 +1,21 @@
 from __future__ import annotations
 
 from contextvars import ContextVar
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, overload
 from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
 
+from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.utilles import classproperty
-
-if TYPE_CHECKING:
-    from avilla.core.selector import Selector
 
 T = TypeVar("T")
 
 _MetadataT1 = TypeVar("_MetadataT1", bound="Metadata")
 _MetadataT2 = TypeVar("_MetadataT2", bound="Metadata")
 
-_DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
-
 _TVT1 = TypeVarTuple("_TVT1")
 _TVT2 = TypeVarTuple("_TVT2")
-
-
-@dataclass(eq=True, frozen=True)
-class MetadataOf(Generic[_DescribeT]):
-    target: Selector
-    describe: _DescribeT
-
-    def to_bounding(self):
-        return MetadataBound(self.target.path_without_land, self.describe)
-
-
-@dataclass
-class MetadataBound(Generic[_DescribeT]):
-    target: str
-    describe: _DescribeT
 
 
 class _GetItemAgent(Generic[T]):
@@ -61,14 +41,8 @@ class MetadataMeta(type):
         cells = (cls, other) if isinstance(other, type) else (cls, *other.cells)
         return MetadataRoute(cells)
 
-    """
-    def __repr__(cls) -> str:
-        # sourcery skip: instance-method-first-arg-name
-        return cls.__name__
-    """
 
-
-METACELL_PARAMS_CTX: WeakKeyDictionary[type[Metadata], ContextVar[dict[str, Any] | None]] = WeakKeyDictionary()
+METACELL_PARAMS_cx: WeakKeyDictionary[type[Metadata], ContextVar[dict[str, Any] | None]] = WeakKeyDictionary()
 
 
 @dataclass
@@ -82,17 +56,13 @@ class Metadata(metaclass=MetadataMeta):
     def __post_init__(self):
         self.route = type(self)
 
-    @classmethod
-    def of(cls, target: Selector) -> MetadataOf[type[Self]]:
-        return MetadataOf(target, cls)
-
     @classproperty
     @classmethod
-    def _param_ctx(cls):
-        return METACELL_PARAMS_CTX[cls]
+    def _param_cx(cls):
+        return METACELL_PARAMS_cx[cls]
 
     def __init_subclass__(cls) -> None:
-        METACELL_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
+        METACELL_PARAMS_cx[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
         super().__init_subclass__()
 
     @classmethod
@@ -101,23 +71,23 @@ class Metadata(metaclass=MetadataMeta):
 
     @classmethod
     def get_params(cls) -> dict[str, Any] | None:
-        return cls._param_ctx.get()
+        return cls._param_cx.get()
 
     @classmethod
     def set_params(cls, params: dict[str, Any]):
-        target = cls._param_ctx.get()
+        target = cls._param_cx.get()
         if target is None:
             target = {}
-            cls._param_ctx.set(target)
+            cls._param_cx.set(target)
         target.update(params)
 
     @classmethod
     def clear_params(cls) -> None:
-        cls._param_ctx.set(None)
+        cls._param_cx.set(None)
 
     @classmethod
     def has_params(cls) -> bool:
-        return cls._param_ctx.get() is not None
+        return cls._param_cx.get() is not None
 
 
 class MetadataRoute(Generic[Unpack[_TVT1]]):
@@ -154,9 +124,6 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
     def __eq__(self, o: object) -> bool:
         return isinstance(o, MetadataRoute) and o.cells == self.cells
 
-    def of(self, target: Selector) -> MetadataOf[Self]:
-        return MetadataOf(target, self)
-
     def clear_params(self) -> None:
         for cell in self.cells:
             cell.clear_params()
@@ -173,10 +140,7 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
         return any(cell.has_params() for cell in self.cells)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class MetadataFieldReference(Generic[_MetadataT1, T]):
     define: type[_MetadataT1] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]
     operator: Callable[[_MetadataT1], T]
-
-    def __hash__(self):
-        return hash(("field-ref", self.define, self.operator.__name__, self.operator.__code__))

@@ -21,8 +21,8 @@ with bounds("group"):
 
 @fetch(ElizabethImageResource)  # type: ignore
 @fetch(ElizabethAudioResource)
-async def fetch_from_url(ctx: Context, res: ElizabethResource) -> bytes:
+async def fetch_from_url(cx: Context, res: ElizabethResource) -> bytes:
     if not res.url:
         raise NotImplementedError
-    client = ctx.avilla.launch_manager.get_interface(AiohttpClientInterface)
+    client = cx.avilla.launch_manager.get_interface(AiohttpClientInterface)
     return await (await client.request("GET", res.url)).io().read()

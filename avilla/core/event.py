@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Generic
 
@@ -9,9 +8,10 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from typing_extensions import TypeVar
 
+from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.trait import UnappliedFnCall
 
-from ._runtime import ctx_context
+from ._runtime import cx_context
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -32,7 +32,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
         @staticmethod
         async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
             interface.local_storage["avilla_context"] = interface.event.context
-            interface.local_storage["_context_token"] = ctx_context.set(interface.event.context)
+            interface.local_storage["_context_token"] = cx_context.set(interface.event.context)
 
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):
@@ -43,7 +43,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
         @staticmethod
         async def afterExecution(interface: DispatcherInterface[AvillaEvent]):
-            ctx_context.reset(interface.local_storage["_context_token"])
+            cx_context.reset(interface.local_storage["_context_token"])
 
 
 @dataclass

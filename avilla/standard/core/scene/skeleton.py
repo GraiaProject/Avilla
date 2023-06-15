@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from avilla.core.trait import Fn, Trait
+from avilla.core.ryanvk import TargetFn, Capability
 
 
-class SceneTrait(Trait):
-    @Fn.bound_entity
+class SceneCapabilty(Capability):
+    @TargetFn
     async def leave(self) -> None:
         ...
 
-    @Fn.bound_entity
+    @TargetFn
     async def disband(self) -> None:
         ...
 
-    @Fn.bound_entity
+    @TargetFn
     async def remove_member(self, reason: str | None = None) -> None:
         ...
 

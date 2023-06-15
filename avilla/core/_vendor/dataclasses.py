@@ -747,7 +747,7 @@ def _is_type(annotation, cls, a_module, a_type, is_type_predicate):
         module_name = match.group(1)
         if not module_name:
             # No module name, assume the class's module did
-            # "from dataclasses import InitVar".
+            # "from avilla.core._vendor.dataclasses import InitVar".
             ns = sys.modules.get(cls.__module__).__dict__
         else:
             # Look up module_name in the class's module.

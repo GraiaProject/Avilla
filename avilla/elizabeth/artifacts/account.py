@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 with bounds("account"):
 
     @pull(Summary)
-    async def get_account_summary(ctx: Context, target: Selector):
-        result = await ctx.account.call(
+    async def get_account_summary(cx: Context, target: Selector):
+        result = await cx.account.call(
             "userProfile",
             {
                 "__method__": "fetch",
@@ -24,8 +24,8 @@ with bounds("account"):
         return Summary(result["nickname"], "a account stranger on platform qq")
 
     @pull(Nick)
-    async def get_friend_nick(ctx: Context, target: Selector):
-        result = await ctx.account.call(
+    async def get_friend_nick(cx: Context, target: Selector):
+        result = await cx.account.call(
             "userProfile",
             {
                 "__method__": "fetch",

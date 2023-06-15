@@ -2,36 +2,30 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
 from itertools import filterfalse
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, runtime_checkable
+from typing import Protocol, runtime_checkable
 
-from typing_extensions import Self, Unpack
+from typing_extensions import Self, TypeAlias
 
-from avilla.core._runtime import ctx_context
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
 
-if TYPE_CHECKING:
-    from .context import ContextSelector
-    from .metadata import Metadata, MetadataOf, MetadataRoute
-
 EMPTY_MAP = MappingProxyType({})
+ESCAPE = {")": "\\)", "(": "\\(", "]": "\\]", "[": "\\[", "}": "\\}", "{": "\\{"}
+
+_follows_pattern = re.compile(r"(?P<name>(\w+?|\*))(#(?P<predicate>\w+))?(\((?P<literal>[^#]+?)\))?")
+FollowsPredicater: TypeAlias = "Callable[[str], bool]"
 
 
 @dataclass
 class _FollowItem:
     name: str
     literal: str | None = None
-    predicate: Callable[[str], bool] | None = None
+    predicate: FollowsPredicater | None = None
 
 
-_follows_pattern = re.compile(r"(?P<name>(\w+?|\*))(#(?P<predicate>\w+))?(\((?P<literal>[^#]+?)\))?")
-
-ESCAPE = {")": "\\)", "(": "\\(", "]": "\\]", "[": "\\[", "}": "\\}", "{": "\\{"}
-
-
-def _parse_follows_item(item: str, items: dict[str, _FollowItem], predicates: dict[str, Callable[[Any], bool]]):
+def _parse_follows_item(item: str, items: dict[str, _FollowItem], predicates: dict[str, FollowsPredicater]):
     if item.startswith("::"):
         if "land" in items:
             raise ValueError("land already exists")
@@ -52,7 +46,7 @@ def _parse_follows_item(item: str, items: dict[str, _FollowItem], predicates: di
     items[name] = _FollowItem(name, literal, predicate)
 
 
-def _parse_follows(pattern: str, **kwargs: Callable[[str], bool]) -> list[_FollowItem]:
+def _parse_follows(pattern: str, **kwargs: FollowsPredicater) -> list[_FollowItem]:
     items = {}
     item = ""
     bracket_stack = []
@@ -144,7 +138,7 @@ class Selector:
             mapping[i.name] = i.literal
         return cls(mapping)
 
-    def follows(self, pattern: str, **kwargs: Callable[[str], bool]) -> bool:
+    def follows(self, pattern: str, **kwargs: FollowsPredicater) -> bool:
         items = _parse_follows(pattern, **kwargs)
         index = 0
         for index, (item, name, value) in enumerate(zip(items, self.pattern.keys(), self.pattern.values())):
@@ -175,7 +169,7 @@ class Selector:
             new_patterns[current_key] = item.literal or self.pattern[current_key]
         return Selector(new_patterns)
 
-    def expects(self, pattern: str, **kwargs: Callable[[str], bool]) -> Self:
+    def expects(self, pattern: str, **kwargs: FollowsPredicater) -> Self:
         if not self.follows(pattern, **kwargs):
             raise ValueError(f"Selector {self} does not follow {pattern}")
 

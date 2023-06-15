@@ -1,21 +1,20 @@
 from __future__ import annotations
 
-from avilla.core.trait import Fn, Trait
+from avilla.core.ryanvk import Capability, TargetFn
 
-
-class RequestTrait(Trait):
-    @Fn.bound_entity
+class RequestCapability(Capability):
+    @TargetFn
     async def accept(self):
         ...
 
-    @Fn.bound_entity
+    @TargetFn
     async def reject(self, reason: str | None = None, forever: bool = False):
         ...
 
-    @Fn.bound_entity
+    @TargetFn
     async def cancel(self):
         ...
 
-    @Fn.bound_entity
+    @TargetFn
     async def ignore(self):
         ...

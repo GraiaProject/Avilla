@@ -97,9 +97,9 @@ async def member_special_title_change(protocol: ElizabethProtocol, account: Eliz
     group = Selector().land(protocol.land).group(str(raw["group"]["id"]))
     member = group.member(str(raw["member"]["id"]))
     selft = group.member(account.id)
-    group_ctx = await account.get_context(group)
-    async for mem in group_ctx.query(f"group({raw['group']['id']}).member"):
-        mem_priv_info = await group_ctx.pull(Privilege >> Summary, mem)
+    group_cx = await account.get_context(group)
+    async for mem in group_cx.query(f"group({raw['group']['id']}).member"):
+        mem_priv_info = await group_cx.pull(Privilege >> Summary, mem)
         if mem_priv_info.name == "group_owner":
             operator = mem
             break
@@ -125,16 +125,16 @@ async def member_special_title_change(protocol: ElizabethProtocol, account: Eliz
 
 @event("MemberPermissionChangeEvent")
 async def member_perm_changed_change(protocol: ElizabethProtocol, account: ElizabethAccount, raw: dict[str, Any]):
-    group = Selector().land(protocol.land).group(str(raw['member']["group"]["id"]))
+    group = Selector().land(protocol.land).group(str(raw["member"]["group"]["id"]))
     member = group.member(str(raw["member"]["id"]))
     selft = group.member(account.id)
     print("1")
-    member_ctx = await account.get_context(member)
-    print("2", raw, member_ctx.__dict__)
+    member_cx = await account.get_context(member)
+    print("2", raw, member_cx.__dict__)
     try:
-        async for mem in member_ctx.query(f"group({raw['member']['group']['id']}).member"):
+        async for mem in member_cx.query(f"group({raw['member']['group']['id']}).member"):
             print("2222")
-            mem_priv_info = await member_ctx.pull(Privilege >> Summary, mem)
+            mem_priv_info = await member_cx.pull(Privilege >> Summary, mem)
             if mem_priv_info.name == "group_owner":
                 operator = mem
                 break
@@ -143,6 +143,7 @@ async def member_perm_changed_change(protocol: ElizabethProtocol, account: Eliza
             operator = account.to_selector()
     except:
         import traceback
+
         traceback.print_exc()
         raise
     print("3")

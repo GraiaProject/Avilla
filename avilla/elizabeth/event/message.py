@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message import __message_chain_class__
+from graia.amnesia.message import MessageChain
 
 from avilla.core.context import Context
 from avilla.core.message import Message
@@ -35,7 +35,7 @@ async def group_message(protocol: ElizabethProtocol, account: ElizabethAccount, 
         id=message_result["source"],
         scene=group,
         sender=member,
-        content=__message_chain_class__(message_result["content"]),
+        content=MessageChain(message_result["content"]),
         time=message_result["time"],
     )
     context._collect_metadatas(message, message)
@@ -58,7 +58,7 @@ async def friend_message(protocol: ElizabethProtocol, account: ElizabethAccount,
         id=message_result["source"],
         scene=friend,
         sender=friend,
-        content=__message_chain_class__(message_result["content"]),
+        content=MessageChain(message_result["content"]),
         time=message_result["time"],
     )
     context._collect_metadatas(message, message)
@@ -82,7 +82,7 @@ async def temp_message(protocol: ElizabethProtocol, account: ElizabethAccount, r
         id=message_result["source"],
         scene=member,
         sender=member,
-        content=__message_chain_class__(message_result["content"]),
+        content=MessageChain(message_result["content"]),
         time=message_result["time"],
     )
     context._collect_metadatas(message, message)

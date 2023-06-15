@@ -10,9 +10,9 @@ if TYPE_CHECKING:
 
 
 @query("group")
-async def get_groups(ctx: Context, upper: None, predicate: Selector):
-    print(111, ctx.account)
-    result: list[dict] = await ctx.account.call("groupList", {"__method__": "fetch"})
+async def get_groups(cx: Context, upper: None, predicate: Selector):
+    print(111, cx.account)
+    result: list[dict] = await cx.account.call("groupList", {"__method__": "fetch"})
     print(result)
     for i in result:
         group = Selector().group(str(i["id"]))
@@ -21,9 +21,9 @@ async def get_groups(ctx: Context, upper: None, predicate: Selector):
 
 
 @query("group", "member")
-async def get_group_members(ctx: Context, upper: Selector, predicate: Selector):
+async def get_group_members(cx: Context, upper: Selector, predicate: Selector):
     print(4)
-    result: list[dict] = await ctx.account.call(
+    result: list[dict] = await cx.account.call(
         "memberList", {"__method__": "fetch", "target": int(upper.pattern["group"])}
     )
     for i in result:

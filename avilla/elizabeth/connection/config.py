@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import TypeVar, Union
 
 from yarl import URL
+
+from avilla.core._vendor.dataclasses import dataclass, field
 
 
 @dataclass

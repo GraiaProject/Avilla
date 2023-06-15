@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Generic, TypeVar
 
 from typing_extensions import ParamSpec
+
+from avilla.core._vendor.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from .capability import Capability
@@ -14,13 +15,14 @@ P = ParamSpec("P")
 T = TypeVar("T", covariant=True)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class FnImplement:
-    fn: BaseFn
+    capability: type[Capability]
+    name: str
 
 
 class BaseFn(Generic[P, T]):
-    capability: type[Capability] | None = None
+    capability: type[Capability]
     name: str = "<unit>"
     template: Callable[P, T]
 
@@ -28,16 +30,15 @@ class BaseFn(Generic[P, T]):
         self.capability = owner
         self.name = name
 
-    @property
-    def signature(self):
-        return FnImplement(self)
+    def signature_on_collect(self):
+        return FnImplement(self.capability, self.name)
 
     def collect(self, collector: BaseCollector):
         def wrapper(entity: Callable[P, T]):
-            collector.artifacts[self.signature] = entity
+            collector.artifacts[self.signature_on_collect()] = entity
             return entity
 
         return wrapper
 
     def execute(self, runner: Runner, *args: P.args, **kwargs: P.kwargs) -> T:
-        return runner.artifacts[self.signature](*args, **kwargs)
+        return runner.artifacts[self.signature_on_collect()](*args, **kwargs)

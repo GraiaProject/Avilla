@@ -4,8 +4,9 @@ import base64
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, TypedDict, cast
 
-from graia.amnesia.message import __message_chain_class__
+from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Element, Text
+from loguru import logger
 
 from avilla.core.application import Avilla
 from avilla.core.context import Context
@@ -15,7 +16,6 @@ from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.protocol import BaseProtocol
 from avilla.core.trait.context import wrap_artifacts
 from avilla.core.trait.signature import ElementParse, EventParse
-from loguru import logger
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.service import ElizabethService
 from avilla.spec.qq.elements import FlashImage
@@ -63,14 +63,14 @@ class ElizabethProtocol(BaseProtocol):
         import avilla.elizabeth.artifacts.query as _  # noqa
 
     with wrap_artifacts() as event_parsers:
+        import avilla.elizabeth.event.account as _  # noqa
+        import avilla.elizabeth.event.friend as _  # noqa
+        import avilla.elizabeth.event.group as _  # noqa
+        import avilla.elizabeth.event.lifecycle as _  # noqa
+        import avilla.elizabeth.event.member as _  # noqa
         import avilla.elizabeth.event.message as _  # noqa
-        import avilla.elizabeth.event.account as _ # noqa
-        import avilla.elizabeth.event.friend as _ # noqa
-        import avilla.elizabeth.event.group as _ # noqa
-        import avilla.elizabeth.event.lifecycle as _ # noqa
-        import avilla.elizabeth.event.nudge as _ # noqa
-        import avilla.elizabeth.event.request as _ # noqa
-        import avilla.elizabeth.event.member as _ # noqa
+        import avilla.elizabeth.event.nudge as _  # noqa
+        import avilla.elizabeth.event.request as _  # noqa
 
     with wrap_artifacts() as message_parsers:
         import avilla.elizabeth.message_parse as _  # noqa
@@ -96,7 +96,7 @@ class ElizabethProtocol(BaseProtocol):
 
             # LINK: see avilla.elizabeth.connection.{http|ws} for hot registration
 
-    async def serialize_message(self, message: __message_chain_class__, context: Context | None = None):
+    async def serialize_message(self, message: MessageChain, context: Context | None = None):
         result = []
         for element in message.content:
             if isinstance(element, Text):

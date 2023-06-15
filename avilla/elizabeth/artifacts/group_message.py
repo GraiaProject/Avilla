@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 with bounds("group.message"):
 
     @implement(MessageRevoke.revoke)
-    async def revoke_group_message(ctx: Context, message_selector: Selector):
-        await ctx.account.call(
+    async def revoke_group_message(cx: Context, message_selector: Selector):
+        await cx.account.call(
             "recall",
             {
                 "__method__": "update",
@@ -28,15 +28,15 @@ with bounds("group.message"):
         )
 
     @pull(Message)
-    async def get_message_from_id(ctx: Context, message_selector: Selector):
+    async def get_message_from_id(cx: Context, message_selector: Selector):
         if TYPE_CHECKING:
-            assert isinstance(ctx.account, ElizabethAccount)
-            assert isinstance(ctx.protocol, ElizabethProtocol)
-        if ctx.avilla.service.enabled_cache_message:
-            result = ctx.avilla.service.message_cache[ctx.account.to_selector()].get(message_selector)
+            assert isinstance(cx.account, ElizabethAccount)
+            assert isinstance(cx.protocol, ElizabethProtocol)
+        if cx.avilla.service.enabled_cache_message:
+            result = cx.avilla.service.message_cache[cx.account.to_selector()].get(message_selector)
             if result is not None:
                 return result
-        result = await ctx.account.call(
+        result = await cx.account.call(
             "messageFromId",
             {
                 "__method__": "fetch",
@@ -44,8 +44,8 @@ with bounds("group.message"):
                 "target": int(message_selector["group"]),
             },
         )
-        event, event_context = await ctx.protocol.parse_event(ctx.account, result["data"])
+        event, event_context = await cx.protocol.parse_event(cx.account, result["data"])
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)
-        ctx.cache["meta"].update(event_context.cache["meta"])
+        cx.cache["meta"].update(event_context.cache["meta"])
         return event.message

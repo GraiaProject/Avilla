@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
 

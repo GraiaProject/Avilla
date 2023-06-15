@@ -13,11 +13,11 @@ dependencies = [
     "creart>=0.2.1",
     "creart-graia>=0.1.5",
     "funcparserlib>=1.0.1",
+    "ipykernel>=6.23.2",
+    "pip>=23.1.2",
 ]
 version = "0"
 requires-python = ">=3.9"
-
-[project.optional-dependencies]
 
 [tool.pdm.dev-dependencies]
 dev = [
@@ -30,6 +30,7 @@ dev = [
     "pre-commit>=2.20.0",
     "devtools>=0.9.0",
     "richuru>=0.1.1",
+    "ruff>=0.0.272",
 ]
 
 [build-system]

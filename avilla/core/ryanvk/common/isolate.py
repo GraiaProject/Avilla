@@ -1,5 +1,6 @@
-from dataclasses import dataclass, field
 from typing import Any
+
+from avilla.core._vendor.dataclasses import dataclass, field
 
 from .protocol import Ring3
 

@@ -17,8 +17,8 @@ if TYPE_CHECKING:
 with bounds("friend.message"):
 
     @implement(MessageRevoke.revoke)
-    async def revoke_friend_message(ctx: Context, message_selector: Selector):
-        await ctx.account.call(
+    async def revoke_friend_message(cx: Context, message_selector: Selector):
+        await cx.account.call(
             "recall",
             {
                 "__method__": "update",
@@ -28,11 +28,11 @@ with bounds("friend.message"):
         )
 
     @pull(Message)
-    async def get_message_from_id(ctx: Context, message_selector: Selector):
+    async def get_message_from_id(cx: Context, message_selector: Selector):
         if TYPE_CHECKING:
-            assert isinstance(ctx.account, ElizabethAccount)
-            assert isinstance(ctx.protocol, ElizabethProtocol)
-        result = await ctx.account.call(
+            assert isinstance(cx.account, ElizabethAccount)
+            assert isinstance(cx.protocol, ElizabethProtocol)
+        result = await cx.account.call(
             "messageFromId",
             {
                 "__method__": "fetch",
@@ -40,8 +40,8 @@ with bounds("friend.message"):
                 "target": int(message_selector["group"]),
             },
         )
-        event, event_context = await ctx.protocol.parse_event(ctx.account, result["data"])
+        event, event_context = await cx.protocol.parse_event(cx.account, result["data"])
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)
-        ctx.cache["meta"].update(event_context.cache["meta"])
+        cx.cache["meta"].update(event_context.cache["meta"])
         return event.message

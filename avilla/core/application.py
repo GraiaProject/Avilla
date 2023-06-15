@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from graia.broadcast import Broadcast
 from launart import Launart
 

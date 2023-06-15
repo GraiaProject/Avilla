@@ -13,7 +13,7 @@ from avilla.spec.core.profile import Summary, SummaryTrait
 from avilla.spec.core.scene import SceneTrait
 
 if TYPE_CHECKING:
-    from graia.amnesia.message import __message_chain_class__
+    from graia.amnesia.message import MessageChain
 
     from avilla.core.context import Context
 
@@ -30,12 +30,12 @@ with bounds("group"):
 
     @implement(MessageSend.send)
     async def send_group_message(
-        ctx: Context, target: Selector, message: __message_chain_class__, *, reply: Selector | None = None
+        cx: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
         if TYPE_CHECKING:
-            assert isinstance(ctx.protocol, ElizabethProtocol)
-        serialized_msg = await ctx.protocol.serialize_message(message)
-        result = await ctx.account.call(
+            assert isinstance(cx.protocol, ElizabethProtocol)
+        serialized_msg = await cx.protocol.serialize_message(message)
+        result = await cx.account.call(
             "sendGroupMessage",
             {
                 "__method__": "update",
@@ -46,18 +46,18 @@ with bounds("group"):
         )
         message_metadata = Message(
             id=str(result["messageId"]),
-            scene=Selector().land(ctx.land).group(str(target.pattern["group"])),
+            scene=Selector().land(cx.land).group(str(target.pattern["group"])),
             content=message,
             time=datetime.now(),
-            sender=Selector().land(ctx.land).group(str(target.pattern["group"])).member(ctx.account.id),
+            sender=Selector().land(cx.land).group(str(target.pattern["group"])).member(cx.account.id),
         )
         message_selector = message_metadata.to_selector()
-        ctx._collect_metadatas(message_selector, message_metadata)
+        cx._collect_metadatas(message_selector, message_metadata)
         return message_selector
 
     @implement(MuteAllTrait.mute_all)
-    async def group_mute_all(ctx: Context, target: Selector):
-        await ctx.account.call(
+    async def group_mute_all(cx: Context, target: Selector):
+        await cx.account.call(
             "muteAll",
             {
                 "__method__": "update",
@@ -66,8 +66,8 @@ with bounds("group"):
         )
 
     @implement(MuteAllTrait.unmute_all)
-    async def group_unmute_all(ctx: Context, target: Selector):
-        await ctx.account.call(
+    async def group_unmute_all(cx: Context, target: Selector):
+        await cx.account.call(
             "unmuteAll",
             {
                 "__method__": "update",
@@ -76,36 +76,36 @@ with bounds("group"):
         )
 
     @implement(SceneTrait.leave)
-    async def leave(ctx: Context, target: Selector):
-        await ctx.account.call("quit", {"__method__": "update", "target": int(target.pattern["group"])})
+    async def leave(cx: Context, target: Selector):
+        await cx.account.call("quit", {"__method__": "update", "target": int(target.pattern["group"])})
 
     @pull(Summary)
-    async def get_summary(ctx: Context, target: Selector | None) -> Summary:
+    async def get_summary(cx: Context, target: Selector | None) -> Summary:
         assert target is not None
-        result = await ctx.account.call(
+        result = await cx.account.call(
             "groupConfig",
             {"__method__": "fetch", "target": int(target.pattern["group"])},
         )
         return Summary(name=result["name"], description=None)
 
     @implement(SummaryTrait.set_name)
-    async def group_set_name(ctx: Context, target: Selector | MetadataOf, name: str):
+    async def group_set_name(cx: Context, target: Selector | MetadataOf, name: str):
         SummaryTrait.set_name.assert_entity(target)
         if TYPE_CHECKING:
             assert isinstance(target, Selector)
-        await ctx.account.call(
+        await cx.account.call(
             "groupConfig",
             {"__method__": "update", "target": int(target.pattern["group"]), "config": {"name": name}},
         )
 
     @pull(Privilege)
-    async def group_get_privilege_info(ctx: Context, target: Selector | None) -> Privilege:
-        self_info = await ctx.account.call(
+    async def group_get_privilege_info(cx: Context, target: Selector | None) -> Privilege:
+        self_info = await cx.account.call(
             "memberInfo",
             {
                 "__method__": "fetch",
-                "target": int(ctx.self.pattern["group"]),
-                "memberId": int(ctx.self.pattern["member"]),
+                "target": int(cx.self.pattern["group"]),
+                "memberId": int(cx.self.pattern["member"]),
             },
         )
         if target is None:
@@ -113,7 +113,7 @@ with bounds("group"):
                 self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
                 self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
             )
-        target_info = await ctx.account.call(
+        target_info = await cx.account.call(
             "memberInfo",
             {"__method__": "fetch", "target": int(target.pattern["group"]), "memberId": int(target.pattern["member"])},
         )

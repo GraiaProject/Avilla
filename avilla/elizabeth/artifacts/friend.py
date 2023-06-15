@@ -11,7 +11,7 @@ from avilla.spec.core.message import MessageRevoke, MessageSend
 from avilla.spec.core.profile.metadata import Nick, Summary
 
 if TYPE_CHECKING:
-    from graia.amnesia.message import __message_chain_class__
+    from graia.amnesia.message import MessageChain
 
     from avilla.core.context import Context
 
@@ -24,12 +24,12 @@ with bounds("friend"):
 
     @implement(MessageSend.send)
     async def send_friend_message(
-        ctx: Context, target: Selector, message: __message_chain_class__, *, reply: Selector | None = None
+        cx: Context, target: Selector, message: MessageChain, *, reply: Selector | None = None
     ) -> Selector:
         if TYPE_CHECKING:
-            assert isinstance(ctx.protocol, ElizabethProtocol)
-        serialized_msg = await ctx.protocol.serialize_message(message)
-        result = await ctx.account.call(
+            assert isinstance(cx.protocol, ElizabethProtocol)
+        serialized_msg = await cx.protocol.serialize_message(message)
+        result = await cx.account.call(
             "sendFriendMessage",
             {
                 "__method__": "update",
@@ -40,18 +40,18 @@ with bounds("friend"):
         )
         message_metadata = Message(
             id=str(result["messageId"]),
-            scene=Selector().land(ctx.land).friend(str(target.pattern["friend"])),
+            scene=Selector().land(cx.land).friend(str(target.pattern["friend"])),
             content=message,
             time=datetime.now(),
-            sender=ctx.account.to_selector(),
+            sender=cx.account.to_selector(),
         )
         message_selector = message_metadata.to_selector()
-        ctx._collect_metadatas(message_selector, message_metadata)
+        cx._collect_metadatas(message_selector, message_metadata)
         return message_selector
 
     @implement(MessageRevoke.revoke)
-    async def revoke_friend_message(ctx: Context, message: Selector):
-        await ctx.account.call(
+    async def revoke_friend_message(cx: Context, message: Selector):
+        await cx.account.call(
             "recall",
             {
                 "__method__": "update",
@@ -61,8 +61,8 @@ with bounds("friend"):
         )
 
     @pull(Summary)
-    async def get_friend_summary(ctx: Context, target: Selector):
-        result = await ctx.account.call(
+    async def get_friend_summary(cx: Context, target: Selector):
+        result = await cx.account.call(
             "friendProfile",
             {
                 "__method__": "fetch",
@@ -72,8 +72,8 @@ with bounds("friend"):
         return Summary(result["nickname"], "a friend contact assigned to this account")
 
     @pull(Nick)
-    async def get_friend_nick(ctx: Context, target: Selector):
-        result = await ctx.account.call(
+    async def get_friend_nick(cx: Context, target: Selector):
+        result = await cx.account.call(
             "friendProfile",
             {
                 "__method__": "fetch",
@@ -86,8 +86,8 @@ with bounds("friend"):
 with bounds("friend.nudge"):
 
     @implement(ActivityTrigger.trigger)
-    async def send_member_nudge(ctx: Context, target: Selector):
-        await ctx.account.call(
+    async def send_member_nudge(cx: Context, target: Selector):
+        await cx.account.call(
             "sendNudge",
             {
                 "__method__": "update",

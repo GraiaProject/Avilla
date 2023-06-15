@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.event import AvillaEvent
 from avilla.core.request import Request
 

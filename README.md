@@ -54,9 +54,9 @@ avilla = Avilla(broadcast, launart, [ElizabethProtocol(WebsocketClientConfig("bo
 
 
 @broadcast.receiver(MessageReceived)
-async def on_message_received(ctx: Context, event: MessageReceived):
-    if ctx.client.follows("group.member(<master-account>)"):
-        await ctx.scene.send_message("Hello, Avilla!")
+async def on_message_received(cx: Context, event: MessageReceived):
+    if cx.client.follows("group.member(<master-account>)"):
+        await cx.scene.send_message("Hello, Avilla!")
 
 
 launart.launch_blocking(loop=broadcast.loop)

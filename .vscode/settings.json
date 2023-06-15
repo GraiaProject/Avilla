@@ -1,5 +1,5 @@
 {
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "python.linting.enabled": false,
     "python.linting.pylintEnabled": false,
     "python.linting.flake8Enabled": true,
@@ -10,9 +10,6 @@
     "python.linting.maxNumberOfProblems": 1000,
     "python.analysis.completeFunctionParens": true,
     "python.analysis.typeCheckingMode": "basic",
-    "python.analysis.extraPaths": [
-        "__pypackages__/3.10/lib"
-    ],
     "python.sortImports.path": "isort",
     "cSpell.words": [
         "Aiohttp",
@@ -26,13 +23,13 @@
         "AVILLA",
         "Behaviour",
         "Cesloi",
-        "ctxid",
-        "ctxtoken",
-        "ctxtype",
+        "cxid",
+        "cxtoken",
+        "cxtype",
         "gocq",
         "Graia",
         "hocon",
-        "initctx",
+        "initcx",
         "isclass",
         "iscoroutinefunction",
         "launchables",
@@ -43,7 +40,7 @@
         "pyhocon",
         "pypi",
         "qualname",
-        "rsctx",
+        "rscx",
         "rsexec",
         "Rubics",
         "saya",
@@ -82,5 +79,8 @@
         "__pypackages__": true
     },
     "python.analysis.diagnosticMode": "workspace",
-    "isort.trace": "warn"
+    "isort.trace": "warn",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
 }

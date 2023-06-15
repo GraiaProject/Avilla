@@ -2,20 +2,23 @@ from __future__ import annotations
 
 from collections import ChainMap
 from collections.abc import AsyncGenerator, Awaitable, Callable
-from functools import cached_property
+from functools import cached_property, partial
 from typing import Any, TypedDict, TypeVar, cast, overload
 
-from typing_extensions import TypeAlias, Unpack
+from typing_extensions import ParamSpec, TypeAlias, Unpack
 
-from avilla.core._runtime import ctx_context
+from avilla.core._runtime import cx_context
 from avilla.core.account import AbstractAccount
-from avilla.core.metadata import Metadata, MetadataBound, MetadataOf, MetadataRoute
+from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.resource import Resource
-from avilla.core.selector import DynamicSelector, Selectable, Selector
+from avilla.core.ryanvk.capability import CoreCapability
+from avilla.core.ryanvk.common.protocol import Executable
+from avilla.core.ryanvk.common.runner import Runner as BaseRunner
+from avilla.core.selector import Selectable, Selector
 from avilla.core.trait import Trait
 from avilla.core.trait.context import Artifacts
 from avilla.core.trait.signature import Bounds, Pull, Query, ResourceFetch
-from avilla.core.utilles import classproperty, handle_visible
+from avilla.core.utilles import classproperty
 
 from ._query import find_querier_steps as _find_querier_steps
 from ._query import query_depth_generator as _query_depth_generator
@@ -26,9 +29,10 @@ from ._selector import (
     ContextRequestSelector,
     ContextSceneSelector,
     ContextSelector,
-    ContextWrappedMetadataOf,
 )
 
+P = ParamSpec("P")
+R = TypeVar("R", covariant=True)
 _T = TypeVar("_T")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 _DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
@@ -42,7 +46,7 @@ class ContextCache(TypedDict):
     meta: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]]
 
 
-class Context:
+class Context(BaseRunner):
     account: AbstractAccount
 
     client: ContextClientSelector
@@ -63,6 +67,8 @@ class Context:
         mediums: list[Selector] | None = None,
         prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
+        super().__init__()
+        # TODO: Isolate-based Artifacts
         self.account = account
 
         self.client = ContextClientSelector.from_selector(self, client)
@@ -85,13 +91,6 @@ class Context:
     def land(self):
         return self.protocol.land
 
-    @cached_property
-    def _impl_artifacts(self) -> Artifacts:
-        return ChainMap(
-            *handle_visible(self.protocol.implementations, self)[::-1],
-            *handle_visible(self.avilla.global_artifacts, self)[::-1],
-        )
-
     @property
     def request(self) -> ContextRequestSelector:
         return self.endpoint.expects_request()
@@ -104,39 +103,10 @@ class Context:
         scope = self.cache["meta"].setdefault(target.to_selector(), {})
         scope.update({type(i): i for i in metadatas})
 
-    def _get_entity_bound_scope(self, target: Selector):
-        return next(
-            (
-                v
-                for k, v in self._impl_artifacts.items()
-                if isinstance(k, Bounds) and isinstance(k.bound, str) and target.follows(k.bound)
-            ),
-            {},
-        )
-
-    def _get_metadata_bound_scope(self, reference: MetadataOf):
-        return next(
-            (
-                v
-                for k, v in self._impl_artifacts.items()
-                if isinstance(k, Bounds)
-                and isinstance(k.bound, MetadataBound)
-                and reference.target.follows(k.bound.target)
-                and reference.describe == k.bound.describe
-            ),
-            {},
-        )
-
-    """
-    @property
-    def _ext_handler(self):
-        return ExtensionHandler(self)
-    """
-
     @classproperty
     @classmethod
     def current(cls) -> Context:
-        return ctx_context.get()
+        return cx_context.get()
 
     async def query(self, pattern: str | Selector, with_land: bool = False):
         if isinstance(pattern, str):
@@ -167,27 +137,8 @@ class Context:
             else:
                 yield i
 
-    # TODO: GraiaProject/Avilla#66
-    # TODO: redesign Context.complete
-
-    """
-    def complete(self, selector: Selector, with_land: bool = False):
-        output_rule = self._impl_artifacts.get(CompleteRule(selector.path_without_land))
-        if output_rule is not None:
-            output_rule = cast(str, output_rule)
-            selector = Selector().mixin(output_rule, selector, self.endpoint, self.scene)
-        if with_land and list(selector.pattern.keys())[0] != "land":
-            selector.pattern = {"land": self.land.name, **selector.pattern}
-        return selector
-    """
-
     async def fetch(self, resource: Resource[_T]) -> _T:
-        fetcher = self._impl_artifacts.get(ResourceFetch(type(resource)))
-        if fetcher is None:
-            raise NotImplementedError(
-                f'cannot fetch "{resource}" because no available fetch implement found in "{self.protocol.__class__.__name__}"'
-            )
-        return await fetcher(self, resource)
+        return await self[CoreCapability.fetch](resource)
 
     async def pull(
         self,
@@ -206,41 +157,17 @@ class Context:
             elif not route.has_params():
                 return cast("_MetadataT", cached[route])
 
-        pull_implement = self._impl_artifacts.get(Bounds(target.path_without_land), {}).get(Pull(route))
-        if pull_implement is None:
-            raise NotImplementedError(
-                f'cannot pull "{route}"'
-                + (f' for "{target.path_without_land}"' if target is not None else "")
-                + f' because no available implement found in "{self.protocol.__class__.__name__}"'
-            )
-        pull_implement = cast(Callable[[Context, "Selector | None"], Awaitable[_MetadataT]], pull_implement)
-        result = await pull_implement(self, target)
-        if target is not None and not route.has_params():
-            cached = self.cache["meta"].setdefault(target, {})
-            cached[route] = result
-        return result
+        return await self[CoreCapability.pull](target, route)
 
     @overload
-    def wrap(self, closure: Selector) -> ContextSelector:
+    def __getitem__(self, closure: Selector) -> ContextSelector:
         ...
 
     @overload
-    def wrap(self, closure: MetadataOf[_Describe]) -> ContextWrappedMetadataOf[_Describe]:
+    def __getitem__(self, closure: Executable[Context, P, R]) -> Callable[P, R]:
         ...
 
-    @overload
-    def wrap(self, closure: type[_TraitT]) -> type[_TraitT]:
-        ...
-
-    def wrap(
-        self,
-        closure: Selector | MetadataOf[_DescribeT] | type[_TraitT],
-    ) -> ContextSelector | ContextWrappedMetadataOf[_Describe] | type[_TraitT]:
-        if isinstance(closure, type) and issubclass(closure, Trait):
-            return type(closure.__name__, (closure,), {"context": self})  # type: ignore
-        elif isinstance(closure, Selector):
-            return ContextSelector.from_selector(self, closure)
-        elif isinstance(closure, MetadataOf):
-            return ContextWrappedMetadataOf(closure.target, closure.describe, self)
-
-        raise TypeError(f"cannot wrap {closure!r}")
+    def __getitem__(self, closure: Selector | Executable) -> Any:
+        if isinstance(closure, Selector):
+            return ContextSelector(self, closure.pattern)
+        return partial(self.execute, closure)

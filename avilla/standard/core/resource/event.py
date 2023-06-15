@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from typing_extensions import get_origin
 
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.event import AvillaEvent
 from avilla.core.resource import Resource
 from avilla.core.selector import Selector

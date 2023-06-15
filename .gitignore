@@ -133,7 +133,7 @@ dmypy.json
 docs/node_modules
 
 # PDM
-.pdm.toml
+.pdm-python
 
 development
 .ruff_cache

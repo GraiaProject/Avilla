@@ -1,50 +1,39 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Iterable, Mapping
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Protocol, TypeVar
 
-from graia.amnesia.message import Element, Text, __message_chain_class__
+from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Self
 
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.message import Message
-from avilla.core.metadata import Metadata, MetadataOf, MetadataRoute
+from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.selector import EMPTY_MAP, Selector
-from avilla.core.trait import Trait
-from avilla.spec.core.message import MessageSend
-from avilla.spec.core.request import RequestTrait
-from avilla.spec.core.scene import SceneTrait
 
 if TYPE_CHECKING:
     from . import Context, _Describe
 
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 _DescribeT = TypeVar("_DescribeT", bound="type[Metadata] | MetadataRoute")
-_TraitT = TypeVar("_TraitT", bound=Trait)
 
 _R = TypeVar("_R", covariant=True)
 
-class _SelectorBoundReturnAgent(Protocol[_R]):
-    @classmethod
-    def renew(cls, context: Context, bound: Selector) -> _R:
-        ...
+
 
 class ContextSelector(Selector):
     context: Context
 
-    def __init__(self, ctx: Context, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
+    def __init__(self, cx: Context, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
         super().__init__(pattern)
-        self.context = ctx
+        self.context = cx
 
     @classmethod
-    def from_selector(cls, ctx: Context, selector: Selector) -> Self:
-        return cls(ctx, selector.pattern)
+    def from_selector(cls, cx: Context, selector: Selector) -> Self:
+        return cls(cx, selector.pattern)
 
     def pull(self, metadata: _Describe[_MetadataT]) -> Awaitable[_MetadataT]:
         return self.context.pull(metadata, self)
-
-    def wrap(self, trait: type[_SelectorBoundReturnAgent[_R]]) -> _R:
-        return trait.renew(self.context, self)
 
 
 class ContextClientSelector(ContextSelector):
@@ -68,16 +57,16 @@ class ContextSceneSelector(ContextSelector):
 
     def send_message(
         self,
-        message: __message_chain_class__ | str | Iterable[str | Element],
+        message: MessageChain | str | Iterable[str | Element],
         *,
         reply: Message | Selector | str | None = None,
     ):
         if isinstance(message, str):
-            message = __message_chain_class__([Text(message)])
-        elif not isinstance(message, __message_chain_class__):
-            message = __message_chain_class__([]).extend(list(message))
+            message = MessageChain([Text(message)])
+        elif not isinstance(message, MessageChain):
+            message = MessageChain([]).extend(list(message))
         else:
-            message = __message_chain_class__([i if isinstance(i, Element) else Text(i) for i in message])
+            message = MessageChain([i if isinstance(i, Element) else Text(i) for i in message])
 
         if isinstance(reply, Message):
             reply = reply.to_selector()
@@ -107,14 +96,3 @@ class ContextRequestSelector(ContextEndpointSelector):
 @dataclass
 class ContextMedium:
     selector: ContextSelector
-
-
-@dataclass(eq=True, frozen=True)
-class ContextWrappedMetadataOf(MetadataOf[_DescribeT]):
-    context: Context
-
-    def pull(self) -> Awaitable[_DescribeT]:
-        return self.context.pull(self.describe, self.target)
-
-    def wrap(self, trait: type[_TraitT]) -> _TraitT:
-        return trait(self.context, self)

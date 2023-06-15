@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
 from avilla.spec.core.request.skeleton import RequestTrait
 
@@ -57,20 +57,14 @@ class Request(Metadata):
             request_id = f"{self.request_type}:{request_id}"
         return self.scene.request(request_id)
 
-    def rev(self):
-        return self.to_selector().rev()
-
-    def rev_trait(self):
-        return self.rev().wrap(RequestTrait)
-
     async def accept(self):
-        return await self.rev_trait().accept()
+        ...  # TODO
 
     async def reject(self, reason: str | None = None, forever: bool = False):
-        return await self.rev_trait().reject(reason, forever)
+        ...  # TODO
 
     async def cancel(self):
-        return await self.rev_trait().cancel()
+        ...  # TODO
 
     async def ignore(self):
-        return await self.rev_trait().ignore()
+        ...  # TODO

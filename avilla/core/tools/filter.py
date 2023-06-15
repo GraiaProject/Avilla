@@ -14,7 +14,7 @@ from typing_extensions import ParamSpec, Self
 from avilla.core.account import AbstractAccount
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, Op
-from avilla.core.metadata import MetadataFieldReference, MetadataOf
+from avilla.core.metadata import MetadataFieldReference
 from avilla.core.selector import Selectable, Selector
 from avilla.core.trait import UnappliedFnCall
 from avilla.core.utilles import classproperty
@@ -45,7 +45,7 @@ class Filter(BaseDispatcher, Generic[T]):
     def dispatch(self, annotation: type[R]) -> Filter[R]:
         @self.middlewares.append
         async def _(_) -> R:
-            interface = DispatcherInterface.ctx.get()
+            interface = DispatcherInterface.cx.get()
             result = await interface.lookup_param("__filter_fetch__", annotation, None)
             interface.local_storage.setdefault("__filter_fetch__", {})[annotation] = result
             return result
@@ -129,7 +129,7 @@ class Filter(BaseDispatcher, Generic[T]):
 
     @classproperty
     @classmethod
-    def ctx(cls) -> Filter[Context]:
+    def cx(cls) -> Filter[Context]:
         return cls().dispatch(Context)
 
     @property
@@ -146,10 +146,10 @@ class Filter(BaseDispatcher, Generic[T]):
 
     @classmethod
     def account(cls) -> Filter[AbstractAccount]:
-        return cls.ctx.step(lambda ctx: ctx.account)
+        return cls.cx.step(lambda cx: cx.account)
 
     def medium(self: Filter[Context], index: int = 0) -> Filter[Selector | None]:
-        return self.ctx.step(lambda ctx: ctx.mediums[index].selector if ctx.mediums else None)
+        return self.cx.step(lambda cx: cx.mediums[index].selector if cx.mediums else None)
 
     @classproperty
     @classmethod

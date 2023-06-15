@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
+from collections import ChainMap
 from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any, ClassVar
 
-from avilla.core._runtime import ctx_avilla, ctx_context, ctx_protocol
+from avilla.core._runtime import cx_avilla, cx_context, cx_protocol
 from avilla.core.account import AbstractAccount
 from avilla.core.event import AvillaEvent
 from avilla.core.platform import Abstract, Land, Platform
+from avilla.core.ryanvk.common.isolate import Isolate
 from avilla.core.selector import Selector
 from avilla.core.trait.context import Artifacts
 
@@ -20,13 +22,10 @@ class BaseProtocol(metaclass=ABCMeta):
     avilla: Avilla
     platform: ClassVar[Platform]
 
-    event_parsers: ClassVar[Artifacts]
-    implementations: ClassVar[Artifacts]
-    message_parses: ClassVar[Artifacts]
-    context_sources: ClassVar[Artifacts]
+    isolate: ClassVar[Isolate]
 
-    def __init__(self):
-        ...
+    def __init_subclass__(cls) -> None:
+        cls.isolate = Isolate()
 
     @property
     def land(self):
@@ -47,7 +46,7 @@ class BaseProtocol(metaclass=ABCMeta):
         return self.avilla.get_account(selector=selector, land=self.platform[Land])
 
     def post_event(self, event: AvillaEvent, context: Context | None = None):
-        with ctx_avilla.use(self.avilla), ctx_protocol.use(self), (
-            ctx_context.use(context) if context is not None else nullcontext()
+        with cx_avilla.use(self.avilla), cx_protocol.use(self), (
+            cx_context.use(context) if context is not None else nullcontext()
         ):
             return self.avilla.broadcast.postEvent(event)
