@@ -56,7 +56,7 @@ class AvillaService(Service):
 
             for protocol in self.avilla.protocols:
                 logger.info(
-                    f"Using platform: {protocol.__class__.platform}",
+                    f"Using platform: {protocol.__class__}",
                     # alt=f"[magenta]Using platform: [/][dark_orange]{protocol.__class__.platform}[/]",
                 )
 

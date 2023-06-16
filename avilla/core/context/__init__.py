@@ -16,6 +16,8 @@ from avilla.core.ryanvk.common.runner import Runner as BaseRunner
 from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
 
+from avilla.core.platform import Land
+
 from ._selector import (
     ContextClientSelector,
     ContextEndpointSelector,
@@ -57,7 +59,11 @@ class Context(BaseRunner):
         prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
         super().__init__()
-        # TODO: Isolate-based Artifacts
+        self.artifacts.maps.extend([
+            account.info.isolate.artifacts,
+            account.info.protocol.isolate.artifacts,
+            account.avilla.isolate.artifacts
+        ])
         self.account = account
 
         self.client = ContextClientSelector.from_selector(self, client)
@@ -70,7 +76,7 @@ class Context(BaseRunner):
 
     @property
     def protocol(self):
-        return self.account.protocol
+        return self.account.info.protocol
 
     @property
     def avilla(self):
@@ -78,7 +84,7 @@ class Context(BaseRunner):
 
     @property
     def land(self):
-        return self.protocol.land
+        return self.account.info.platform[Land]
 
     @property
     def request(self) -> ContextRequestSelector:

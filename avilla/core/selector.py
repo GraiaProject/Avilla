@@ -156,7 +156,7 @@ class Selector:
             return False
         return True
 
-    def into(self, pattern: str) -> Selector | None:
+    def into(self, pattern: str) -> Selector:
         items = _parse_follows(pattern)
         new_patterns = {}
         iterator = iter(self.pattern)
@@ -165,7 +165,7 @@ class Selector:
                 raise TypeError("expected no wildcard")
             current_key = next(iterator)
             if item.name != current_key:
-                return
+                raise ValueError(f"expected {'.'.join(new_patterns)}.{item.name}, got {current_key}")
             new_patterns[current_key] = item.literal or self.pattern[current_key]
         return Selector(new_patterns)
 
