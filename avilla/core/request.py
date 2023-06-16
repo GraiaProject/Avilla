@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core._vendor.dataclasses import dataclass
-from avilla.standard.core.request.skeleton import RequestCapability
+from avilla.standard.core.request.capability import RequestCapability
 
 from ._runtime import cx_context
 from .metadata import Metadata

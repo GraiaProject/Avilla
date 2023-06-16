@@ -8,4 +8,4 @@ from .metadata import Answers as Answers
 from .metadata import Comment as Comment
 from .metadata import Questions as Questions
 from .metadata import Reason as Reason
-from .skeleton import RequestCapability as RequestCapability
+from .capability import RequestCapability as RequestCapability

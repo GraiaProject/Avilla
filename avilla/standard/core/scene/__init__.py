@@ -1,1 +1,1 @@
-from .skeleton import SceneCapability as SceneCapability
+from .capability import SceneCapability as SceneCapability
