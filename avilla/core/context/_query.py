@@ -1,8 +1,8 @@
-from __future__ import annotations
+"""from __future__ import annotations
 
 from collections import deque
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector
@@ -10,6 +10,11 @@ from avilla.core.selector import Selector
 if TYPE_CHECKING:
     from . import Context, _Querier
 
+
+@dataclass
+class Query:
+    upper: str | None
+    name: str
 
 async def query_depth_generator(
     context: Context,
@@ -33,7 +38,7 @@ class _MatchStep:
     history: tuple[Query, ...]
 
 
-def find_querier_steps(artifacts: Artifacts, query_path: str) -> list[Query] | None:
+def find_querier_steps(artifacts: dict[Any, Any], query_path: str) -> list[Query] | None:
     result: list[Query] | None = None
     frags: list[str] = query_path.split(".")
     queue: deque[_MatchStep] = deque([_MatchStep("", 0, ())])
@@ -52,3 +57,4 @@ def find_querier_steps(artifacts: Artifacts, query_path: str) -> list[Query] | N
                 else:
                     queue.append(_MatchStep(full_path, head.start, head.history + (query,)))
     return result
+"""

@@ -228,7 +228,7 @@ class UnitedFnImplement:
     metadata: type[Metadata] | MetadataRoute | None = None
 
 
-class PostReceivedCallback(Protocol[R1, R2]):
+class PostReceivedCallback(Protocol[R1, R2]):  # type: ignore[reportInvalidGenericUse]
     def __post_received__(self, entity: UnitedFnPerformBranch[Any, R1, R2]):
         ...
 
@@ -343,7 +343,7 @@ class FetchFn(
         return self  # type: ignore[reportGeneralTypeIssues]
 
     def collect(self, collector: Collector, resource_type: type[Resource[T]]):
-        def receive(entity: Callable[[H, Never], Awaitable[T]]):
+        def receive(entity: Callable[[H, Never], Awaitable[T]]):  # to accept all resource type
             collector.artifacts[FetchImplement(resource_type)] = (collector, entity)
             return entity
 

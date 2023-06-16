@@ -106,24 +106,6 @@ class Filter(BaseDispatcher, Generic[T]):
         funcs = frozenset(funcs)
         return self.assert_true(lambda result: all(func(result) for func in funcs))
 
-    def match(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
-        return self.assert_true(lambda result: pattern.matches(result))
-
-    def mismatch(self: Filter[Selectable], pattern: Selector) -> Filter[Selectable]:
-        return self.assert_false(lambda result: pattern.matches(result))
-
-    def match_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: pattern.matches(result) for pattern in patterns)
-
-    def match_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.all(lambda result: pattern.matches(result) for pattern in patterns)
-
-    def mismatch_any(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: not pattern.matches(result) for pattern in patterns)
-
-    def mismatch_all(self: Filter[Selectable], patterns: Iterable[Selector]) -> Filter[Selectable]:
-        return self.any(lambda result: not pattern.matches(result) for pattern in patterns)
-
     def follows(self: Filter[Selectable], *patterns: str) -> Filter[Selectable]:
         return self.any(lambda result: result.to_selector().follows(pattern) for pattern in patterns)
 
@@ -156,7 +138,7 @@ class Filter(BaseDispatcher, Generic[T]):
     def mod(cls) -> Filter[MetadataModified]:
         return cls().dispatch(MetadataModified)
 
-    def influen(self: Filter[MetadataModified], *fields: tuple[MetadataOf, MetadataFieldReference]):
+    def influen(self: Filter[MetadataModified], *fields: tuple[(), MetadataFieldReference]):
         def _check(x: MetadataModified):
             if not fields:
                 return True
