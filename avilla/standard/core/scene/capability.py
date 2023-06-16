@@ -1,6 +1,9 @@
 from __future__ import annotations
 
-from avilla.core.ryanvk import Capability, TargetFn
+from typing import Literal
+
+from avilla.core.ryanvk import Capability, TargetFn, Isolate, Fn
+from avilla.core.selector import Selector
 
 
 class SceneCapability(Capability):
@@ -16,4 +19,21 @@ class SceneCapability(Capability):
     async def remove_member(self, reason: str | None = None) -> None:
         ...
 
-    # TODO: join, invite etc.
+    @TargetFn
+    async def request_join(self, solver: Isolate) -> None:
+        ...
+
+    # TODO: invite someone to join the scene
+
+class RequestJoinCapability(Capability):
+    @Fn
+    async def on_question(self, target: Selector, question_id: str, question: str, optional: bool) -> str | None:
+        ...
+    
+    @Fn
+    async def on_reason(self, target: Selector) -> str | None:
+        ...
+
+    @Fn
+    async def on_term(self, term: tuple[Literal['string', 'url'] | str, str]) -> bool:
+        ...
