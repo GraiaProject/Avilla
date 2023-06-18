@@ -1,60 +1,63 @@
-"""from __future__ import annotations
+from __future__ import annotations
 
 from collections import deque
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable, Protocol, Container
 
 from avilla.core._vendor.dataclasses import dataclass
-from avilla.core.selector import Selector
+from avilla.core.selector import Selector, _FollowItem
 
 if TYPE_CHECKING:
-    from . import Context, _Querier
+    from avilla.core.ryanvk.fn import QueryRecord
 
 
-@dataclass
-class Query:
-    upper: str | None
-    name: str
+class QueryHandler(Protocol):
+    def __call__(
+        self, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None
+    ) -> AsyncGenerator[Selector, None]:
+        ...
 
+# 使用 functools.reduce.
 async def query_depth_generator(
-    context: Context,
-    current: _Querier,
-    predicate: Selector,
-    upper_generator: AsyncGenerator[Selector, None] | None = None,
+    handler: QueryHandler,
+    predicate: Callable[[str, str], bool] | str,
+    previous_generator: AsyncGenerator[Selector, None] | None = None,
 ):
-    if upper_generator is not None:
-        async for i in upper_generator:
-            async for j in current(context, i, predicate):
-                yield j
+    if previous_generator is not None:
+        async for previous in previous_generator:
+            async for current in handler(predicate, previous):
+                yield current
     else:
-        async for j in current(context, None, predicate):
-            yield j
+        async for current in handler(predicate):
+            yield current
 
 
 @dataclass
 class _MatchStep:
     upper: str
     start: int
-    history: tuple[Query, ...]
+    history: tuple[tuple[tuple[_FollowItem, ...], QueryRecord], ...]
 
 
-def find_querier_steps(artifacts: dict[Any, Any], query_path: str) -> list[Query] | None:
-    result: list[Query] | None = None
-    frags: list[str] = query_path.split(".")
+def find_querier_steps(
+    artifacts: Container[Any],
+    frags: list[_FollowItem],
+) -> list[tuple[tuple[_FollowItem, ...], QueryRecord]] | None:
+    result: list[tuple[tuple[_FollowItem, ...], QueryRecord]] | None = None
     queue: deque[_MatchStep] = deque([_MatchStep("", 0, ())])
+    whole = ".".join([i.name for i in frags])
     while queue:
         head: _MatchStep = queue.popleft()
-        current_steps: list[str] = []
+        current_steps: list[_FollowItem] = []
         for curr_frag in frags[head.start :]:
             current_steps.append(curr_frag)
-            steps = ".".join(current_steps)
+            steps = ".".join([i.name for i in current_steps])
             full_path = f"{head.upper}.{steps}" if head.upper else steps
             head.start += 1
-            if (query := Query(head.upper or None, steps)) in artifacts:
-                if full_path == query_path:
+            if (query := ((*current_steps,), QueryRecord(head.upper or None, steps)))[1] in artifacts:
+                if full_path == whole:
                     if result is None or len(result) > len(head.history) + 1:
                         result = [*head.history, query]
                 else:
                     queue.append(_MatchStep(full_path, head.start, head.history + (query,)))
     return result
-"""

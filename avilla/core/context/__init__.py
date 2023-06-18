@@ -1,19 +1,20 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from functools import partial
-from typing import Any, TypedDict, TypeVar, cast, overload
+from functools import partial, reduce
+from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
 
-from typing_extensions import ParamSpec, Unpack
+from typing_extensions import ParamSpec, Unpack, Self
 
 from avilla.core._runtime import cx_context
 from avilla.core.account import AbstractAccount
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.resource import Resource
 from avilla.core.ryanvk.capability import CoreCapability
+from avilla.core.ryanvk.collector import Collector
 from avilla.core.ryanvk.common.protocol import Executable
 from avilla.core.ryanvk.common.runner import Runner as BaseRunner
-from avilla.core.selector import Selectable, Selector
+from avilla.core.selector import _FollowItem, Selectable, Selector, _parse_follows, FollowsPredicater
 from avilla.core.utilles import classproperty
 
 from avilla.core.platform import Land
@@ -26,6 +27,10 @@ from ._selector import (
     ContextSceneSelector,
     ContextSelector,
 )
+from ._query import find_querier_steps, query_depth_generator, QueryHandler
+
+if TYPE_CHECKING:
+    from avilla.core.ryanvk.fn import QueryHandlerPerform
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
@@ -59,11 +64,9 @@ class Context(BaseRunner):
         prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
         super().__init__()
-        self.artifacts.maps.extend([
-            account.info.isolate.artifacts,
-            account.info.protocol.isolate.artifacts,
-            account.avilla.isolate.artifacts
-        ])
+        self.artifacts.maps.extend(
+            [account.info.isolate.artifacts, account.info.protocol.isolate.artifacts, account.avilla.isolate.artifacts]
+        )
         self.account = account
 
         self.client = ContextClientSelector.from_selector(self, client)
@@ -103,8 +106,45 @@ class Context(BaseRunner):
     def current(cls) -> Context:
         return cx_context.get()
 
-    async def query(self, pattern: str | Selector):
-        ...
+    async def query(self, pattern: str, **predicators: FollowsPredicater):
+        items = _parse_follows(pattern, **predicators)
+        steps = find_querier_steps(self.artifacts, items)
+        if steps is None:
+            return
+
+        def build_handler(artifact: Executable[Self, [], Any]) -> QueryHandler:
+            collector, entity = cast(
+                "tuple[Collector, QueryHandlerPerform]",
+                artifact,
+            )
+            instance = collector.cls(self)
+            return partial(entity, instance)
+
+        def build_predicate(_steps: tuple[_FollowItem, ...]) -> Callable[[str, str], bool]:
+            mapping = {i.name: i for i in _steps}
+
+            def predicater(key: str, value: str) -> bool:
+                if key not in mapping:
+                    raise KeyError(f"expected existed key: {key}")
+                item = mapping[key]
+                if item.literal is not None:
+                    return value == item.literal
+                elif item.predicate is not None:
+                    return item.predicate(value)
+                return True
+
+            return predicater
+
+        handlers = map(lambda x: (x[0], build_handler(self.artifacts[x[1]])), steps)
+        r = reduce(
+            lambda previous, current: query_depth_generator(current[1], build_predicate(current[0]), previous),
+            handlers,
+            None,
+        )
+        if TYPE_CHECKING:
+            assert r is not None
+        async for i in r:
+            yield i
 
     async def fetch(self, resource: Resource[_T]) -> _T:
         return await self[CoreCapability.fetch](resource)

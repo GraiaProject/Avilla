@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, MutableMapping
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Generic, MutableMapping
 from typing import NoReturn as Never
 from typing import Protocol, TypedDict, TypeVar, cast, overload
 
@@ -359,3 +359,26 @@ class FetchFn(
 
     def __repr__(self) -> str:
         return "<Fn#pull internal!>"
+
+
+@dataclass
+class QueryRecord:
+    """仅用作计算路径, 不参与实际运算, 也因此, 该元素仅存在于全局 Artifacts['query'] 中."""
+
+    previous: str | None
+    into: str
+
+class QueryHandlerPerform(Protocol):
+    def __call__(
+        self, _p0: Never, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None
+    ) -> AsyncGenerator[Selector, None]:
+        ...
+
+
+class QuerySchema:
+    def collect(self, collector: Collector, target: str, previous: str | None = None):
+        def receive(entity: QueryHandlerPerform):
+            collector.artifacts[QueryRecord(previous, target)] = (collector, entity)
+            return entity
+
+        return receive

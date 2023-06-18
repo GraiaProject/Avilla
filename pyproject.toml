@@ -15,6 +15,7 @@ dependencies = [
     "funcparserlib>=1.0.1",
     "ipykernel>=6.23.2",
     "pip>=23.1.2",
+    "ichika>=0.0.8",
 ]
 version = "0"
 requires-python = ">=3.9"
