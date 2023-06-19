@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from abc import ABCMeta
+from contextlib import suppress
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
-from typing_extensions import TypeVar
 
 from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.metadata import MetadataRoute
@@ -43,7 +43,9 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
         @staticmethod
         async def afterExecution(interface: DispatcherInterface[AvillaEvent]):
-            cx_context.reset(interface.local_storage["_context_token"])
+            # FIXME: wait solution of GraiaProject/BroadcastControl#61
+            with suppress(KeyError, RuntimeError):
+                cx_context.reset(interface.local_storage["_context_token"])
 
 
 @dataclass

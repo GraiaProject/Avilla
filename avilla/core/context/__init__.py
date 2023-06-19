@@ -176,7 +176,7 @@ class Context(BaseRunner):
     def __getitem__(self, closure: Executable[Context, P, R]) -> Callable[P, R]:
         ...
 
-    def __getitem__(self, closure: Selector | Executable) -> Any:
+    def __getitem__(self, closure: Selector | Executable[Context, P, R]) -> Any:
         if isinstance(closure, Selector):
             return ContextSelector(self, closure.pattern)
         return partial(self.execute, closure)

@@ -1,7 +1,7 @@
-from typing import TYPE_CHECKING, Any, Generic, Protocol, TypeVar, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, runtime_checkable
 
-if TYPE_CHECKING:
-    pass
+# if TYPE_CHECKING:
+#     pass
 
 """
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
@@ -16,6 +16,6 @@ _T = TypeVar("_T", contravariant=True)
 
 
 @runtime_checkable
-class Ensureable(Protocol, Generic[_T]):
+class Ensureable(Protocol[_T]):
     def ensure(self, interact: _T) -> Any:
         ...
