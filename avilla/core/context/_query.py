@@ -17,6 +17,7 @@ class QueryHandler(Protocol):
     ) -> AsyncGenerator[Selector, None]:
         ...
 
+
 # 使用 functools.reduce.
 async def query_depth_generator(
     handler: QueryHandler,

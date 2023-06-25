@@ -368,6 +368,7 @@ class QueryRecord:
     previous: str | None
     into: str
 
+
 class QueryHandlerPerform(Protocol):
     def __call__(
         self, _p0: Never, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None

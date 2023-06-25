@@ -4,10 +4,10 @@
 name = "avilla-workspace"
 dependencies = [
     "graia-broadcast>=0.17.5",
-    "graia-amnesia>=0.5.2",
+    #"graia-amnesia>=0.5.2",
     "loguru>=0.6.0",
     "yarl>=1.7.2",
-    "launart>=0.6.2",
+    #"launart>=0.6.2",
     "statv>=0.2.2",
     "aiohttp>=3.8.1",
     "creart>=0.2.1",
@@ -16,6 +16,8 @@ dependencies = [
     "ipykernel>=6.23.2",
     "pip>=23.1.2",
     "ichika>=0.0.8",
+
+    #"launart>=0.6.0,<1.0.0",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -35,7 +37,7 @@ dev = [
 ]
 
 [build-system]
-requires = ["mina-build"]
+requires = ["mina-build", "editables"]
 build-backend = "mina.backend"
 
 [tool.mina]

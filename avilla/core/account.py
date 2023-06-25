@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from avilla.core.platform import Platform
     from avilla.core.application import Avilla
 
+
 @dataclass
 class AccountInfo:
     route: Selector
