@@ -152,9 +152,7 @@ class Selector:
                 return False
             if item.predicate is not None and not item.predicate(value):
                 return False
-        if index + 1 != len(self.pattern):
-            return False
-        return True
+        return index + 1 == len(self.pattern)
 
     def into(self, pattern: str) -> Selector:
         items = _parse_follows(pattern)

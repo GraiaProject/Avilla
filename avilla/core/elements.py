@@ -29,7 +29,7 @@ class Notice(Element):
 
 
 class NoticeAll(Element):
-    "该消息元素用于群组中的管理员提醒群组中的所有成员"
+    """该消息元素用于群组中的管理员提醒群组中的所有成员"""
 
     def __init__(self) -> None:
         super().__init__()
@@ -51,6 +51,9 @@ class Picture(Element):
     def __str__(self) -> str:
         return "[$Picture]"
 
+    def __repr__(self):
+        return f"[$Picture:resource={self.resource.to_selector()}]"
+
 
 class Audio(Element):
     resource: Resource[bytes]
@@ -65,6 +68,9 @@ class Audio(Element):
     def __str__(self) -> str:
         return "[$Audio]"
 
+    def __repr__(self):
+        return f"[$Audio:resource={self.resource.to_selector()}]"
+
 
 class Video(Element):
     resource: Resource[bytes]
@@ -78,6 +84,9 @@ class Video(Element):
 
     def __str__(self) -> str:
         return "[$Video]"
+
+    def __repr__(self):
+        return f"[$Video:resource={self.resource.to_selector()}]"
 
 
 class Unknown(Element):
