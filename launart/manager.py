@@ -146,6 +146,7 @@ class Launart:
     def current(cls) -> Launart:
         return cls._context.get()
 
+
     def add_launchable(self, launchable: Launchable):
         launchable.ensure_manager(self)
         if launchable.id in self.launchables:
@@ -183,6 +184,7 @@ class Launart:
         if isinstance(launchable, str):
             if launchable not in self.launchables:
                 if self.task_group and launchable in self.task_group.sideload_trackers:
+                    # sideload tracking, cannot gracefully remove (into exiting phase)
                     return
                 raise ValueError(f"Launchable {id} does not exist.")
             target = self.launchables[launchable]
@@ -263,6 +265,7 @@ class Launart:
         logger.info(f"Sideload {launchable.id}: completed.")
         del self.tasks[launchable.id]
         del self.launchables[launchable.id]
+        del self.task_group.sideload_trackers[launchable.id]
 
     async def _sideload_prepare(self, launchable: Launchable) -> None:
         if launchable.status.stage != "waiting-for-prepare":  # pragma: worst case
