@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from graia.saya.behaviour import Behaviour
 from graia.saya.cube import Cube
 from graia.saya.schema import BaseSchema
-
 from launart import Launart, Launchable
 
 
@@ -24,14 +23,14 @@ class LaunartBehaviour(Behaviour):
         if isinstance(cube.metaclass, LaunchableSchema):
             if not isinstance(cube.content, Launchable):
                 raise TypeError(f"{cube.content} is not a Launchable")
-            self.manager.add_launchable(cube.content)
+            self.manager.add_component(cube.content)
         else:
             return
         return True
 
     def release(self, cube: Cube[LaunchableSchema]):
         if isinstance(cube.metaclass, LaunchableSchema):
-            self.manager.remove_launchable(cube.content)
+            self.manager.remove_component(cube.content)
         else:
             return
         return True

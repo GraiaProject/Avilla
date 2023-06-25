@@ -109,7 +109,7 @@ class Launchable(metaclass=ABCMeta):
         if self.manager is None:
             raise RuntimeError("attempted to flatten dependencies without a manager.")
         for req in self.required:
-            if req not in (self.manager.launchables if isinstance(req, str) else self.manager._service_bind):
+            if req not in (self.manager.components if isinstance(req, str) else self.manager._service_bind):
                 failed.add(req)
             elif isinstance(req, str):
                 dependencies.add(req)
@@ -126,15 +126,15 @@ class Launchable(metaclass=ABCMeta):
 
     def ensure_manager(self, manager: Launart):
         if self.manager is not None and self.manager is not manager:
-            raise RuntimeError("this launchable attempted to be mistaken a wrong ownership of launart/manager.")
+            raise RuntimeError("this component attempted to be mistaken a wrong ownership of launart/manager.")
         self.manager = manager
 
     @asynccontextmanager
     async def stage(self, stage: U_Stage):
         if self.manager is None:
-            raise RuntimeError("attempted to set stage of a launchable without a manager.")
+            raise RuntimeError("attempted to set stage of a component without a manager.")
         if self.manager.status.stage is None:
-            raise LookupError("attempted to set stage of a launchable without a current manager")
+            raise LookupError("attempted to set stage of a component without a current manager")
         if stage not in self.stages:
             raise ValueError(f"undefined and unexpected stage entering: {stage}")
 
@@ -168,16 +168,16 @@ class Launchable(metaclass=ABCMeta):
     async def wait_for_required(self, stage: U_Stage = "prepared"):
         await self.wait_for(stage, *self._required_id)
 
-    async def wait_for(self, stage: U_Stage, *launchable_id: str):
+    async def wait_for(self, stage: U_Stage, *component_id: str):
         if self.manager is None:
-            raise RuntimeError("attempted to set stage of a launchable without a manager.")
-        launchables = [self.manager.get_launchable(id) for id in launchable_id]
-        while any(launchable.status.stage not in STATS[STATS.index(stage) :] for launchable in launchables):
+            raise RuntimeError("attempted to set stage of a component without a manager.")
+        components = [self.manager.get_component(id) for id in component_id]
+        while any(component.status.stage not in STATS[STATS.index(stage) :] for component in components):
             await asyncio.wait(
                 [
-                    asyncio.create_task(launchable.status.wait_for_update())
-                    for launchable in launchables
-                    if launchable.status.stage != stage
+                    asyncio.create_task(component.status.wait_for_update())
+                    for component in components
+                    if component.status.stage != stage
                 ],
                 return_when=asyncio.FIRST_COMPLETED,
             )

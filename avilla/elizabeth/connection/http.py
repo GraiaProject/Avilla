@@ -4,6 +4,8 @@ import asyncio
 from typing import TYPE_CHECKING, Any, Optional
 
 from aiohttp import FormData
+from loguru import logger
+
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.json import Json
 from graia.amnesia.transport import Transport
@@ -12,7 +14,6 @@ from graia.amnesia.transport.common.http.extra import HttpRequest
 from graia.amnesia.transport.common.server import AbstractRouter
 from launart import Launart
 from launart.utilles import wait_fut
-from loguru import logger
 
 from ..exception import InvalidSession
 from . import ElizabethConnection
@@ -125,7 +126,7 @@ class HttpClientConnection(ElizabethConnection[HttpClientConfig]):
         if self.is_hook:
             return
         async with self.stage("blocking"):
-            while not mgr.launchables["elizabeth.service"].status.finished:
+            while not mgr.components["elizabeth.service"].status.finished:
                 try:
                     if not self.status.session_key:
                         logger.info("HttpClient: authenticate", style="dark_orange")

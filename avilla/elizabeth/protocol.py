@@ -4,9 +4,6 @@ import base64
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, TypedDict, cast
 
-from avilla.spec.qq.elements import FlashImage
-from graia.amnesia.message import MessageChain
-from graia.amnesia.message.element import Element, Text
 from loguru import logger
 
 from avilla.core.application import Avilla
@@ -19,6 +16,9 @@ from avilla.core.trait.context import wrap_artifacts
 from avilla.core.trait.signature import ElementParse, EventParse
 from avilla.elizabeth.connection.config import U_Config
 from avilla.elizabeth.service import ElizabethService
+from avilla.spec.qq.elements import FlashImage
+from graia.amnesia.message import MessageChain
+from graia.amnesia.message.element import Element, Text
 
 from .account import ElizabethAccount
 
@@ -92,7 +92,7 @@ class ElizabethProtocol(BaseProtocol):
         for config in self.configs:
             connection = CONFIG_MAP[config.__class__](self, config)
             self.service.connections.append(connection)
-            avilla.launch_manager.add_launchable(connection)
+            avilla.launch_manager.add_component(connection)
 
             # LINK: see avilla.elizabeth.connection.{http|ws} for hot registration
 
