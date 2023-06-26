@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from launart import Launart, Service
+from launart import Launart, Launchable
 from loguru import logger
 
 from avilla.core.utilles.message_cache import MessageCacheDeque
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from .selector import Selector
 
 
-class AvillaService(Service):
+class AvillaService(Launchable):
     id = "avilla.service"
     supported_interface_types = set()
 

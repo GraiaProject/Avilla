@@ -39,7 +39,7 @@ class Avilla:
         self.service = AvillaService(self, message_cache_size)
         self.isolate = Isolate()
 
-        self.launch_manager.add_service(self.service)
+        self.launch_manager.add_component(self.service)
 
         for protocol in self.protocols:
             # Ensureable 用于注册各种东西，包括 Service, ResourceProvider 等。
