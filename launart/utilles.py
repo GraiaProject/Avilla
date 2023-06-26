@@ -133,3 +133,10 @@ class FlexibleTaskGroup:
         if self.blocking_task is not None:
             self.blocking_task.cancel()
         self.tasks.extend(tasks)
+
+
+async def any_completed(*waits):
+    return await asyncio.wait(
+        [i if isinstance(i, asyncio.Task) else asyncio.create_task(i) for i in waits],
+        return_when=asyncio.FIRST_COMPLETED,
+    )

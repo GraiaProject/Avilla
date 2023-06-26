@@ -13,7 +13,6 @@ from typing import (
     Iterable,
     Literal,
     Optional,
-    Type,
     TypeVar,
     cast,
 )
@@ -24,7 +23,7 @@ from statv import Stats, Statv
 from launart._sideload import FutureMark, override
 from launart.component import Launchable, resolve_requirements
 from launart.service import ExportInterface, Service
-from launart.utilles import FlexibleTaskGroup, priority_strategy
+from launart.utilles import FlexibleTaskGroup, any_completed, priority_strategy
 
 U_ManagerStage = Literal["preparing", "blocking", "cleaning", "finished"]
 E = TypeVar("E", bound=ExportInterface)
@@ -89,10 +88,7 @@ class Launart:
     tasks: dict[str, asyncio.Task]
     task_group: Optional[FlexibleTaskGroup] = None
 
-    _service_bind: Dict[Type[ExportInterface], Service]
-
     _context: ClassVar[ContextVar[Launart]] = ContextVar("launart._context")
-    _priority_overrides: Dict[Type[ExportInterface], Service]
 
     def __init__(self):
         self.components = {}
@@ -115,8 +111,6 @@ class Launart:
             self.task_group.sideload_trackers[component.id] = tracker
             self.task_group.add(tracker)  # flush the waiter tasks
         self.components[component.id] = component
-        if isinstance(component, Service):
-            self._update_service_bind()
 
     def get_component(self, id: str) -> Launchable:
         if id not in self.components:
@@ -128,12 +122,6 @@ class Launart:
         if not isinstance(component, Service):
             raise TypeError(f"{id} is not a service.")
         return component
-
-    def override_bind(self, interface: type[ExportInterface], service: Service) -> None:
-        if interface in self._priority_overrides:
-            raise ValueError(f"{interface} is already overridden by {self._priority_overrides[interface]}")
-        self._priority_overrides[interface] = service
-        self._service_bind.update(self._priority_overrides)
 
     def remove_component(
         self,
@@ -308,47 +296,23 @@ class Launart:
     async def _component_prepare(self, task: asyncio.Task, component: Launchable):
         if component.status.stage != "waiting-for-prepare":  # pragma: worst case
             logger.info(f"wait component {component.id} into preparing.")
-            await asyncio.wait(
-                [
-                    task,
-                    asyncio.create_task(component.status.wait_for("waiting-for-prepare")),
-                ],
-                return_when=asyncio.FIRST_COMPLETED,
-            )
+            await any_completed(task, component.status.wait_for("waiting-for-prepare"))
 
         logger.info(f"component {component.id} is preparing.")
         component.status.stage = "preparing"
 
-        await asyncio.wait(
-            [
-                task,
-                asyncio.create_task(component.status.wait_for("prepared")),
-            ],
-            return_when=asyncio.FIRST_COMPLETED,
-        )
+        await any_completed(task, component.status.wait_for("prepared"))
         logger.success(f"component {component.id} is prepared.")
 
     async def _component_cleanup(self, task: asyncio.Task, component: Launchable):
         if component.status.stage != "waiting-for-cleanup":
             logger.info(f"Wait component {component.id} into cleanup.")
-            await asyncio.wait(
-                [
-                    task,
-                    asyncio.create_task(component.status.wait_for("waiting-for-cleanup")),
-                ],
-                return_when=asyncio.FIRST_COMPLETED,
-            )
+            await any_completed(task, component.status.wait_for("waiting-for-cleanup"))
 
         logger.info(f"Component {component.id} enter cleanup phase.")
         component.status.stage = "cleanup"
 
-        await asyncio.wait(
-            [
-                task,
-                asyncio.create_task(component.status.wait_for("finished")),
-            ],
-            return_when=asyncio.FIRST_COMPLETED,
-        )
+        await any_completed(task, component.status.wait_for("finished"))
 
     async def launch(self):
         _token = self._context.set(self)
@@ -364,7 +328,7 @@ class Launart:
             t = into(v.launch(self), name=f"launch#{k}")
             t.add_done_callback(partial(self._on_task_done, v))  # NOTE
             self.tasks[k] = t
-            #self.task_group.add(self.tasks[k])  # NOTE
+            # self.task_group.add(self.tasks[k])  # NOTE
 
         self.status.stage = "preparing"
 
@@ -380,13 +344,7 @@ class Launart:
         self.status.stage = "blocking"
 
         blocking_tasks = [
-            asyncio.wait(
-                [
-                    self.tasks[component.id],
-                    into(component.status.wait_for("blocking-completed")),
-                ],
-                return_when=asyncio.FIRST_COMPLETED,
-            )
+            any_completed(self.tasks[component.id], component.status.wait_for("blocking-completed"))
             for component in self.components.values()
             if "blocking" in component.stages
         ]
