@@ -1,36 +1,33 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-if TYPE_CHECKING:
-    from . import MessageChain, __message_chain_class__, __text_element_class__
+from . import MessageChain
 
 
 class Element:
+    _chain_class: type[MessageChain] = MessageChain
+
     def __str__(self) -> str:
         return ""
 
     def __add__(self: Element, content: MessageChain | list[Element] | Element | str) -> MessageChain:
-        from . import __message_chain_class__, __text_element_class__
-
         if isinstance(content, str):
-            content = [__text_element_class__(content)]
+            content = [self._chain_class._text_class(content)]
         if isinstance(content, Element):
             content = [content]
         if isinstance(content, MessageChain):
             content = content.content
-        return MessageChain(content + [self])
+        return self._chain_class(content + [self])
 
     def __radd__(self: Element, content: MessageChain | list[Element] | Element | str) -> MessageChain:
-        from . import __message_chain_class__, __text_element_class__
-
         if isinstance(content, str):
-            content = [__text_element_class__(content)]
+            content = [self._chain_class._text_class(content)]
         if isinstance(content, Element):
             content = [content]
         if isinstance(content, MessageChain):
             content = content.content
-        return __message_chain_class__([self] + content)
+        return self._chain_class([self] + content)
 
 
 class Text(Element):
