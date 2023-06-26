@@ -5,13 +5,12 @@ import contextlib
 import signal
 from contextvars import ContextVar
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, TypeVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, cast
 
 from loguru import logger
 
 from launart._sideload import override
 from launart.component import Launchable
-from launart.service import ExportInterface, Service
 from launart.status import ManagerStatus
 from launart.utilles import (
     FlexibleTaskGroup,
@@ -19,8 +18,6 @@ from launart.utilles import (
     cancel_alive_tasks,
     resolve_requirements,
 )
-
-E = TypeVar("E", bound=ExportInterface)
 
 
 class Launart:
@@ -211,12 +208,6 @@ class Launart:
         if id not in self.components:
             raise ValueError(f"Launchable {id} does not exists.")
         return self.components[id]
-
-    def get_service(self, id: str) -> Service:
-        component = self.get_component(id)
-        if not isinstance(component, Service):
-            raise TypeError(f"{id} is not a service.")
-        return component
 
     def remove_component(
         self,
