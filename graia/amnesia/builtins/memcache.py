@@ -6,7 +6,7 @@ from heapq import heappop, heappush
 from time import time
 from typing import Any
 
-from launart import Launart, Service
+from launart import Launart, Launchable
 
 from graia.amnesia.transport.common.storage import CacheStorage
 
@@ -54,12 +54,11 @@ class Memcache(CacheStorage[Any]):
         return list(self.cache.keys())
 
 
-class MemcacheService(Service):
+class MemcacheService(Launchable):
     id = "cache.client/memcache"
-    supported_interface_types = {Memcache}, {CacheStorage: 10}
 
     interval: float
-    cache: dict[str, tuple[float | None, Any]]
+    _cache: dict[str, tuple[float | None, Any]]
     expire: list[tuple[float, str]]
 
     def __init__(
@@ -69,12 +68,9 @@ class MemcacheService(Service):
         expire: list[tuple[float, str]] | None = None,
     ):
         self.interval = interval
-        self.cache = cache or {}
+        self._cache = cache or {}
         self.expire = expire or []
         super().__init__()
-
-    def get_interface(self, _) -> Memcache:
-        return Memcache(self.cache, self.expire)
 
     @property
     def required(self):
@@ -84,10 +80,14 @@ class MemcacheService(Service):
     def stages(self):
         return {"blocking"}
 
+    @property
+    def cache(self):
+        return Memcache(self._cache, self.expire)
+
     async def launch(self, manager: Launart) -> None:
         async with self.stage("blocking"):
             while not manager.status.exiting:
                 while self.expire and self.expire[0][0] <= time():
                     _, key = heappop(self.expire)
-                    self.cache.pop(key, None)
+                    self._cache.pop(key, None)
                 await asyncio.sleep(self.interval)
