@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from graia.amnesia.message import MessageChain
-
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
 from avilla.standard.core.message.capability import MessageRevoke
+from graia.amnesia.message import MessageChain
 
 from ._runtime import cx_context
 from .metadata import Metadata

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, runtime_checkable
+from typing import Any, Protocol, TypeVar, runtime_checkable
 
 # if TYPE_CHECKING:
 #     pass

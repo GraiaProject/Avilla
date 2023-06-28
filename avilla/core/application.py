@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from graia.broadcast import Broadcast
-from launart import Launart
 
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AccountInfo
@@ -10,6 +9,7 @@ from avilla.core.protocol import BaseProtocol
 from avilla.core.ryanvk import Isolate
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
+from launart import Launart
 
 
 class Avilla:

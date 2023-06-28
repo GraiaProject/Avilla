@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, Generic, TypeVar, NoReturn
+from typing import TYPE_CHECKING, Callable, Generic, NoReturn, TypeVar
 
-from typing_extensions import ParamSpec, Concatenate
+from typing_extensions import Concatenate, ParamSpec
 
 from avilla.core._vendor.dataclasses import dataclass
 

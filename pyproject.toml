@@ -16,8 +16,8 @@ dependencies = [
     "ipykernel>=6.23.2",
     "pip>=23.1.2",
     "ichika>=0.0.8",
-
     #"launart>=0.6.0,<1.0.0",
+    "graia-saya>=0.0.17",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -34,6 +34,7 @@ dev = [
     "devtools>=0.9.0",
     "richuru>=0.1.1",
     "ruff>=0.0.272",
+    "uvicorn>=0.22.0",
 ]
 
 [build-system]

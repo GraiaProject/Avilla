@@ -15,7 +15,13 @@ from avilla.core.ryanvk.capability import CoreCapability
 from avilla.core.ryanvk.collector import Collector
 from avilla.core.ryanvk.common.protocol import Executable
 from avilla.core.ryanvk.common.runner import Runner as BaseRunner
-from avilla.core.selector import FollowsPredicater, Selectable, Selector, _FollowItem, _parse_follows
+from avilla.core.selector import (
+    FollowsPredicater,
+    Selectable,
+    Selector,
+    _FollowItem,
+    _parse_follows,
+)
 from avilla.core.utilles import classproperty
 
 from ._query import QueryHandler, find_querier_steps, query_depth_generator
@@ -29,7 +35,7 @@ from ._selector import (
 )
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.fn import QueryHandlerPerform
+    from avilla.core.ryanvk.descriptor.query import QueryHandlerPerform
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)

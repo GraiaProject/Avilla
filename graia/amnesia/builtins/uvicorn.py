@@ -3,12 +3,12 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from launart.manager import Launart
-from launart.utilles import wait_fut
 from loguru import logger
 from uvicorn import Config, Server
 
 from graia.amnesia.transport.common.asgi import AbstractAsgiService, ASGIHandlerProvider
+from launart.manager import Launart
+from launart.utilles import wait_fut
 
 
 class LoguruHandler(logging.Handler):

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from ..metadata import Metadata, MetadataRoute
     from ..protocol import BaseProtocol
     from ..selector import FollowsPredicater
-    from .fn import PullFn
+    from .descriptor.pull import PullFn
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")

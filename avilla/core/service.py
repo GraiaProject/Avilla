@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from launart import Launart, Launchable
 from loguru import logger
 
 from avilla.core.utilles.message_cache import MessageCacheDeque
@@ -13,6 +12,7 @@ from avilla.standard.core.application import (
     ApplicationPreparing,
     ApplicationReady,
 )
+from launart import Launart, Launchable
 
 from .graia import AVILLA_ASCII_LOGO, AVILLA_ASCII_RAW_LOGO, log_telemetry
 

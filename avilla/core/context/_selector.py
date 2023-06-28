@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Awaitable, Iterable, Mapping
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Self, Unpack
 
 from avilla.core._vendor.dataclasses import dataclass
@@ -13,6 +12,7 @@ from avilla.core.selector import EMPTY_MAP, Selector
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.request import RequestCapability
 from avilla.standard.core.scene import SceneCapability
+from graia.amnesia.message import Element, MessageChain, Text
 
 if TYPE_CHECKING:
     from . import Context

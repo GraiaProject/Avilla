@@ -1,21 +1,16 @@
-# import richuru
-# richuru.install()
+import richuru
+richuru.install()
 
 import asyncio
 
 from launart import Launart, Launchable
-from launart.service import ExportInterface, Service
 
 art = Launart()
 
 
-class TestInterface(ExportInterface):
-    ...
 
-
-class TestSrv(Service):
+class TestSrv(Launchable):
     id = "test_srv"
-    supported_interface_types = {TestInterface}
 
     @property
     def required(self) -> set[str]:
@@ -27,11 +22,7 @@ class TestSrv(Service):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            self.interface = TestInterface()
             print("TestSrv: prepared TestInterface")
-
-    def get_interface(self):
-        return self.interface
 
 
 class TestLaunchable(Launchable):
@@ -39,7 +30,7 @@ class TestLaunchable(Launchable):
 
     @property
     def required(self):
-        return {TestInterface}
+        return {"test_srv"}
 
     @property
     def stages(self) -> set[str]:

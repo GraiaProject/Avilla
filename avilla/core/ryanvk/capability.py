@@ -1,5 +1,5 @@
 from .common.capability import Capability
-from .fn import FetchFn, PullFn, QuerySchema
+from .descriptor import FetchFn, PullFn, QuerySchema
 
 
 class CoreCapability(Capability):

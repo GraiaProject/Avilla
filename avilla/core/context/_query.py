@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from collections import deque
 from collections.abc import AsyncGenerator
-from typing import TYPE_CHECKING, Any, Callable, Protocol, Container
+from typing import TYPE_CHECKING, Any, Callable, Container, Protocol
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector, _FollowItem
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.fn import QueryRecord
+    from avilla.core.ryanvk.descriptor import QueryRecord
 
 
 class QueryHandler(Protocol):

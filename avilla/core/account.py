@@ -3,14 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 from avilla.core._vendor.dataclasses import dataclass, field
-from avilla.core.selector import Selector
 from avilla.core.ryanvk import Isolate
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.context import Context
-    from avilla.core.protocol import BaseProtocol
-    from avilla.core.platform import Platform
     from avilla.core.application import Avilla
+    from avilla.core.context import Context
+    from avilla.core.platform import Platform
+    from avilla.core.protocol import BaseProtocol
 
 
 @dataclass
