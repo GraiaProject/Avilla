@@ -42,7 +42,7 @@ class MetadataMeta(type):
         return MetadataRoute(cells)
 
 
-METACELL_PARAMS_cx: WeakKeyDictionary[type[Metadata], ContextVar[dict[str, Any] | None]] = WeakKeyDictionary()
+METACELL_PARAMS_CTX: WeakKeyDictionary[type[Metadata], ContextVar[dict[str, Any] | None]] = WeakKeyDictionary()
 
 
 @dataclass
@@ -58,11 +58,11 @@ class Metadata(metaclass=MetadataMeta):
 
     @classproperty
     @classmethod
-    def _param_cx(cls):
-        return METACELL_PARAMS_cx[cls]
+    def _param_ctx(cls):
+        return METACELL_PARAMS_CTX[cls]
 
     def __init_subclass__(cls) -> None:
-        METACELL_PARAMS_cx[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
+        METACELL_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
         super().__init_subclass__()
 
     @classmethod
@@ -71,23 +71,23 @@ class Metadata(metaclass=MetadataMeta):
 
     @classmethod
     def get_params(cls) -> dict[str, Any] | None:
-        return cls._param_cx.get()
+        return cls._param_ctx.get()
 
     @classmethod
     def set_params(cls, params: dict[str, Any]):
-        target = cls._param_cx.get()
+        target = cls._param_ctx.get()
         if target is None:
             target = {}
-            cls._param_cx.set(target)
+            cls._param_ctx.set(target)
         target.update(params)
 
     @classmethod
     def clear_params(cls) -> None:
-        cls._param_cx.set(None)
+        cls._param_ctx.set(None)
 
     @classmethod
     def has_params(cls) -> bool:
-        return cls._param_cx.get() is not None
+        return cls._param_ctx.get() is not None
 
 
 class MetadataRoute(Generic[Unpack[_TVT1]]):
