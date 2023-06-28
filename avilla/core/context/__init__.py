@@ -4,21 +4,21 @@ from collections.abc import Callable
 from functools import partial, reduce
 from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
 
-from typing_extensions import ParamSpec, Unpack, Self
+from typing_extensions import ParamSpec, Self, Unpack
 
 from avilla.core._runtime import cx_context
 from avilla.core.account import AbstractAccount
 from avilla.core.metadata import Metadata, MetadataRoute
+from avilla.core.platform import Land
 from avilla.core.resource import Resource
 from avilla.core.ryanvk.capability import CoreCapability
 from avilla.core.ryanvk.collector import Collector
 from avilla.core.ryanvk.common.protocol import Executable
 from avilla.core.ryanvk.common.runner import Runner as BaseRunner
-from avilla.core.selector import _FollowItem, Selectable, Selector, _parse_follows, FollowsPredicater
+from avilla.core.selector import FollowsPredicater, Selectable, Selector, _FollowItem, _parse_follows
 from avilla.core.utilles import classproperty
 
-from avilla.core.platform import Land
-
+from ._query import QueryHandler, find_querier_steps, query_depth_generator
 from ._selector import (
     ContextClientSelector,
     ContextEndpointSelector,
@@ -27,7 +27,6 @@ from ._selector import (
     ContextSceneSelector,
     ContextSelector,
 )
-from ._query import find_querier_steps, query_depth_generator, QueryHandler
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.fn import QueryHandlerPerform
@@ -166,7 +165,7 @@ class Context(BaseRunner):
             elif not route.has_params():
                 return cast("_MetadataT", cached[route])
 
-        return await self[CoreCapability.pull](target, route)
+        return await self[CoreCapability.pull.into(route)](target, route)
 
     @overload
     def __getitem__(self, closure: Selector) -> ContextSelector:
@@ -176,7 +175,7 @@ class Context(BaseRunner):
     def __getitem__(self, closure: Executable[Context, P, R]) -> Callable[P, R]:
         ...
 
-    def __getitem__(self, closure: Selector | Executable[Context, P, R]) -> Any:
+    def __getitem__(self, closure: Selector | Executable[Context, P, Any]) -> Any:
         if isinstance(closure, Selector):
             return ContextSelector(self, closure.pattern)
         return partial(self.execute, closure)

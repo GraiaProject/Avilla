@@ -147,9 +147,9 @@ class TargetEntityProtocol(Protocol[P, T]):
 
 
 class TargetFn(
-    Fn[Concatenate[Selectable, P], Awaitable[R]],
+    Fn[Concatenate[Selectable, P], R],
 ):
-    def __init__(self, template: Callable[Concatenate[C, P], Awaitable[R]]) -> None:
+    def __init__(self, template: Callable[Concatenate[C, P], R]) -> None:
         self.template = template  # type: ignore
 
     def collect(
@@ -230,14 +230,14 @@ class TargetFn(
             yield branch
 
     def get_collect_signature(
-        self, entity: Callable[Concatenate[AvillaPerformTemplate, "Selector", P], Awaitable[R]]
+        self, entity: Callable[Concatenate[AvillaPerformTemplate, "Selector", P], R]
     ) -> Any:
         return FnImplement(self.capability, self.name)
 
     @doubledself
     def get_execute_layout(
         self, self1: Fn._InferProtocol[R1], runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs
-    ) -> Mapping[R1, tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], Awaitable[R]]]]:
+    ) -> Mapping[R1, tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], R]]]:
         sign = self.get_execute_signature(runner, target, *args, **kwargs)
         for branch in self._iter_branches(runner.artifacts.maps, target.to_selector()):
             artifacts = branch["artifacts"]
@@ -295,7 +295,7 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
         ...
 
     @overload
-    async def execute(
+    def execute(
         self: PostReceivedCallback[R1, Any],
         runner: Context,
         target: Selectable,
@@ -306,7 +306,7 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
         ...
 
     @overload
-    async def execute(
+    def execute(
         self: PostReceivedCallback[Any, R2],
         runner: Context,
         target: Selectable,
@@ -316,7 +316,7 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
     ) -> R2:
         ...
 
-    async def execute(
+    def execute(
         self,
         runner: Context,
         target: Selectable,
@@ -324,7 +324,7 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Any:
-        return await super().execute(runner, target, metadata, *args, **kwargs)
+        return super().execute(runner, target, metadata, *args, **kwargs)
 
     @doubledself  # type: ignore
     def get_execute_signature(
@@ -345,6 +345,7 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
 
 
 M = TypeVar("M", bound="Metadata")
+M1 = TypeVar("M1", bound="Metadata")
 
 
 @dataclass(unsafe_hash=True)
@@ -358,9 +359,15 @@ class PullFn(
     def __init__(self):
         ...
 
+    def into(self, route: type[M1] | MetadataRoute[Unpack[tuple[Metadata, ...]], M1]) -> PullFn[M1]:
+        return self  # type: ignore[reportGeneral]
+
     def get_collect_signature(
         self,
-        entity: Callable[[AvillaPerformTemplate, "Selector"], Awaitable[M]],
+        entity: Callable[
+            [AvillaPerformTemplate, "Selector", type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]],
+            Awaitable[M]
+        ],
         route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M],
     ) -> Any:
         return PullImplement(route)
@@ -371,7 +378,6 @@ class PullFn(
     def __repr__(self) -> str:
         return "<Fn#pull>"
 
-
 Re = TypeVar("Re", bound="Resource")
 
 
@@ -381,7 +387,7 @@ class FetchImplement:
 
 
 class FetchFn(
-    Fn[["type[Resource[T]]"], Awaitable[T]],
+    Fn[["Resource[T]"], Awaitable[T]],
 ):
     def __init__(self):
         ...
@@ -396,8 +402,8 @@ class FetchFn(
 
         return receive
 
-    def get_execute_signature(self, runner: Context, resource_type: type[Resource]) -> Any:
-        return FetchImplement(resource_type)
+    def get_execute_signature(self, runner: Context, resource: Resource) -> Any:
+        return FetchImplement(type(Resource))
 
     def __repr__(self) -> str:
         return "<Fn#pull internal!>"
