@@ -62,7 +62,6 @@ from avilla.core.ryanvk.fn import LookupCollection as LookupCollection
 from avilla.core.ryanvk.fn import PullFn as PullFn
 from avilla.core.ryanvk.fn import PullImplement as PullImplement
 from avilla.core.ryanvk.fn import TargetArtifactStore as TargetArtifactStore
-from avilla.core.ryanvk.fn import TargetEntity as TargetEntity
 from avilla.core.ryanvk.fn import TargetFn as TargetFn
 from avilla.core.ryanvk.fn import TargetMetadataUnitedFn as TargetMetadataUnitedFn
 from avilla.core.selector import Selectable as Selectable

@@ -21,6 +21,5 @@ from .fn import LookupCollection as LookupCollection
 from .fn import PullFn as PullFn
 from .fn import PullImplement as PullImplement
 from .fn import TargetArtifactStore as TargetArtifactStore
-from .fn import TargetEntity as TargetEntity
 from .fn import TargetFn as TargetFn
 from .fn import TargetMetadataUnitedFn as TargetMetadataUnitedFn

@@ -1,13 +1,22 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Generic, MutableMapping
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    Generic,
+    Mapping,
+    MutableMapping,
+    Protocol,
+    TypedDict,
+    overload,
+)
 from typing import NoReturn as Never
-from typing import Protocol, TypedDict, TypeVar, cast, overload
 
-from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
-
-from avilla.core.resource import Resource
+from typing_extensions import Concatenate, ParamSpec, Self, TypeAlias, TypeVar, Unpack
 
 from .._vendor.dataclasses import dataclass
 from ..selector import (
@@ -21,6 +30,8 @@ from ..utilles import identity
 from .common.fn import BaseFn, FnImplement
 
 if TYPE_CHECKING:
+    from avilla.core.resource import Resource
+
     from ..context import Context
     from ..metadata import Metadata, MetadataRoute
     from .collector import AvillaPerformTemplate, Collector
@@ -31,29 +42,73 @@ if TYPE_CHECKING:
 P = ParamSpec("P")
 P1 = ParamSpec("P1")
 R = TypeVar("R", covariant=True)
+R1 = TypeVar("R1", covariant=True)
 N = TypeVar("N", bound="Ring3")
 C = TypeVar("C", bound="Capability")
 H = TypeVar("H", bound="AvillaPerformTemplate")
 T = TypeVar("T")
 X = TypeVar("X")
 
+A = TypeVar("A", infer_variance=True)
 
-class Fn(BaseFn[P, R]):
+
+class doubledself(Generic[T, P, R]):
+    """和普通的方法差不多, 唯一的差别就是 self 会传两个, (self0, self1, ...), 用于制服 pyright.
+    有一个问题, 就是强行 apply 上原方法会寄. 我需要一种能自动取两个 var 并集的 type operator 方法,
+    或者我就只能 type: ignore
+    """
+
+    def __init__(self, fn: Callable[Concatenate[T, T, P], R]):
+        self.fn = fn
+
+    @overload
+    def __get__(self, instance: None, owner: type[T]) -> Self:
+        ...
+
+    @overload
+    def __get__(self, instance: T, owner: type[T]) -> Callable[P, R]:
+        ...
+
+    def __get__(self, instance: T | None, owner: type[T]):
+        if instance is None:
+            return self
+
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            return self.fn(instance, instance, *args, **kwargs)
+
+        return wrapper
+
+
+class Fn(BaseFn["Collector", P, R]):
     def __init__(self, template: Callable[Concatenate[C, P], R]) -> None:
         self.template = template  # type: ignore
 
     def collect(self, collector: Collector):
         def receive(entity: Callable[Concatenate[H, P], R]):
-            collector.artifacts[self.signature_on_collect()] = (collector, entity)
+            collector.artifacts[FnImplement(self.capability, self.name)] = (collector, entity)
             return entity
 
         return receive
 
+    def get_collect_signature(self):
+        return FnImplement(self.capability, self.name)
+
+    def get_execute_signature(self, runner: Context, *args: P.args, **kwargs: P.kwargs) -> Any:
+        return FnImplement(self.capability, self.name)
+
+    class _InferProtocol(Protocol[R1]):
+        def get_execute_signature(self, runner: Context, *args, **kwargs) -> R1:
+            ...
+
+    def get_execute_layout(
+        self: _InferProtocol[R1], runner: Context, *args: P.args, **kwargs: P.kwargs
+    ) -> Mapping[R1, tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], R]]]:
+        return runner.artifacts
+
     def execute(self, runner: Context, *args: P.args, **kwargs: P.kwargs) -> R:
-        collector, entity = cast(
-            "tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], R]]",
-            runner.artifacts[self.signature_on_collect()],
-        )
+        collector, entity = self.get_execute_layout(runner, *args, **kwargs)[
+            self.get_execute_signature(runner, *args, **kwargs)
+        ]
         instance = collector.cls(runner)
         return entity(instance, *args, **kwargs)
 
@@ -79,32 +134,41 @@ LookupCollection: TypeAlias = "dict[str, LookupBranches]"
 
 
 class TargetEntityProtocol(Protocol[P, T]):
-    def signature_on_collect(self, *args: P.args, **kwargs: P.kwargs) -> Any:
+    def get_collect_signature(self, entity: T, *args: P.args, **kwargs: P.kwargs) -> Any:
         ...
 
     def __post_collected__(self, artifact: TargetArtifactStore[T]):
         ...
 
-    def __post_received__(self, entity: T):
-        ...
+
+# the Inbound & Outbound!
+# Inbound: 用户看到的 Capability 侧
+# Outbound: Perform 侧
 
 
-class TargetEntity:
+class TargetFn(
+    Fn[Concatenate[Selectable, P], Awaitable[R]],
+):
+    def __init__(self, template: Callable[Concatenate[C, P], Awaitable[R]]) -> None:
+        self.template = template  # type: ignore
+
     def collect(
-        self: TargetEntityProtocol[P, T],  # type: ignore
+        self: TargetEntityProtocol[P1, T],  # type: ignore
         collector: Collector,
         pattern: tuple[str, dict[str, FollowsPredicater]],
-        *args: P.args,
-        **kwargs: P.kwargs,
+        *args: P1.args,
+        **kwargs: P1.kwargs,
     ):
         def receive(entity: T):
             target, predicaters = pattern
             items = _parse_follows(target, **predicaters)
             if not items:
                 raise ValueError("invalid target pattern")
+
             collection: LookupCollection = collector.artifacts["lookup"]
             if TYPE_CHECKING:
                 branch = {"metadata": {"override": True}, "levels": {}, "artifacts": {}}
+
             for i in items:
                 if i.name not in collection:
                     collection[i.name] = {}
@@ -118,9 +182,10 @@ class TargetEntity:
 
                 collection = branch["levels"]
 
-            signature = self.signature_on_collect(*args, **kwargs)
-            branch["artifacts"][signature] = {"collector": collector, "entity": entity, "pattern": items}
-            self.__post_collected__(branch["artifacts"][signature])
+            signature = self.get_collect_signature(entity, *args, **kwargs)
+            artifact: TargetArtifactStore = {"collector": collector, "entity": entity, "pattern": items}
+            branch["artifacts"][signature] = artifact
+            self.__post_collected__(artifact)
             return entity
 
         return receive
@@ -128,10 +193,8 @@ class TargetEntity:
     def __post_collected__(self, artifact):
         ...
 
-    def __post_received__(self, entity):
-        ...
-
-    def iter_branches(self, collections: list[MutableMapping[Any, Any]], target: Selector):
+    @staticmethod
+    def _iter_branches(collections: list[MutableMapping[Any, Any]], target: Selector):
         lookups: list[LookupCollection] = [i["lookup"] for i in collections]
 
         for i in lookups:
@@ -166,33 +229,24 @@ class TargetEntity:
 
             yield branch
 
-    def get_artifacts(
-        self: TargetEntityProtocol[Any, T], artifacts: dict[Any, Any], signature: Any
-    ) -> TargetArtifactStore[T]:
-        return artifacts[signature]
+    def get_collect_signature(
+        self, entity: Callable[Concatenate[AvillaPerformTemplate, "Selector", P], Awaitable[R]]
+    ) -> Any:
+        return FnImplement(self.capability, self.name)
 
-
-# the Inbound & Outbound!
-# Inbound: 用户看到的 Capability 侧
-# Outbound: Perform 侧
-
-
-class TargetFn(
-    TargetEntity,
-    Fn[P, Awaitable[R]],
-):
-    def __post_received__(self, entity: Callable[Concatenate[AvillaPerformTemplate, "Selector", P], Awaitable[R]]):
-        ...
-
-    def execute(self, runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs):
-        for branch in self.iter_branches(runner.artifacts.maps, target.to_selector()):
-            artifact = self.get_artifacts(branch["artifacts"], FnImplement(self.capability, self.name))
-            if artifact is not None:
-                collector = artifact["collector"]
-                entity = artifact["entity"]
-                instance = collector.cls(runner)
-                return entity(instance, target.to_selector(), *args, **kwargs)  # type: ignore
+    @doubledself
+    def get_execute_layout(
+        self, self1: Fn._InferProtocol[R1], runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs
+    ) -> Mapping[R1, tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], Awaitable[R]]]]:
+        sign = self.get_execute_signature(runner, target, *args, **kwargs)
+        for branch in self._iter_branches(runner.artifacts.maps, target.to_selector()):
+            artifacts = branch["artifacts"]
+            if sign in artifacts:
+                return artifacts
         raise NotImplementedError(f"no {repr(self)} implements for {target.to_selector()}.")
+
+    def get_execute_signature(self, runner: Context, _, *args: P.args, **kwargs: P.kwargs) -> Any:
+        return FnImplement(self.capability, self.name)
 
     def __repr__(self) -> str:
         return f"<Fn#target {identity(self.capability)}::{self.name} {inspect.Signature.from_callable(self.template)}>"
@@ -233,15 +287,15 @@ class PostReceivedCallback(Protocol[R1, R2]):  # type: ignore[reportInvalidGener
         ...
 
 
-class TargetMetadataUnitedFn(
-    TargetEntity,
-    Fn[P, Awaitable[Any]],
-):
+class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRoute | None", P], R]):
+    def __init__(self, template: Callable[Concatenate[C, P], Awaitable[R]]) -> None:
+        self.template = template  # type: ignore
+
     def __post_received__(self, entity: UnitedFnPerformBranch[P, R1, R2]):  # type: ignore
         ...
 
     @overload
-    def execute(
+    async def execute(
         self: PostReceivedCallback[R1, Any],
         runner: Context,
         target: Selectable,
@@ -252,7 +306,7 @@ class TargetMetadataUnitedFn(
         ...
 
     @overload
-    def execute(
+    async def execute(
         self: PostReceivedCallback[Any, R2],
         runner: Context,
         target: Selectable,
@@ -262,24 +316,26 @@ class TargetMetadataUnitedFn(
     ) -> R2:
         ...
 
-    def execute(
+    async def execute(
         self,
         runner: Context,
         target: Selectable,
         metadata: type[Metadata] | MetadataRoute | None = None,
         *args: P.args,
         **kwargs: P.kwargs,
-    ):
-        for branch in self.iter_branches(runner.artifacts.maps, target.to_selector()):
-            artifact = self.get_artifacts(branch["artifacts"], UnitedFnImplement(self.capability, self.name, metadata))
-            if artifact is not None:
-                collector = artifact["collector"]
-                entity = artifact["entity"]
-                instance = collector.cls(runner)
-                return entity(instance, target.to_selector(), *args, **kwargs)  # type: ignore
-        raise NotImplementedError(f"no {repr(self)} implements for {target.to_selector()}.")
+    ) -> Any:
+        return await super().execute(runner, target, metadata, *args, **kwargs)
 
-    def signature_on_collect(self, metadata: type[Metadata] | MetadataRoute | None = None):
+    @doubledself  # type: ignore
+    def get_execute_signature(
+        self,
+        self1: TargetEntityProtocol[P1, Any],
+        runner: Context,
+        _,
+        metadata: type[Metadata] | MetadataRoute | None = None,
+        *args: P1.args,
+        **kwargs: P1.kwargs,
+    ) -> Any:
         return UnitedFnImplement(self.capability, self.name, metadata)
 
     def __repr__(self) -> str:
@@ -297,29 +353,20 @@ class PullImplement(Generic[M]):
 
 
 class PullFn(
-    TargetEntity,
-    Fn[["Selector", "type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]"], Awaitable[M]],
+    TargetFn[["type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]"], Awaitable[M]],
 ):
     def __init__(self):
         ...
 
-    def __post_received__(self, entity: Callable[[AvillaPerformTemplate, "Selector"], Awaitable[M]]):
-        ...
-
-    def signature_on_collect(self, route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]):
+    def get_collect_signature(
+        self,
+        entity: Callable[[AvillaPerformTemplate, "Selector"], Awaitable[M]],
+        route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M],
+    ) -> Any:
         return PullImplement(route)
 
-    def execute(
-        self, runner: Context, target: Selectable, route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]
-    ):
-        for branch in self.iter_branches(runner.artifacts.maps, target.to_selector()):
-            artifact = self.get_artifacts(branch["artifacts"], PullImplement(route))
-            if artifact is not None:
-                collector = artifact["collector"]
-                entity = artifact["entity"]
-                instance = collector.cls(runner)
-                return entity(instance, target.to_selector())  # type: ignore
-        raise NotImplementedError(f"no {repr(self)} implements for {target.to_selector()}.")
+    def get_execute_signature(self, route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]):
+        return PullImplement(route)
 
     def __repr__(self) -> str:
         return "<Fn#pull>"
@@ -349,13 +396,8 @@ class FetchFn(
 
         return receive
 
-    def execute(self, runner: Context, resource: Resource[T]) -> Awaitable[T]:
-        collector, entity = cast(
-            "tuple[Collector, Callable[[Any, Resource[T]], Awaitable[T]]]",
-            runner.artifacts[FetchImplement(type(resource))],
-        )
-        instance = collector.cls(runner)
-        return entity(instance, resource)
+    def get_execute_signature(self, runner: Context, resource_type: type[Resource]) -> Any:
+        return FetchImplement(resource_type)
 
     def __repr__(self) -> str:
         return "<Fn#pull internal!>"
