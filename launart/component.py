@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Optional, Set
+from typing import TYPE_CHECKING, Literal, Optional, Set
 
 from launart.status import STAGE_STAT, STATS, ComponentStatus, Phase, U_Stage
 from launart.utilles import any_completed
@@ -35,7 +35,7 @@ class Launchable(metaclass=ABCMeta):
         self.manager = manager
 
     @asynccontextmanager
-    async def stage(self, stage: U_Stage):
+    async def stage(self, stage: Literal['preparing', 'blocking', 'cleanup']):
         if self.manager is None:
             raise RuntimeError("attempted to set stage of a component without a manager.")
         if self.manager.status.stage is None:

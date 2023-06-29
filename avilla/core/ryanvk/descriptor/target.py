@@ -23,7 +23,7 @@ from .base import Fn
 if TYPE_CHECKING:
     from ...context import Context
     from ...selector import FollowsPredicater, Selectable, Selector, _FollowItem
-    from ..collector import AvillaPerformTemplate, Collector
+    from ..collector.context import ContextBasedPerformTemplate, ContextCollector
     from ..common.capability import Capability
 
 
@@ -47,7 +47,7 @@ class LookupBranch(TypedDict, Generic[T]):
 
 
 class TargetArtifactStore(TypedDict, Generic[T]):
-    collector: Collector
+    collector: ContextCollector
     entity: T
     pattern: list[_FollowItem]
 
@@ -72,7 +72,7 @@ class TargetFn(
 
     def collect(
         self: TargetEntityProtocol[P1, T],  # type: ignore
-        collector: Collector,
+        collector: ContextCollector,
         pattern: tuple[str, dict[str, FollowsPredicater]],
         *args: P1.args,
         **kwargs: P1.kwargs,
@@ -148,12 +148,14 @@ class TargetFn(
 
             yield branch
 
-    def get_collect_signature(self, entity: Callable[Concatenate[AvillaPerformTemplate, "Selector", P], R]) -> Any:
+    def get_collect_signature(
+        self, entity: Callable[Concatenate[ContextBasedPerformTemplate, "Selector", P], R]
+    ) -> Any:
         return FnImplement(self.capability, self.name)
 
     def get_artifact_record(
         self, runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs
-    ) -> tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, Selector, P], R]]:
+    ) -> tuple[ContextCollector, Callable[Concatenate[ContextBasedPerformTemplate, Selector, P], R]]:
         sign = FnImplement(self.capability, self.name)
         for branch in self._iter_branches(runner.artifacts.maps, target.to_selector()):
             artifacts = branch["artifacts"]

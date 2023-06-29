@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
 from typing_extensions import ParamSpec, Self, Unpack
 
 from avilla.core._runtime import cx_context
-from avilla.core.account import AbstractAccount
+from avilla.core.account import BaseAccount
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
 from avilla.core.ryanvk.capability import CoreCapability
-from avilla.core.ryanvk.collector import Collector
+from avilla.core.ryanvk.collector.context import ContextCollector
 from avilla.core.ryanvk.common.protocol import Executable
 from avilla.core.ryanvk.common.runner import Runner as BaseRunner
 from avilla.core.selector import (
@@ -48,7 +48,7 @@ class ContextCache(TypedDict):
 
 
 class Context(BaseRunner):
-    account: AbstractAccount
+    account: BaseAccount
 
     client: ContextClientSelector
     endpoint: ContextEndpointSelector
@@ -60,7 +60,7 @@ class Context(BaseRunner):
 
     def __init__(
         self,
-        account: AbstractAccount,
+        account: BaseAccount,
         client: Selector,
         endpoint: Selector,
         scene: Selector,
@@ -123,7 +123,7 @@ class Context(BaseRunner):
 
         def build_handler(artifact: Executable[Self, [], Any]) -> QueryHandler:
             collector, entity = cast(
-                "tuple[Collector, QueryHandlerPerform]",
+                "tuple[ContextCollector, QueryHandlerPerform]",
                 artifact,
             )
             instance = collector.cls(self)

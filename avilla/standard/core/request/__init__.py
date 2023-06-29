@@ -1,3 +1,4 @@
+from .capability import RequestCapability as RequestCapability
 from .event import RequestAccepted as RequestAccepted
 from .event import RequestCancelled as RequestCancelled
 from .event import RequestEvent as RequestEvent
@@ -8,4 +9,3 @@ from .metadata import Answers as Answers
 from .metadata import Comment as Comment
 from .metadata import Questions as Questions
 from .metadata import Reason as Reason
-from .capability import RequestCapability as RequestCapability

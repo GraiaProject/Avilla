@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message import MessageChain
-
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.event import AvillaEvent
+from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface

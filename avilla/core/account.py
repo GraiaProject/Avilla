@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 @dataclass
 class AccountInfo:
     route: Selector
-    account: AbstractAccount
+    account: BaseAccount
     protocol: BaseProtocol
     platform: Platform
     isolate: Isolate = field(default_factory=Isolate)
@@ -24,7 +24,7 @@ class AccountInfo:
 
 
 @dataclass
-class AbstractAccount:
+class BaseAccount:
     route: Selector
     avilla: Avilla
 

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from launart import Launart, Launchable
 
-from .connection import OneBot11Connection
+from .connection_old import OneBot11Connection
 
 if TYPE_CHECKING:
     from .protocol import OneBot11Protocol

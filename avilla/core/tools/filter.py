@@ -9,13 +9,13 @@ from typing import Any, Generic, Protocol, TypeVar
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 from typing_extensions import ParamSpec, Self
 
-from avilla.core.account import AbstractAccount
+from avilla.core.account import BaseAccount
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, Op
 from avilla.core.metadata import MetadataFieldReference
+from avilla.core.ryanvk import Fn
 from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
-from avilla.core.ryanvk import Fn
 
 T = TypeVar("T", covariant=True)
 R = TypeVar("R")
@@ -125,7 +125,7 @@ class Filter(BaseDispatcher, Generic[T]):
         return self.step(lambda x: x.endpoint)
 
     @classmethod
-    def account(cls) -> Filter[AbstractAccount]:
+    def account(cls) -> Filter[BaseAccount]:
         return cls.cx.step(lambda cx: cx.account)
 
     def medium(self: Filter[Context], index: int = 0) -> Filter[Selector | None]:

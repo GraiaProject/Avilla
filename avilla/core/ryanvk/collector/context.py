@@ -6,35 +6,35 @@ from typing_extensions import Unpack
 
 from avilla.core.ryanvk.capability import CoreCapability
 
-from .common.collect import BaseCollector
-from .context import processing_isolate, processing_protocol
+from ..common.collect import BaseCollector
+from ..context import processing_isolate, processing_protocol
 
 if TYPE_CHECKING:
-    from ..account import AbstractAccount
-    from ..context import Context
-    from ..metadata import Metadata, MetadataRoute
-    from ..protocol import BaseProtocol
-    from ..selector import FollowsPredicater
-    from .descriptor.pull import PullFn
+    from ...account import BaseAccount
+    from ...context import Context
+    from ...metadata import Metadata, MetadataRoute
+    from ...protocol import BaseProtocol
+    from ...selector import FollowsPredicater
+    from ..descriptor.pull import PullFn
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
-TAccount = TypeVar("TAccount", bound="AbstractAccount")
+TAccount = TypeVar("TAccount", bound="BaseAccount")
 
 TProtocol1 = TypeVar("TProtocol1", bound="BaseProtocol")
-TAccount1 = TypeVar("TAccount1", bound="AbstractAccount")
+TAccount1 = TypeVar("TAccount1", bound="BaseAccount")
 
 T = TypeVar("T")
 T1 = TypeVar("T1")
 M = TypeVar("M", bound="Metadata")
 
 
-class AvillaPerformTemplate:
+class ContextBasedPerformTemplate:
     __collector__: ClassVar[BaseCollector]
 
     context: Context
     protocol: BaseProtocol
-    account: AbstractAccount
+    account: BaseAccount
 
     def __init__(self, context: Context):
         self.context = context
@@ -42,7 +42,7 @@ class AvillaPerformTemplate:
         self.account = context.account
 
 
-class Collector(BaseCollector):
+class ContextCollector(Generic[TProtocol, TAccount], BaseCollector):
     post_applying: bool = False
 
     def __init__(self):
@@ -51,7 +51,7 @@ class Collector(BaseCollector):
 
     @property
     def _(self):
-        class perform_template(AvillaPerformTemplate, self._base_ring3()):
+        class perform_template(ContextBasedPerformTemplate, self._base_ring3()):
             __native__ = True
 
         return perform_template
@@ -64,17 +64,6 @@ class Collector(BaseCollector):
     def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
         return self.entity(CoreCapability.fetch.into(resource_type), resource_type)
 
-    def __post_collect__(self, cls: type[AvillaPerformTemplate]):
-        super().__post_collect__(cls)
-        if self.post_applying:
-            if (isolate := processing_isolate.get(None)) is not None:
-                isolate.apply(cls)
-
-
-class ProtocolCollector(Generic[TProtocol, TAccount], Collector):
-    def __init__(self):
-        super().__init__()
-
     @property
     def _(self):
         class perform_template(super()._, Generic[TProtocol1, TAccount1]):
@@ -86,9 +75,11 @@ class ProtocolCollector(Generic[TProtocol, TAccount], Collector):
 
         return perform_template[TProtocol, TAccount]
 
-    def __post_collect__(self, cls: type[AvillaPerformTemplate]):
+    def __post_collect__(self, cls: type[ContextBasedPerformTemplate]):
         super().__post_collect__(cls)
         if self.post_applying:
+            if (isolate := processing_isolate.get(None)) is not None:
+                isolate.apply(cls)
             if (protocol := processing_protocol.get(None)) is None:
                 raise RuntimeError("expected processing protocol")
             protocol.isolate.apply(cls)

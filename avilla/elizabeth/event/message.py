@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING
 
 from avilla.spec.core.message import MessageReceived
 from avilla.spec.core.message.event import MessageRevoked
-from graia.amnesia.message import MessageChain
 
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.core.trait.context import EventParserRecorder
+from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from ..account import ElizabethAccount

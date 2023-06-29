@@ -10,7 +10,7 @@ from .target import TargetFn
 if TYPE_CHECKING:
     from ...metadata import Metadata, MetadataRoute
     from ...selector import Selector
-    from ..collector import AvillaPerformTemplate
+    from ..collector.context import ContextBasedPerformTemplate
 
 
 M = TypeVar("M", bound="Metadata")
@@ -34,7 +34,8 @@ class PullFn(
     def get_collect_signature(
         self,
         entity: Callable[
-            [AvillaPerformTemplate, "Selector", type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]], Awaitable[M]
+            [ContextBasedPerformTemplate, "Selector", type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]],
+            Awaitable[M],
         ],
         route: type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M],
     ) -> Any:

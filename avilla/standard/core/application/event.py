@@ -9,7 +9,6 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from avilla.core._vendor.dataclasses import dataclass
 
 if TYPE_CHECKING:
-    from avilla.core.account import AbstractAccount
     from avilla.core.application import Avilla
 
 
@@ -42,4 +41,3 @@ class ApplicationPreparing(AvillaLifecycleEvent):
 
 class ApplicationReady(AvillaLifecycleEvent):
     """指示 Avilla 已准备完毕."""
-

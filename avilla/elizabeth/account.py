@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-from avilla.core.account import AbstractAccount
+from avilla.core.account import BaseAccount
 from avilla.core.context import Context
 from avilla.core.selector import Selector
 from avilla.elizabeth.connection import ElizabethConnection
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .protocol import ElizabethProtocol
 
 
-class ElizabethAccount(AbstractAccount):
+class ElizabethAccount(BaseAccount):
     protocol: ElizabethProtocol
 
     async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:

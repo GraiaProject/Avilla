@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 
 from avilla.core._runtime import cx_protocol
-from avilla.core.account import AbstractAccount
+from avilla.core.account import BaseAccount
 from avilla.core.context import Context
 from avilla.core.event import AvillaEvent
 from avilla.core.protocol import BaseProtocol
@@ -39,7 +39,7 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
         if (
             isinstance(interface.event, AvillaEvent)
             and isclass(interface.annotation)
-            and issubclass(interface.annotation, AbstractAccount)
+            and issubclass(interface.annotation, BaseAccount)
         ):
             cx: Context = interface.local_storage["avilla_context"]
             return cx.account

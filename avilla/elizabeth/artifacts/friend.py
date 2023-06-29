@@ -12,9 +12,8 @@ from avilla.core.selector import Selector
 from avilla.core.trait.context import bounds, implement, pull
 
 if TYPE_CHECKING:
-    from graia.amnesia.message import MessageChain
-
     from avilla.core.context import Context
+    from graia.amnesia.message import MessageChain
 
     from ..protocol import ElizabethProtocol
 

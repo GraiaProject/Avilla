@@ -1,16 +1,15 @@
 from __future__ import annotations
 
-import asyncio
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
-from avilla.core.account import AbstractAccount
-from avilla.standard.core.application import AccountAvailable, AccountUnavailable
+from avilla.core.account import BaseAccount
 from avilla.core.context import Context
 from avilla.core.selector import Selector
+from avilla.standard.core.account import AccountAvailable, AccountUnavailable
 from launart.utilles import any_completed
 
-from .connection import (
+from .connection_old import (
     OneBot11HttpClientConnection,
     OneBot11HttpServerConnection,
     OneBot11WebsocketClientConnection,
@@ -21,13 +20,17 @@ if TYPE_CHECKING:
     from .protocol import OneBot11Protocol
 
 
-class OneBot11Account(AbstractAccount):
+class OneBot11Account(BaseAccount):
     protocol: OneBot11Protocol
 
     http_client: OneBot11HttpClientConnection | None = None
     http_server: OneBot11HttpServerConnection | None = None
     websocket_client: OneBot11WebsocketClientConnection | None = None
     websocket_server: OneBot11WebsocketServerConnection | None = None
+
+    def __init__(self, route: Selector, protocol: OneBot11Protocol):
+        super().__init__(route, protocol.avilla)
+        self.protocol = protocol
 
     @contextmanager
     def _status_update(self):
@@ -58,12 +61,12 @@ class OneBot11Account(AbstractAccount):
     @property
     def available(self) -> bool:
         return bool(
-            (self.websocket_client and self.websocket_client.status.available)
-            or (self.websocket_server and self.websocket_server.status.available)
+            (self.websocket_client and self.websocket_client.status.available)  # WS Client
+            or (self.websocket_server and self.websocket_server.status.available)  # WS Server
             or (
                 self.http_client
                 and self.http_client.status.available
                 and self.http_server
                 and self.http_server.status.available
-            )
+            )  # HTTP Client & Server
         )

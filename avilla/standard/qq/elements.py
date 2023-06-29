@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import json
 from enum import Enum
-from graia.amnesia.message.element import Element
+
 from avilla.core.elements import Picture
 from avilla.core.selector import Selector
+from graia.amnesia.message.element import Element
+
 
 class FlashImage(Picture):
     def __str__(self) -> str:
@@ -34,12 +36,12 @@ class MarketFace(Element):
         return f"[$MarketFace:id={self.fid}]"
 
 
-
 class Xml(Element):
     content: str
 
     def __init__(self, content: str) -> None:
         self.content = content
+
     def __str__(self) -> str:
         return "[Xml]"
 
@@ -53,10 +55,13 @@ class App(Element):
 
     def __init__(self, content: str) -> None:
         self.content = content
+
     def load(self):
         return json.loads(self.content)
+
     def __str__(self) -> str:
         return "[$App]"
+
 
 class Json(Element):
     content: str
@@ -67,8 +72,10 @@ class Json(Element):
 
     def __init__(self, content: str) -> None:
         self.content = content
+
     def load(self):
         return json.loads(self.content)
+
     def __str__(self) -> str:
         return "[Json]"
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable
-from typing import TypeVar
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar
 
 from ..._vendor.dataclasses import dataclass
 from .base import Fn
@@ -10,10 +9,10 @@ if TYPE_CHECKING:
     from avilla.core.resource import Resource
 
     from ...context import Context
-    from ..collector import AvillaPerformTemplate, Collector
+    from ..collector.context import ContextBasedPerformTemplate, ContextCollector
 
 
-H = TypeVar("H", bound="AvillaPerformTemplate")
+H = TypeVar("H", bound="ContextBasedPerformTemplate")
 T = TypeVar("T")
 X = TypeVar("X")
 R = TypeVar("R", bound="Resource")
@@ -33,7 +32,7 @@ class FetchFn(
     def into(self, resource_type: type[Resource[X]]) -> FetchFn[X]:
         return self  # type: ignore[reportGeneralTypeIssues]
 
-    def collect(self, collector: Collector, resource_type: type[Resource[T]]):
+    def collect(self, collector: ContextCollector, resource_type: type[Resource[T]]):
         def receive(entity: Callable[[H, R], Awaitable[T]]):  # to accept all resource type
             collector.artifacts[FetchImplement(resource_type)] = (collector, entity)
             return entity

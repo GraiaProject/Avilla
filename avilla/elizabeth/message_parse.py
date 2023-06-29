@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message.element import Text
-
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture
 from avilla.core.trait.context import element
+from graia.amnesia.message.element import Text
 
 from .resource import ElizabethAudioResource, ElizabethImageResource
 

@@ -1,7 +1,8 @@
 from .capability import CoreCapability as CoreCapability
-from .collector import AvillaPerformTemplate as AvillaPerformTemplate
-from .collector import Collector as Collector
-from .collector import ProtocolCollector as ProtocolCollector
+from .collector.context import (
+    ContextBasedPerformTemplate as ContextBasedPerformTemplate,
+)
+from .collector.context import ContextCollector as ContextCollector
 from .common import BaseCollector as BaseCollector
 from .common import BaseFn as BaseFn
 from .common import Capability as Capability

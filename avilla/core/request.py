@@ -11,7 +11,7 @@ from .metadata import Metadata
 from .platform import Land
 
 if TYPE_CHECKING:
-    from .account import AbstractAccount
+    from .account import BaseAccount
     from .selector import Selector
 
 
@@ -21,7 +21,7 @@ class Request(Metadata):
     land: Land
     scene: Selector
     sender: Selector
-    account: AbstractAccount
+    account: BaseAccount
     time: datetime
 
     request_type: str | None = None

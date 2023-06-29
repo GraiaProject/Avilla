@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
-
 from avilla.core.trait.context import bounds, fetch, get_artifacts
 from avilla.core.trait.signature import CompleteRule
 from avilla.elizabeth.resource import (
@@ -11,6 +9,7 @@ from avilla.elizabeth.resource import (
     ElizabethImageResource,
     ElizabethResource,
 )
+from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

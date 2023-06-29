@@ -5,6 +5,10 @@ import hmac
 from contextlib import suppress
 from typing import TYPE_CHECKING, TypeVar
 
+from loguru import logger
+
+from avilla.core.exceptions import ActionFailed
+from avilla.standard.core.account import AccountAvailable, AccountUnavailable
 from graia.amnesia.json import Json
 from graia.amnesia.transport import Transport
 from graia.amnesia.transport.common.client import AbstractClientInterface
@@ -22,10 +26,6 @@ from graia.amnesia.transport.common.websocket.shortcut import data_type, json_re
 from graia.amnesia.transport.rider import TransportRider
 from graia.amnesia.transport.utilles import TransportRegistrar
 from launart import Launart
-from loguru import logger
-
-from avilla.core.event.lifecycle import AccountAvailable, AccountUnavailable
-from avilla.core.exceptions import ActionFailed
 
 from . import OneBot11Connection
 from .config import OneBot11WebsocketClientConfig, OneBot11WebsocketServerConfig
@@ -34,13 +34,13 @@ if TYPE_CHECKING:
     from ..account import OneBot11Account
 
 C = TypeVar("C", OneBot11WebsocketClientConfig, OneBot11WebsocketServerConfig)
-I = TypeVar("I", AbstractClientInterface, AbstractRouter)
+Y = TypeVar("Y", AbstractClientInterface, AbstractRouter)
 
 t = TransportRegistrar()
 
 
 @t.apply
-class OneBot11WebsocketConnection(OneBot11Connection[C, I], Transport):
+class OneBot11WebsocketConnection(OneBot11Connection[C, Y], Transport):
     io: AbstractWebsocketIO
 
     _futures: dict[str, asyncio.Future[dict]]

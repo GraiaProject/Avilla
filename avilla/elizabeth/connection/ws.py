@@ -5,6 +5,9 @@ import secrets
 from typing import TYPE_CHECKING, Any, Dict, MutableMapping, Optional, TypeVar
 from weakref import WeakValueDictionary
 
+from loguru import logger
+from yarl import URL
+
 from graia.amnesia.builtins.aiohttp import AiohttpClientInterface
 from graia.amnesia.transport import Transport
 from graia.amnesia.transport.common.client import AbstractClientInterface
@@ -23,8 +26,6 @@ from graia.amnesia.transport.common.websocket.shortcut import data_type, json_re
 from graia.amnesia.transport.utilles import TransportRegistrar
 from launart import Launart
 from launart.utilles import wait_fut
-from loguru import logger
-from yarl import URL
 
 from . import ElizabethConnection
 from .config import WebsocketClientConfig, WebsocketServerConfig
