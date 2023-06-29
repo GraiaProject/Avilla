@@ -17,7 +17,7 @@ class Formatter:
 
     @classmethod
     def ensure_element(cls, obj: str | Element) -> Element:
-        return cls.__message_chain_class__.__text_element_class__(obj) if isinstance(obj, str) else obj
+        return cls.__message_chain_class__._text_class(obj) if isinstance(obj, str) else obj
 
     @classmethod
     def extract_chain(cls, obj: Element | MessageChain | str | Sequence[Element]) -> list[Element]:
