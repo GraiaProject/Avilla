@@ -1,10 +1,8 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from collections.abc import Awaitable, Callable, Container, Iterable
 from functools import partial
 from inspect import isawaitable
-from itertools import groupby
 from operator import contains, eq, is_, is_not, ne
 from typing import Any, Generic, Protocol, TypeVar
 
@@ -16,8 +14,8 @@ from avilla.core.context import Context
 from avilla.core.event import MetadataModified, Op
 from avilla.core.metadata import MetadataFieldReference
 from avilla.core.selector import Selectable, Selector
-from avilla.core.trait import UnappliedFnCall
 from avilla.core.utilles import classproperty
+from avilla.core.ryanvk import Fn
 
 T = TypeVar("T", covariant=True)
 R = TypeVar("R")
@@ -45,7 +43,7 @@ class Filter(BaseDispatcher, Generic[T]):
     def dispatch(self, annotation: type[R]) -> Filter[R]:
         @self.middlewares.append
         async def _(_) -> R:
-            interface = DispatcherInterface.cx.get()
+            interface = DispatcherInterface.ctx.get()
             result = await interface.lookup_param("__filter_fetch__", annotation, None)
             interface.local_storage.setdefault("__filter_fetch__", {})[annotation] = result
             return result
@@ -138,24 +136,20 @@ class Filter(BaseDispatcher, Generic[T]):
     def mod(cls) -> Filter[MetadataModified]:
         return cls().dispatch(MetadataModified)
 
-    def influen(self: Filter[MetadataModified], *fields: tuple[(), MetadataFieldReference]):
+    def influen(self: Filter[MetadataModified], *fields: MetadataFieldReference):
         def _check(x: MetadataModified):
             if not fields:
                 return True
-            grouped = {k: [i[1] for i in v] for k, v in groupby(fields, lambda x: x[0])}
-            links = ChainMap(*[i.effects for i in x.modifies])
-            for of, refs in grouped.items():
-                if of not in links:
-                    return False
+            list(x.modifies[0].effects.values())[0][0].field
+            for i in (effect for mod in x.modifies for effects in mod.effects.values() for effect in effects):
+                if i.field in fields:
+                    return True
 
-                if not {i.field for i in links[of]}.issuperset(refs):
-                    return False
-
-            return True
+            return False
 
         return self.assert_true(_check)
 
-    def act(self: Filter[MetadataModified], *operators: UnappliedFnCall):
+    def act(self: Filter[MetadataModified], *operators: Fn):
         def _check(x: MetadataModified):
             taken = {i.operator for i in x.modifies if isinstance(i, Op)}
             return taken.issuperset(operators)
