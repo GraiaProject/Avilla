@@ -70,7 +70,11 @@ class Context(BaseRunner):
     ) -> None:
         super().__init__()
         self.artifacts.maps.extend(
-            [account.info.isolate.artifacts, account.info.protocol.isolate.artifacts, account.avilla.isolate.artifacts]
+            [
+                account.info.isolate.artifacts,
+                account.info.protocol.isolate.artifacts,
+                account.avilla.isolate.artifacts,
+            ]
         )
         self.account = account
 
