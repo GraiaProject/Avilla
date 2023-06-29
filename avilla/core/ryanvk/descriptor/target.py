@@ -5,8 +5,8 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Generator,
     Generic,
-    Mapping,
     MutableMapping,
     Protocol,
     TypedDict,
@@ -19,7 +19,6 @@ from ...selector import _parse_follows
 from ...utilles import identity
 from ..common.fn import FnImplement
 from .base import Fn
-from .utilles import doubledself
 
 if TYPE_CHECKING:
     from ...context import Context
@@ -41,10 +40,10 @@ class LookupBranchMetadata(TypedDict):
     override: bool
 
 
-class LookupBranch(TypedDict):
+class LookupBranch(TypedDict, Generic[T]):
     metadata: LookupBranchMetadata
     levels: LookupCollection
-    artifacts: dict[Any, Any]
+    artifacts: dict[Any, TargetArtifactStore[T]]
 
 
 class TargetArtifactStore(TypedDict, Generic[T]):
@@ -63,11 +62,6 @@ class TargetEntityProtocol(Protocol[P, T]):
 
     def __post_collected__(self, artifact: TargetArtifactStore[T]):
         ...
-
-
-# the Inbound & Outbound!
-# Inbound: 用户看到的 Capability 侧
-# Outbound: Perform 侧
 
 
 class TargetFn(
@@ -117,8 +111,9 @@ class TargetFn(
     def __post_collected__(self, artifact):
         ...
 
-    @staticmethod
-    def _iter_branches(collections: list[MutableMapping[Any, Any]], target: Selector):
+    def _iter_branches(
+        self: TargetEntityProtocol[P1, T], collections: list[MutableMapping[Any, Any]], target: Selector
+    ) -> Generator[LookupBranch[T], Any, None]:
         lookups: list[LookupCollection] = [i["lookup"] for i in collections]
 
         for i in lookups:
@@ -156,19 +151,15 @@ class TargetFn(
     def get_collect_signature(self, entity: Callable[Concatenate[AvillaPerformTemplate, "Selector", P], R]) -> Any:
         return FnImplement(self.capability, self.name)
 
-    @doubledself
-    def get_execute_layout(
-        self, self1: Fn._InferProtocol[R1], runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs
-    ) -> Mapping[R1, tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], R]]]:
-        sign = self.get_execute_signature(runner, target, *args, **kwargs)
+    def get_artifact_record(
+        self, runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs
+    ) -> tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, Selector, P], R]]:
+        sign = FnImplement(self.capability, self.name)
         for branch in self._iter_branches(runner.artifacts.maps, target.to_selector()):
             artifacts = branch["artifacts"]
             if sign in artifacts:
-                return artifacts
+                return artifacts[sign]["collector"], artifacts[sign]["entity"]
         raise NotImplementedError(f"no {repr(self)} implements for {target.to_selector()}.")
-
-    def get_execute_signature(self, runner: Context, _, *args: P.args, **kwargs: P.kwargs) -> Any:
-        return FnImplement(self.capability, self.name)
 
     def __repr__(self) -> str:
         return f"<Fn#target {identity(self.capability)}::{self.name} {inspect.Signature.from_callable(self.template)}>"

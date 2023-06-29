@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Mapping, Protocol, TypeVar
+from typing import TYPE_CHECKING, Callable, TypeVar
 
 from typing_extensions import Concatenate, ParamSpec
 
@@ -33,21 +33,12 @@ class Fn(BaseFn["Collector", P, R]):
     def get_collect_signature(self):
         return FnImplement(self.capability, self.name)
 
-    def get_execute_signature(self, runner: Context, *args: P.args, **kwargs: P.kwargs) -> Any:
-        return FnImplement(self.capability, self.name)
-
-    class _InferProtocol(Protocol[R1]):
-        def get_execute_signature(self, runner: Context, *args, **kwargs) -> R1:
-            ...
-
-    def get_execute_layout(
-        self: _InferProtocol[R1], runner: Context, *args: P.args, **kwargs: P.kwargs
-    ) -> Mapping[R1, tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], R]]]:
-        return runner.artifacts
+    def get_artifact_record(
+        self, runner: Context, *args: P.args, **kwargs: P.kwargs
+    ) -> tuple[Collector, Callable[Concatenate[AvillaPerformTemplate, P], R]]:
+        return runner.artifacts[FnImplement(self.capability, self.name)]
 
     def execute(self, runner: Context, *args: P.args, **kwargs: P.kwargs) -> R:
-        collector, entity = self.get_execute_layout(runner, *args, **kwargs)[
-            self.get_execute_signature(runner, *args, **kwargs)
-        ]
+        collector, entity = self.get_artifact_record(runner, *args, **kwargs)
         instance = collector.cls(runner)
         return entity(instance, *args, **kwargs)
