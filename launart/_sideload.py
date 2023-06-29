@@ -4,7 +4,7 @@ from collections import ChainMap
 from typing import TYPE_CHECKING, Any, Dict, TypeVar, cast
 
 if TYPE_CHECKING:
-    from launart.manager import U_ManagerStage
+    from launart.status import U_ManagerStage
 
 
 class Override:
