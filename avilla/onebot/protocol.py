@@ -28,6 +28,7 @@ class OneBot11Protocol(BaseProtocol):
         from .perform.event.message import OneBot11EventMessagePerform
         from .perform.message.deserialize import OneBot11MessageDeserializePerform
         from .perform.message.serialize import OneBot11MessageSerializePerform
+        from .perform.action.message import OneBot11MessageActionPerform
 
     def ensure(self, avilla: Avilla):
         avilla.launch_manager.add_component(OneBot11Service(self))

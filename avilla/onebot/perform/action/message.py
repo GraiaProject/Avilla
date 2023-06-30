@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from ...protocol import OneBot11Protocol  # noqa
 
 
-class OneBot11MessageDeserializePerform((m := ContextCollector["OneBot11Protocol", "OneBot11Account"]())._):
+class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "OneBot11Account"]())._):
     @MessageSend.send.collect(m, ("land.group", {}))
     async def send_group_message(
         self,
