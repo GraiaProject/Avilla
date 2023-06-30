@@ -61,7 +61,7 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
     def _(self):
         upper = super()._base_ring3()
 
-        class perform_template(upper, ContextBasedPerformTemplate, Generic[TProtocol1, TAccount1]):
+        class perform_template(ContextBasedPerformTemplate, upper, Generic[TProtocol1, TAccount1]):
             __native__ = True
 
             context: Context

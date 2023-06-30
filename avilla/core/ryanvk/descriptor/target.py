@@ -34,7 +34,7 @@ R1 = TypeVar("R1", covariant=True)
 C = TypeVar("C", bound="Capability")
 T = TypeVar("T")
 X = TypeVar("X")
-
+CBPT = TypeVar("CBPT", bound="ContextBasedPerformTemplate")
 
 class LookupBranchMetadata(TypedDict):
     override: bool
@@ -149,18 +149,18 @@ class TargetFn(
             yield branch
 
     def get_collect_signature(
-        self, entity: Callable[Concatenate[ContextBasedPerformTemplate, "Selector", P], R]
+        self, entity: Callable[Concatenate[Any, "Selector", P], R]
     ) -> Any:
         return FnImplement(self.capability, self.name)
 
     def get_artifact_record(
         self, runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs
-    ) -> tuple[ContextCollector, Callable[Concatenate[ContextBasedPerformTemplate, Selector, P], R]]:
+    ) -> tuple[ContextCollector, Callable[Concatenate[Any, Selector, P], R]]:
         sign = FnImplement(self.capability, self.name)
         for branch in self._iter_branches(runner.artifacts.maps, target.to_selector()):
             artifacts = branch["artifacts"]
             if sign in artifacts:
-                return artifacts[sign]["collector"], artifacts[sign]["entity"]
+                return artifacts[sign]["collector"], artifacts[sign]["entity"]  # type: ignore
         raise NotImplementedError(f"no {repr(self)} implements for {target.to_selector()}.")
 
     def __repr__(self) -> str:
