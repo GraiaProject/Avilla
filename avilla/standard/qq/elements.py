@@ -4,8 +4,8 @@ import json
 from enum import Enum
 
 from avilla.core.elements import Picture
-from avilla.core.selector import Selector
 from graia.amnesia.message.element import Element
+from avilla.core._vendor.dataclasses import dataclass
 
 
 class FlashImage(Picture):
@@ -15,25 +15,21 @@ class FlashImage(Picture):
     def __repr__(self) -> str:
         return f"[$FlashImage:resource={self.resource.to_selector()}]"
 
-
+@dataclass
 class Face(Element):
-    fid: Selector  # id + name
-
-    def __init__(self, fid: Selector) -> None:
-        self.fid = fid
+    id: str
+    name: str | None = None
 
     def __str__(self) -> str:
-        return f"[$Face:id={self.fid}]"
+        return f"[$Face:id={self.id};name={self.name}]"
 
-
+@dataclass
 class MarketFace(Element):
-    fid: Selector  # id + name
-
-    def __init__(self, fid: Selector) -> None:
-        self.fid = fid
+    id: str
+    name: str | None = None
 
     def __str__(self) -> str:
-        return f"[$MarketFace:id={self.fid}]"
+        return f"[$MarketFace:id={self.id};name={self.name}]"
 
 
 class Xml(Element):
