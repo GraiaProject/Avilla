@@ -25,10 +25,15 @@ if TYPE_CHECKING:
 class OneBot11Protocol(BaseProtocol):
     @classmethod
     def __init_isolate__(cls):  # ruff: noqa: F401
-        from .perform.event.message import OneBot11EventMessagePerform
+        # :: Message
         from .perform.message.deserialize import OneBot11MessageDeserializePerform
         from .perform.message.serialize import OneBot11MessageSerializePerform
+
+        # :: Action
         from .perform.action.message import OneBot11MessageActionPerform
+
+        # :: Event
+        from .perform.event.message import OneBot11EventMessagePerform
 
     def ensure(self, avilla: Avilla):
         avilla.launch_manager.add_component(OneBot11Service(self))

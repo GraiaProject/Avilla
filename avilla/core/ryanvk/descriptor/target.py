@@ -36,6 +36,7 @@ T = TypeVar("T")
 X = TypeVar("X")
 CBPT = TypeVar("CBPT", bound="ContextBasedPerformTemplate")
 
+
 class LookupBranchMetadata(TypedDict):
     override: bool
 
@@ -148,9 +149,7 @@ class TargetFn(
 
             yield branch
 
-    def get_collect_signature(
-        self, entity: Callable[Concatenate[Any, "Selector", P], R]
-    ) -> Any:
+    def get_collect_signature(self, entity: Callable[Concatenate[Any, "Selector", P], R]) -> Any:
         return FnImplement(self.capability, self.name)
 
     def get_artifact_record(

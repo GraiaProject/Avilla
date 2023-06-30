@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.context import ContextCollector
 from avilla.core.selector import Selector
-
 from avilla.standard.core.message import MessageSend
 from graia.amnesia.message import MessageChain
 
@@ -31,4 +30,4 @@ class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "O
         )
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['group']}: {message}")
-        return Selector().land(self.account.route['land']).group(target.pattern["group"]).message(result["message_id"])
+        return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["message_id"])
