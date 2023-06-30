@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING, TypeVar
+
 from graia.broadcast import Broadcast
 
 from avilla.core._runtime import get_current_avilla
@@ -11,6 +13,10 @@ from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from launart import Launart
 
+if TYPE_CHECKING:
+    from .resource import Resource
+
+T = TypeVar("T")
 
 class Avilla:
     broadcast: Broadcast
@@ -66,6 +72,9 @@ class Avilla:
     @property
     def loop(self):
         return self.broadcast.loop
+
+    async def fetch_resource(self, resource: Resource[T]) -> T:
+        ...  # TODO
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
