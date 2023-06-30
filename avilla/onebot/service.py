@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from asyncio import gather
 from typing import TYPE_CHECKING
+from avilla.onebot.net.ws_client import OneBot11WsClientNetworking
 
 from launart import Launart, Launchable
-
-from .connection_old import OneBot11Connection
 
 if TYPE_CHECKING:
     from .protocol import OneBot11Protocol
@@ -16,7 +15,7 @@ class OneBot11Service(Launchable):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    connections: list[OneBot11Connection]
+    connections: list[OneBot11WsClientNetworking]
     protocol: OneBot11Protocol
 
     def __init__(self, protocol: OneBot11Protocol):
@@ -25,6 +24,9 @@ class OneBot11Service(Launchable):
         super().__init__()
 
     async def launch(self, manager: Launart):
+        for conn in self.connections:
+            manager.add_component(conn)
+
         async with self.stage("preparing"):
             ...
 
