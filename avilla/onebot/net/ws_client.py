@@ -9,6 +9,7 @@ from loguru import logger
 from yarl import URL
 
 from avilla.core._vendor.dataclasses import dataclass
+from avilla.core.exceptions import ActionFailed
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
@@ -62,6 +63,26 @@ class OneBot11WsClientNetworking(Launchable):
                 event = await self.protocol.parse_event(self.account, event_type, data)
                 if event is not None:
                     self.protocol.post_event(event)
+
+    async def call(self, action: str, params: dict | None = None) -> dict | None:
+        if self.connection is None:
+            raise RuntimeError("connection is not established")
+
+        future: asyncio.Future[dict] = asyncio.get_running_loop().create_future()
+        echo = str(hash(future))
+        self.response_waiters[echo] = future
+
+        try:
+            await self.status.wait_for_available()
+            await self.connection.send_json({"action": action, "params": params, "echo": echo})
+            result = await future
+        finally:
+            del self.response_waiters[echo]
+
+        if result["status"] != "ok":
+            raise ActionFailed(f"{result['retcode']}: {result}")
+
+        return result["data"]
 
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         while not manager.status.exiting:
