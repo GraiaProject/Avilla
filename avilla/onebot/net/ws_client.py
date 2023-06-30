@@ -60,7 +60,8 @@ class OneBot11WsClientNetworking(Launchable):
 
                 event_type = onebot11_event_type(data)
                 event = await self.protocol.parse_event(self.account, event_type, data)
-                self.protocol.post_event(event)
+                if event is not None:
+                    self.protocol.post_event(event)
 
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         while not manager.status.exiting:
