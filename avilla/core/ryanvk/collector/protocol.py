@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from ..common.collect import BaseCollector
-from ..context import processing_isolate, processing_protocol
+from .._runtime import processing_isolate, processing_protocol
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -21,13 +21,13 @@ T1 = TypeVar("T1")
 
 
 class ProtocolBasedPerformTemplate:
-    __collector__: ClassVar[BaseCollector]
+    __collector__: ClassVar[ProtocolCollector]
 
     protocol: BaseProtocol
     account: BaseAccount
 
 
-class ProtocolCollector(Generic[TProtocol, TAccount], BaseCollector):
+class ProtocolCollector(BaseCollector, Generic[TProtocol, TAccount]):
     post_applying: bool = False
 
     def __init__(self):
@@ -36,11 +36,11 @@ class ProtocolCollector(Generic[TProtocol, TAccount], BaseCollector):
 
     @property
     def _(self):
+        upper = super()._base_ring3()
         class perform_template(
-            super()._,
-            Generic[TProtocol1, TAccount1],
             ProtocolBasedPerformTemplate,
-            self._base_ring3(),
+            upper,
+            Generic[TProtocol1, TAccount1],
         ):
             __native__ = True
 
@@ -50,7 +50,8 @@ class ProtocolCollector(Generic[TProtocol, TAccount], BaseCollector):
             def __init__(self, protocol: TProtocol1, account: TAccount1):
                 self.protocol = protocol
                 self.account = account
-
+        
+        assert issubclass(perform_template, ProtocolBasedPerformTemplate)
         return perform_template[TProtocol, TAccount]
 
     def __post_collect__(self, cls: type[ProtocolBasedPerformTemplate]):

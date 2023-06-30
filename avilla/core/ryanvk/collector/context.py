@@ -7,7 +7,7 @@ from typing_extensions import Unpack
 from avilla.core.ryanvk.capability import CoreCapability
 
 from ..common.collect import BaseCollector
-from ..context import processing_isolate, processing_protocol
+from .._runtime import processing_isolate, processing_protocol
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -30,7 +30,7 @@ M = TypeVar("M", bound="Metadata")
 
 
 class ContextBasedPerformTemplate:
-    __collector__: ClassVar[BaseCollector]
+    __collector__: ClassVar[ContextCollector]
 
     context: Context
     protocol: BaseProtocol
@@ -42,19 +42,12 @@ class ContextBasedPerformTemplate:
         self.account = context.account
 
 
-class ContextCollector(Generic[TProtocol, TAccount], BaseCollector):
+class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
     post_applying: bool = False
 
     def __init__(self):
         super().__init__()
         self.artifacts["lookup"] = {}
-
-    @property
-    def _(self):
-        class perform_template(ContextBasedPerformTemplate, self._base_ring3()):
-            __native__ = True
-
-        return perform_template
 
     def pull(
         self, target: str, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
@@ -66,7 +59,8 @@ class ContextCollector(Generic[TProtocol, TAccount], BaseCollector):
 
     @property
     def _(self):
-        class perform_template(super()._, Generic[TProtocol1, TAccount1]):
+        upper = super()._base_ring3()
+        class perform_template(upper, ContextBasedPerformTemplate, Generic[TProtocol1, TAccount1]):
             __native__ = True
 
             context: Context
