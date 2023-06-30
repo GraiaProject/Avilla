@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, TypeVar, Awaitable
+from typing import TYPE_CHECKING, Awaitable, Callable, TypeVar
 
 from avilla.core._vendor.dataclasses import dataclass
 
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     )
 
 PBPT = TypeVar("PBPT", bound="ProtocolBasedPerformTemplate", contravariant=True)
+
 
 @dataclass
 class EventParserSign:

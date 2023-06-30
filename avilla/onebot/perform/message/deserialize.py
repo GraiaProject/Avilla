@@ -1,18 +1,19 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 
-from avilla.core.elements import Text, Picture, Notice, NoticeAll
+from avilla.core.elements import Notice, NoticeAll, Picture, Text
+from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.selector import Selector
 from avilla.standard.qq.elements import Face, FlashImage
-from ...resource import OneBot11ImageResource
+
 from ...descriptor.message.deserialize import OneBot11MessageDeserialize
 from ...element import Reply
+from ...resource import OneBot11ImageResource
 
 if TYPE_CHECKING:
-    from ...protocol import OneBot11Protocol  # noqa
     from ...account import OneBot11Account  # noqa
+    from ...protocol import OneBot11Protocol  # noqa
 
 
 class OneBot11MessageDeserializePerform((m := ProtocolCollector["OneBot11Protocol", "OneBot11Account"]())._):
@@ -30,10 +31,10 @@ class OneBot11MessageDeserializePerform((m := ProtocolCollector["OneBot11Protoco
     async def image(self, raw_element: dict) -> Picture | FlashImage:
         data: dict = raw_element["data"]
         resource = OneBot11ImageResource(
-            Selector().land(self.account.route['land']).picture(file := data["file"]), file, data["url"]
+            Selector().land(self.account.route["land"]).picture(file := data["file"]), file, data["url"]
         )
         return FlashImage(resource) if raw_element.get("type") == "flash" else Picture(resource)
-    
+
     @OneBot11MessageDeserialize.collect(m, "at")
     async def at(self, raw_element: dict) -> Notice | NoticeAll:
         return NoticeAll() if raw_element["data"]["qq"] == "all" else Notice(raw_element["data"]["qq"])

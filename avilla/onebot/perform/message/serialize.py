@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
 import base64
+from typing import TYPE_CHECKING, cast
 
+from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
-
-from avilla.core.elements import Text, Picture, Notice, NoticeAll
+from avilla.onebot.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import Face, FlashImage
 
-from avilla.onebot.resource import OneBot11ImageResource
 from ...descriptor.message.serialize import OneBot11MessageSerialize
 
 if TYPE_CHECKING:
-    from ...protocol import OneBot11Protocol  # noqa
     from ...account import OneBot11Account  # noqa
+    from ...protocol import OneBot11Protocol  # noqa
 
 
 class OneBot11MessageSerializePerform((m := ProtocolCollector["OneBot11Protocol", "OneBot11Account"]())._):
@@ -48,7 +47,7 @@ class OneBot11MessageSerializePerform((m := ProtocolCollector["OneBot11Protocol"
 
     @OneBot11MessageSerialize.collect(m, Notice)
     async def notice(self, element: Notice):
-        return {"type": "at", "data": {"qq": element.target['member']}}
+        return {"type": "at", "data": {"qq": element.target["member"]}}
 
     @OneBot11MessageSerialize.collect(m, NoticeAll)
     async def notice_all(self, element: NoticeAll):

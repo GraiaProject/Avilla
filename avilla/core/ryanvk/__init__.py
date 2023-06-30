@@ -1,3 +1,4 @@
+from ._runtime import processing_protocol as processing_protocol
 from .capability import CoreCapability as CoreCapability
 from .collector.context import (
     ContextBasedPerformTemplate as ContextBasedPerformTemplate,
@@ -11,7 +12,6 @@ from .common import Isolate as Isolate
 from .common import Ring3 as Ring3
 from .common import Runner as Runner
 from .common import SupportsCollect as SupportsCollect
-from ._runtime import processing_protocol as processing_protocol
 from .descriptor import FetchFn as FetchFn
 from .descriptor import Fn as Fn
 from .descriptor import PullFn as PullFn

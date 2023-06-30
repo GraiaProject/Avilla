@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
+from .._runtime import processing_application, processing_isolate
 from ..common.collect import BaseCollector
-from .._runtime import processing_isolate, processing_application
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
@@ -29,6 +29,7 @@ class ApplicationCollector(BaseCollector):
     @property
     def _(self):
         upper = super()._base_ring3()
+
         class perform_template(
             ApplicationBasedPerformTemplate,
             upper,

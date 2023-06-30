@@ -1,33 +1,33 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, Callable, Any, Awaitable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
+
+from loguru import logger
 
 from avilla.core.application import Avilla
+from avilla.core.elements import Element
 from avilla.core.protocol import BaseProtocol
 
 from .descriptor.event import EventParserSign
-from .service import OneBot11Service
-from .descriptor.message.serialize import MessageSerializeSign
 from .descriptor.message.deserialize import MessageDeserializeSign
-from avilla.core.elements import Element
-
-from loguru import logger
+from .descriptor.message.serialize import MessageSerializeSign
+from .service import OneBot11Service
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.core.ryanvk.collector.protocol import ProtocolCollector
+    from graia.amnesia.message import MessageChain
 
     from .account import OneBot11Account
-    from graia.amnesia.message import MessageChain
     from .resource import OneBot11Resource
 
 
 class OneBot11Protocol(BaseProtocol):
     @classmethod
     def __init_isolate__(cls):  # ruff: noqa: F401
-        from .perform.message.serialize import OneBot11MessageSerializePerform
-        from .perform.message.deserialize import OneBot11MessageDeserializePerform
         from .perform.event.message import OneBot11EventMessagePerform
+        from .perform.message.deserialize import OneBot11MessageDeserializePerform
+        from .perform.message.serialize import OneBot11MessageSerializePerform
 
     def ensure(self, avilla: Avilla):
         avilla.launch_manager.add_component(OneBot11Service(self))

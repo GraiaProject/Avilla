@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from asyncio import gather
 from typing import TYPE_CHECKING
-from avilla.onebot.net.ws_client import OneBot11WsClientNetworking
 
+from avilla.onebot.net.ws_client import OneBot11WsClientNetworking
 from launart import Launart, Launchable
 
 if TYPE_CHECKING:

@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 PBPT = TypeVar("PBPT", bound="ProtocolBasedPerformTemplate", contravariant=True)
 
+
 @dataclass
 class MessageDeserializeSign:
     element_type: str

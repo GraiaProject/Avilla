@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
-from ..common.collect import BaseCollector
 from .._runtime import processing_isolate, processing_protocol
+from ..common.collect import BaseCollector
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -37,6 +37,7 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol, TAccount]):
     @property
     def _(self):
         upper = super()._base_ring3()
+
         class perform_template(
             ProtocolBasedPerformTemplate,
             upper,
@@ -50,7 +51,7 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol, TAccount]):
             def __init__(self, protocol: TProtocol1, account: TAccount1):
                 self.protocol = protocol
                 self.account = account
-        
+
         assert issubclass(perform_template, ProtocolBasedPerformTemplate)
         return perform_template[TProtocol, TAccount]
 

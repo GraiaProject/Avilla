@@ -6,8 +6,8 @@ from typing_extensions import Unpack
 
 from avilla.core.ryanvk.capability import CoreCapability
 
-from ..common.collect import BaseCollector
 from .._runtime import processing_isolate, processing_protocol
+from ..common.collect import BaseCollector
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -60,6 +60,7 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
     @property
     def _(self):
         upper = super()._base_ring3()
+
         class perform_template(upper, ContextBasedPerformTemplate, Generic[TProtocol1, TAccount1]):
             __native__ = True
 

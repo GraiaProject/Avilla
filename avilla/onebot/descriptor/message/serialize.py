@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Callable, TypeVar, Generic, Awaitable
+from typing import TYPE_CHECKING, Awaitable, Callable, Generic, TypeVar
 
 from avilla.core._vendor.dataclasses import dataclass
 
@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 PBPT = TypeVar("PBPT", bound="ProtocolBasedPerformTemplate", contravariant=True)
 E = TypeVar("E", bound="Element")
+
 
 @dataclass
 class MessageSerializeSign(Generic[E]):

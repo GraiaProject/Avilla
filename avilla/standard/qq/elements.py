@@ -3,9 +3,9 @@ from __future__ import annotations
 import json
 from enum import Enum
 
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.elements import Picture
 from graia.amnesia.message.element import Element
-from avilla.core._vendor.dataclasses import dataclass
 
 
 class FlashImage(Picture):
@@ -15,6 +15,7 @@ class FlashImage(Picture):
     def __repr__(self) -> str:
         return f"[$FlashImage:resource={self.resource.to_selector()}]"
 
+
 @dataclass
 class Face(Element):
     id: str
@@ -22,6 +23,7 @@ class Face(Element):
 
     def __str__(self) -> str:
         return f"[$Face:id={self.id};name={self.name}]"
+
 
 @dataclass
 class MarketFace(Element):
