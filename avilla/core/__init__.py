@@ -50,7 +50,7 @@ from avilla.core.ryanvk.common import Isolate as Isolate
 from avilla.core.ryanvk.common import Ring3 as Ring3
 from avilla.core.ryanvk.common import Runner as Runner
 from avilla.core.ryanvk.common import SupportsCollect as SupportsCollect
-from avilla.core.ryanvk.context import processing_protocol as processing_protocol
+from avilla.core.ryanvk._runtime import processing_protocol as processing_protocol
 from avilla.core.ryanvk.descriptor import FetchFn as FetchFn
 from avilla.core.ryanvk.descriptor import Fn as Fn
 from avilla.core.ryanvk.descriptor import PullFn as PullFn
