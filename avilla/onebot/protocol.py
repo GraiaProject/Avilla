@@ -25,6 +25,7 @@ if TYPE_CHECKING:
 class OneBot11Protocol(BaseProtocol):
     @classmethod
     def __init_isolate__(cls):  # ruff: noqa: F401
+        # isort: off
         # :: Message
         from .perform.message.deserialize import OneBot11MessageDeserializePerform
         from .perform.message.serialize import OneBot11MessageSerializePerform
