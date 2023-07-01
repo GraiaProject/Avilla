@@ -8,6 +8,7 @@ from avilla.core.ryanvk.capability import CoreCapability
 
 from .._runtime import processing_isolate, processing_protocol
 from ..common.collect import BaseCollector
+from ..descriptor.fetch import Fetch
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -47,7 +48,7 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
 
     def __init__(self):
         super().__init__()
-        self.artifacts["lookup"] = {}
+        self.artifacts["current_collection"] = {}
 
     def pull(
         self, target: str, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
@@ -55,13 +56,17 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
         return self.entity(cast("PullFn[M]", CoreCapability.pull), (target, patterns), route)
 
     def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
-        return self.entity(CoreCapability.fetch.into(resource_type), resource_type)
+        return self.entity(Fetch, resource_type)
 
     @property
     def _(self):
         upper = super()._base_ring3()
 
-        class perform_template(ContextBasedPerformTemplate, upper, Generic[TProtocol1, TAccount1]):
+        class perform_template(
+            Generic[TProtocol1, TAccount1],
+            ContextBasedPerformTemplate,
+            upper,
+        ):
             __native__ = True
 
             context: Context

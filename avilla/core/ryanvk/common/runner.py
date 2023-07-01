@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import TYPE_CHECKING, Any, ChainMap, TypeVar
 
 from typing_extensions import ParamSpec, Self

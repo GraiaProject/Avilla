@@ -32,16 +32,16 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol, TAccount]):
 
     def __init__(self):
         super().__init__()
-        self.artifacts["lookup"] = {}
+        self.artifacts["current_collection"] = {}
 
     @property
     def _(self):
         upper = super()._base_ring3()
 
         class perform_template(
+            Generic[TProtocol1, TAccount1],
             ProtocolBasedPerformTemplate,
             upper,
-            Generic[TProtocol1, TAccount1],
         ):
             __native__ = True
 

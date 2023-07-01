@@ -12,7 +12,7 @@ from .common import Isolate as Isolate
 from .common import Ring3 as Ring3
 from .common import Runner as Runner
 from .common import SupportsCollect as SupportsCollect
-from .descriptor import FetchFn as FetchFn
+#from .descriptor import FetchFn as FetchFn
 from .descriptor import Fn as Fn
 from .descriptor import PullFn as PullFn
 from .descriptor import QueryRecord as QueryRecord

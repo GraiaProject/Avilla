@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class OneBot11MessageDeserializePerform((m := ProtocolCollector["OneBot11Protocol", "OneBot11Account"]())._):
+    m.post_applying = True
+
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
     @OneBot11MessageDeserialize.collect(m, "text")

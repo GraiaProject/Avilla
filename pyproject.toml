@@ -35,6 +35,7 @@ dev = [
     "richuru>=0.1.1",
     "ruff>=0.0.272",
     "uvicorn>=0.22.0",
+    "python-devtools>=2",
 ]
 
 [build-system]

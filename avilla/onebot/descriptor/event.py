@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 PBPT = TypeVar("PBPT", bound="ProtocolBasedPerformTemplate", contravariant=True)
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class EventParserSign:
     event_type: str
 

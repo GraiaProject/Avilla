@@ -10,4 +10,8 @@ class Isolate:
     artifacts: dict[Any, Any] = field(default_factory=dict)
 
     def apply(self, ring3_class: type[Ring3]):
-        self.artifacts.update(ring3_class.__collector__.artifacts)
+        arti: dict = ring3_class.__collector__.artifacts
+        if "current_collection" in arti:
+            self.artifacts.setdefault("lookup_collections", []).append(arti.pop("current_collection"))
+
+        self.artifacts.update(arti)

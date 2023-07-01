@@ -15,7 +15,7 @@ PBPT = TypeVar("PBPT", bound="ProtocolBasedPerformTemplate", contravariant=True)
 E = TypeVar("E", bound="Element")
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class MessageSerializeSign(Generic[E]):
     element_type: type[Element]
 

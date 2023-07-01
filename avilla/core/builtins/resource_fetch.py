@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 from ..resource import LocalFileResource, RawResource
-from ..ryanvk import ContextCollector
+from ..ryanvk.collector.application import ApplicationCollector
 
 
-class CoreResourceFetchPerform((m := ContextCollector())._):
-    @m.fetch(LocalFileResource)
+class CoreResourceFetchPerform((m := ApplicationCollector())._):
+    
     async def fetch_localfile(self, res: LocalFileResource):
         return res.file.read_bytes()
 
-    @m.fetch(RawResource)
     async def fetch_raw(self, res: RawResource):
         return res.data

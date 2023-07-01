@@ -579,6 +579,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "python-devtools"
+version = "2"
+requires_python = ">=3.5"
+summary = "Dev tools for python"
+
+[[package]]
 name = "pywin32"
 version = "306"
 summary = "Python for Window Extensions"
@@ -728,7 +734,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 lock_version = "4.2"
 cross_platform = true
 groups = ["default", "dev"]
-content_hash = "sha256:ef6b667df4369c787f8dc10d8e68cad3fe4edffdbfc06cef540287f286695a89"
+content_hash = "sha256:9b5608822511d8dafda0af3bf1d92c38c75787199e3c671402f8ded8c3add765"
 
 [metadata.files]
 "aiohttp 3.8.4" = [
@@ -1444,6 +1450,9 @@ content_hash = "sha256:ef6b667df4369c787f8dc10d8e68cad3fe4edffdbfc06cef540287f28
 "python-dateutil 2.8.2" = [
     {url = "https://files.pythonhosted.org/packages/36/7a/87837f39d0296e723bb9b62bbb257d0355c7f6128853c78955f57342a56d/python_dateutil-2.8.2-py2.py3-none-any.whl", hash = "sha256:961d03dc3453ebbc59dbdea9e4e11c5651520a876d0f4db161e8674aae935da9"},
     {url = "https://files.pythonhosted.org/packages/4c/c4/13b4776ea2d76c115c1d1b84579f3764ee6d57204f6be27119f13a61d0a9/python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
+]
+"python-devtools 2" = [
+    {url = "https://files.pythonhosted.org/packages/d5/ec/00fd45bbfaecbb04d87235bb81ba212ad42df0b0c77650c76951f30e1ea4/python-devtools-2.tar.gz", hash = "sha256:2bb8e37305818dc80b5a23335aef54c602e5b6fd2572af38600d1ca1bcae89a1"},
 ]
 "pywin32 306" = [
     {url = "https://files.pythonhosted.org/packages/08/dc/28c668097edfaf4eac4617ef7adf081b9cf50d254672fcf399a70f5efc41/pywin32-306-cp310-cp310-win32.whl", hash = "sha256:06d3420a5155ba65f0b72f2699b5bacf3109f36acbe8923765c22938a69dfc8d"},

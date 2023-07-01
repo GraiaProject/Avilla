@@ -7,12 +7,9 @@ from .base import Fn
 
 if TYPE_CHECKING:
     from avilla.core.resource import Resource
-
-    from ...context import Context
-    from ..collector.context import ContextBasedPerformTemplate, ContextCollector
+    from ..common.collect import BaseCollector
 
 
-H = TypeVar("H", bound="ContextBasedPerformTemplate")
 T = TypeVar("T")
 X = TypeVar("X")
 R = TypeVar("R", bound="Resource")
@@ -23,24 +20,11 @@ class FetchImplement:
     resource: type[Resource]
 
 
-class FetchFn(
-    Fn[["Resource[T]"], Awaitable[T]],
-):
-    def __init__(self):
-        ...
-
-    def into(self, resource_type: type[Resource[X]]) -> FetchFn[X]:
-        return self  # type: ignore[reportGeneralTypeIssues]
-
-    def collect(self, collector: ContextCollector, resource_type: type[Resource[T]]):
-        def receive(entity: Callable[[H, R], Awaitable[T]]):  # to accept all resource type
+class Fetch:
+    @classmethod
+    def collect(cls, collector: BaseCollector, resource_type: type[Resource[T]]):
+        def receive(entity: Callable[[Any, R], Awaitable[T]]):  # to accept all resource type
             collector.artifacts[FetchImplement(resource_type)] = (collector, entity)
             return entity
 
         return receive
-
-    def get_execute_signature(self, runner: Context, resource: Resource) -> Any:
-        return FetchImplement(type(Resource))
-
-    def __repr__(self) -> str:
-        return "<Fn#pull internal!>"

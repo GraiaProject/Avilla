@@ -575,3 +575,5 @@ class MessageChain:
             content = content.content
         self.content.extend(content)
         return self
+
+Element._chain_class = MessageChain

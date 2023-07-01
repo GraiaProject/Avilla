@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, TypeVar
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, TypeVar, Union
 
 from typing_extensions import Unpack
 
 from ..._vendor.dataclasses import dataclass
 from .target import TargetFn
+from ...metadata import Metadata, MetadataRoute
 
 if TYPE_CHECKING:
-    from ...metadata import Metadata, MetadataRoute
     from ...selector import Selector
     from ..collector.context import ContextBasedPerformTemplate
 
@@ -23,7 +23,7 @@ class PullImplement(Generic[M]):
 
 
 class PullFn(
-    TargetFn[["type[M] | MetadataRoute[Unpack[tuple[Metadata, ...]], M]"], Awaitable[M]],
+    TargetFn[[Union[type[M], MetadataRoute[Unpack[tuple[Metadata, ...]], M]]], Awaitable[M]] if TYPE_CHECKING else TargetFn,
 ):
     def __init__(self):
         ...

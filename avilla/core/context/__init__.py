@@ -69,13 +69,12 @@ class Context(BaseRunner):
         prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
         super().__init__()
-        self.artifacts.maps.extend(
-            [
-                account.info.isolate.artifacts,
-                account.info.protocol.isolate.artifacts,
-                account.avilla.isolate.artifacts,
-            ]
-        )
+        self.artifacts.maps = [
+            account.info.isolate.artifacts,
+            account.info.protocol.isolate.artifacts,
+            account.avilla.isolate.artifacts,
+        ]
+
         self.account = account
 
         self.client = ContextClientSelector.from_selector(self, client)
@@ -156,7 +155,8 @@ class Context(BaseRunner):
             yield i
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        return await self[CoreCapability.fetch](resource)
+        #return await self[](resource)
+        ... # TODO
 
     async def pull(
         self,

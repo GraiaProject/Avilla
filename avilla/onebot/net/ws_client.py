@@ -17,6 +17,8 @@ from launart.utilles import any_completed
 from ..account import OneBot11Account
 from ..utilles import onebot11_event_type
 
+from devtools import debug
+
 if TYPE_CHECKING:
     from ..protocol import OneBot11Protocol
 
@@ -28,6 +30,8 @@ class OneBot11WsClientConfig:
 
 
 class OneBot11WsClientNetworking(Launchable):
+    id = "onebot/v11/connection/websocket/client"
+
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -54,6 +58,7 @@ class OneBot11WsClientNetworking(Launchable):
                 return
             elif msg.type == aiohttp.WSMsgType.TEXT:
                 data: dict = json.loads(cast(str, msg.data))
+                logger.debug(f"{data=}")
                 if echo := data.get("echo"):
                     if future := self.response_waiters.get(echo):
                         future.set_result(data)
@@ -62,6 +67,7 @@ class OneBot11WsClientNetworking(Launchable):
                 event_type = onebot11_event_type(data)
                 event = await self.protocol.parse_event(self.account, event_type, data)
                 if event is not None:
+                    debug(event)
                     self.protocol.post_event(event)
 
     async def call(self, action: str, params: dict | None = None) -> dict | None:

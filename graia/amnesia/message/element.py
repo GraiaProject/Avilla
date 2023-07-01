@@ -1,17 +1,20 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from . import MessageChain
+if TYPE_CHECKING:
+    from . import MessageChain
 
 
 class Element:
-    _chain_class: type[MessageChain] = MessageChain
+    _chain_class: type[MessageChain]
 
     def __str__(self) -> str:
         return ""
 
     def __add__(self: Element, content: MessageChain | list[Element] | Element | str) -> MessageChain:
+        from . import MessageChain
+
         if isinstance(content, str):
             content = [self._chain_class._text_class(content)]
         if isinstance(content, Element):
@@ -21,6 +24,8 @@ class Element:
         return self._chain_class(content + [self])
 
     def __radd__(self: Element, content: MessageChain | list[Element] | Element | str) -> MessageChain:
+        from . import MessageChain
+        
         if isinstance(content, str):
             content = [self._chain_class._text_class(content)]
         if isinstance(content, Element):

@@ -18,6 +18,8 @@ if TYPE_CHECKING:
 
 
 class OneBot11EventMessagePerform((m := ProtocolCollector["OneBot11Protocol", "OneBot11Account"]())._):
+    m.post_applying = True
+
     @OneBot11EventParse.collect(m, "message.private.friend")
     async def private_friend(self, raw_event: dict):
         friend = Selector().land(self.account.route["land"]).friend(str(raw_event["sender"]["user_id"]))
@@ -73,7 +75,7 @@ class OneBot11EventMessagePerform((m := ProtocolCollector["OneBot11Protocol", "O
             ),
         )
 
-    @OneBot11EventParse.collect(m, "message.group")
+    @OneBot11EventParse.collect(m, "message.group.normal")
     @OneBot11EventParse.collect(m, "message.group.notice")
     async def group(self, raw_event: dict):
         group = Selector().land(self.account.route["land"]).group(str(raw_event["group_id"]))

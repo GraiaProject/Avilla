@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import itertools
 import inspect
 from typing import (
     TYPE_CHECKING,
@@ -9,20 +10,19 @@ from typing import (
     Generic,
     MutableMapping,
     Protocol,
-    TypedDict,
     TypeVar,
 )
-
+from avilla.core._vendor.dataclasses import dataclass
 from typing_extensions import Concatenate, ParamSpec, TypeAlias
 
-from ...selector import _parse_follows
+from ...selector import _parse_follows, Selectable, FollowsPredicater, Selector, _FollowItem
 from ...utilles import identity
 from ..common.fn import FnImplement
 from .base import Fn
 
+
 if TYPE_CHECKING:
     from ...context import Context
-    from ...selector import FollowsPredicater, Selectable, Selector, _FollowItem
     from ..collector.context import ContextBasedPerformTemplate, ContextCollector
     from ..common.capability import Capability
 
@@ -36,18 +36,19 @@ T = TypeVar("T")
 X = TypeVar("X")
 CBPT = TypeVar("CBPT", bound="ContextBasedPerformTemplate")
 
-
-class LookupBranchMetadata(TypedDict):
+@dataclass
+class LookupBranchMetadata:
     override: bool
 
 
-class LookupBranch(TypedDict, Generic[T]):
+@dataclass
+class LookupBranch(Generic[T]):
     metadata: LookupBranchMetadata
     levels: LookupCollection
     artifacts: dict[Any, TargetArtifactStore[T]]
 
-
-class TargetArtifactStore(TypedDict, Generic[T]):
+@dataclass
+class TargetArtifactStore(Generic[T]):
     collector: ContextCollector
     entity: T
     pattern: list[_FollowItem]
@@ -84,9 +85,9 @@ class TargetFn(
             if not items:
                 raise ValueError("invalid target pattern")
 
-            collection: LookupCollection = collector.artifacts["lookup"]
+            collection: LookupCollection = collector.artifacts['current_collection']
             if TYPE_CHECKING:
-                branch = {"metadata": {"override": True}, "levels": {}, "artifacts": {}}
+                branch = LookupBranch(LookupBranchMetadata(True), {}, {})
 
             for i in items:
                 if i.name not in collection:
@@ -96,14 +97,14 @@ class TargetFn(
                 if (i.literal or i.predicate) in branches:
                     branch = branches[i.literal or i.predicate]
                 else:
-                    branch: LookupBranch = {"metadata": {"override": True}, "levels": {}, "artifacts": {}}
+                    branch = LookupBranch(LookupBranchMetadata(True), {}, {})
                     branches[i.literal or i.predicate] = branch
 
-                collection = branch["levels"]
+                collection = branch.levels
 
             signature = self.get_collect_signature(entity, *args, **kwargs)
-            artifact: TargetArtifactStore = {"collector": collector, "entity": entity, "pattern": items}
-            branch["artifacts"][signature] = artifact
+            artifact = TargetArtifactStore(collector, entity, items)
+            branch.artifacts[signature] = artifact
             self.__post_collected__(artifact)
             return entity
 
@@ -113,15 +114,15 @@ class TargetFn(
         ...
 
     def _iter_branches(
-        self: TargetEntityProtocol[P1, T], collections: list[MutableMapping[Any, Any]], target: Selector
+        self: TargetEntityProtocol[P1, T], artifact_collections: list[MutableMapping[Any, Any]], target: Selector
     ) -> Generator[LookupBranch[T], Any, None]:
-        lookups: list[LookupCollection] = [i["lookup"] for i in collections]
+        lookups = itertools.chain(*[i['lookup_collections'] for i in artifact_collections if 'lookup_collections' in i])
 
-        for i in lookups:
+        for collection in lookups:
             # get branch
-            collection = i
             branch = None
             for k, v in target.pattern.items():
+                print(f"{k=}, {v=}, {collection=}")
                 if k not in collection:
                     break
                 branches = collection[k]
@@ -132,7 +133,7 @@ class TargetFn(
                     for header, branch in branches.items():
                         if not callable(header):
                             continue
-                        if header(v):
+                        if not header(v):
                             break
                     else:
                         if None not in branches:
@@ -140,10 +141,10 @@ class TargetFn(
                         header = None
 
                 branch = branches[header]
-                collection = branch["levels"]
+                collection = branch.levels
                 if header is not None:
-                    if branch["metadata"]["override"] and None in branches:
-                        collection = {**branches[None]["levels"], **collection}
+                    if branch.metadata.override and None in branches:
+                        collection = {**(branches[None].levels), **collection}
             if branch is None:
                 continue
 
@@ -157,9 +158,9 @@ class TargetFn(
     ) -> tuple[ContextCollector, Callable[Concatenate[Any, Selector, P], R]]:
         sign = FnImplement(self.capability, self.name)
         for branch in self._iter_branches(runner.artifacts.maps, target.to_selector()):
-            artifacts = branch["artifacts"]
+            artifacts = branch.artifacts
             if sign in artifacts:
-                return artifacts[sign]["collector"], artifacts[sign]["entity"]  # type: ignore
+                return artifacts[sign].collector, artifacts[sign].entity
         raise NotImplementedError(f"no {repr(self)} implements for {target.to_selector()}.")
 
     def __repr__(self) -> str:
