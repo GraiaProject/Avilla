@@ -20,13 +20,14 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ProtocolBasedPerformTemplate:
-    __collector__: ClassVar[ProtocolCollector]
+class AccountBasedPerformTemplate:
+    __collector__: ClassVar[AccountCollector]
 
     protocol: BaseProtocol
+    account: BaseAccount
 
 
-class ProtocolCollector(BaseCollector, Generic[TProtocol]):
+class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
     post_applying: bool = False
 
     def __init__(self):
@@ -38,21 +39,23 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol]):
         upper = super()._base_ring3()
 
         class perform_template(
-            Generic[TProtocol1],
-            ProtocolBasedPerformTemplate,
+            Generic[TProtocol1, TAccount1],
+            AccountBasedPerformTemplate,
             upper,
         ):
             __native__ = True
 
             protocol: TProtocol1
+            account: TAccount1
 
-            def __init__(self, protocol: TProtocol1):
+            def __init__(self, protocol: TProtocol1, account: TAccount1):
                 self.protocol = protocol
+                self.account = account
 
-        assert issubclass(perform_template, ProtocolBasedPerformTemplate)
-        return perform_template[TProtocol]
+        assert issubclass(perform_template, AccountBasedPerformTemplate)
+        return perform_template[TProtocol, TAccount]
 
-    def __post_collect__(self, cls: type[ProtocolBasedPerformTemplate]):
+    def __post_collect__(self, cls: type[AccountBasedPerformTemplate]):
         super().__post_collect__(cls)
         if self.post_applying:
             if (isolate := processing_isolate.get(None)) is not None:
