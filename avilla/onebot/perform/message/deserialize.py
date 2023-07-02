@@ -3,11 +3,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
-from avilla.core.ryanvk.collector.protocol import ProtocolCollector
+from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.qq.elements import Face, FlashImage
 
-from ...descriptor.message.deserialize import OneBot11MessageDeserialize
+from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from ...element import Reply
 from ...resource import OneBot11ImageResource
 
@@ -15,8 +15,9 @@ if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa
     from ...protocol import OneBot11Protocol  # noqa
 
+OneBot11MessageDeserialize = MessageDeserialize[dict]
 
-class OneBot11MessageDeserializePerform((m := ProtocolCollector["OneBot11Protocol", "OneBot11Account"]())._):
+class OneBot11MessageDeserializePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
 
     # LINK: https://github.com/microsoft/pyright/issues/5409

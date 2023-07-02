@@ -1,30 +1,33 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
-import aiohttp
 
+import aiohttp
 from loguru import logger
 
 from avilla.core.application import Avilla
 from avilla.core.elements import Element
 from avilla.core.protocol import BaseProtocol
+from graia.amnesia.message import MessageChain
 
 from .descriptor.event import EventParserSign
 from .descriptor.message.deserialize import MessageDeserializeSign
 from .descriptor.message.serialize import MessageSerializeSign
 from .service import OneBot11Service
-from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
-    from avilla.core.ryanvk.collector.protocol import ProtocolCollector
+    from avilla.core.ryanvk.collector.account import AccountCollector
 
     from .account import OneBot11Account
     from .resource import OneBot11Resource
 
 
 class OneBot11Protocol(BaseProtocol):
-    service: OneBot11Service | None = None
+    service: OneBot11Service
+
+    def __init__(self):
+        self.service = OneBot11Service(self)
 
     @classmethod
     def __init_isolate__(cls):  # ruff: noqa: F401
@@ -41,7 +44,7 @@ class OneBot11Protocol(BaseProtocol):
         from .perform.event.message import OneBot11EventMessagePerform
 
     def ensure(self, avilla: Avilla):
-        avilla.launch_manager.add_component(self.service or OneBot11Service(self))
+        avilla.launch_manager.add_component(self.service)
 
     async def parse_event(
         self,
@@ -55,7 +58,7 @@ class OneBot11Protocol(BaseProtocol):
             return
         collector, entity = cast(
             """tuple[
-                ProtocolCollector[OneBot11Protocol, OneBot11Account],
+                AccountCollector[OneBot11Protocol, OneBot11Account],
                 Callable[[Any, dict], Awaitable[AvillaEvent]]
             ]""",
             self.isolate.artifacts[sign],
@@ -72,7 +75,7 @@ class OneBot11Protocol(BaseProtocol):
                 raise NotImplementedError(f"Element {element_type} is not supported")
             collector, entity = cast(
                 """tuple[
-                    ProtocolCollector[OneBot11Protocol, OneBot11Account],
+                    AccountCollector[OneBot11Protocol, OneBot11Account],
                     Callable[[Any, Element], Awaitable[dict]]
                 ]""",
                 self.isolate.artifacts[sign],
@@ -90,7 +93,7 @@ class OneBot11Protocol(BaseProtocol):
                 raise NotImplementedError(f"Element {element_type} is not supported by {self.__class__.__name__}")
             collector, entity = cast(
                 """tuple[
-                    ProtocolCollector[OneBot11Protocol, OneBot11Account],
+                    AccountCollector[OneBot11Protocol, OneBot11Account],
                     Callable[[Any, dict], Awaitable[Element]]
                 ]""",
                 self.isolate.artifacts[sign],

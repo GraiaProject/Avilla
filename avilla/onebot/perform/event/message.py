@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk.collector.protocol import ProtocolCollector
+from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
 
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from ...protocol import OneBot11Protocol  # noqa
 
 
-class OneBot11EventMessagePerform((m := ProtocolCollector["OneBot11Protocol", "OneBot11Account"]())._):
+class OneBot11EventMessagePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
 
     @OneBot11EventParse.collect(m, "message.private.friend")

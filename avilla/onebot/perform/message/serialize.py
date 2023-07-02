@@ -4,18 +4,20 @@ import base64
 from typing import TYPE_CHECKING, cast
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
-from avilla.core.ryanvk.collector.protocol import ProtocolCollector
+from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.onebot.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import Face, FlashImage
 
-from ...descriptor.message.serialize import OneBot11MessageSerialize
+from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 
 if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa
     from ...protocol import OneBot11Protocol  # noqa
 
+OneBot11MessageSerialize = MessageSerialize[dict]
 
-class OneBot11MessageSerializePerform((m := ProtocolCollector["OneBot11Protocol", "OneBot11Account"]())._):
+
+class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
