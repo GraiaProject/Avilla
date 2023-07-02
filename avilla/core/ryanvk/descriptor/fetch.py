@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar
 
 from ..._vendor.dataclasses import dataclass
-from .base import Fn
 
 if TYPE_CHECKING:
     from avilla.core.resource import Resource

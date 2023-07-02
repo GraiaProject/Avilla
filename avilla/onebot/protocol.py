@@ -8,11 +8,11 @@ from loguru import logger
 from avilla.core.application import Avilla
 from avilla.core.elements import Element
 from avilla.core.protocol import BaseProtocol
+from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserializeSign
+from avilla.core.ryanvk.descriptor.message.serialize import MessageSerializeSign
 from graia.amnesia.message import MessageChain
 
 from .descriptor.event import EventParserSign
-from .descriptor.message.deserialize import MessageDeserializeSign
-from .descriptor.message.serialize import MessageSerializeSign
 from .service import OneBot11Service
 
 if TYPE_CHECKING:

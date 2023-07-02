@@ -36,7 +36,7 @@ class OneBot11WsClientNetworking(Launchable):
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     protocol: OneBot11Protocol
-    account: OneBot11Account
+    accounts: dict[int, OneBot11Account]
     config: OneBot11WsClientConfig
 
     connection: aiohttp.ClientWebSocketResponse | None = None
@@ -47,6 +47,7 @@ class OneBot11WsClientNetworking(Launchable):
         super().__init__()
         self.close_signal = asyncio.Event()
         self.response_waiters = {}
+        self.accounts = {}
 
     async def message_receiver(self):
         if self.connection is None:
@@ -65,7 +66,8 @@ class OneBot11WsClientNetworking(Launchable):
                     return
 
                 event_type = onebot11_event_type(data)
-                event = await self.protocol.parse_event(self.account, event_type, data)
+                account = self.accounts[data['self_id']]
+                event = await self.protocol.parse_event(account, event_type, data)
                 if event is not None:
                     debug(event)
                     self.protocol.post_event(event)
@@ -98,6 +100,7 @@ class OneBot11WsClientNetworking(Launchable):
                 if (access_token := self.config.access_token) is not None
                 else None,
             ) as self.connection:
+                logger.info(f"{self} Websocket client connected")
                 self.close_signal.clear()
                 close_task = asyncio.create_task(self.close_signal.wait())
                 receiver_task = asyncio.create_task(self.message_receiver())
@@ -108,14 +111,20 @@ class OneBot11WsClientNetworking(Launchable):
                     receiver_task,
                 )
                 if sigexit_task in done:
-                    logger.info(f"[{self.account.route}] Websocket client exiting...")
+                    logger.info(f"{self} Websocket client exiting...")
                     await self.connection.close()
-                    break
+                    self.connection = None
+                    for k, v in list(self.protocol.avilla.accounts.items()):
+                        if v.route['account'] in self.accounts:
+                            del self.accounts[k]
+                    return
                 if close_task in done:
                     receiver_task.cancel()
-                    logger.warning(f"[{self.account.route}] Connection closed by server")
+                    logger.warning(f"{self} Connection closed by server")
+                    for i in self.accounts.values():
+                        ... # TODO
                     await asyncio.sleep(5)
-                    logger.info(f"[{self.account.route}] Reconnecting...")
+                    logger.info(f"{self} Reconnecting...")
                     continue
 
     async def launch(self, manager: Launart):
