@@ -146,7 +146,7 @@ class Selector:
         for index, (item, name, value) in enumerate(zip(items, self.pattern.keys(), self.pattern.values())):
             if item.name == "*":
                 return True
-            if item.name != nme:
+            if item.name != name:
                 return False
             if item.literal is not None and value != item.literal:
                 return False
@@ -161,7 +161,7 @@ class Selector:
         if items and items[0].name == "~":
             if not all(item.literal for item in items[1:]):
                 raise ValueError("expected specific literals in follows pattern")
-            return Selector({**self.pattern, **{item.name: item.literal for item in items[1:]}})
+            return Selector({**self.pattern, **{item.name: item.literal for item in items[1:]}})  # type: ignore
         for item in items:
             if item.name == "*":
                 raise TypeError("expected no wildcard")
