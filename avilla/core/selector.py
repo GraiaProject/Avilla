@@ -14,7 +14,7 @@ from avilla.core.platform import Land
 EMPTY_MAP = MappingProxyType({})
 ESCAPE = {")": "\\)", "(": "\\(", "]": "\\]", "[": "\\[", "}": "\\}", "{": "\\{"}
 
-_follows_pattern = re.compile(r"(?P<name>(\w+?|\*))(#(?P<predicate>\w+))?(\((?P<literal>[^#]+?)\))?")
+_follows_pattern = re.compile(r"(?P<name>(\w+?|[*~]))(#(?P<predicate>\w+))?(\((?P<literal>[^#]+?)\))?")
 FollowsPredicater: TypeAlias = "Callable[[str], bool]"
 
 
@@ -36,6 +36,8 @@ def _parse_follows_item(item: str, items: dict[str, _FollowItem], predicates: di
     if not (m := _follows_pattern.fullmatch(item)):
         raise ValueError(f"invalid item: {item}")
     name = m["name"]
+    if name == "~" and items:
+        raise ValueError("inherit can only be the first item and only one")
     if m["literal"] and m["predicate"]:
         raise ValueError(f"duplicate literal and predicate: {item}")
     if m["literal"] is not None:
@@ -144,10 +146,8 @@ class Selector:
         for index, (item, name, value) in enumerate(zip(items, self.pattern.keys(), self.pattern.values())):
             if item.name == "*":
                 return True
-
             if item.name != name:
                 return False
-
             if item.literal is not None and value != item.literal:
                 return False
             if item.predicate is not None and not item.predicate(value):
@@ -158,6 +158,8 @@ class Selector:
         items = _parse_follows(pattern)
         new_patterns = {}
         iterator = iter(self.pattern)
+        if items and items[0].name == "~":
+            return Selector({**self.pattern, **{item.name: item.literal for item in items[1:]}})
         for item in items:
             if item.name == "*":
                 raise TypeError("expected no wildcard")
