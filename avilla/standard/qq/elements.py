@@ -5,6 +5,7 @@ from enum import Enum
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.elements import Picture
+from avilla.core.selector import Selector
 from graia.amnesia.message.element import Element
 
 
@@ -41,7 +42,7 @@ class Xml(Element):
         self.content = content
 
     def __str__(self) -> str:
-        return "[Xml]"
+        return "[$Xml]"
 
 
 class App(Element):
@@ -49,7 +50,7 @@ class App(Element):
 
     @classmethod
     def dump(cls, content: dict):
-        return cls(json.dumps(content))
+        return cls(json.dumps(content, ensure_ascii=False))
 
     def __init__(self, content: str) -> None:
         self.content = content
@@ -66,7 +67,7 @@ class Json(Element):
 
     @classmethod
     def dump(cls, content: dict):
-        return cls(json.dumps(content))
+        return cls(json.dumps(content, ensure_ascii=False))
 
     def __init__(self, content: str) -> None:
         self.content = content
@@ -75,10 +76,10 @@ class Json(Element):
         return json.loads(self.content)
 
     def __str__(self) -> str:
-        return "[Json]"
+        return "[$Json]"
 
 
-class PokeMethods(str, Enum):
+class PokeKind(str, Enum):
     """戳一戳可用方法"""
 
     ChuoYiChuo = "ChuoYiChuo"
@@ -133,18 +134,160 @@ class PokeMethods(str, Enum):
     """未知戳一戳"""
 
     @classmethod
-    def _missing_(cls, _) -> "PokeMethods":
-        return PokeMethods.Unknown
+    def _missing_(cls, _) -> "PokeKind":
+        return PokeKind.Unknown
 
 
 class Poke(Element):
-    name: PokeMethods
+    """戳一戳 (或称窗口抖动)
 
-    def __init__(self, name: PokeMethods) -> None:
-        self.name = name
+    请与 头像双击动作(Nudge) 区分
+    """
+    kind: PokeKind
+
+    def __init__(self, kind: PokeKind = PokeKind.Unknown) -> None:
+        self.kind = kind
 
     def __str__(self) -> str:
-        return f"[$Poke:{self.name}]"
+        return f"[$Poke:kind={self.kind}]"
+
+
+@dataclass
+class Dice(Element):
+    value: int | None = None
+
+    def __str__(self) -> str:
+        return f"[$Dice:value={self.value}]"
+
+
+class MusicShareKind(str, Enum):
+    """音乐分享的来源。"""
+
+    NeteaseCloudMusic = "NeteaseCloudMusic"
+    """网易云音乐"""
+
+    QQMusic = "QQMusic"
+    """QQ音乐"""
+
+    MiguMusic = "MiguMusic"
+    """咪咕音乐"""
+
+    KugouMusic = "KugouMusic"
+    """酷狗音乐"""
+
+    KuwoMusic = "KuwoMusic"
+    """酷我音乐"""
+
+@dataclass
+class MusicShare(Element):
+    """表示消息中音乐分享消息元素"""
+
+    kind: MusicShareKind
+    """音乐分享的来源"""
+
+    title: str | None = None
+    """音乐卡片标题"""
+
+    content: str | None = None
+    """音乐摘要"""
+
+    url: str | None = None
+    """点击卡片跳转的链接"""
+
+    thumbnail: str | None = None
+    """音乐图片链接"""
+
+    audio: str | None = None
+    """音乐链接"""
+
+    brief: str | None = None
+    """音乐简介"""
+    def __str__(self) -> str:
+        return f"[$MusicShare:title={self.title}]"
+
+    def __repr__(self) -> str:
+        return f"[$MusicShare:kind={self.kind};title={self.title};url={self.url}"
+
+class GiftKind(int, Enum):
+    """礼物的类型"""
+
+    SweetWink = 0
+    """甜 Wink"""
+
+    Cocacola = 1
+    """快乐肥宅水"""
+
+    LuckyBracelet = 2
+    """幸运手链"""
+
+    Cappuccino = 3
+    """卡布奇诺"""
+
+    CatWatch = 4
+    """猫咪手表"""
+
+    FluffyGloves = 5
+    """绒绒手套"""
+
+    RainbowCandy = 6
+    """彩虹糖果"""
+
+    Strong = 7
+    """坚强"""
+
+    ConfessionMicrophone = 8
+    """告白话筒"""
+
+    HoldYourHand = 9
+    """牵你的手"""
+
+    CuteCat = 10
+    """可爱猫咪"""
+
+    MysteriousMask = 11
+    """神秘面具"""
+
+    Busy = 12
+    """我超忙的"""
+
+    LoveMask = 13
+    """爱心口罩"""
+
+    @classmethod
+    def _missing_(cls, _) -> "GiftKind":
+        return GiftKind.SweetWink
+
+@dataclass
+class Gift(Element):
+    """表示免费礼物的消息元素"""
+
+    kind: GiftKind
+    target: Selector
+    def __str__(self) -> str:
+        return f"[Gift:kind={self.kind};target={self.target}]"
+
+
+@dataclass
+class Share(Element):
+    """表示分享链接的消息元素"""
+
+    url: str
+    """分享链接的 URL"""
+
+    title: str
+    """分享链接的标题"""
+
+    content: str | None = None
+    """分享链接的内容描述"""
+
+    thumbnail: str | None = None
+    """分享链接的缩略图 URL"""
+
+    def __str__(self) -> str:
+        return f"[$Share:title={self.title}]"
+
+    def __repr__(self) -> str:
+        return f"[$Share:title={self.title};url={self.url}]"
 
 
 # TODO: other qq elements

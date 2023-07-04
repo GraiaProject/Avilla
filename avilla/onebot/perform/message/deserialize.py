@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.qq.elements import Face, FlashImage
+from avilla.standard.qq.elements import Face, FlashImage, Dice, Json, Xml, Share, Poke
 
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from ...element import Reply
@@ -45,5 +45,30 @@ class OneBot11MessageDeserializePerform((m := AccountCollector["OneBot11Protocol
     @OneBot11MessageDeserialize.collect(m, "reply")
     async def reply(self, raw_element: dict):
         return Reply(raw_element["data"]["id"])
+
+    @OneBot11MessageDeserialize.collect(m, "dice")
+    async def dice(self, raw_element: dict):
+        return Dice()
+
+    @OneBot11MessageDeserialize.collect(m, "shake")
+    async def shake(self, raw_element: dict):
+        return Poke()
+
+    @OneBot11MessageDeserialize.collect(m, "json")
+    async def json(self, raw_element: dict):
+        return Json(raw_element["data"]["content"])
+
+    @OneBot11MessageDeserialize.collect(m, "xml")
+    async def xml(self, raw_element: dict):
+        return Xml(raw_element["data"]["content"])
+
+    @OneBot11MessageDeserialize.collect(m, "share")
+    async def share(self, raw_element: dict):
+        return Share(
+            raw_element["data"]["url"],
+            raw_element["data"]["title"],
+            raw_element["data"].get("content", None),
+            raw_element["data"].get("image", None)
+        )
 
     # TODO

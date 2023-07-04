@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, cast
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.onebot.resource import OneBot11ImageResource
-from avilla.standard.qq.elements import Face, FlashImage
+from avilla.standard.qq.elements import Face, FlashImage, MusicShare, Json, Xml, Dice, Gift, App, Share, Poke
 
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 
@@ -15,7 +15,6 @@ if TYPE_CHECKING:
     from ...protocol import OneBot11Protocol  # noqa
 
 OneBot11MessageSerialize = MessageSerialize[dict]
-
 
 class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
@@ -56,5 +55,62 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
     @OneBot11MessageSerialize.collect(m, NoticeAll)
     async def notice_all(self, element: NoticeAll):
         return {"type": "at", "data": {"qq": "all"}}
+
+    @OneBot11MessageSerialize.collect(m, Dice)
+    async def dice(self, element: Dice):
+        return {"type": "dice", "data": {}}
+
+
+    @OneBot11MessageSerialize.collect(m, MusicShare)
+    async def music_share(self, element: MusicShare):
+        raw = {
+            "type": "music",
+            "data": {
+                "type": "custom",
+                "url": element.url,
+                "audio": element.audio,
+                "title": element.title,
+            }
+        }
+        if element.content:
+            raw["data"]["content"] = element.content
+        if element.thumbnail:
+            raw["data"]["image"] = element.thumbnail
+        return raw
+
+    @OneBot11MessageSerialize.collect(m, Gift)
+    async def gift(self, element: Gift):
+        return {"type": "gift", "data": {"id": element.kind.value, "qq": element.target["member"]}}
+
+    @OneBot11MessageSerialize.collect(m, Json)
+    async def json(self, element: Json):
+        return {"type": "json", "data": {"data": element.content}}
+
+    @OneBot11MessageSerialize.collect(m, Xml)
+    async def xml(self, element: Xml):
+        return {"type": "xml", "data": {"data": element.content}}
+
+    @OneBot11MessageSerialize.collect(m, App)
+    async def app(self, element: App):
+        return {"type": "json", "data": {"data": element.content}}
+
+    @OneBot11MessageSerialize.collect(m, Share)
+    async def share(self, element: Share):
+        res = {
+            "type": "share",
+            "data": {
+                "url": element.url,
+                "title": element.title,
+            }
+        }
+        if element.content:
+            res["data"]["content"] = element.content
+        if element.thumbnail:
+            res["data"]["image"] = element.thumbnail
+        return res
+
+    @OneBot11MessageSerialize.collect(m, Poke)
+    async def poke(self, element: Poke):
+        return {"type": "shake", "data": {}}
 
     # TODO
