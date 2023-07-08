@@ -15,6 +15,7 @@ PBPT = TypeVar("PBPT", bound="AccountBasedPerformTemplate", contravariant=True)
 E = TypeVar("E", bound="Element")
 T = TypeVar("T")
 
+
 @dataclass(unsafe_hash=True)
 class MessageSerializeSign(Generic[E]):
     element_type: type[Element]

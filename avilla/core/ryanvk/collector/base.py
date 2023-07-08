@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, Callable, ClassVar, Protocol, TypeVar
 from typing_extensions import ParamSpec, Self
 
 from ..protocol import SupportsCollect
-from ..utilles import doubledself_property
 
 if TYPE_CHECKING:
     from ..isolate import Isolate

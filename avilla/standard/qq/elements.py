@@ -143,6 +143,7 @@ class Poke(Element):
 
     请与 头像双击动作(Nudge) 区分
     """
+
     kind: PokeKind
 
     def __init__(self, kind: PokeKind = PokeKind.Unknown) -> None:
@@ -178,6 +179,7 @@ class MusicShareKind(str, Enum):
     KuwoMusic = "KuwoMusic"
     """酷我音乐"""
 
+
 @dataclass
 class MusicShare(Element):
     """表示消息中音乐分享消息元素"""
@@ -202,11 +204,13 @@ class MusicShare(Element):
 
     brief: str | None = None
     """音乐简介"""
+
     def __str__(self) -> str:
         return f"[$MusicShare:title={self.title}]"
 
     def __repr__(self) -> str:
         return f"[$MusicShare:kind={self.kind};title={self.title};url={self.url}"
+
 
 class GiftKind(int, Enum):
     """礼物的类型"""
@@ -257,12 +261,14 @@ class GiftKind(int, Enum):
     def _missing_(cls, _) -> "GiftKind":
         return GiftKind.SweetWink
 
+
 @dataclass
 class Gift(Element):
     """表示免费礼物的消息元素"""
 
     kind: GiftKind
     target: Selector
+
     def __str__(self) -> str:
         return f"[Gift:kind={self.kind};target={self.target}]"
 

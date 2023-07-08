@@ -5,7 +5,6 @@ from ..ryanvk.collector.application import ApplicationCollector
 
 
 class CoreResourceFetchPerform((m := ApplicationCollector())._):
-    
     async def fetch_localfile(self, res: LocalFileResource):
         return res.file.read_bytes()
 

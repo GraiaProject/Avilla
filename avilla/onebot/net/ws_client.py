@@ -66,7 +66,7 @@ class OneBot11WsClientNetworking(Launchable):
                     return
 
                 event_type = onebot11_event_type(data)
-                account = self.accounts[data['self_id']]
+                account = self.accounts[data["self_id"]]
                 event = await self.protocol.parse_event(account, event_type, data)
                 if event is not None:
                     debug(event)
@@ -105,7 +105,7 @@ class OneBot11WsClientNetworking(Launchable):
                 close_task = asyncio.create_task(self.close_signal.wait())
                 receiver_task = asyncio.create_task(self.message_receiver())
                 sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
-                
+
                 done, pending = await any_completed(
                     sigexit_task,
                     close_task,
@@ -116,14 +116,14 @@ class OneBot11WsClientNetworking(Launchable):
                     await self.connection.close()
                     self.connection = None
                     for k, v in list(self.protocol.avilla.accounts.items()):
-                        if v.route['account'] in self.accounts:
+                        if v.route["account"] in self.accounts:
                             del self.accounts[k]
                     return
                 if close_task in done:
                     receiver_task.cancel()
                     logger.warning(f"{self} Connection closed by server")
                     for i in self.accounts.values():
-                        ... # TODO
+                        ...  # TODO
                     await asyncio.sleep(5)
                     logger.info(f"{self} Reconnecting...")
                     continue

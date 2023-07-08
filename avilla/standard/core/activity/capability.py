@@ -6,4 +6,5 @@ class ActivityTrigger(Capability):
     async def trigger(self):
         ...
 
+
 ActivityTrigger.trigger

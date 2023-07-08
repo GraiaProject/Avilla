@@ -47,16 +47,11 @@ class OneBot11WsServerNetworking(Launchable):
         async with self.stage("preparing"):
             # use richuru to redirect log to loguru
             server = aiohttp.web.Application()
-            server.add_routes([
-                aiohttp.web.get("/onebot/v11", self.websocket_server_handler)
-            ])
+            server.add_routes([aiohttp.web.get("/onebot/v11", self.websocket_server_handler)])
 
         async with self.stage("blocking"):
             task = asyncio.get_running_loop().create_task(aiohttp.web._run_app(server))
-            await any_completed(
-                manager.status.wait_for_sigexit(),
-                asyncio.shield(task)
-            )
+            await any_completed(manager.status.wait_for_sigexit(), asyncio.shield(task))
 
         async with self.stage("cleanup"):
             task.cancel()

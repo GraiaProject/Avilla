@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 OneBot11MessageSerialize = MessageSerialize[dict]
 
+
 class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
 
@@ -59,7 +60,6 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
     async def dice(self, element: Dice):
         return {"type": "dice", "data": {}}
 
-
     @OneBot11MessageSerialize.collect(m, MusicShare)
     async def music_share(self, element: MusicShare):
         raw = {
@@ -69,7 +69,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
                 "url": element.url,
                 "audio": element.audio,
                 "title": element.title,
-            }
+            },
         }
         if element.content:
             raw["data"]["content"] = element.content
@@ -100,7 +100,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
             "data": {
                 "url": element.url,
                 "title": element.title,
-            }
+            },
         }
         if element.content:
             res["data"]["content"] = element.content

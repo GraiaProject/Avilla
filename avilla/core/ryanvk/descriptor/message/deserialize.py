@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 PBPT = TypeVar("PBPT", bound="AccountBasedPerformTemplate", contravariant=True)
 T = TypeVar("T")
 
+
 @dataclass(unsafe_hash=True)
 class MessageDeserializeSign:
     element_type: str

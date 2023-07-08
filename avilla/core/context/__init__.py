@@ -155,8 +155,8 @@ class Context(BaseRunner):
             yield i
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        #return await self[](resource)
-        ... # TODO
+        # return await self[](resource)
+        ...  # TODO
 
     async def pull(
         self,

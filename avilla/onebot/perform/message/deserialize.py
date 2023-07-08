@@ -69,7 +69,7 @@ class OneBot11MessageDeserializePerform((m := AccountCollector["OneBot11Protocol
             raw_element["data"]["url"],
             raw_element["data"]["title"],
             raw_element["data"].get("content", None),
-            raw_element["data"].get("image", None)
+            raw_element["data"].get("image", None),
         )
 
     # TODO

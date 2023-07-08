@@ -12,9 +12,11 @@ if TYPE_CHECKING:
     from ..capability import Capability
     from ..collector.base import PerformTemplate
 
+
 class _Callable(Protocol):
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         ...
+
 
 T = TypeVar("T")
 P = ParamSpec("P")
