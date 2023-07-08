@@ -6,6 +6,7 @@ from avilla.core._vendor.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
+    from avilla.standard.core.account.event import AvillaLifecycleEvent
     from ..collector.connection import ConnectionCollector, ConnectionBasedPerformTemplate
 
 M = TypeVar("M", bound="ConnectionBasedPerformTemplate", contravariant=True)
@@ -19,7 +20,7 @@ class EventParserSign:
 class OneBot11EventParse:
     @classmethod
     def collect(cls, collector: ConnectionCollector, event_type: str):
-        def receiver(entity: Callable[[M, dict], Awaitable[AvillaEvent | None]]):
+        def receiver(entity: Callable[[M, dict], Awaitable[AvillaEvent | AvillaLifecycleEvent | None]]):
             collector.artifacts[EventParserSign(event_type)] = (collector, entity)
             return entity
 

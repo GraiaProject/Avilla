@@ -6,6 +6,8 @@ from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.ryanvk import Isolate
 from avilla.core.selector import Selector
 
+from statv import Statv, Stats
+
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
     from avilla.core.context import Context
@@ -52,3 +54,11 @@ class BaseAccount:
     @property
     def available(self) -> bool:
         return True
+
+
+class AccountStatus(Statv):
+    enabled = Stats[bool]("enabled", default=False)
+
+    @property
+    def available(self) -> bool:
+        return self.enabled

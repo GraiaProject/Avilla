@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
-from avilla.core.account import BaseAccount
+from avilla.core.account import BaseAccount, AccountStatus
 from avilla.core.context import Context
 from avilla.core.selector import Selector
 from avilla.standard.core.account import AccountAvailable, AccountUnavailable
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
 
 class OneBot11Account(BaseAccount):
     protocol: OneBot11Protocol
+    status: AccountStatus
 
     # http_client: OneBot11HttpClientConnection | None = None
     # http_server: OneBot11HttpServerConnection | None = None
@@ -25,6 +26,7 @@ class OneBot11Account(BaseAccount):
     def __init__(self, route: Selector, protocol: OneBot11Protocol):
         super().__init__(route, protocol.avilla)
         self.protocol = protocol
+        self.status = AccountStatus()
 
     @contextmanager
     def _status_update(self):
@@ -58,13 +60,4 @@ class OneBot11Account(BaseAccount):
 
     @property
     def available(self) -> bool:
-        return bool(
-            (self.websocket_client and self.websocket_client.status.available)  # WS Client
-            # or (self.websocket_server and self.websocket_server.status.available)  # WS Server
-            # or (
-            #    self.http_client
-            #    and self.http_client.status.available
-            #    and self.http_server
-            #    and self.http_server.status.available
-            # )  # HTTP Client & Server
-        )
+        return self.status.enabled

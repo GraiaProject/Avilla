@@ -40,11 +40,12 @@ class OneBot11WsClientNetworking(Launchable):
     config: OneBot11WsClientConfig
 
     connection: aiohttp.ClientWebSocketResponse | None = None
-    signal_close: asyncio.Event
+    close_signal: asyncio.Event
     response_waiters: dict[str, asyncio.Future]
 
-    def __init__(self) -> None:
+    def __init__(self, protocol: OneBot11Protocol) -> None:
         super().__init__()
+        self.protocol = protocol
         self.close_signal = asyncio.Event()
         self.response_waiters = {}
         self.accounts = {}

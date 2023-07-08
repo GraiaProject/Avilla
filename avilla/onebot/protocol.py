@@ -44,8 +44,11 @@ class OneBot11Protocol(BaseProtocol):
 
         # :: Event
         from .perform.event.message import OneBot11EventMessagePerform
+        from .perform.event.lifespan import OneBot11EventLifespanPerform
 
     def ensure(self, avilla: Avilla):
+        self.avilla = avilla
+
         avilla.launch_manager.add_component(self.service)
 
     async def parse_event(
