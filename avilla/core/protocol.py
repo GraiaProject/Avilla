@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from avilla.core._runtime import cx_avilla, cx_context, cx_protocol
 from avilla.core.event import AvillaEvent
 from avilla.core.ryanvk import processing_protocol
-from avilla.core.ryanvk.common.isolate import Isolate
+from avilla.core.ryanvk.isolate import Isolate
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla

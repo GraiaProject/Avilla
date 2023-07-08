@@ -1,21 +1,20 @@
+from ..builtins.capability import CoreCapability as CoreCapability
 from ._runtime import processing_protocol as processing_protocol
-from .capability import CoreCapability as CoreCapability
+from .capability import Capability as Capability
+from .collector.base import BaseCollector as BaseCollector
 from .collector.context import (
     ContextBasedPerformTemplate as ContextBasedPerformTemplate,
 )
 from .collector.context import ContextCollector as ContextCollector
-from .common import BaseCollector as BaseCollector
-from .common import BaseFn as BaseFn
-from .common import Capability as Capability
-from .common import Executable as Executable
-from .common import Isolate as Isolate
-from .common import Ring3 as Ring3
-from .common import Runner as Runner
-from .common import SupportsCollect as SupportsCollect
-#from .descriptor import FetchFn as FetchFn
-from .descriptor import Fn as Fn
-from .descriptor import PullFn as PullFn
-from .descriptor import QueryRecord as QueryRecord
-from .descriptor import QuerySchema as QuerySchema
-from .descriptor import TargetFn as TargetFn
-from .descriptor import TargetMetadataUnitedFn as TargetMetadataUnitedFn
+from .descriptor.base import Fn as Fn
+from .descriptor.fetch import Fetch as Fetch
+from .descriptor.metadata import TargetMetadataUnitedFn as TargetMetadataUnitedFn
+from .descriptor.pull import PullFn as PullFn
+from .descriptor.query import QueryRecord as QueryRecord
+from .descriptor.query import QuerySchema as QuerySchema
+from .descriptor.target import TargetFn as TargetFn
+from .isolate import Isolate as Isolate
+from .protocol import Executable as Executable
+from .protocol import Ring3 as Ring3
+from .protocol import SupportsCollect as SupportsCollect
+from .runner import Runner as Runner

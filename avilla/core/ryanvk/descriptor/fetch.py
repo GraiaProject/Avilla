@@ -6,7 +6,7 @@ from ..._vendor.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from avilla.core.resource import Resource
-    from ..common.collect import BaseCollector
+    from ..collector.base import BaseCollector
 
 
 T = TypeVar("T")
@@ -21,7 +21,11 @@ class FetchImplement:
 
 class Fetch:
     @classmethod
-    def collect(cls, collector: BaseCollector, resource_type: type[Resource[T]]):
+    def collect(
+        cls,
+        collector: BaseCollector,
+        resource_type: type[Resource[T]],  # pyright: ignore[reportInvalidTypeVarUse]
+    ):
         def receive(entity: Callable[[Any, R], Awaitable[T]]):  # to accept all resource type
             collector.artifacts[FetchImplement(resource_type)] = (collector, entity)
             return entity

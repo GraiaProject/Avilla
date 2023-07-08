@@ -8,7 +8,7 @@ from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector, _FollowItem
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.descriptor import QueryRecord
+    from avilla.core.ryanvk.descriptor.query import QueryRecord
 
 
 class QueryHandler(Protocol):

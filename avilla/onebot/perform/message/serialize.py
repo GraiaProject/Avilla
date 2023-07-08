@@ -5,10 +5,9 @@ from typing import TYPE_CHECKING, cast
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 from avilla.onebot.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import Face, FlashImage
-
-from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 
 if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa

@@ -7,14 +7,13 @@ from typing_extensions import Concatenate, ParamSpec
 
 from ..._vendor.dataclasses import dataclass
 from ...utilles import identity
-from .target import TargetEntityProtocol, TargetFn
-from .utilles import doubledself
+from .target import TargetFn, VnCollector, VnRunner
 
 if TYPE_CHECKING:
-    from ...context import Context
     from ...metadata import Metadata, MetadataRoute
+    from .base import Fn
     from ...selector import Selectable, Selector
-    from ..common.capability import Capability
+    from ..capability import Capability
 
 
 P = ParamSpec("P")
@@ -49,43 +48,37 @@ class UnitedFnImplement:
     metadata: type[Metadata] | MetadataRoute | None = None
 
 
-class PostReceivedCallback(Protocol[R1, R2]):  # type: ignore[reportInvalidGenericUse]
-    def __post_received__(self, entity: UnitedFnPerformBranch[Any, R1, R2]):
-        ...
-
-
-class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRoute | None", P], R]):
+class TargetMetadataUnitedFn(
+    TargetFn[Concatenate["type[Metadata] | MetadataRoute | None", P], R, VnCollector, VnRunner]
+):
     def __init__(self, template: Callable[Concatenate[C, P], Awaitable[R]]) -> None:
-        self.template = template  # type: ignore
-
-    def __post_received__(self, entity: UnitedFnPerformBranch[P, R1, R2]):  # type: ignore
-        ...
+        self.template = template
 
     @overload
     def execute(
-        self: PostReceivedCallback[R1, Any],
-        runner: Context,
+        self: Fn[UnitedFnPerformBranch[P1, R1, Any], VnCollector, VnRunner],
+        runner: VnRunner,
         target: Selectable,
         metadata: None = None,
-        *args: P.args,
-        **kwargs: P.kwargs,
+        *args: P1.args,
+        **kwargs: P1.kwargs,
     ) -> R1:
         ...
 
     @overload
     def execute(
-        self: PostReceivedCallback[Any, R2],
-        runner: Context,
+        self: Fn[UnitedFnPerformBranch[P1, Any, R2], VnCollector, VnRunner],
+        runner: VnRunner,
         target: Selectable,
         metadata: type[Metadata] | MetadataRoute,
-        *args: P.args,
-        **kwargs: P.kwargs,
+        *args: P1.args,
+        **kwargs: P1.kwargs,
     ) -> R2:
         ...
 
     def execute(
         self,
-        runner: Context,
+        runner: VnRunner,
         target: Selectable,
         metadata: type[Metadata] | MetadataRoute | None = None,
         *args: P.args,
@@ -93,17 +86,21 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
     ) -> Any:
         return super().execute(runner, target, metadata, *args, **kwargs)
 
-    @doubledself  # type: ignore
-    def get_execute_signature(
-        self,
-        self1: TargetEntityProtocol[P1, Any],
-        runner: Context,
-        _,
+    def get_artifact_record(
+        self: TargetMetadataUnitedFn[P, R, VnCollector, VnRunner],
+        runner: VnRunner,
+        target: Selectable,
         metadata: type[Metadata] | MetadataRoute | None = None,
-        *args: P1.args,
-        **kwargs: P1.kwargs,
-    ) -> Any:
-        return UnitedFnImplement(self.capability, self.name, metadata)
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> tuple[VnCollector, Callable[Concatenate[Any, Selector, type[Metadata] | MetadataRoute | None, P], R]]:
+        sign = UnitedFnImplement(self.capability, self.name, metadata)
+        select = target.to_selector()
+        for branch in self._iter_branches(runner.artifacts.maps, select):
+            if sign in branch.artifacts:
+                artifact = branch.artifacts[sign]
+                return artifact.collector, artifact.entity
+        raise NotImplementedError(f"no {repr(self)} implements for {select}.")
 
     def __repr__(self) -> str:
         return f"<Fn#target {identity(self.capability)}::{self.name} {inspect.Signature.from_callable(self.template)}>"

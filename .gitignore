@@ -137,3 +137,4 @@ docs/node_modules
 
 development
 .ruff_cache
+test_env.py

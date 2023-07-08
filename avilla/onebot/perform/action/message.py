@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
 
-    @MessageSend.send.collect(m, ("land.group", {}))
+    @MessageSend.send.collect(m, "land.group")
     async def send_group_message(
         self,
         target: Selector,

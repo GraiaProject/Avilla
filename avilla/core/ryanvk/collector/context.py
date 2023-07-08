@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, cast
 
 from typing_extensions import Unpack
 
-from avilla.core.ryanvk.capability import CoreCapability
+from avilla.core.builtins.capability import CoreCapability
 
 from .._runtime import processing_isolate, processing_protocol
-from ..common.collect import BaseCollector
 from ..descriptor.fetch import Fetch
+from .base import BaseCollector
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -53,16 +53,16 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
     def pull(
         self, target: str, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
     ):
-        return self.entity(cast("PullFn[M]", CoreCapability.pull), (target, patterns), route)
+        return self.entity(cast("PullFn[M]", CoreCapability.pull), target, route, **patterns)
 
     def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
         return self.entity(Fetch, resource_type)
 
     @property
     def _(self):
-        upper = super()._base_ring3()
+        upper = super().get_collect_template()
 
-        class perform_template(
+        class PerformTemplate(
             Generic[TProtocol1, TAccount1],
             ContextBasedPerformTemplate,
             upper,
@@ -73,7 +73,7 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
             protocol: TProtocol1
             account: TAccount1
 
-        return perform_template[TProtocol, TAccount]
+        return PerformTemplate[TProtocol, TAccount]
 
     def __post_collect__(self, cls: type[ContextBasedPerformTemplate]):
         super().__post_collect__(cls)

@@ -1,40 +1,42 @@
 from __future__ import annotations
 
-import itertools
 import inspect
+import itertools
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Generator,
     Generic,
+    Iterable,
     MutableMapping,
     Protocol,
-    TypeVar,
 )
+
+from typing_extensions import Concatenate, ParamSpec, TypeAlias, TypeVar
+
 from avilla.core._vendor.dataclasses import dataclass
-from typing_extensions import Concatenate, ParamSpec, TypeAlias
+from avilla.core.selector import FollowsPredicater, Selectable, Selector, _parse_follows
+from avilla.core.utilles import identity
 
-from ...selector import _parse_follows, Selectable, FollowsPredicater, Selector, _FollowItem
-from ...utilles import identity
-from ..common.fn import FnImplement
-from .base import Fn
-
+from .base import Fn, FnImplement
 
 if TYPE_CHECKING:
-    from ...context import Context
-    from ..collector.context import ContextBasedPerformTemplate, ContextCollector
-    from ..common.capability import Capability
+    from ..collector.base import BaseCollector, PerformTemplate
+    from ..runner import Runner
 
 
-P = ParamSpec("P")
-P1 = ParamSpec("P1")
-R = TypeVar("R", covariant=True)
-R1 = TypeVar("R1", covariant=True)
-C = TypeVar("C", bound="Capability")
 T = TypeVar("T")
-X = TypeVar("X")
-CBPT = TypeVar("CBPT", bound="ContextBasedPerformTemplate")
+P = ParamSpec("P")
+R = TypeVar("R", covariant=True)
+Q = TypeVar("Q", contravariant=True)
+VnCallable = TypeVar("VnCallable", bound="Callable")
+VnCollector = TypeVar("VnCollector", bound="BaseCollector", default="BaseCollector")
+VnRunner = TypeVar("VnRunner", bound="Runner", default="Runner")
+HQ = TypeVar("HQ", bound="PerformTemplate", contravariant=True)
+
+HnPerform = Callable[Concatenate[HQ, Selector, P], R]
+
 
 @dataclass
 class LookupBranchMetadata:
@@ -42,87 +44,85 @@ class LookupBranchMetadata:
 
 
 @dataclass
-class LookupBranch(Generic[T]):
+class LookupBranch(Generic[T, VnCollector]):
     metadata: LookupBranchMetadata
-    levels: LookupCollection
-    artifacts: dict[Any, TargetArtifactStore[T]]
+    levels: LookupCollection[T, VnCollector]
+    artifacts: dict[Any, TargetArtifactStore[T, VnCollector]]
+
 
 @dataclass
-class TargetArtifactStore(Generic[T]):
-    collector: ContextCollector
-    entity: T
-    pattern: list[_FollowItem]
+class TargetArtifactStore(Generic[Q, VnCollector]):
+    collector: VnCollector
+    entity: Q
 
 
-LookupBranches: TypeAlias = "dict[str | FollowsPredicater | None, LookupBranch]"
-LookupCollection: TypeAlias = "dict[str, LookupBranches]"
+LookupBranches: TypeAlias = "dict[str | FollowsPredicater | None, LookupBranch[T, VnCollector]]"
+LookupCollection: TypeAlias = "dict[str, LookupBranches[T, VnCollector]]"
+PerformBranch: TypeAlias = "LookupBranch[HnPerform[HQ, P, R], VnCollector]"
+PerformCollection: TypeAlias = "LookupCollection[HnPerform[HQ, P, R], VnCollector]"
 
 
-class TargetEntityProtocol(Protocol[P, T]):
-    def get_collect_signature(self, entity: T, *args: P.args, **kwargs: P.kwargs) -> Any:
-        ...
-
-    def __post_collected__(self, artifact: TargetArtifactStore[T]):
+class TargetConcatenateOutbound(Protocol[P, R]):
+    def __call__(self, target: Selectable, *args: P.args, **kwargs: P.kwargs) -> R:
         ...
 
 
 class TargetFn(
-    Fn[Concatenate[Selectable, P], R],
+    Generic[P, R, VnCollector, VnRunner],
+    Fn[TargetConcatenateOutbound[P, Any], VnCollector, VnRunner],
 ):
-    def __init__(self, template: Callable[Concatenate[C, P], R]) -> None:
-        self.template = template  # type: ignore
+    def __init__(self, template: Callable[Concatenate[Any, P], R]) -> None:
+        self.template = template
 
-    def collect(
-        self: TargetEntityProtocol[P1, T],  # type: ignore
-        collector: ContextCollector,
-        pattern: tuple[str, dict[str, FollowsPredicater]],
-        *args: P1.args,
-        **kwargs: P1.kwargs,
-    ):
-        def receive(entity: T):
-            target, predicaters = pattern
-            items = _parse_follows(target, **predicaters)
-            if not items:
-                raise ValueError("invalid target pattern")
+    def get_collect_signature(self, collector: VnCollector, pattern: str, **kwargs: FollowsPredicater):
+        return FnImplement(self.capability, self.name)
 
-            collection: LookupCollection = collector.artifacts['current_collection']
-            if TYPE_CHECKING:
+    def get_collect_layout(self, collector: VnCollector, pattern: str, **kwargs: FollowsPredicater):
+        items = _parse_follows(pattern, **kwargs)
+        if not items:
+            raise ValueError("invalid target pattern")
+
+        collection: PerformCollection[Any, P, R, VnCollector] = collector.artifacts["current_collection"]
+
+        if TYPE_CHECKING:
+            branch: PerformBranch[Any, P, R, VnCollector] = LookupBranch(LookupBranchMetadata(True), {}, {})
+
+        for i in items:
+            if i.name not in collection:
+                collection[i.name] = {}
+
+            branches = collection[i.name]
+
+            if (i.literal or i.predicate) in branches:
+                branch = branches[i.literal or i.predicate]
+            else:
                 branch = LookupBranch(LookupBranchMetadata(True), {}, {})
+                branches[i.literal or i.predicate] = branch
+            collection = branch.levels
 
-            for i in items:
-                if i.name not in collection:
-                    collection[i.name] = {}
-                branches = collection[i.name]
+        return branch
 
-                if (i.literal or i.predicate) in branches:
-                    branch = branches[i.literal or i.predicate]
-                else:
-                    branch = LookupBranch(LookupBranchMetadata(True), {}, {})
-                    branches[i.literal or i.predicate] = branch
-
-                collection = branch.levels
-
-            signature = self.get_collect_signature(entity, *args, **kwargs)
-            artifact = TargetArtifactStore(collector, entity, items)
+    def collect(self, collector: VnCollector, pattern: str, **kwargs: FollowsPredicater):
+        def receive(entity: Callable[Concatenate[HQ, Selector, P], R]):
+            branch = self.get_collect_layout(collector, pattern, **kwargs)
+            signature = self.get_collect_signature(collector, pattern, **kwargs)
+            artifact = TargetArtifactStore(collector, entity)
             branch.artifacts[signature] = artifact
-            self.__post_collected__(artifact)
             return entity
 
         return receive
 
-    def __post_collected__(self, artifact):
-        ...
-
     def _iter_branches(
-        self: TargetEntityProtocol[P1, T], artifact_collections: list[MutableMapping[Any, Any]], target: Selector
-    ) -> Generator[LookupBranch[T], Any, None]:
-        lookups = itertools.chain(*[i['lookup_collections'] for i in artifact_collections if 'lookup_collections' in i])
+        self, artifact_collections: list[MutableMapping[Any, Any]], target: Selector
+    ) -> Generator[LookupBranch[HnPerform[HQ, P, R], VnCollector], Any, None]:
+        lookups: Iterable[PerformCollection[Any, P, R, VnCollector]] = itertools.chain(
+            *[i["lookup_collections"] for i in artifact_collections if "lookup_collections" in i]
+        )
 
         for collection in lookups:
             # get branch
             branch = None
             for k, v in target.pattern.items():
-                print(f"{k=}, {v=}, {collection=}")
                 if k not in collection:
                     break
                 branches = collection[k]
@@ -150,18 +150,20 @@ class TargetFn(
 
             yield branch
 
-    def get_collect_signature(self, entity: Callable[Concatenate[Any, "Selector", P], R]) -> Any:
-        return FnImplement(self.capability, self.name)
-
     def get_artifact_record(
-        self, runner: Context, target: Selectable, *args: P.args, **kwargs: P.kwargs
-    ) -> tuple[ContextCollector, Callable[Concatenate[Any, Selector, P], R]]:
+        self: TargetFn[P, R, VnCollector, VnRunner],
+        runner: VnRunner,
+        target: Selectable,
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> tuple[VnCollector, Callable[Concatenate[Any, Selector, P], R]]:
         sign = FnImplement(self.capability, self.name)
-        for branch in self._iter_branches(runner.artifacts.maps, target.to_selector()):
-            artifacts = branch.artifacts
-            if sign in artifacts:
-                return artifacts[sign].collector, artifacts[sign].entity
-        raise NotImplementedError(f"no {repr(self)} implements for {target.to_selector()}.")
+        select = target.to_selector()
+        for branch in self._iter_branches(runner.artifacts.maps, select):
+            if sign in branch.artifacts:
+                artifact = branch.artifacts[sign]
+                return artifact.collector, artifact.entity
+        raise NotImplementedError(f"no {repr(self)} implements for {select}.")
 
     def __repr__(self) -> str:
         return f"<Fn#target {identity(self.capability)}::{self.name} {inspect.Signature.from_callable(self.template)}>"

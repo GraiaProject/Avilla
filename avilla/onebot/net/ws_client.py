@@ -105,6 +105,7 @@ class OneBot11WsClientNetworking(Launchable):
                 close_task = asyncio.create_task(self.close_signal.wait())
                 receiver_task = asyncio.create_task(self.message_receiver())
                 sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
+                
                 done, pending = await any_completed(
                     sigexit_task,
                     close_task,

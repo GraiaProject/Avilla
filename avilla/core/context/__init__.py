@@ -11,10 +11,10 @@ from avilla.core.account import BaseAccount
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
-from avilla.core.ryanvk.capability import CoreCapability
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.context import ContextCollector
-from avilla.core.ryanvk.common.protocol import Executable
-from avilla.core.ryanvk.common.runner import Runner as BaseRunner
+from avilla.core.ryanvk.protocol import Executable
+from avilla.core.ryanvk.runner import Runner as BaseRunner
 from avilla.core.selector import (
     FollowsPredicater,
     Selectable,

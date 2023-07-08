@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Protocol, TypeVar
 from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
-    from .collect import BaseCollector
+    from .collector.base import BaseCollector
     from .runner import Runner
 
 P = ParamSpec("P")

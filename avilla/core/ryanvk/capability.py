@@ -1,7 +1,5 @@
-from .common.capability import Capability
-from .descriptor import PullFn, QuerySchema
+from __future__ import annotations
 
 
-class CoreCapability(Capability):
-    pull = PullFn()
-    query = QuerySchema()
+class Capability:
+    ...

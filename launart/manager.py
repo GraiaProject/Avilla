@@ -292,6 +292,12 @@ class Launart:
                 await asyncio.wait(self.task_group.sideload_trackers.values())
 
             self.status.stage = "cleaning"
+            for idt, component in self.components.items():
+                if "cleanup" in component.stages and component.status.stage != "waiting-for-cleanup":
+                    await any_completed(
+                        self.tasks[idt],
+                        component.status.wait_for("waiting-for-cleanup"),
+                    )
 
             for components in resolve_requirements(self.components.values(), reverse=True):
                 cleanup_tasks = [

@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.standard.qq.elements import Face, FlashImage
 
-from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from ...element import Reply
 from ...resource import OneBot11ImageResource
 
@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from ...protocol import OneBot11Protocol  # noqa
 
 OneBot11MessageDeserialize = MessageDeserialize[dict]
+
 
 class OneBot11MessageDeserializePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True

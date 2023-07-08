@@ -10,7 +10,6 @@
     "python.linting.maxNumberOfProblems": 1000,
     "python.analysis.completeFunctionParens": true,
     "python.analysis.typeCheckingMode": "basic",
-    "python.sortImports.path": "isort",
     "cSpell.words": [
         "Aiohttp",
         "aioredis",
@@ -51,10 +50,6 @@
         "utilles",
         "uvicorn",
         "vuepress"
-    ],
-    "python.sortImports.args": [
-        "--profile",
-        "black"
     ],
     "python.autoComplete.extraPaths": [
         "__pypackages__/3.10/lib"
