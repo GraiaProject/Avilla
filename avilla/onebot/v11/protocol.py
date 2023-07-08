@@ -108,6 +108,7 @@ class OneBot11Protocol(BaseProtocol):
         return MessageChain(result)
 
     async def fetch_resource(self, account: OneBot11Account, resource: OneBot11Resource) -> bytes:
+        # TODO: convert into universal method
         async with aiohttp.ClientSession() as session:
             async with session.get(resource.url) as resp:
                 return await resp.read()

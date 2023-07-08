@@ -10,6 +10,7 @@ from yarl import URL
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.exceptions import ActionFailed
+from avilla.standard.core.account import AccountUnregistered
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
@@ -94,6 +95,7 @@ class OneBot11WsClientNetworking(Launchable):
         return result["data"]
 
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
+        avilla = self.protocol.avilla
         while not manager.status.exiting:
             async with session.ws_connect(
                 self.config.endpoint,
@@ -116,15 +118,24 @@ class OneBot11WsClientNetworking(Launchable):
                     logger.info(f"{self} Websocket client exiting...")
                     await self.connection.close()
                     self.connection = None
-                    for k, v in list(self.protocol.avilla.accounts.items()):
+                    for k, v in list(avilla.accounts.items()):
                         if v.route["account"] in self.accounts:
                             del self.accounts[k]
                     return
                 if close_task in done:
                     receiver_task.cancel()
-                    logger.warning(f"{self} Connection closed by server")
-                    for i in self.accounts.values():
-                        ...  # TODO
+                    logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
+                    accounts = set(str(i) for i in self.accounts.keys())
+                    # TODO: unregister all accounts, or cause inconsistency
+                    for n in list(avilla.accounts.keys()):
+                        logger.debug(f"Unregistering onebot(v11) account {n}...")
+                        account = cast("OneBot11Account", avilla.accounts[n].account)
+                        account.status.enabled = False
+                        await avilla.broadcast.postEvent(
+                            AccountUnregistered(avilla, avilla.accounts[n].account)
+                        )
+                        if n.follows("land(qq).account") and n['account'] in accounts:
+                            del avilla.accounts[n]
                     await asyncio.sleep(5)
                     logger.info(f"{self} Reconnecting...")
                     continue

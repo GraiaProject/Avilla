@@ -7,7 +7,7 @@ from avilla.core.selector import Selector
 from ...account import OneBot11Account
 from avilla.core.account import AccountInfo
 from ...net.ws_client import OneBot11WsClientNetworking
-from avilla.standard.core.account.event import AccountAvailable
+from avilla.standard.core.account.event import AccountRegistered, AccountAvailable, AccountUnavailable
 from avilla.core.platform import Abstract, Branch, Land, Platform, Version
 
 from ...descriptor.event import OneBot11EventParse
@@ -47,7 +47,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
             if isinstance(self.connection, OneBot11WsClientNetworking):
                 account.websocket_client = self.connection
         logger.info(f"Account {self_id} connected and created")
-        return AccountAvailable(self.protocol.avilla, account)
+        return AccountRegistered(self.protocol.avilla, account)
 
     @OneBot11EventParse.collect(m, "meta_event.lifecycle.enable")
     async def enable(self, raw_event: dict):
@@ -70,7 +70,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         account.status.enabled = False
         logger.warning(f"Account {self_id} disabled by remote")
         # TODO: remove registry after timeout
-        return AccountAvailable(self.protocol.avilla, account)
+        return AccountUnavailable(self.protocol.avilla, account)
 
     @OneBot11EventParse.collect(m, "meta_event.heartbeat")
     async def heartbeat(self, raw_event: dict):
@@ -80,4 +80,3 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received heartbeat event {raw_event}")
             return
         logger.debug(f"Heartbeat received from account {self_id}")
-        
