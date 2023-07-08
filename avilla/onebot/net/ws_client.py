@@ -54,20 +54,20 @@ class OneBot11WsClientNetworking(Launchable):
             raise RuntimeError("connection is not established")
 
         async for msg in self.connection:
+            logger.debug(f"{msg=}")
             if msg.type in {aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED}:
                 self.close_signal.set()
                 return
             elif msg.type == aiohttp.WSMsgType.TEXT:
                 data: dict = json.loads(cast(str, msg.data))
-                logger.debug(f"{data=}")
+                #logger.debug(f"{data=}")
                 if echo := data.get("echo"):
                     if future := self.response_waiters.get(echo):
                         future.set_result(data)
-                    return
-
+                    continue
+            
                 event_type = onebot11_event_type(data)
-                account = self.accounts[data["self_id"]]
-                event = await self.protocol.parse_event(account, event_type, data)
+                event = await self.protocol.parse_event(self, event_type, data)
                 if event is not None:
                     debug(event)
                     self.protocol.post_event(event)
@@ -82,7 +82,7 @@ class OneBot11WsClientNetworking(Launchable):
 
         try:
             await self.status.wait_for_available()
-            await self.connection.send_json({"action": action, "params": params, "echo": echo})
+            await self.connection.send_json({"action": action, "params": params or {}, "echo": echo})
             result = await future
         finally:
             del self.response_waiters[echo]

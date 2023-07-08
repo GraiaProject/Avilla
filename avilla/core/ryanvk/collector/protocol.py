@@ -6,15 +6,11 @@ from .._runtime import processing_isolate, processing_protocol
 from .base import BaseCollector
 
 if TYPE_CHECKING:
-    from ...account import BaseAccount
     from ...protocol import BaseProtocol
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
-TAccount = TypeVar("TAccount", bound="BaseAccount")
-
 TProtocol1 = TypeVar("TProtocol1", bound="BaseProtocol")
-TAccount1 = TypeVar("TAccount1", bound="BaseAccount")
 
 T = TypeVar("T")
 T1 = TypeVar("T1")

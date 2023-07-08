@@ -6,12 +6,9 @@ from avilla.core._vendor.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
-    from avilla.core.ryanvk.collector.account import (
-        AccountBasedPerformTemplate,
-        AccountCollector,
-    )
+    from ..collector.connection import ConnectionCollector, ConnectionBasedPerformTemplate
 
-PBPT = TypeVar("PBPT", bound="AccountBasedPerformTemplate", contravariant=True)
+M = TypeVar("M", bound="ConnectionBasedPerformTemplate", contravariant=True)
 
 
 @dataclass(unsafe_hash=True)
@@ -21,8 +18,8 @@ class EventParserSign:
 
 class OneBot11EventParse:
     @classmethod
-    def collect(cls, collector: AccountCollector, event_type: str):
-        def receiver(entity: Callable[[PBPT, dict], Awaitable[AvillaEvent]]):
+    def collect(cls, collector: ConnectionCollector, event_type: str):
+        def receiver(entity: Callable[[M, dict], Awaitable[AvillaEvent | None]]):
             collector.artifacts[EventParserSign(event_type)] = (collector, entity)
             return entity
 

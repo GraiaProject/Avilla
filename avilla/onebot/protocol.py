@@ -18,6 +18,8 @@ from .service import OneBot11Service
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.core.ryanvk.collector.account import AccountCollector
+    from .collector.connection import ConnectionCollector
+    from .net.ws_client import OneBot11WsClientNetworking
 
     from .account import OneBot11Account
     from .resource import OneBot11Resource
@@ -48,7 +50,7 @@ class OneBot11Protocol(BaseProtocol):
 
     async def parse_event(
         self,
-        account: OneBot11Account,
+        connection: OneBot11WsClientNetworking,
         event_type: str,
         data: dict,
     ) -> AvillaEvent | None:
@@ -58,12 +60,12 @@ class OneBot11Protocol(BaseProtocol):
             return
         collector, entity = cast(
             """tuple[
-                AccountCollector[OneBot11Protocol, OneBot11Account],
-                Callable[[Any, dict], Awaitable[AvillaEvent]]
+                ConnectionCollector,
+                Callable[[Any, dict], Awaitable[AvillaEvent | None]]
             ]""",
             self.isolate.artifacts[sign],
         )
-        instance = collector.cls(self, account)
+        instance = collector.cls(self, connection)
         return await entity(instance, data)
 
     async def serialize_message(self, account: OneBot11Account, message: MessageChain) -> list[dict]:
