@@ -16,7 +16,7 @@ from ..resource import (
 )
 
 if TYPE_CHECKING:
-    pass
+    from ..protocol import OneBot11Protocol  # noqa
 
 
 class OneBot11ResourceFetchPerform((m := ProtocolCollector["OneBot11Protocol"]())._):

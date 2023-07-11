@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 Co = TypeVar("Co", bound="BaseCollector")
-T = TypeVar("T")
+T = TypeVar("T", covariant=True)
 R = TypeVar("R", covariant=True)
 P = ParamSpec("P")
 
