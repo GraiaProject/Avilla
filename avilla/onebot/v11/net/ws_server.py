@@ -11,7 +11,6 @@ from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
 
-
 if TYPE_CHECKING:
     from ..protocol import OneBot11Protocol
 

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Awaitable, Callable, TypeVar, Generic
+from typing import TYPE_CHECKING, Awaitable, Callable, Generic, TypeVar
 
 from avilla.core._vendor.dataclasses import dataclass
 

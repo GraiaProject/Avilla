@@ -7,7 +7,18 @@ from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 from avilla.onebot.v11.resource import OneBot11ImageResource
-from avilla.standard.qq.elements import Face, FlashImage, MusicShare, Json, Xml, Dice, Gift, App, Share, Poke
+from avilla.standard.qq.elements import (
+    App,
+    Dice,
+    Face,
+    FlashImage,
+    Gift,
+    Json,
+    MusicShare,
+    Poke,
+    Share,
+    Xml,
+)
 
 if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa
@@ -31,16 +42,15 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
 
     @OneBot11MessageSerialize.collect(m, Picture)
     async def picture(self, element: Picture) -> dict:
-        # 我们需要模拟 Context 那种 overlay.
-        
         return {
             "type": "image",
             "data": {
                 "file": resource.file
                 if isinstance(resource := element.resource, OneBot11ImageResource)
-                else base64.b64encode(cast(bytes, await self.protocol.avilla.fetch_resource(element.resource))).decode(
-                    "utf-8"
-                )
+                else "base64://"
+                + base64.b64encode(
+                    cast(bytes, await self.protocol.fetch_resource(self.account, element.resource))
+                ).decode("utf-8")
             },
         }
 

@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
+from statv import Stats, Statv
+
 from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.ryanvk import Isolate
 from avilla.core.selector import Selector
-
-from statv import Statv, Stats
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from .._runtime import processing_isolate, processing_protocol
-from .base import BaseCollector
+from .base import BaseCollector, ComponentEntrypoint, PerformTemplate
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -20,11 +20,11 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class AccountBasedPerformTemplate:
+class AccountBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[AccountCollector]
 
-    protocol: BaseProtocol
-    account: BaseAccount
+    protocol: ComponentEntrypoint[BaseProtocol] = ComponentEntrypoint()
+    account: ComponentEntrypoint[BaseAccount] = ComponentEntrypoint()
 
 
 class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
@@ -32,13 +32,12 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
 
     def __init__(self):
         super().__init__()
-        self.artifacts["current_collection"] = {}
 
     @property
     def _(self):
         upper = super().get_collect_template()
 
-        class PerformTemplate(
+        class LocalPerformTemplate(
             Generic[TProtocol1, TAccount1],
             AccountBasedPerformTemplate,
             upper,
@@ -48,12 +47,7 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
             protocol: TProtocol1
             account: TAccount1
 
-            def __init__(self, protocol: TProtocol1, account: TAccount1):
-                self.protocol = protocol
-                self.account = account
-
-        assert issubclass(PerformTemplate, AccountBasedPerformTemplate)
-        return PerformTemplate[TProtocol, TAccount]
+        return LocalPerformTemplate[TProtocol, TAccount]
 
     def __post_collect__(self, cls: type[AccountBasedPerformTemplate]):
         super().__post_collect__(cls)

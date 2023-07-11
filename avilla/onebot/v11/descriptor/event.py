@@ -7,7 +7,11 @@ from avilla.core._vendor.dataclasses import dataclass
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.standard.core.account.event import AvillaLifecycleEvent
-    from ..collector.connection import ConnectionCollector, ConnectionBasedPerformTemplate
+
+    from ..collector.connection import (
+        ConnectionBasedPerformTemplate,
+        ConnectionCollector,
+    )
 
 M = TypeVar("M", bound="ConnectionBasedPerformTemplate", contravariant=True)
 

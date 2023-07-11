@@ -42,7 +42,6 @@ class Avilla:
         self.protocols = protocols
         self._protocol_map = {type(i): i for i in protocols}
         self.accounts = {}
-        self.global_artifacts = {}
         self.service = AvillaService(self, message_cache_size)
         self.isolate = Isolate()
 

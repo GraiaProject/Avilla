@@ -8,7 +8,7 @@ from avilla.core.builtins.capability import CoreCapability
 
 from .._runtime import processing_isolate, processing_protocol
 from ..descriptor.fetch import Fetch
-from .base import BaseCollector
+from .base import BaseCollector, ComponentEntrypoint, PerformTemplate
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
@@ -30,17 +30,18 @@ T1 = TypeVar("T1")
 M = TypeVar("M", bound="Metadata")
 
 
-class ContextBasedPerformTemplate:
+class ContextBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ContextCollector]
 
-    context: Context
-    protocol: BaseProtocol
-    account: BaseAccount
+    context: ComponentEntrypoint[Context] = ComponentEntrypoint()
 
-    def __init__(self, context: Context):
-        self.context = context
-        self.protocol = context.protocol
-        self.account = context.account
+    @property
+    def protocol(self):
+        return self.context.protocol
+
+    @property
+    def account(self):
+        return self.context.account
 
 
 class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
@@ -48,7 +49,6 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
 
     def __init__(self):
         super().__init__()
-        self.artifacts["current_collection"] = {}
 
     def pull(
         self, target: str, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
@@ -62,20 +62,20 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
     def _(self):
         upper = super().get_collect_template()
 
-        class PerformTemplate(
+        class LocalPerformTemplate(
             Generic[TProtocol1, TAccount1],
             ContextBasedPerformTemplate,
             upper,
         ):
             __native__ = True
 
-            context: Context
             protocol: TProtocol1
             account: TAccount1
 
-        return PerformTemplate[TProtocol, TAccount]
+        return LocalPerformTemplate[TProtocol, TAccount]
 
     def __post_collect__(self, cls: type[ContextBasedPerformTemplate]):
+        # TODO: rewrite this.
         super().__post_collect__(cls)
         if self.post_applying:
             if (isolate := processing_isolate.get(None)) is not None:

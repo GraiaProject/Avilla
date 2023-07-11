@@ -1,7 +1,16 @@
 from __future__ import annotations
 
-from contextlib import AbstractContextManager
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Protocol, TypeVar
+from contextlib import AbstractContextManager, asynccontextmanager
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    ClassVar,
+    Generic,
+    Protocol,
+    TypeVar,
+    overload,
+)
 
 from typing_extensions import ParamSpec, Self
 
@@ -10,7 +19,6 @@ from ..protocol import SupportsCollect
 if TYPE_CHECKING:
     from ..isolate import Isolate
     from ..protocol import Ring3
-    from ..runner import Runner
 
 
 P = ParamSpec("P")
@@ -18,12 +26,45 @@ R = TypeVar("R", covariant=True)
 T = TypeVar("T")
 
 
+class ComponentEntrypoint(Generic[T]):
+    name: str
+
+    def __init__(self):
+        ...
+
+    def __set_name__(self, owner: type, name: str):
+        self.name = name
+
+    @overload
+    def __get__(self, instance: None, owner: type) -> Self:
+        ...
+
+    @overload
+    def __get__(self, instance: PerformTemplate, owner: type) -> T:
+        ...
+
+    def __get__(self, instance: PerformTemplate | None, owner: type):
+        if instance is None:
+            return self
+
+        return instance.components[self.name]
+
+
 class PerformTemplate:
     __collector__: ClassVar[BaseCollector]
-    runner: Runner
+    components: dict[str, Any]
 
-    def __init__(self, runner: Runner):
-        self.runner = runner
+    def __init__(self, components: dict[str, Any]):
+        self.components = components
+
+    @classmethod
+    def entrypoints(cls):
+        return [k for k, v in cls.__dict__.items() if isinstance(v, ComponentEntrypoint)]
+
+    @asynccontextmanager
+    async def run_with_lifespan(self):
+        # TODO
+        yield self
 
 
 class _ResultCollect(Protocol[R]):
@@ -47,7 +88,7 @@ class BaseCollector:
         return self.get_collect_template()
 
     def __init__(self):
-        self.artifacts = {}
+        self.artifacts = {"current_collection": {}}
         self.defer_callbacks = [self.__post_collect__]
 
     def entity(self, signature: SupportsCollect[Self, P, R], *args: P.args, **kwargs: P.kwargs) -> R:

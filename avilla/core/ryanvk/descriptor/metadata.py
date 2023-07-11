@@ -1,18 +1,28 @@
 from __future__ import annotations
 
 import inspect
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, Protocol, TypeVar, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Awaitable,
+    Callable,
+    ChainMap,
+    Protocol,
+    TypeVar,
+    overload,
+)
 
 from typing_extensions import Concatenate, ParamSpec
 
+from avilla.core.ryanvk.descriptor.target import TargetFn
+from avilla.core.selector import Selectable
+
 from ..._vendor.dataclasses import dataclass
 from ...utilles import identity
-from .target import TargetFn, VnCollector, VnRunner
 
 if TYPE_CHECKING:
     from ...metadata import Metadata, MetadataRoute
-    from .base import Fn
-    from ...selector import Selectable, Selector
+    from ...selector import Selector
     from ..capability import Capability
 
 
@@ -48,59 +58,17 @@ class UnitedFnImplement:
     metadata: type[Metadata] | MetadataRoute | None = None
 
 
-class TargetMetadataUnitedFn(
-    TargetFn[Concatenate["type[Metadata] | MetadataRoute | None", P], R, VnCollector, VnRunner]
-):
+class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRoute | None", P], R]):
     def __init__(self, template: Callable[Concatenate[C, P], Awaitable[R]]) -> None:
         self.template = template
 
-    @overload
-    def execute(
-        self: Fn[UnitedFnPerformBranch[P1, R1, Any], VnCollector, VnRunner],
-        runner: VnRunner,
-        target: Selectable,
-        metadata: None = None,
-        *args: P1.args,
-        **kwargs: P1.kwargs,
-    ) -> R1:
-        ...
-
-    @overload
-    def execute(
-        self: Fn[UnitedFnPerformBranch[P1, Any, R2], VnCollector, VnRunner],
-        runner: VnRunner,
-        target: Selectable,
-        metadata: type[Metadata] | MetadataRoute,
-        *args: P1.args,
-        **kwargs: P1.kwargs,
-    ) -> R2:
-        ...
-
-    def execute(
+    def get_artifact_signature(
         self,
-        runner: VnRunner,
+        collection: ChainMap[Any, Any],
         target: Selectable,
-        metadata: type[Metadata] | MetadataRoute | None = None,
-        *args: P.args,
-        **kwargs: P.kwargs,
+        route: type[Metadata] | MetadataRoute | None,
     ) -> Any:
-        return super().execute(runner, target, metadata, *args, **kwargs)
-
-    def get_artifact_record(
-        self: TargetMetadataUnitedFn[P, R, VnCollector, VnRunner],
-        runner: VnRunner,
-        target: Selectable,
-        metadata: type[Metadata] | MetadataRoute | None = None,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> tuple[VnCollector, Callable[Concatenate[Any, Selector, type[Metadata] | MetadataRoute | None, P], R]]:
-        sign = UnitedFnImplement(self.capability, self.name, metadata)
-        select = target.to_selector()
-        for branch in self._iter_branches(runner.artifacts.maps, select):
-            if sign in branch.artifacts:
-                artifact = branch.artifacts[sign]
-                return artifact.collector, artifact.entity
-        raise NotImplementedError(f"no {repr(self)} implements for {select}.")
+        return UnitedFnImplement(self.capability, self.name, route)
 
     def __repr__(self) -> str:
         return f"<Fn#target {identity(self.capability)}::{self.name} {inspect.Signature.from_callable(self.template)}>"

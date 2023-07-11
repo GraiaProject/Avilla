@@ -1,20 +1,21 @@
 from __future__ import annotations
 
+from collections import ChainMap
 from collections.abc import Callable
-from functools import partial, reduce
-from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
+from functools import reduce
+from typing import TYPE_CHECKING, Any, Awaitable, TypedDict, TypeVar, cast, overload
 
-from typing_extensions import ParamSpec, Self, Unpack
+from typing_extensions import ParamSpec, Unpack
 
 from avilla.core._runtime import cx_context
 from avilla.core.account import BaseAccount
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
-from avilla.core.builtins.capability import CoreCapability
-from avilla.core.ryanvk.collector.context import ContextCollector
-from avilla.core.ryanvk.protocol import Executable
-from avilla.core.ryanvk.runner import Runner as BaseRunner
+from avilla.core.ryanvk.collector.base import BaseCollector
+from avilla.core.ryanvk.descriptor.base import Fn
+from avilla.core.ryanvk.runner import run_fn, use_record
 from avilla.core.selector import (
     FollowsPredicater,
     Selectable,
@@ -47,7 +48,7 @@ class ContextCache(TypedDict):
     meta: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]]
 
 
-class Context(BaseRunner):
+class Context:
     account: BaseAccount
 
     client: ContextClientSelector
@@ -68,12 +69,11 @@ class Context(BaseRunner):
         mediums: list[Selector] | None = None,
         prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
-        super().__init__()
-        self.artifacts.maps = [
+        self.artifacts = ChainMap(
             account.info.isolate.artifacts,
             account.info.protocol.isolate.artifacts,
             account.avilla.isolate.artifacts,
-        ]
+        )
 
         self.account = account
 
@@ -120,13 +120,21 @@ class Context(BaseRunner):
         if steps is None:
             return
 
-        def build_handler(artifact: Executable[Self, [], Any]) -> QueryHandler:
-            collector, entity = cast(
-                "tuple[ContextCollector, QueryHandlerPerform]",
-                artifact,
-            )
-            instance = collector.cls(self)
-            return partial(entity, instance)
+        def build_handler(artifact: tuple[BaseCollector, QueryHandlerPerform]) -> QueryHandler:
+            async def handler(predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):
+                async with use_record(
+                    {
+                        "context": self,
+                        "protocol": self.protocol,
+                        "account": self.account,
+                        "avilla": self.avilla,
+                    },
+                    artifact,
+                ) as entity:
+                    async for i in entity(predicate, previous):
+                        yield i
+
+            return handler
 
         def build_predicate(_steps: tuple[_FollowItem, ...]) -> Callable[[str, str], bool]:
             mapping = {i.name: i for i in _steps}
@@ -182,10 +190,20 @@ class Context(BaseRunner):
         ...
 
     @overload
-    def __getitem__(self, closure: Executable[Context, P, R]) -> Callable[P, R]:
+    def __getitem__(self, closure: Fn[Callable[P, Awaitable[R]]]) -> Callable[P, Awaitable[R]]:
         ...
 
-    def __getitem__(self, closure: Selector | Executable[Context, P, Any]) -> Any:
+    def __getitem__(self, closure: Selector | Fn[Callable[P, Awaitable[Any]]]) -> Any:
         if isinstance(closure, Selector):
             return ContextSelector(self, closure.pattern)
-        return partial(self.execute, closure)
+
+        async def run(*args: P.args, **kwargs: P.kwargs):
+            return await run_fn(
+                self.artifacts,
+                {"context": self, "protocol": self.protocol, "account": self.account, "avilla": self.avilla},
+                closure,
+                *args,
+                **kwargs,
+            )
+
+        return run

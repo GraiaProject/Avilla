@@ -3,26 +3,26 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
-from avilla.core.ryanvk.collector.base import BaseCollector
+from avilla.core.ryanvk.collector.base import (
+    BaseCollector,
+    ComponentEntrypoint,
+    PerformTemplate,
+)
 
 if TYPE_CHECKING:
-    from ..protocol import OneBot11Protocol
     from ..net.ws_client import OneBot11WsClientNetworking
+    from ..protocol import OneBot11Protocol
 
 
 T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ConnectionBasedPerformTemplate:
+class ConnectionBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ConnectionCollector]
 
-    protocol: OneBot11Protocol
-    connection: OneBot11WsClientNetworking  # TODO: Network overload
-
-    def __init__(self, protocol: OneBot11Protocol, connection: OneBot11WsClientNetworking):
-        self.protocol = protocol
-        self.connection = connection
+    protocol: ComponentEntrypoint[OneBot11Protocol] = ComponentEntrypoint()
+    connection: ComponentEntrypoint[OneBot11WsClientNetworking] = ComponentEntrypoint()
 
 
 class ConnectionCollector(BaseCollector):

@@ -18,8 +18,6 @@ from launart.utilles import any_completed
 from ..account import OneBot11Account
 from ..utilles import onebot11_event_type
 
-from devtools import debug
-
 if TYPE_CHECKING:
     from ..protocol import OneBot11Protocol
 
@@ -57,22 +55,25 @@ class OneBot11WsClientNetworking(Launchable):
 
         async for msg in self.connection:
             logger.debug(f"{msg=}")
+
             if msg.type in {aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED}:
                 self.close_signal.set()
                 return
             elif msg.type == aiohttp.WSMsgType.TEXT:
                 data: dict = json.loads(cast(str, msg.data))
-                #logger.debug(f"{data=}")
                 if echo := data.get("echo"):
                     if future := self.response_waiters.get(echo):
                         future.set_result(data)
                     continue
-            
-                event_type = onebot11_event_type(data)
-                event = await self.protocol.parse_event(self, event_type, data)
-                if event is not None:
-                    debug(event)
-                    self.protocol.post_event(event)
+
+                async def event_parse_task():
+                    event_type = onebot11_event_type(data)
+                    event = await self.protocol.parse_event(self, event_type, data)
+                    if event is not None:
+                        self.protocol.post_event(event)
+
+                asyncio.create_task(event_parse_task())
+                # TODO: 这里粗略的解决了 event parsing 中如果要 call 就会死锁的问题, 当然, 我并不是很满意现在的方法.
 
     async def call(self, action: str, params: dict | None = None) -> dict | None:
         if self.connection is None:
@@ -83,7 +84,7 @@ class OneBot11WsClientNetworking(Launchable):
         self.response_waiters[echo] = future
 
         try:
-            await self.status.wait_for_available()
+            # await self.status.wait_for_available()
             await self.connection.send_json({"action": action, "params": params or {}, "echo": echo})
             result = await future
         finally:
@@ -131,10 +132,8 @@ class OneBot11WsClientNetworking(Launchable):
                         logger.debug(f"Unregistering onebot(v11) account {n}...")
                         account = cast("OneBot11Account", avilla.accounts[n].account)
                         account.status.enabled = False
-                        await avilla.broadcast.postEvent(
-                            AccountUnregistered(avilla, avilla.accounts[n].account)
-                        )
-                        if n.follows("land(qq).account") and n['account'] in accounts:
+                        await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
+                        if n.follows("land(qq).account") and n["account"] in accounts:
                             del avilla.accounts[n]
                     await asyncio.sleep(5)
                     logger.info(f"{self} Reconnecting...")

@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+from collections import ChainMap
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Callable, Generic, Protocol
 
 from typing_extensions import Concatenate, ParamSpec, TypeVar
 
 from ..collector.base import BaseCollector
-from ..runner import Runner
 
 if TYPE_CHECKING:
     from ..capability import Capability
@@ -21,9 +21,7 @@ class _Callable(Protocol):
 T = TypeVar("T")
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
-VnCallable = TypeVar("VnCallable", bound="_Callable")
-VnCollector = TypeVar("VnCollector", bound="BaseCollector", default="BaseCollector")
-VnRunner = TypeVar("VnRunner", bound="Runner", default="Runner")
+VnCallable = TypeVar("VnCallable", bound="_Callable", covariant=True)
 HQ = TypeVar("HQ", bound="PerformTemplate", contravariant=True)
 
 
@@ -33,12 +31,12 @@ class FnImplement:
     name: str
 
 
-class Fn(Generic[VnCallable, VnCollector, VnRunner]):
+class Fn(Generic[VnCallable]):
     capability: type[Capability]
     name: str = "<unit>"
     template: Callable
 
-    def __init__(self: Fn[Callable[P, R], VnCollector, VnRunner], template: Callable[Concatenate[Any, P], R]):
+    def __init__(self: Fn[Callable[P, R]], template: Callable[Concatenate[Any, P], R]):
         self.template = template
 
     def __set_name__(self, owner: type[Capability], name: str):
@@ -46,8 +44,8 @@ class Fn(Generic[VnCallable, VnCollector, VnRunner]):
         self.name = name
 
     def collect(
-        self: Fn[Callable[P, R], VnCollector, VnRunner],  # pyright: ignore[reportInvalidTypeVarUse]
-        collector: VnCollector,
+        self: Fn[Callable[P, R]],  # pyright: ignore[reportInvalidTypeVarUse]
+        collector: BaseCollector,
         signature: Any,
     ):
         def wrapper(entity: Callable[Concatenate[HQ, P], R]):
@@ -57,19 +55,9 @@ class Fn(Generic[VnCallable, VnCollector, VnRunner]):
         return wrapper
 
     def get_artifact_record(
-        self: Fn[Callable[P, Any], VnCollector, VnRunner],
-        runner: VnRunner,
+        self: Fn[Callable[P, Any]],
+        collection: ChainMap[Any, Any],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> tuple[VnCollector, Callable[Concatenate[Any, P], Any]]:
-        return runner.artifacts[FnImplement(self.capability, self.name)]
-
-    def execute(
-        self: Fn[Callable[P, R], VnCollector, VnRunner],
-        runner: VnRunner,
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> R:
-        collector, entity = self.get_artifact_record(runner, *args, **kwargs)
-        instance = collector.cls(runner)
-        return entity(instance, *args, **kwargs)
+    ) -> tuple[BaseCollector, Callable[Concatenate[Any, P], Any]]:
+        return collection[FnImplement(self.capability, self.name)]

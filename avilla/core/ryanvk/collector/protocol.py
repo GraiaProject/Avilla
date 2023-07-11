@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from .._runtime import processing_isolate, processing_protocol
-from .base import BaseCollector
+from .base import BaseCollector, ComponentEntrypoint, PerformTemplate
 
 if TYPE_CHECKING:
     from ...protocol import BaseProtocol
@@ -16,10 +16,10 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ProtocolBasedPerformTemplate:
+class ProtocolBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ProtocolCollector]
 
-    protocol: BaseProtocol
+    protocol: ComponentEntrypoint[BaseProtocol] = ComponentEntrypoint()
 
 
 class ProtocolCollector(BaseCollector, Generic[TProtocol]):
@@ -27,13 +27,12 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol]):
 
     def __init__(self):
         super().__init__()
-        self.artifacts["current_collection"] = {}
 
     @property
     def _(self):
         upper = super().get_collect_template()
 
-        class PerformTemplate(
+        class LocalPerformTemplate(
             Generic[TProtocol1],
             ProtocolBasedPerformTemplate,
             upper,
@@ -42,11 +41,7 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol]):
 
             protocol: TProtocol1
 
-            def __init__(self, protocol: TProtocol1):
-                self.protocol = protocol
-
-        assert issubclass(PerformTemplate, ProtocolBasedPerformTemplate)
-        return PerformTemplate[TProtocol]
+        return LocalPerformTemplate[TProtocol]
 
     def __post_collect__(self, cls: type[ProtocolBasedPerformTemplate]):
         super().__post_collect__(cls)

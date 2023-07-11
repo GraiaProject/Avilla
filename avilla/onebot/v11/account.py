@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
-from avilla.core.account import BaseAccount, AccountStatus
+from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.context import Context
 from avilla.core.selector import Selector
 from avilla.standard.core.account import AccountAvailable, AccountUnavailable

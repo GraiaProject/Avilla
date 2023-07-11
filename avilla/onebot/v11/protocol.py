@@ -1,15 +1,19 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, cast
+from collections import ChainMap
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar
 
 import aiohttp
 from loguru import logger
+from typing_extensions import Concatenate
 
 from avilla.core.application import Avilla
 from avilla.core.elements import Element
 from avilla.core.protocol import BaseProtocol
+from avilla.core.ryanvk.descriptor.fetch import FetchImplement
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserializeSign
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerializeSign
+from avilla.core.ryanvk.runner import run_fn, use_record
 from graia.amnesia.message import MessageChain
 
 from .descriptor.event import EventParserSign
@@ -17,12 +21,15 @@ from .service import OneBot11Service
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
+    from avilla.core.resource import Resource
     from avilla.core.ryanvk.collector.account import AccountCollector
-    from .collector.connection import ConnectionCollector
-    from .net.ws_client import OneBot11WsClientNetworking
 
     from .account import OneBot11Account
+    from .collector.connection import ConnectionCollector
+    from .net.ws_client import OneBot11WsClientNetworking
     from .resource import OneBot11Resource
+
+T = TypeVar("T")
 
 
 class OneBot11Protocol(BaseProtocol):
@@ -46,6 +53,9 @@ class OneBot11Protocol(BaseProtocol):
         from .perform.event.message import OneBot11EventMessagePerform
         from .perform.event.lifespan import OneBot11EventLifespanPerform
 
+        # :: Resource Fetch
+        from .perform.resource_fetch import OneBot11ResourceFetchPerform
+
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
 
@@ -61,15 +71,13 @@ class OneBot11Protocol(BaseProtocol):
         if sign not in self.isolate.artifacts:
             logger.warning(f"Event {event_type} is not supported: {data}")
             return
-        collector, entity = cast(
-            """tuple[
-                ConnectionCollector,
-                Callable[[Any, dict], Awaitable[AvillaEvent | None]]
-            ]""",
-            self.isolate.artifacts[sign],
-        )
-        instance = collector.cls(self, connection)
-        return await entity(instance, data)
+        record: tuple[
+            ConnectionCollector, Callable[[Any, dict], Awaitable[AvillaEvent | None]]
+        ] = self.isolate.artifacts[sign]
+        from devtools import debug
+
+        async with use_record({"avilla": self.avilla, "protocol": self, "connection": connection}, record) as entity:
+            return await entity(data)
 
     async def serialize_message(self, account: OneBot11Account, message: MessageChain) -> list[dict]:
         result: list[dict] = []
@@ -78,15 +86,10 @@ class OneBot11Protocol(BaseProtocol):
             sign = MessageSerializeSign(element_type)
             if sign not in self.isolate.artifacts:
                 raise NotImplementedError(f"Element {element_type} is not supported")
-            collector, entity = cast(
-                """tuple[
-                    AccountCollector[OneBot11Protocol, OneBot11Account],
-                    Callable[[Any, Element], Awaitable[dict]]
-                ]""",
-                self.isolate.artifacts[sign],
-            )
-            instance = collector.cls(self, account)
-            result.append(await entity(instance, element))
+            async with use_record(
+                {"avilla": self.avilla, "account": account, "protocol": self}, self.isolate.artifacts[sign]
+            ) as entity:
+                result.append(await entity(element))
         return result
 
     async def deserialize_message(self, account: OneBot11Account, raw_elements: list[dict]) -> MessageChain:
@@ -96,19 +99,24 @@ class OneBot11Protocol(BaseProtocol):
             sign = MessageDeserializeSign(element_type)
             if sign not in self.isolate.artifacts:
                 raise NotImplementedError(f"Element {element_type} is not supported by {self.__class__.__name__}")
-            collector, entity = cast(
-                """tuple[
-                    AccountCollector[OneBot11Protocol, OneBot11Account],
-                    Callable[[Any, dict], Awaitable[Element]]
-                ]""",
-                self.isolate.artifacts[sign],
-            )
-            instance = collector.cls(self, account)
-            result.append(await entity(instance, raw_element))
+            async with use_record(
+                {"avilla": self.avilla, "account": account, "protocol": self}, self.isolate.artifacts[sign]
+            ) as entity:
+                result.append(await entity(raw_element))
         return MessageChain(result)
 
-    async def fetch_resource(self, account: OneBot11Account, resource: OneBot11Resource) -> bytes:
+    async def fetch_resource(self, account: OneBot11Account, resource: Resource[T]) -> T:
         # TODO: convert into universal method
+        """
         async with aiohttp.ClientSession() as session:
             async with session.get(resource.url) as resp:
                 return await resp.read()
+        """
+        record: tuple[Any, Callable[[Any, Resource[T]], Awaitable[T]]] = ChainMap(
+            self.isolate.artifacts, self.avilla.isolate.artifacts
+        )[FetchImplement(type(resource))]
+        async with use_record(
+            {"avilla": self.avilla, "account": account, "protocol": self},
+            record,
+        ) as entity:
+            return await entity(resource)

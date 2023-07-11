@@ -14,7 +14,5 @@ from .descriptor.query import QueryRecord as QueryRecord
 from .descriptor.query import QuerySchema as QuerySchema
 from .descriptor.target import TargetFn as TargetFn
 from .isolate import Isolate as Isolate
-from .protocol import Executable as Executable
 from .protocol import Ring3 as Ring3
 from .protocol import SupportsCollect as SupportsCollect
-from .runner import Runner as Runner
