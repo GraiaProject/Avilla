@@ -63,7 +63,7 @@ class OneBot11WsClientNetworking(Launchable):
             raise RuntimeError("connection is not established")
 
         async for msg in self.connection:
-            #logger.debug(f"{msg=}")
+            logger.debug(f"{msg=}")
 
             if msg.type in {aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED}:
                 self.close_signal.set()
@@ -86,6 +86,8 @@ class OneBot11WsClientNetworking(Launchable):
 
                 asyncio.create_task(event_parse_task(data))
                 # TODO: 这里粗略的解决了 event parsing 中如果要 call 就会死锁的问题, 当然, 我并不是很满意现在的方法.
+
+        self.close_signal.set()
 
     async def call(self, action: str, params: dict | None = None) -> dict | None:
         if self.connection is None:
