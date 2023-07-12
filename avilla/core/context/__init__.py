@@ -23,6 +23,7 @@ from avilla.core.selector import (
     _FollowItem,
     _parse_follows,
 )
+from avilla.core.ryanvk.staff import Staff
 from avilla.core.utilles import classproperty
 
 from ._query import QueryHandler, find_querier_steps, query_depth_generator
@@ -124,12 +125,7 @@ class Context:
         def build_handler(artifact: tuple[BaseCollector, QueryHandlerPerform]) -> QueryHandler:
             async def handler(predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):
                 async with use_record(
-                    {
-                        "context": self,
-                        "protocol": self.protocol,
-                        "account": self.account,
-                        "avilla": self.avilla,
-                    },
+                    self.get_staff_components(),
                     artifact,
                 ) as entity:
                     async for i in entity(predicate, previous):
@@ -164,8 +160,7 @@ class Context:
             yield i
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        # return await self[](resource)
-        ...  # TODO
+        return await Staff(self).fetch_resource(resource)
 
     async def pull(
         self,
@@ -201,7 +196,7 @@ class Context:
         async def run(*args: P.args, **kwargs: P.kwargs):
             return await run_fn(
                 self.artifacts,
-                {"context": self, "protocol": self.protocol, "account": self.account, "avilla": self.avilla},
+                self.get_staff_components(),
                 closure,
                 *args,
                 **kwargs,
