@@ -80,3 +80,6 @@ class Avilla:
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
 
         self.isolate.apply(CoreResourceFetchPerform)
+
+    def get_ryanvk_components(self):
+        return {"avilla": self}

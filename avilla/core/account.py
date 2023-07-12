@@ -55,6 +55,13 @@ class BaseAccount:
     def available(self) -> bool:
         return True
 
+    def get_ryanvk_components(self):
+        return {
+            "account": self,
+            "protocol": self.info.protocol,
+            "avilla": self.avilla
+        }
+
 
 class AccountStatus(Statv):
     enabled = Stats[bool]("enabled", default=False)

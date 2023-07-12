@@ -120,3 +120,6 @@ class OneBot11Protocol(BaseProtocol):
             record,
         ) as entity:
             return await entity(resource)
+
+    def get_ryanvk_components(self):
+        return {"protocol": self, "avilla": self.avilla}

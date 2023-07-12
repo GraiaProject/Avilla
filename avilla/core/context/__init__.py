@@ -207,3 +207,11 @@ class Context:
             )
 
         return run
+
+    def get_ryanvk_components(self):
+        return {
+            "context": self,
+            "protocol": self.protocol,
+            "account": self.account,
+            "avilla": self.avilla,
+        }

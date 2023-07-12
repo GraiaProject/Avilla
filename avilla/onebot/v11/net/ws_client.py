@@ -42,12 +42,20 @@ class OneBot11WsClientNetworking(Launchable):
     close_signal: asyncio.Event
     response_waiters: dict[str, asyncio.Future]
 
-    def __init__(self, protocol: OneBot11Protocol) -> None:
+    def __init__(self, protocol: OneBot11Protocol, config: OneBot11WsClientConfig) -> None:
         super().__init__()
         self.protocol = protocol
         self.close_signal = asyncio.Event()
         self.response_waiters = {}
         self.accounts = {}
+        self.config = config
+
+    def get_ryanvk_components(self):
+        return {
+            "connection": self,
+            "protocol": self.protocol,
+            "avilla": self.protocol.avilla
+        }
 
     async def message_receiver(self):
         if self.connection is None:
