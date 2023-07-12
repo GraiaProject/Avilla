@@ -75,7 +75,7 @@ class OneBot11WsClientNetworking(Launchable):
                         future.set_result(data)
                     continue
 
-                async def event_parse_task():
+                async def event_parse_task(data: dict):
                     event_type = onebot11_event_type(data)
                     event = await Staff(self).parse_event(event_type, data)
                     if event is None:
@@ -83,7 +83,7 @@ class OneBot11WsClientNetworking(Launchable):
                         return
                     self.protocol.post_event(event)
 
-                asyncio.create_task(event_parse_task())
+                asyncio.create_task(event_parse_task(data))
                 # TODO: 这里粗略的解决了 event parsing 中如果要 call 就会死锁的问题, 当然, 我并不是很满意现在的方法.
 
     async def call(self, action: str, params: dict | None = None) -> dict | None:
