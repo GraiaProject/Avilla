@@ -74,7 +74,7 @@ class Context:
             account.info.isolate.artifacts,
             account.info.protocol.isolate.artifacts,
             account.avilla.isolate.artifacts,
-        )
+        ).copy()
         # 这里是为了能在 Context 层级进行修改
 
         self.account = account
