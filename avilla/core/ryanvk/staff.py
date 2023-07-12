@@ -7,11 +7,11 @@ from .descriptor.message.serialize import MessageSerializeSign
 from .descriptor.message.deserialize import MessageDeserializeSign
 from .descriptor.fetch import FetchImplement
 from ..utilles import identity
+from graia.amnesia.message import MessageChain, Element
 
 if TYPE_CHECKING:
     from .protocol import SupportsArtifacts, SupportsStaff
     from avilla.core.event import AvillaEvent
-    from graia.amnesia.message import MessageChain, Element
     from avilla.core.resource import Resource
 
 
@@ -33,7 +33,7 @@ class Staff:
     ) -> AvillaEvent | None:
         sign = EventParserSign(event_type)
         if sign not in self.artifacts:
-            raise NotImplementedError(f"Event {event_type} parse is not supported: {data}")
+            return
 
         record: tuple[Any, Callable[[Any, dict], Awaitable[AvillaEvent | None]]] = self.artifacts[sign]
 

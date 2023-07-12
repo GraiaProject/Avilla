@@ -78,8 +78,10 @@ class OneBot11WsClientNetworking(Launchable):
                 async def event_parse_task():
                     event_type = onebot11_event_type(data)
                     event = await Staff(self).parse_event(event_type, data)
-                    if event is not None:
-                        self.protocol.post_event(event)
+                    if event is None:
+                        logger.warning(f"received unsupported event {event_type}: {data}")
+                        return
+                    self.protocol.post_event(event)
 
                 asyncio.create_task(event_parse_task())
                 # TODO: 这里粗略的解决了 event parsing 中如果要 call 就会死锁的问题, 当然, 我并不是很满意现在的方法.

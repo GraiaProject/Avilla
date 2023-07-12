@@ -8,12 +8,9 @@ if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.standard.core.account.event import AvillaLifecycleEvent
 
-    from ....onebot.v11.collector.connection import (
-        ConnectionBasedPerformTemplate,
-        ConnectionCollector,
-    )
+    from ..collector.base import BaseCollector, PerformTemplate
 
-M = TypeVar("M", bound="ConnectionBasedPerformTemplate", contravariant=True)
+M = TypeVar("M", bound="PerformTemplate", contravariant=True)
 
 
 @dataclass(unsafe_hash=True)
@@ -21,9 +18,9 @@ class EventParserSign:
     event_type: str
 
 
-class OneBot11EventParse:
+class EventParse:
     @classmethod
-    def collect(cls, collector: ConnectionCollector, event_type: str):
+    def collect(cls, collector: BaseCollector, event_type: str):
         def receiver(entity: Callable[[M, dict], Awaitable[AvillaEvent | AvillaLifecycleEvent | None]]):
             collector.artifacts[EventParserSign(event_type)] = (collector, entity)
             return entity

@@ -7,12 +7,12 @@ from loguru import logger
 
 from avilla.core.context import Context
 from avilla.core.message import Message
+from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
-from avilla.core.ryanvk.staff import Staff
 
+from .....core.ryanvk.descriptor.event import EventParse
 from ...collector.connection import ConnectionCollector
-from .....core.ryanvk.descriptor.event import OneBot11EventParse
 from ...element import Reply
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class OneBot11EventMessagePerform((m := ConnectionCollector())._):
     m.post_applying = True
 
-    @OneBot11EventParse.collect(m, "message.private.friend")
+    @EventParse.collect(m, "message.private.friend")
     async def private_friend(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -54,7 +54,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @OneBot11EventParse.collect(m, "message.private.group")
+    @EventParse.collect(m, "message.private.group")
     async def private_group(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -87,8 +87,8 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @OneBot11EventParse.collect(m, "message.group.normal")
-    @OneBot11EventParse.collect(m, "message.group.notice")
+    @EventParse.collect(m, "message.group.normal")
+    @EventParse.collect(m, "message.group.notice")
     async def group(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -120,7 +120,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @OneBot11EventParse.collect(m, "message.private.other")
+    @EventParse.collect(m, "message.private.other")
     async def private_other(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -151,7 +151,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @OneBot11EventParse.collect(m, "message.group.anonymous")
+    @EventParse.collect(m, "message.group.anonymous")
     async def group_anonymous(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)

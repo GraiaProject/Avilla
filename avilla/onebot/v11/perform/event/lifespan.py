@@ -13,9 +13,9 @@ from avilla.standard.core.account.event import (
     AccountUnavailable,
 )
 
+from .....core.ryanvk.descriptor.event import EventParse
 from ...account import OneBot11Account
 from ...collector.connection import ConnectionCollector
-from .....core.ryanvk.descriptor.event import OneBot11EventParse
 from ...net.ws_client import OneBot11WsClientNetworking
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
     m.post_applying = True
 
-    @OneBot11EventParse.collect(m, "meta_event.lifecycle.connect")
+    @EventParse.collect(m, "meta_event.lifecycle.connect")
     async def connect(self, raw_event: dict):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -53,7 +53,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         logger.info(f"Account {self_id} connected and created")
         return AccountRegistered(self.protocol.avilla, account)
 
-    @OneBot11EventParse.collect(m, "meta_event.lifecycle.enable")
+    @EventParse.collect(m, "meta_event.lifecycle.enable")
     async def enable(self, raw_event: dict):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -64,7 +64,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         logger.warning(f"Account {self_id} enabled by remote")
         return AccountAvailable(self.protocol.avilla, account)
 
-    @OneBot11EventParse.collect(m, "meta_event.lifecycle.disable")
+    @EventParse.collect(m, "meta_event.lifecycle.disable")
     async def disable(self, raw_event: dict):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -76,7 +76,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         # TODO: remove registry after timeout
         return AccountUnavailable(self.protocol.avilla, account)
 
-    @OneBot11EventParse.collect(m, "meta_event.heartbeat")
+    @EventParse.collect(m, "meta_event.heartbeat")
     async def heartbeat(self, raw_event: dict):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
