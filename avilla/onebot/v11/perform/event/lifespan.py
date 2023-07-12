@@ -37,7 +37,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
             version_info = await self.connection.call("get_version_info")
             assert version_info is not None
             platform = Platform(
-                Land("qq"),
+                Land("qq"),  # OneBot/v11 仅为 qq 设计。
                 Abstract(f"onebot/{version_info['protocol_version']}"),
                 Branch(version_info["app_name"]),
                 Version({"app": version_info["app_version"]}),

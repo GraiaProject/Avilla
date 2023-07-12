@@ -60,9 +60,3 @@ class OneBot11Protocol(BaseProtocol):
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
-
-    def get_staff_components(self):
-        return {"protocol": self, "avilla": self.avilla}
-
-    def get_staff_artifacts(self):
-        return ChainMap(self.isolate.artifacts, self.avilla.isolate.artifacts)
