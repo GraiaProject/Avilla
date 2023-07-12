@@ -129,6 +129,7 @@ class OneBot11WsClientNetworking(Launchable):
                 if sigexit_task in done:
                     logger.info(f"{self} Websocket client exiting...")
                     await self.connection.close()
+                    self.close_signal.set()
                     self.connection = None
                     for k, v in list(avilla.accounts.items()):
                         if v.route["account"] in self.accounts:
