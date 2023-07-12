@@ -1,6 +1,6 @@
 from __future__ import annotations
-from collections import ChainMap
 
+from collections import ChainMap
 from typing import TYPE_CHECKING, TypeVar
 
 from avilla.core._runtime import get_current_avilla
@@ -8,15 +8,16 @@ from avilla.core.account import AccountInfo
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.protocol import BaseProtocol
 from avilla.core.ryanvk import Isolate
+from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
-from avilla.core.ryanvk.staff import Staff
 from graia.broadcast import Broadcast
 from launart import Launart
 
 if TYPE_CHECKING:
-    from .resource import Resource
     from avilla.core.ryanvk.protocol import SupportsArtifacts
+
+    from .resource import Resource
 
 T = TypeVar("T")
 

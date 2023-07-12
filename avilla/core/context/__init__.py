@@ -16,6 +16,7 @@ from avilla.core.resource import Resource
 from avilla.core.ryanvk.collector.base import BaseCollector
 from avilla.core.ryanvk.descriptor.base import Fn
 from avilla.core.ryanvk.runner import run_fn, use_record
+from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import (
     FollowsPredicater,
     Selectable,
@@ -23,7 +24,6 @@ from avilla.core.selector import (
     _FollowItem,
     _parse_follows,
 )
-from avilla.core.ryanvk.staff import Staff
 from avilla.core.utilles import classproperty
 
 from ._query import QueryHandler, find_querier_steps, query_depth_generator

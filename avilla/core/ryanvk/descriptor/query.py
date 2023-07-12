@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, AsyncGenerator, Callable
+from typing import TYPE_CHECKING, AsyncGenerator, Callable, Protocol
 from typing import NoReturn as Never
-from typing import Protocol
 
 from ..._vendor.dataclasses import dataclass
 from ...selector import Selector

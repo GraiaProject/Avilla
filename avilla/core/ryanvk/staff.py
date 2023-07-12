@@ -1,18 +1,21 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, TypeVar
-from .runner import use_record
-from .descriptor.event import EventParserSign
-from .descriptor.message.serialize import MessageSerializeSign
-from .descriptor.message.deserialize import MessageDeserializeSign
-from .descriptor.fetch import FetchImplement
+
+from graia.amnesia.message import Element, MessageChain
+
 from ..utilles import identity
-from graia.amnesia.message import MessageChain, Element
+from .descriptor.event import EventParserSign
+from .descriptor.fetch import FetchImplement
+from .descriptor.message.deserialize import MessageDeserializeSign
+from .descriptor.message.serialize import MessageSerializeSign
+from .runner import use_record
 
 if TYPE_CHECKING:
-    from .protocol import SupportsArtifacts, SupportsStaff
     from avilla.core.event import AvillaEvent
     from avilla.core.resource import Resource
+
+    from .protocol import SupportsArtifacts, SupportsStaff
 
 
 T = TypeVar("T")

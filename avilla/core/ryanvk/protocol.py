@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, ChainMap, Protocol, TypeVar, Any
+from typing import TYPE_CHECKING, Any, ChainMap, Protocol, TypeVar
 
 from typing_extensions import ParamSpec
 

@@ -6,7 +6,6 @@ from inspect import isawaitable
 from operator import contains, eq, is_, is_not, ne
 from typing import Any, Generic, Protocol, TypeVar
 
-from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 from typing_extensions import ParamSpec, Self
 
 from avilla.core.account import BaseAccount
@@ -16,6 +15,7 @@ from avilla.core.metadata import MetadataFieldReference
 from avilla.core.ryanvk import Fn
 from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
+from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
 
 T = TypeVar("T", covariant=True)
 R = TypeVar("R")
