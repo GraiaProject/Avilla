@@ -15,7 +15,7 @@ from avilla.standard.core.account.event import (
 
 from ...account import OneBot11Account
 from ...collector.connection import ConnectionCollector
-from ...descriptor.event import OneBot11EventParse
+from .....core.ryanvk.descriptor.event import OneBot11EventParse
 from ...net.ws_client import OneBot11WsClientNetworking
 
 if TYPE_CHECKING:

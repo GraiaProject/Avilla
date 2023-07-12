@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.standard.core.account.event import AvillaLifecycleEvent
 
-    from ..collector.connection import (
+    from ....onebot.v11.collector.connection import (
         ConnectionBasedPerformTemplate,
         ConnectionCollector,
     )

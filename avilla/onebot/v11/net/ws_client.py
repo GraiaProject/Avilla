@@ -12,6 +12,7 @@ from yarl import URL
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.exceptions import ActionFailed
 from avilla.standard.core.account import AccountUnregistered
+from avilla.core.ryanvk.staff import Staff
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
@@ -76,7 +77,7 @@ class OneBot11WsClientNetworking(Launchable):
 
                 async def event_parse_task():
                     event_type = onebot11_event_type(data)
-                    event = await self.protocol.parse_event(self, event_type, data)
+                    event = await Staff(self).parse_event(event_type, data)
                     if event is not None:
                         self.protocol.post_event(event)
 

@@ -16,7 +16,7 @@ from avilla.core.ryanvk.descriptor.message.serialize import MessageSerializeSign
 from avilla.core.ryanvk.runner import run_fn, use_record
 from graia.amnesia.message import MessageChain
 
-from .descriptor.event import EventParserSign
+from ...core.ryanvk.descriptor.event import EventParserSign
 from .service import OneBot11Service
 
 if TYPE_CHECKING:
@@ -60,66 +60,6 @@ class OneBot11Protocol(BaseProtocol):
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
-
-    async def parse_event(
-        self,
-        connection: OneBot11WsClientNetworking,
-        event_type: str,
-        data: dict,
-    ) -> AvillaEvent | None:
-        sign = EventParserSign(event_type)
-        if sign not in self.isolate.artifacts:
-            logger.warning(f"Event {event_type} is not supported: {data}")
-            return
-        record: tuple[
-            ConnectionCollector, Callable[[Any, dict], Awaitable[AvillaEvent | None]]
-        ] = self.isolate.artifacts[sign]
-        from devtools import debug
-
-        async with use_record({"avilla": self.avilla, "protocol": self, "connection": connection}, record) as entity:
-            return await entity(data)
-
-    async def serialize_message(self, account: OneBot11Account, message: MessageChain) -> list[dict]:
-        result: list[dict] = []
-        for element in message.content:
-            element_type = type(element)
-            sign = MessageSerializeSign(element_type)
-            if sign not in self.isolate.artifacts:
-                raise NotImplementedError(f"Element {element_type} is not supported")
-            async with use_record(
-                {"avilla": self.avilla, "account": account, "protocol": self}, self.isolate.artifacts[sign]
-            ) as entity:
-                result.append(await entity(element))
-        return result
-
-    async def deserialize_message(self, account: OneBot11Account, raw_elements: list[dict]) -> MessageChain:
-        result: list[Element] = []
-        for raw_element in raw_elements:
-            element_type = raw_element["type"]
-            sign = MessageDeserializeSign(element_type)
-            if sign not in self.isolate.artifacts:
-                raise NotImplementedError(f"Element {element_type} is not supported by {self.__class__.__name__}")
-            async with use_record(
-                {"avilla": self.avilla, "account": account, "protocol": self}, self.isolate.artifacts[sign]
-            ) as entity:
-                result.append(await entity(raw_element))
-        return MessageChain(result)
-
-    async def fetch_resource(self, account: OneBot11Account, resource: Resource[T]) -> T:
-        # TODO: convert into universal method
-        """
-        async with aiohttp.ClientSession() as session:
-            async with session.get(resource.url) as resp:
-                return await resp.read()
-        """
-        record: tuple[Any, Callable[[Any, Resource[T]], Awaitable[T]]] = ChainMap(
-            self.isolate.artifacts, self.avilla.isolate.artifacts
-        )[FetchImplement(type(resource))]
-        async with use_record(
-            {"avilla": self.avilla, "account": account, "protocol": self},
-            record,
-        ) as entity:
-            return await entity(resource)
 
     def get_staff_components(self):
         return {"protocol": self, "avilla": self.avilla}

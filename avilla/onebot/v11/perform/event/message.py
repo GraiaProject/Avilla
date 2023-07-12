@@ -9,9 +9,10 @@ from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
+from avilla.core.ryanvk.staff import Staff
 
 from ...collector.connection import ConnectionCollector
-from ...descriptor.event import OneBot11EventParse
+from .....core.ryanvk.descriptor.event import OneBot11EventParse
 from ...element import Reply
 
 if TYPE_CHECKING:
@@ -29,7 +30,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         friend = Selector().land(account.route["land"]).friend(str(raw_event["sender"]["user_id"]))
-        message = await self.protocol.deserialize_message(account, raw_event["message"])
+        message = await Staff(account).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = friend.message(i[0].id)
@@ -63,7 +64,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
         group = Selector().land(account.route["land"]).group(str(raw_event["sender"]["group_id"]))
         # 好像 ob11 本来没这个字段, 但 gocq 是有的, 不过嘛, 管他呢
         member = group.member(str(raw_event["sender"]["user_id"]))
-        message = await self.protocol.deserialize_message(account, raw_event["message"])
+        message = await Staff(account).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = member.message(i[0].id)
@@ -96,7 +97,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             return
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         member = group.member(str(raw_event["sender"]["user_id"]))
-        message = await self.protocol.deserialize_message(account, raw_event["message"])
+        message = await Staff(account).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = group.message(i[0].id)
@@ -127,7 +128,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         stranger = Selector().land(account.route["land"]).stranger(str(raw_event["sender"]["user_id"]))
-        message = await self.protocol.deserialize_message(account, raw_event["message"])
+        message = await Staff(account).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = stranger.message(i[0].id)
@@ -159,7 +160,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             return
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         people = group.anonymous(str(raw_event["anonymous"]["flag"]))
-        message = await self.protocol.deserialize_message(account, raw_event["message"])
+        message = await Staff(account).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = group.message(i[0].id)

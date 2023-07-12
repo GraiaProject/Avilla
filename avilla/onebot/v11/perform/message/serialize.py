@@ -19,6 +19,7 @@ from avilla.standard.qq.elements import (
     Share,
     Xml,
 )
+from avilla.core.ryanvk.staff import Staff
 
 if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa
@@ -49,7 +50,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
                 if isinstance(resource := element.resource, OneBot11ImageResource)
                 else "base64://"
                 + base64.b64encode(
-                    cast(bytes, await self.protocol.fetch_resource(self.account, element.resource))
+                    cast(bytes, await Staff(self.account).fetch_resource(resource))
                 ).decode("utf-8")
             },
         }

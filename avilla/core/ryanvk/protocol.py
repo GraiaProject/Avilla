@@ -16,10 +16,16 @@ class SupportsCollect(Protocol[C, P, R]):
     def collect(self, collector: C, *args: P.args, **kwargs: P.kwargs) -> R:
         ...
 
+
 class SupportsArtifacts(Protocol):
     def get_staff_artifacts(self) -> ChainMap[Any, Any]:
         ...
 
+
 class SupportsComponent(Protocol):
     def get_staff_components(self) -> dict[str, SupportsArtifacts]:
         ...
+
+
+class SupportsStaff(SupportsArtifacts, SupportsComponent, Protocol):
+    ...

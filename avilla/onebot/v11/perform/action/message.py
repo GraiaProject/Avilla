@@ -6,6 +6,7 @@ from avilla.core.ryanvk.collector.context import ContextCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend
 from graia.amnesia.message import MessageChain
+from avilla.core.ryanvk.staff import Staff
 
 if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa
@@ -27,7 +28,7 @@ class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "O
             "send_group_msg",
             {
                 "group_id": int(target.pattern["group"]),
-                "message": await self.protocol.serialize_message(self.account, message),
+                "message": await Staff(self.account).serialize_message(message),
             },
         )
         if result is None:
