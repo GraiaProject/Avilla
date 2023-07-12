@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import ChainMap
 from typing import TYPE_CHECKING, Any
 
 from statv import Stats, Statv
@@ -55,12 +56,15 @@ class BaseAccount:
     def available(self) -> bool:
         return True
 
-    def get_ryanvk_components(self):
-        return {
-            "account": self,
-            "protocol": self.info.protocol,
-            "avilla": self.avilla
-        }
+    def get_staff_components(self):
+        return {"account": self, "protocol": self.info.protocol, "avilla": self.avilla}
+
+    def get_staff_artifacts(self):
+        return ChainMap(
+            self.info.isolate.artifacts,
+            self.info.protocol.isolate.artifacts,
+            self.avilla.isolate.artifacts,
+        )
 
 
 class AccountStatus(Statv):

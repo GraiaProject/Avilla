@@ -121,5 +121,8 @@ class OneBot11Protocol(BaseProtocol):
         ) as entity:
             return await entity(resource)
 
-    def get_ryanvk_components(self):
+    def get_staff_components(self):
         return {"protocol": self, "avilla": self.avilla}
+
+    def get_staff_artifacts(self):
+        return ChainMap(self.isolate.artifacts, self.avilla.isolate.artifacts)

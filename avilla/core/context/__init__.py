@@ -74,6 +74,7 @@ class Context:
             account.info.protocol.isolate.artifacts,
             account.avilla.isolate.artifacts,
         )
+        # 这里是为了能在 Context 层级进行修改
 
         self.account = account
 
@@ -208,10 +209,13 @@ class Context:
 
         return run
 
-    def get_ryanvk_components(self):
+    def get_staff_components(self):
         return {
             "context": self,
             "protocol": self.protocol,
             "account": self.account,
             "avilla": self.avilla,
         }
+
+    def get_staff_artifacts(self):
+        return self.artifacts

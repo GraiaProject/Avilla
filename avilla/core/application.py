@@ -1,8 +1,7 @@
 from __future__ import annotations
+from collections import ChainMap
 
 from typing import TYPE_CHECKING, TypeVar
-
-from graia.broadcast import Broadcast
 
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AccountInfo
@@ -11,6 +10,7 @@ from avilla.core.protocol import BaseProtocol
 from avilla.core.ryanvk import Isolate
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
+from graia.broadcast import Broadcast
 from launart import Launart
 
 if TYPE_CHECKING:
@@ -81,5 +81,8 @@ class Avilla:
 
         self.isolate.apply(CoreResourceFetchPerform)
 
-    def get_ryanvk_components(self):
+    def get_staff_components(self):
         return {"avilla": self}
+
+    def get_staff_artifacts(self):
+        return ChainMap(self.isolate.artifacts)

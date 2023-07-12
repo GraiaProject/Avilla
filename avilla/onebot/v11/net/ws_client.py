@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections import ChainMap
 import json
 from typing import TYPE_CHECKING, cast
 
@@ -50,13 +51,12 @@ class OneBot11WsClientNetworking(Launchable):
         self.accounts = {}
         self.config = config
 
-    def get_ryanvk_components(self):
-        return {
-            "connection": self,
-            "protocol": self.protocol,
-            "avilla": self.protocol.avilla
-        }
+    def get_staff_components(self):
+        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
 
+    def get_staff_artifacts(self):
+        return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
+    
     async def message_receiver(self):
         if self.connection is None:
             raise RuntimeError("connection is not established")

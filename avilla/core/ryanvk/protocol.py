@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Protocol, TypeVar, Any
+from typing import TYPE_CHECKING, ChainMap, Protocol, TypeVar, Any
 
 from typing_extensions import ParamSpec
 
@@ -16,6 +16,10 @@ class SupportsCollect(Protocol[C, P, R]):
     def collect(self, collector: C, *args: P.args, **kwargs: P.kwargs) -> R:
         ...
 
+class SupportsArtifacts(Protocol):
+    def get_staff_artifacts(self) -> ChainMap[Any, Any]:
+        ...
+
 class SupportsComponent(Protocol):
-    def get_ryanvk_components(self) -> dict[str, Any]:
+    def get_staff_components(self) -> dict[str, SupportsArtifacts]:
         ...
