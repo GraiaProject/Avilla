@@ -52,8 +52,10 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
     def __post_collect__(self, cls: type[AccountBasedPerformTemplate]):
         super().__post_collect__(cls)
         if self.post_applying:
-            if (isolate := processing_isolate.get(None)) is not None:
-                isolate.apply(cls)
             if (protocol := processing_protocol.get(None)) is None:
-                raise RuntimeError("expected processing protocol")
+                if (isolate := processing_isolate.get(None)) is not None:
+                    isolate.apply(cls)
+                return
+            
             protocol.isolate.apply(cls)
+            
