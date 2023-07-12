@@ -10,11 +10,13 @@ from avilla.core.protocol import BaseProtocol
 from avilla.core.ryanvk import Isolate
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
+from avilla.core.ryanvk.staff import Staff
 from graia.broadcast import Broadcast
 from launart import Launart
 
 if TYPE_CHECKING:
     from .resource import Resource
+    from avilla.core.ryanvk.protocol import SupportsArtifacts
 
 T = TypeVar("T")
 
@@ -74,14 +76,15 @@ class Avilla:
         return self.broadcast.loop
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
-        ...  # TODO
+        return await Staff(self).fetch_resource(resource)
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
 
         self.isolate.apply(CoreResourceFetchPerform)
 
-    def get_staff_components(self):
+    def get_staff_components(self) -> dict[str, SupportsArtifacts]:
+        # 我确信这是个 pyright 的 bug, 把这个 return_type 去掉就来了。
         return {"avilla": self}
 
     def get_staff_artifacts(self):
