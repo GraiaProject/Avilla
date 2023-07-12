@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Protocol, TypeVar
+from typing import TYPE_CHECKING, Protocol, TypeVar, Any
 
 from typing_extensions import ParamSpec
 
@@ -16,6 +16,6 @@ class SupportsCollect(Protocol[C, P, R]):
     def collect(self, collector: C, *args: P.args, **kwargs: P.kwargs) -> R:
         ...
 
-
-class Ring3(Protocol[C1]):
-    __collector__: C1
+class SupportsComponent(Protocol):
+    def get_ryanvk_components(self) -> dict[str, Any]:
+        ...

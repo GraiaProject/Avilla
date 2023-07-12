@@ -18,7 +18,6 @@ from ..protocol import SupportsCollect
 
 if TYPE_CHECKING:
     from ..isolate import Isolate
-    from ..protocol import Ring3
 
 
 P = ParamSpec("P")
@@ -75,7 +74,7 @@ class _ResultCollect(Protocol[R]):
 
 class BaseCollector:
     artifacts: dict[Any, Any]
-    defer_callbacks: list[Callable[[type[Ring3]], Any]]
+    defer_callbacks: list[Callable[[type[PerformTemplate]], Any]]
 
     @property
     def cls(self: _ResultCollect[R]) -> R:
@@ -118,5 +117,5 @@ class BaseCollector:
     def apply(self, isolate: Isolate):
         self.defer(lambda x: isolate.apply(x))
 
-    def __post_collect__(self, cls: type[Ring3]):
+    def __post_collect__(self, cls: type[PerformTemplate]):
         self._cls = cls
