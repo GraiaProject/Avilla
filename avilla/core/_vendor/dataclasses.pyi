@@ -50,38 +50,6 @@ def astuple(obj: Any) -> tuple[Any, ...]: ...
 @overload
 def astuple(obj: Any, *, tuple_factory: Callable[[list[Any]], _T]) -> _T: ...
 
-_T = TypeVar("_T")
-
-def __dataclass_transform__(
-    *,
-    eq_default: bool = True,
-    order_default: bool = False,
-    kw_only_default: bool = False,
-    field_specifiers: tuple[type | Callable[..., Any], ...] = (),
-    **kwargs: Any,
-) -> Callable[[_T], _T]: ...
-@overload
-@__dataclass_transform__(field_specifiers=(field,))
-def dataclass(__cls: type[_T]) -> type[_T]: ...
-@__dataclass_transform__(field_specifiers=(field,))
-@overload
-def dataclass(__cls: None) -> Callable[[type[_T]], type[_T]]: ...
-@__dataclass_transform__(field_specifiers=(field,))
-@overload
-def dataclass(
-    *,
-    init: bool = ...,
-    repr: bool = ...,
-    eq: bool = ...,
-    order: bool = ...,
-    unsafe_hash: bool = ...,
-    frozen: bool = ...,
-    match_args: bool = ...,
-    kw_only: bool = ...,
-    slots: bool = ...,
-    weakref_slot: bool = ...,
-) -> Callable[[type[_T]], type[_T]]: ...
-
 # See https://github.com/python/mypy/issues/10750
 class _DefaultFactory(Protocol[_T_co]):
     def __call__(self) -> _T_co: ...
@@ -148,6 +116,38 @@ def field(
 ) -> Any: ...
 def fields(class_or_instance: Any) -> tuple[Field[Any], ...]: ...
 def is_dataclass(obj: Any) -> bool: ...
+
+_T = TypeVar("_T")
+
+def __dataclass_transform__(
+    *,
+    eq_default: bool = True,
+    order_default: bool = False,
+    kw_only_default: bool = False,
+    field_specifiers: tuple[type | Callable[..., Any], ...] = (),
+    **kwargs: Any,
+) -> Callable[[_T], _T]: ...
+@overload
+@__dataclass_transform__(field_specifiers=(field,))
+def dataclass(__cls: type[_T]) -> type[_T]: ...
+@__dataclass_transform__(field_specifiers=(field,))
+@overload
+def dataclass(__cls: None) -> Callable[[type[_T]], type[_T]]: ...
+@__dataclass_transform__(field_specifiers=(field,))
+@overload
+def dataclass(
+    *,
+    init: bool = ...,
+    repr: bool = ...,
+    eq: bool = ...,
+    order: bool = ...,
+    unsafe_hash: bool = ...,
+    frozen: bool = ...,
+    match_args: bool = ...,
+    kw_only: bool = ...,
+    slots: bool = ...,
+    weakref_slot: bool = ...,
+) -> Callable[[type[_T]], type[_T]]: ...
 
 class FrozenInstanceError(AttributeError): ...
 
