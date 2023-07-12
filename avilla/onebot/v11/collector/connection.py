@@ -28,10 +28,6 @@ class ConnectionBasedPerformTemplate(PerformTemplate):
 class ConnectionCollector(BaseCollector):
     post_applying: bool = False
 
-    def __init__(self):
-        super().__init__()
-        self.artifacts["current_collection"] = {}
-
     @property
     def _(self):
         upper = super().get_collect_template()
@@ -47,8 +43,7 @@ class ConnectionCollector(BaseCollector):
     def __post_collect__(self, cls: type[ConnectionBasedPerformTemplate]):
         super().__post_collect__(cls)
         if self.post_applying:
-            if (isolate := processing_isolate.get(None)) is not None:
-                isolate.apply(cls)
             if (protocol := processing_protocol.get(None)) is None:
                 raise RuntimeError("expected processing protocol")
             protocol.isolate.apply(cls)
+            
