@@ -71,7 +71,7 @@ class FlexibleTaskGroup:
                 return await self.blocking_task
             except asyncio.CancelledError:
                 if self.stop:
-                    raise
+                    return
 
     def add(self, *fs: asyncio.Task | Coroutine) -> None:
         tasks = [f if isinstance(f, asyncio.Task) else asyncio.create_task(f) for f in fs]
@@ -155,6 +155,7 @@ def cancel_alive_tasks(loop: asyncio.AbstractEventLoop):
     to_cancel = asyncio.tasks.all_tasks(loop)
     if to_cancel:
         for tsk in to_cancel:
+            print(tsk)
             tsk.cancel()
         loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
 
