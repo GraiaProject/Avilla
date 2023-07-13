@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, cast
+from typing import cast
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
@@ -11,9 +11,6 @@ from graia.amnesia.message import MessageChain
 
 from ._runtime import cx_context
 from .metadata import Metadata
-
-if TYPE_CHECKING:
-    from dataclasses import dataclass
 
 
 @dataclass(slots=True)

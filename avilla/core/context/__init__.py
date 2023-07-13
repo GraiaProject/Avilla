@@ -2,31 +2,24 @@ from __future__ import annotations
 
 from collections import ChainMap
 from collections.abc import Callable
-from functools import reduce
 from typing import TYPE_CHECKING, Any, Awaitable, TypedDict, TypeVar, cast, overload
 
 from typing_extensions import ParamSpec, Unpack
 
 from avilla.core._runtime import cx_context
 from avilla.core.account import BaseAccount
-from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
-from avilla.core.ryanvk.collector.base import BaseCollector
 from avilla.core.ryanvk.descriptor.base import Fn
-from avilla.core.ryanvk.runner import run_fn, use_record
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import (
     FollowsPredicater,
     Selectable,
     Selector,
-    _FollowItem,
-    _parse_follows,
 )
 from avilla.core.utilles import classproperty
 
-from ._query import QueryHandler, find_querier_steps, query_depth_generator
 from ._selector import (
     ContextClientSelector,
     ContextEndpointSelector,
@@ -37,7 +30,7 @@ from ._selector import (
 )
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.descriptor.query import QueryHandlerPerform
+    pass
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
@@ -116,51 +109,26 @@ class Context:
     def current(cls) -> Context:
         return cx_context.get()
 
-    async def query(self, pattern: str, **predicators: FollowsPredicater):
-        items = _parse_follows(pattern, **predicators)
-        steps = find_querier_steps(self.artifacts, items)
-        if steps is None:
-            return
+    def get_staff_components(self):
+        return {
+            "context": self,
+            "protocol": self.protocol,
+            "account": self.account,
+            "avilla": self.avilla,
+        }
 
-        def build_handler(artifact: tuple[BaseCollector, QueryHandlerPerform]) -> QueryHandler:
-            async def handler(predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):
-                async with use_record(
-                    self.get_staff_components(),
-                    artifact,
-                ) as entity:
-                    async for i in entity(predicate, previous):
-                        yield i
+    def get_staff_artifacts(self):
+        return self.artifacts
 
-            return handler
+    @property
+    def staff(self):
+        return Staff(self)
 
-        def build_predicate(_steps: tuple[_FollowItem, ...]) -> Callable[[str, str], bool]:
-            mapping = {i.name: i for i in _steps}
-
-            def predicater(key: str, value: str) -> bool:
-                if key not in mapping:
-                    raise KeyError(f"expected existed key: {key}")
-                item = mapping[key]
-                if item.literal is not None:
-                    return value == item.literal
-                elif item.predicate is not None:
-                    return item.predicate(value)
-                return True
-
-            return predicater
-
-        handlers = map(lambda x: (x[0], build_handler(self.artifacts[x[1]])), steps)
-        r = reduce(
-            lambda previous, current: query_depth_generator(current[1], build_predicate(current[0]), previous),
-            handlers,
-            None,
-        )
-        if TYPE_CHECKING:
-            assert r is not None
-        async for i in r:
-            yield i
+    def query(self, pattern: str, **predicators: FollowsPredicater):
+        return self.staff.query_entities(pattern, **predicators)
 
     async def fetch(self, resource: Resource[_T]) -> _T:
-        return await Staff(self).fetch_resource(resource)
+        return await self.staff.fetch_resource(resource)
 
     async def pull(
         self,
@@ -179,7 +147,7 @@ class Context:
             elif not route.has_params():
                 return cast("_MetadataT", cached[route])
 
-        return await self[CoreCapability.pull.into(route)](target, route)
+        return await self.staff.pull_metadata(target, route)
 
     @overload
     def __getitem__(self, closure: Selector) -> ContextSelector:
@@ -194,23 +162,6 @@ class Context:
             return ContextSelector(self, closure.pattern)
 
         async def run(*args: P.args, **kwargs: P.kwargs):
-            return await run_fn(
-                self.artifacts,
-                self.get_staff_components(),
-                closure,
-                *args,
-                **kwargs,
-            )
+            return await self.staff.call_fn(closure, *args, *kwargs)
 
         return run
-
-    def get_staff_components(self):
-        return {
-            "context": self,
-            "protocol": self.protocol,
-            "account": self.account,
-            "avilla": self.avilla,
-        }
-
-    def get_staff_artifacts(self):
-        return self.artifacts

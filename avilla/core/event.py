@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from contextlib import suppress
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
-from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.metadata import MetadataRoute
 from avilla.core.ryanvk import Fn
 from graia.broadcast.entities.dispatcher import BaseDispatcher
@@ -14,7 +14,7 @@ from graia.broadcast.entities.event import Dispatchable
 from ._runtime import cx_context
 
 if TYPE_CHECKING:
-    from dataclasses import dataclass, field
+
     from avilla.core.metadata import MetadataFieldReference
     from avilla.core.selector import Selector
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
