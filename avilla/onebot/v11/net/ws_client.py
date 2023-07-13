@@ -134,14 +134,15 @@ class OneBot11WsClientNetworking(Launchable):
                     await self.connection.close()
                     self.close_signal.set()
                     self.connection = None
-                    for k, v in list(avilla.accounts.items()):
-                        if v.route["account"] in self.accounts:
-                            del self.accounts[k]
+                    for v in list(avilla.accounts.values()):
+                        _account = int(v.route["account"])
+                        if _account in self.accounts:
+                            del self.accounts[_account]
                     return
                 if close_task in done:
                     receiver_task.cancel()
                     logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
-                    accounts = set(str(i) for i in self.accounts.keys())
+                    accounts = {str(i) for i in self.accounts.keys()}
                     # TODO: unregister all accounts, or cause inconsistency
                     for n in list(avilla.accounts.keys()):
                         logger.debug(f"Unregistering onebot(v11) account {n}...")
