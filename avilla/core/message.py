@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, cast
 
 from avilla.core._vendor.dataclasses import dataclass
@@ -12,7 +13,7 @@ from ._runtime import cx_context
 from .metadata import Metadata
 
 if TYPE_CHECKING:
-    from datetime import datetime
+    from dataclasses import dataclass
 
 
 @dataclass(slots=True)

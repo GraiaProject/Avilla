@@ -14,6 +14,7 @@ from graia.broadcast.entities.event import Dispatchable
 from ._runtime import cx_context
 
 if TYPE_CHECKING:
+    from dataclasses import dataclass, field
     from avilla.core.metadata import MetadataFieldReference
     from avilla.core.selector import Selector
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface

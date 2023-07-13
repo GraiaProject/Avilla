@@ -5,6 +5,3 @@ class ActivityTrigger(Capability):
     @TargetFn
     async def trigger(self):
         ...
-
-
-ActivityTrigger.trigger
