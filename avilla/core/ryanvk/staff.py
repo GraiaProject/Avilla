@@ -44,6 +44,9 @@ class Staff:
         self.components = focus.get_staff_components()
         self.artifacts = focus.get_staff_artifacts()
 
+    async def call_fn(self, fn: Fn[Callable[P, Awaitable[R]]], *args: P.args, **kwargs: P.kwargs) -> R:
+        return await run_fn(self.artifacts, self.components, fn, *args, **kwargs)
+
     async def parse_event(
         self,
         event_type: str,
@@ -97,9 +100,6 @@ class Staff:
         route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT],
     ) -> _MetadataT:
         return await run_fn(self.artifacts, self.components, CoreCapability.pull, target, route)
-
-    async def call_fn(self, fn: Fn[Callable[P, Awaitable[R]]], *args: P.args, **kwargs: P.kwargs) -> R:
-        return await run_fn(self.artifacts, self.components, fn, *args, **kwargs)
 
     async def query_entities(self, pattern: str, **predicators: FollowsPredicater):
         items = _parse_follows(pattern, **predicators)

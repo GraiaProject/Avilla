@@ -43,6 +43,5 @@ class ApplicationCollector(BaseCollector):
                 if (isolate := processing_isolate.get(None)) is not None:
                     isolate.apply(cls)
                 return
-            
+
             application.isolate.apply(cls)
-            

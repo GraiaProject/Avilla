@@ -34,6 +34,7 @@ class QuerySchema:
 
         return receive
 
+
 class QueryHandler(Protocol):
     def __call__(
         self, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None

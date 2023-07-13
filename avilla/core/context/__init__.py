@@ -162,6 +162,6 @@ class Context:
             return ContextSelector(self, closure.pattern)
 
         async def run(*args: P.args, **kwargs: P.kwargs):
-            return await self.staff.call_fn(closure, *args, *kwargs)
+            return await self.staff.call_fn(closure, *args, **kwargs)
 
         return run

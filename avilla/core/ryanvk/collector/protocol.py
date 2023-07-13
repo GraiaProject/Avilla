@@ -50,6 +50,5 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol]):
                 if (isolate := processing_isolate.get(None)) is not None:
                     isolate.apply(cls)
                 return
-            
+
             protocol.isolate.apply(cls)
-            
