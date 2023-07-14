@@ -27,6 +27,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         result: dict[str, Any] = {
             "source": str(raw_elements[0]["id"]),
             "time": datetime.fromtimestamp(raw_elements[0]["time"]),
+            "reply": None,
         }
         for index, raw_element in enumerate(raw_elements[1:]):
             element_type = raw_element["type"]
