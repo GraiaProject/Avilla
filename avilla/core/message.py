@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import cast
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
@@ -24,7 +23,7 @@ class Message(Metadata):
 
     @property
     def land(self):
-        return Land(cast(str, self.scene.pattern.get("land")))
+        return Land(self.scene["land"])
 
     def to_selector(self) -> Selector:
         return self.scene.message(self.id)

@@ -33,9 +33,6 @@ class PullFn(
     def __init__(self):
         ...
 
-    def into(self, route: type[M1] | MetadataRoute[Unpack[tuple[Metadata, ...]], M1]) -> PullFn[M1]:
-        return self  # type: ignore[reportGeneral]
-
     @overload
     def collect(
         self: PullFn[M],
