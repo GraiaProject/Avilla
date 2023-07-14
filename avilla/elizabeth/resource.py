@@ -5,55 +5,32 @@ from avilla.core.selector import Selector
 
 
 class ElizabethResource(Resource[bytes]):
-    url: str | None = None
-    path: str | None = None
-    base64: str | None = None
-    scene: Selector | None = None
+    id: str
+    url: str | None
 
-    def __init__(
-        self,
-        id: str,
-        url: str | None = None,
-        path: str | None = None,
-        base64: str | None = None,
-        scene: Selector | None = None,
-    ) -> None:
+    def __init__(self, selector: Selector, id: str, url: str | None = None):
+        super().__init__(selector)
         self.id = id
         self.url = url
-        self.path = path
-        self.base64 = base64
-        self.scene = scene
-
-    @property
-    def type(self) -> str:
-        return "elizabeth_resource"
-
-    @property
-    def selector(self) -> Selector:
-        return (self.scene or Selector()).appendix(self.type, self.id)
 
 
 class ElizabethImageResource(ElizabethResource):
-    @property
-    def type(self) -> str:
-        return "picture"
+    pass
 
 
-class ElizabethAudioResource(ElizabethResource):
-    length: int | None = None
+class ElizabethVoiceResource(ElizabethResource):
+    length: int | None
 
-    def __init__(
-        self,
-        id: str,
-        url: str | None = None,
-        path: str | None = None,
-        base64: str | None = None,
-        length: int | None = None,
-        scene: Selector | None = None,
-    ) -> None:
-        super().__init__(id, url, path, base64, scene)
+    def __init__(self, selector: Selector, id: str, url: str | None = None, length: int | None = None):
+        super().__init__(selector, id, url)
         self.length = length
 
-    @property
-    def type(self) -> str:
-        return "audio"
+
+class ElizabethFileResource(ElizabethResource):
+    name: str
+    size: int
+
+    def __init__(self, selector: Selector, id: str, url: str | None, name: str, size: int):
+        super().__init__(selector, id, url)
+        self.name = name
+        self.size = size

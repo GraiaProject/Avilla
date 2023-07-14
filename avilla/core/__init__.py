@@ -4,6 +4,7 @@ from avilla.core.builtins.capability import CoreCapability as CoreCapability
 from avilla.core.context import Context as Context
 from avilla.core.dispatchers import AvillaBuiltinDispatcher as AvillaBuiltinDispatcher
 from avilla.core.elements import Audio as Audio
+from avilla.core.elements import File as File
 from avilla.core.elements import Notice as Notice
 from avilla.core.elements import NoticeAll as NoticeAll
 from avilla.core.elements import Picture as Picture

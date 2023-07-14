@@ -17,14 +17,14 @@ class ElizabethProtocol(BaseProtocol):
         # isort: off
 
         # :: Message
-        # from .perform.message.deserialize import ElizabethMessageDeserializePerform
-        # from .perform.message.serialize import ElizabethMessageSerializePerform
+        from .perform.message.deserialize import ElizabethMessageDeserializePerform
+        from .perform.message.serialize import ElizabethMessageSerializePerform
 
         ## :: Action
-        # from .perform.action.message import ElizabethMessageActionPerform
+        from .perform.action.message import ElizabethMessageActionPerform
 
         ## :: Event
-        # from .perform.event.message import ElizabethEventMessagePerform
+        from .perform.event.message import ElizabethEventMessagePerform
         # from .perform.event.lifespan import ElizabethEventLifespanPerform
 
         ## :: Resource Fetch
