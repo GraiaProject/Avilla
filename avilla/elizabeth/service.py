@@ -1,10 +1,9 @@
 from __future__ import annotations
-import asyncio
 
+import asyncio
 from typing import TYPE_CHECKING, Set
 
 from launart import Launart, Launchable
-from launart.utilles import any_completed
 
 from .connection.base import ElizabethNetworking
 from .connection.ws_client import ElizabethWsClientNetworking
@@ -27,7 +26,7 @@ class ElizabethService(Launchable):
     def has_connection(self, account_id: str):
         ...  # TODO
 
-    def get_connection(self, account_id: str):
+    def get_connection(self, account_id: str) -> ElizabethNetworking:
         ...  # TODO
 
     async def launch(self, manager: Launart):

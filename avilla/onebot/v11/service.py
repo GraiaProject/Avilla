@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from asyncio import gather
 from typing import TYPE_CHECKING
 
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking

@@ -7,17 +7,17 @@ from loguru import logger
 
 from avilla.core.ryanvk.staff import Staff
 
-
 from .util import validate_response
 
 if TYPE_CHECKING:
-    from ..protocol import ElizabethProtocol
     from avilla.core.ryanvk.protocol import SupportsStaff
 
+    from ..protocol import ElizabethProtocol
 
 
 T = TypeVar("T", bound="SupportsStaff")
 CallMethod = Literal["get", "post", "fetch", "update", "multipart"]
+
 
 class ElizabethNetworking(Generic[T]):
     protocol: ElizabethProtocol
@@ -50,34 +50,34 @@ class ElizabethNetworking(Generic[T]):
         async for connection, data in self.message_receive():
             if "code" in data:
                 validate_response(data)
-            
+
             sync_id: str = data.get("syncId", "#")
             body: dict | Exception = validate_response(data.get("data"), False)
             if isinstance(body, Exception):
                 if sync_id in self.response_waiters:
                     self.response_waiters[sync_id].set_exception(body)
                 continue
-        
+
             if "session" in body:
                 self.session_key = body["session"]
                 logger.success("session key got.")
                 # TODO: register account.
                 continue
-            
+
             if sync_id in self.response_waiters:
                 self.response_waiters[sync_id].set_result(body)
                 continue
-            
+
             if "type" not in body:
                 continue
 
             async def event_parse_task(data: dict):
-                event_type = data['type']
+                event_type = data["type"]
                 event = await Staff(connection).parse_event(event_type, data)
                 if event is None:
                     logger.warning(f"received unsupported event {event_type}: {data}")
                     return
-               # logger.debug(f"{data['self_id']} received event {event_type}")
+                # logger.debug(f"{data['self_id']} received event {event_type}")
                 await self.protocol.post_event(event)
 
             asyncio.create_task(event_parse_task(body))
@@ -86,11 +86,18 @@ class ElizabethNetworking(Generic[T]):
         self.session_key = None
         self.close_signal.set()
 
-    async def call(self, method: CallMethod, action: str, params: dict | None = None, *, session: bool = True) -> dict | None:
+    async def call(
+        self,
+        method: CallMethod,
+        action: str,
+        params: dict | None = None,
+        *,
+        session: bool = True,
+    ) -> dict | None:
         if not self.alive:
             raise RuntimeError("connection is not established")
         if session and self.session_key is None:
-            raise Exception # FIXME
+            raise Exception  # FIXME
 
         if method == "multipart":
             return await self.call_http(method, action, params)
@@ -101,15 +108,18 @@ class ElizabethNetworking(Generic[T]):
 
         try:
             await self.wait_for_available()
-            await self.send({
-                "subCommand": {
-                    "fetch": "get",
-                }.get(method) or method,
-                "syncId": echo,
-                "command": action,
-                "content": params or {},
-                **({"sessionKey": self.session_key} if session else {})
-            })
+            await self.send(
+                {
+                    "subCommand": {
+                        "fetch": "get",
+                    }.get(method)
+                    or method,
+                    "syncId": echo,
+                    "command": action,
+                    "content": params or {},
+                    **({"sessionKey": self.session_key} if session else {}),
+                }
+            )
             return await future
         finally:
             del self.response_waiters[echo]

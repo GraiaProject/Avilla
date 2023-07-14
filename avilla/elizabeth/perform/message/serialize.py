@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import base64
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text, Audio
+from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 from avilla.core.ryanvk.staff import Staff
@@ -92,7 +92,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
         else:
             return {
                 "type": "Image",
-                "base64": base64.b64encode(cast(bytes, await Staff(self.account).fetch_resource(element.resource))).decode("utf-8"),
+                "base64": base64.b64encode(await Staff(self.account).fetch_resource(element.resource)).decode("utf-8"),
             }
 
     @ElizabethMessageSerialize.collect(m, FlashImage)
@@ -112,5 +112,5 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
         else:
             return {
                 "type": "Voice",
-                "base64": base64.b64encode(cast(bytes, await Staff(self.account).fetch_resource(element.resource))).decode("utf-8"),
+                "base64": base64.b64encode(await Staff(self.account).fetch_resource(element.resource)).decode("utf-8"),
             }
