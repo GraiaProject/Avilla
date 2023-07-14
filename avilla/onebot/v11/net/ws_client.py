@@ -119,6 +119,7 @@ class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"
                         await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
                         if n.follows("land(qq).account") and n["account"] in accounts:
                             del avilla.accounts[n]
+                    self.accounts.clear()
                     await asyncio.sleep(5)
                     logger.info(f"{self} Reconnecting...")
                     continue

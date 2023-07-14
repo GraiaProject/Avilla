@@ -29,27 +29,31 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
     async def connect(self, raw_event: dict):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
+        print("111111111111111", account)
         if account is None:
             # TODO: land should not be hardcoded as qq
             # create account instance
             account = OneBot11Account(route=Selector().land("qq").account(str(self_id)), protocol=self.protocol)
+        else:
+            account.route = Selector().land("qq").account(str(self_id))
 
-            version_info = await self.connection.call("get_version_info")
-            assert version_info is not None
-            platform = Platform(
-                Land("qq"),  # OneBot/v11 仅为 qq 设计。
-                Abstract(f"onebot/{version_info['protocol_version']}"),
-                Branch(version_info["app_name"]),
-                Version({"app": version_info["app_version"]}),
-            )
-            # TODO: more consistent platform info
+        version_info = await self.connection.call("get_version_info")
+        assert version_info is not None
+        platform = Platform(
+            Land("qq"),  # OneBot/v11 仅为 qq 设计。
+            Abstract(f"onebot/{version_info['protocol_version']}"),
+            Branch(version_info["app_name"]),
+            Version({"app": version_info["app_version"]}),
+        )
+        # TODO: more consistent platform info
 
-            self.connection.accounts[self_id] = account
-            self.protocol.avilla.accounts[account.route] = AccountInfo(account.route, account, self.protocol, platform)
+        self.connection.accounts[self_id] = account
+        self.protocol.avilla.accounts[account.route] = AccountInfo(account.route, account, self.protocol, platform)
+        # TODO: more networking support
 
-            # TODO: more networking support
-            if isinstance(self.connection, OneBot11WsClientNetworking):
-                account.websocket_client = self.connection
+        if isinstance(self.connection, OneBot11WsClientNetworking):
+            account.websocket_client = self.connection
+
         logger.info(f"Account {self_id} connected and created")
         return AccountRegistered(self.protocol.avilla, account)
 

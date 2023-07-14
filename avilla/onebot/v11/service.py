@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
 from launart import Launart, Launchable
+from launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from .protocol import OneBot11Protocol
@@ -31,7 +32,7 @@ class OneBot11Service(Launchable):
             ...
 
         async with self.stage("blocking"):
-            await gather(
+            await any_completed(
                 manager.status.wait_for_sigexit(),
                 *(conn.status.wait_for("blocking-completed") for conn in self.connections),
             )
