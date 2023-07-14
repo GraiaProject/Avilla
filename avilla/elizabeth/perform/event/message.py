@@ -1,36 +1,58 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from datetime import datetime
+from typing import TYPE_CHECKING, Any, TypedDict, cast
 
 from avilla.core.context import Context
-from avilla.core.message import Message
-from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.descriptor.event import EventParse
+from avilla.core.message import Message, MessageChain
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
+from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk.descriptor.event import EventParse
 
-from ...staff import ElizabethStaff
+from ...collector.connection import ConnectionCollector
 
 if TYPE_CHECKING:
     from ...account import ElizabethAccount  # noqa
     from ...protocol import ElizabethProtocol  # noqa
 
+class MessageDeserializeResult(TypedDict):
+    content: MessageChain
+    source: str
+    time: datetime
+    reply: str | None
 
-class ElizabethEventMessagePerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+
+class ElizabethEventMessagePerform((m := ConnectionCollector())._):
     m.post_applying = True
+
+    async def _deserialize_message(self, raw_elements: list[dict]):
+        result: dict[str, Any] = {
+            "source": str(raw_elements[0]["id"]),
+            "time": datetime.fromtimestamp(raw_elements[0]["time"]),
+        }
+        for index, raw_element in enumerate(raw_elements[1:]):
+            element_type = raw_element["type"]
+            if element_type == "Quote":
+                result["reply"] = str(raw_element["id"])
+                raw_elements.pop(index + 1)
+                break
+        result["content"] = await Staff(self.connection).deserialize_message(raw_elements[1:])
+        return cast(MessageDeserializeResult, result)
 
     @EventParse.collect(m, "FriendMessage")
     async def friend(self, raw_event: dict):
-        friend = Selector().land(self.account.route["land"]).friend(str(raw_event["sender"]["id"]))
-        message_result = await ElizabethStaff(self.account).deserialize_message(raw_event["messageChain"])
+        account = Selector().land("qq").account(str(self.connection.account_id))
+        friend = Selector().land(account["land"]).friend(str(raw_event["sender"]["id"]))
+        message_result = await self._deserialize_message(raw_event["messageChain"])
 
         return MessageReceived(
             Context(
-                self.account,
+                self.protocol.avilla.accounts[account].account,
                 friend,
                 friend,
                 friend,
-                self.account.route,
+                account,
             ),
             Message(
                 id=message_result["source"],
@@ -45,16 +67,17 @@ class ElizabethEventMessagePerform((m := AccountCollector["ElizabethProtocol", "
 
     @EventParse.collect(m, "GroupMessage")
     async def group(self, raw_event: dict):
-        group = Selector().land(self.account.route["land"]).group(str(raw_event["sender"]["group"]["id"]))
+        account = Selector().land("qq").account(str(self.connection.account_id))
+        group = Selector().land(account["land"]).group(str(raw_event["sender"]["group"]["id"]))
         member = group.member(str(raw_event["sender"]["id"]))
-        message_result = await ElizabethStaff(self.account).deserialize_message(raw_event["messageChain"])
+        message_result = await self._deserialize_message(raw_event["messageChain"])
         return MessageReceived(
             Context(
-                self.account,
+                self.protocol.avilla.accounts[account].account,
                 member,
                 group,
                 group,
-                self.account.route,
+                account,
             ),
             Message(
                 id=message_result["source"],
