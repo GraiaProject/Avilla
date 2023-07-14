@@ -4,6 +4,7 @@ from contextlib import AbstractContextManager, asynccontextmanager
 from typing import (
     TYPE_CHECKING,
     Any,
+    Awaitable,
     Callable,
     ClassVar,
     Generic,
@@ -12,17 +13,24 @@ from typing import (
     overload,
 )
 
-from typing_extensions import ParamSpec, Self
+from typing_extensions import ParamSpec, Self, Unpack
 
+from avilla.core.builtins.capability import CoreCapability
+from avilla.core.selector import Selector
+
+from ..descriptor.fetch import Fetch
 from ..protocol import SupportsCollect
 
 if TYPE_CHECKING:
+    from ...metadata import Metadata, MetadataRoute
+    from ...selector import FollowsPredicater
     from ..isolate import Isolate
 
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
 T = TypeVar("T")
+M = TypeVar("M", bound="Metadata")
 
 
 class ComponentEntrypoint(Generic[T]):
@@ -116,6 +124,28 @@ class BaseCollector:
 
     def apply(self, isolate: Isolate):
         self.defer(lambda x: isolate.apply(x))
+
+    
+    @overload
+    def pull(
+        self, target: str, route: type[M], **patterns: FollowsPredicater
+    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
+        ...
+    
+    @overload
+    def pull(
+        self, target: str, route: MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
+    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
+        ...
+
+    def pull(
+        self, target: str, route: ..., **patterns: FollowsPredicater
+    ) -> ...:
+        return self.entity(CoreCapability.pull, target, route, **patterns)
+
+    def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
+        return self.entity(Fetch, resource_type)
+
 
     def __post_collect__(self, cls: type[PerformTemplate]):
         self._cls = cls

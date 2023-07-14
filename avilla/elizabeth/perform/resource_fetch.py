@@ -21,6 +21,8 @@ class ElizabethResourceFetchPerform((m := ProtocolCollector["ElizabethProtocol"]
     @Fetch.collect(m, ElizabethImageResource)
     @Fetch.collect(m, ElizabethVoiceResource)
     async def fetch_resource(self, resource: ElizabethResource) -> bytes:
+        if resource.url is None:
+            raise Exception  # FIXME
         async with ClientSession() as session:
             async with session.get(resource.url) as resp:
                 return await resp.read()

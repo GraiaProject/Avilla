@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.ryanvk.collector.context import ContextCollector
+from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Nick
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from ...protocol import ElizabethProtocol  # noqa
 
 
-class ElizabethGroupMemberActionPerform((m := ContextCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
     @m.pull("lang.group.member", Nick)

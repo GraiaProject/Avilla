@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.ryanvk.collector.context import ContextCollector
+from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageRevoke, MessageSend
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from ...protocol import OneBot11Protocol  # noqa
 
 
-class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "OneBot11Account"]())._):
+class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
 
     @MessageSend.send.collect(m, "land.group")

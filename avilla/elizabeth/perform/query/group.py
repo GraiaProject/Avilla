@@ -5,27 +5,14 @@ from typing import TYPE_CHECKING, Callable, cast
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Summary
 
 if TYPE_CHECKING:
     from ...account import ElizabethAccount  # noqa
     from ...protocol import ElizabethProtocol  # noqa
 
 
-class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+class ElizabethGroupQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
-
-    @m.pull("lang.group", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
-        result = await self.account.connection.call(
-            "fetch",
-            "groupConfig",
-            {
-                "target": int(target.pattern["group"]),
-            },
-        )
-        assert result is not None
-        return Summary(result["name"], None)
 
     @CoreCapability.query.collect(m, "group")
     async def query_group(self, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):

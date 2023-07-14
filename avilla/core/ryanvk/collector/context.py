@@ -1,23 +1,15 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Generic, TypeVar, cast, overload
-
-from typing_extensions import Unpack
-
-from avilla.core.builtins.capability import CoreCapability
-from avilla.core.selector import Selector
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from .._runtime import processing_isolate, processing_protocol
-from ..descriptor.fetch import Fetch
 from .base import BaseCollector, ComponentEntrypoint, PerformTemplate
 
 if TYPE_CHECKING:
     from ...account import BaseAccount
     from ...context import Context
-    from ...metadata import Metadata, MetadataRoute
+    from ...metadata import Metadata
     from ...protocol import BaseProtocol
-    from ...selector import FollowsPredicater
-    from ..descriptor.pull import PullFn
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
@@ -50,26 +42,6 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
 
     def __init__(self):
         super().__init__()
-
-    @overload
-    def pull(
-        self, target: str, route: type[M], **patterns: FollowsPredicater
-    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
-        ...
-    
-    @overload
-    def pull(
-        self, target: str, route: MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
-    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
-        ...
-
-    def pull(
-        self, target: str, route: ..., **patterns: FollowsPredicater
-    ) -> ...:
-        return self.entity(CoreCapability.pull, target, route, **patterns)
-
-    def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
-        return self.entity(Fetch, resource_type)
 
     @property
     def _(self):

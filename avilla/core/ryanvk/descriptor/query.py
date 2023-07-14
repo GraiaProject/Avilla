@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from ..collector.base import BaseCollector
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class QueryRecord:
     """仅用作计算路径, 不参与实际运算, 也因此, 该元素仅存在于全局 Artifacts['query'] 中."""
 

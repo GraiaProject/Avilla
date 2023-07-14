@@ -32,9 +32,11 @@ class ElizabethProtocol(BaseProtocol):
 
         # from .perform.event.lifespan import ElizabethEventLifespanPerform
 
+        ## :: Query
+        from .perform.query.group import ElizabethGroupQueryPerform
+
         ## :: Resource Fetch
         from .perform.resource_fetch import ElizabethResourceFetchPerform
-        ...
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
