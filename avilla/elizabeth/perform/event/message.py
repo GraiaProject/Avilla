@@ -33,10 +33,11 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             "source": str(raw_elements[0]["id"]),
             "time": datetime.fromtimestamp(raw_elements[0]["time"]),
         }
-        for raw_element in raw_elements[1:]:
+        for index, raw_element in enumerate(raw_elements[1:]):
             element_type = raw_element["type"]
             if element_type == "Quote":
                 result["reply"] = str(raw_element["id"])
+                raw_elements.pop(index + 1)
                 break
         result["content"] = await Staff(self.connection).deserialize_message(raw_elements[1:])
         return cast(MessageDeserializeResult, result)
