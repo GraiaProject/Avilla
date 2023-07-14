@@ -24,7 +24,7 @@ requires-python = ">=3.9"
 
 [tool.pdm.dev-dependencies]
 dev = [
-    "black>=22.3.0",
+    "black>=23.7.0",
     "flake8>=4.0.1",
     "isort>=5.10.1",
     "typing-extensions>=4.2.0",

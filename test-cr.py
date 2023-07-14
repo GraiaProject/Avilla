@@ -1,5 +1,4 @@
 # class rings
-from typing import final
 
 class ring1:
     def __init__(self):

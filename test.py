@@ -1,52 +1,56 @@
 import asyncio
-from inspect import cleandoc
 
 from creart import create
 from yarl import URL
 
-from avilla.core import Avilla, Context, MessageReceived, Selector
-from avilla.core.account import AccountInfo
+from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
-from avilla.core.platform import Abstract, Branch, Land, Platform, Version
+from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
-from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientConfig, OneBot11WsClientNetworking
 from avilla.onebot.v11.protocol import OneBot11Protocol
-from avilla.onebot.v11.service import OneBot11Service
 
 # from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast
 from launart import Launart
 from test_env import A60_ENDPOINT, A60_SECRET
 
-# import richuru
-# richuru.install()
+
+from avilla.elizabeth.protocol import ElizabethProtocol
+from avilla.elizabeth.connection.ws_client import ElizabethWsClientConfig, ElizabethWsClientNetworking
+
+
+#from avilla.console.protocol import ConsoleProtocol
+
+import richuru1
+#richuru1.install()
 
 broadcast = create(Broadcast)
 launart = Launart()
 protocol = OneBot11Protocol()
 service = protocol.service
-conn = OneBot11WsClientNetworking(protocol)
 config = OneBot11WsClientConfig(URL(A60_ENDPOINT), A60_SECRET)
-conn.config = config
+conn = OneBot11WsClientNetworking(protocol, config)
 service.connections.append(conn)
 
 platform = Platform(Land("qq"), Abstract("onebot/v11"))
 
-avilla = Avilla(broadcast, launart, [protocol], message_cache_size=0)
+
+mah = ElizabethProtocol()
+conn1 = ElizabethWsClientNetworking(mah, ElizabethWsClientConfig(
+    URL("http://localhost:8660/"),
+    "tdtogkf123", 2119799445
+))
+mah.service.connections.append(conn1)
+
+#console_protocol = ConsoleProtocol()
+avilla = Avilla(broadcast, launart, [protocol, mah], message_cache_size=0)
+
 protocol.avilla = avilla
 
-# account = OneBot11Account(Selector().land("qq").account("2885842008"), protocol)
-# conn.accounts[2885842008] = account
-# account.websocket_client = conn
-# avilla.accounts[account.route] = AccountInfo(
-#    account.route, account, protocol, platform
-# )
 
 
-from devtools import debug
-
-debug(protocol.isolate.artifacts)
+#debug(protocol.isolate.artifacts)
 # exit()
 
 # TODO(Networking): 自动注册 Account
@@ -55,14 +59,18 @@ debug(protocol.isolate.artifacts)
 @broadcast.receiver(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
+    print(cx.endpoint, cx.scene, cx.client, cx.self, cx.account)
     if cx.client.follows("::group.member(1846913566)"):
-        await cx.scene.send_message(
-            [
-                "Hello, Avilla!",
-                Notice(cx.scene.member("1846913566")),
-                Picture(LocalFileResource("D:/bd2c39558b973c58327b0b339c741e76440761830.png")),
-            ]
-        )
+        #await cx.scene.send_message(
+        #    [
+        #        "Hello, Avilla!",
+        #        Notice(cx.scene.member("1846913566")),
+        #        Picture(LocalFileResource("D:/kaf.webp")),
+        #    ]
+        #)
+        print(await conn1.call("get", "friendList"))
+    elif cx.client.follows("::land(console).console(console_user)"):
+        await cx.scene.send_message("Hello, Console User!")
 
 
 async def log():

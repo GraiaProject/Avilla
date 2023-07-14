@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TypeVar, Callable, Protocol
+from typing import Callable, Protocol, TypeVar
+
 from typing_extensions import ParamSpec
 
 P = ParamSpec("P")

@@ -133,7 +133,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 if close_task in done:
                     receiver_task.cancel()
                     logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
-                    # TODO: unregister account
+                    # TODO: unregister account, including app & conn ref.
                     await asyncio.sleep(5)
                     logger.info(f"{self} Reconnecting...")
                     continue

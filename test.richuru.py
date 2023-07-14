@@ -1,7 +1,8 @@
-from richuru import install
+from richuru1 import install
 
-install(time_format="[time=%x %X]")
+install()
+
 
 from loguru import logger
 
-logger.info("1111")
+logger.opt(colors=True).info("<red>Hello <blue>world!</blue></red>")

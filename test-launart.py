@@ -1,4 +1,5 @@
 import richuru
+
 richuru.install()
 
 import asyncio
