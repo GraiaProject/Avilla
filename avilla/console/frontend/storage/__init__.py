@@ -1,11 +1,11 @@
-from dataclasses import field, dataclass
-from typing import List, Generic, TypeVar
+from dataclasses import dataclass, field
+from typing import Generic, List, TypeVar
 
-from textual.widget import Widget
-from textual.message import Message
 from rich.console import RenderableType
+from textual.message import Message
+from textual.widget import Widget
 
-from ..info import User, MessageEvent
+from ..info import MessageEvent, User
 
 MAX_LOG_RECORDS = 500
 MAX_MSG_RECORDS = 500

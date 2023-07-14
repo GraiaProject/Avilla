@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING
 
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.selector import Selector
 from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
+
 from avilla.console.frontend.info import MessageEvent
 from avilla.console.staff import ConsoleStaff
 
@@ -22,8 +23,12 @@ class ConsoleEventMessagePerform((m := AccountCollector())._):
 
     @ConsoleEventParse.collect(m, "console.message", MessageEvent)
     async def console_message(self, raw_event: MessageEvent):
-        message = await ConsoleStaff(self.account).deserialize_message(raw_event.message)
-        console = Selector().land(self.account.route["land"]).console(str(raw_event.user.id))
+        message = await ConsoleStaff(self.account).deserialize_message(
+            raw_event.message
+        )
+        console = (
+            Selector().land(self.account.route["land"]).console(str(raw_event.user.id))
+        )
         context = Context(
             account=self.account,
             client=console,
@@ -38,7 +43,6 @@ class ConsoleEventMessagePerform((m := AccountCollector())._):
                 scene=console,
                 sender=console,
                 content=message,
-                time=datetime.fromtimestamp(raw_event.time.timestamp())
+                time=datetime.fromtimestamp(raw_event.time.timestamp()),
             ),
         )
-

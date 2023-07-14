@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
-from typing import TYPE_CHECKING, Tuple, Iterable, Optional, cast
+from typing import TYPE_CHECKING, Iterable, Optional, Tuple, cast
 
 from textual.widget import Widget
 
-from .message import Timer, Message
+from .message import Message, Timer
 
 if TYPE_CHECKING:
     from ...app import Frontend
     from ...info import MessageEvent
-    from ...storage import Storage, StateChange
+    from ...storage import StateChange, Storage
 
 
 class ChatHistory(Widget):

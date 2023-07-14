@@ -1,8 +1,9 @@
-from abc import abstractmethod, ABCMeta
-from typing import Union, Optional
-from dataclasses import dataclass, field, asdict
+from abc import ABCMeta, abstractmethod
+from dataclasses import asdict, dataclass, field
+from typing import Optional, Union
 
-from graia.amnesia.message.element import Element, Text as BaseText
+from graia.amnesia.message.element import Element
+from graia.amnesia.message.element import Text as BaseText
 from rich.console import Console, ConsoleOptions, JustifyMethod, RenderResult
 from rich.emoji import Emoji as RichEmoji
 from rich.emoji import EmojiVariant
@@ -22,18 +23,17 @@ class ConsoleElement(Element, metaclass=ABCMeta):
         return str(self.rich)
 
     def __rich_console__(
-            self, console: "Console", options: "ConsoleOptions"
+        self, console: "Console", options: "ConsoleOptions"
     ) -> "RenderResult":
         yield self.rich
 
     def __rich_measure__(
-            self, console: "Console", options: "ConsoleOptions"
+        self, console: "Console", options: "ConsoleOptions"
     ) -> Measurement:
         return measure_renderables(console, options, (self.rich,))
 
 
 class Text(BaseText, ConsoleElement):
-
     @property
     def rich(self) -> RichText:
         return RichText(self.text, end="")

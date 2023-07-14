@@ -5,7 +5,9 @@ from graia.amnesia.message.element import Element
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.measure import Measurement, measure_renderables
 from rich.segment import Segment
-from .element import Text, Emoji, Markup, Markdown, ConsoleElement
+
+from .element import ConsoleElement, Emoji, Markdown, Markup, Text
+
 
 class ConsoleMessage(BaseMessageChain, Sequence[ConsoleElement]):
     content: list[ConsoleElement]
@@ -24,7 +26,7 @@ class ConsoleMessage(BaseMessageChain, Sequence[ConsoleElement]):
     def __iter__(self) -> Iterator[ConsoleElement]:
         yield from self.content
 
-    def __reversed__(self)-> Iterator[ConsoleElement]:
+    def __reversed__(self) -> Iterator[ConsoleElement]:
         yield from reversed(self.content)
 
     def __rich_console__(

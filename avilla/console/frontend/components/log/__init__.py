@@ -1,14 +1,14 @@
 import asyncio
-from typing import TYPE_CHECKING, Tuple, Iterable, cast
+from typing import TYPE_CHECKING, Iterable, Tuple, cast
 
-from textual.widget import Widget
-from textual.events import Unmount
-from textual.widgets import TextLog
 from rich.console import RenderableType
+from textual.events import Unmount
+from textual.widget import Widget
+from textual.widgets import TextLog
 
 if TYPE_CHECKING:
     from ...app import Frontend
-    from ...storage import Storage, StateChange
+    from ...storage import StateChange, Storage
 
 
 MAX_LINES = 1000

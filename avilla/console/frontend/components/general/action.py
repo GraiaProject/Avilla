@@ -1,7 +1,7 @@
-from textual.events import Click
-from textual.widgets import Static
 from textual.binding import Binding
+from textual.events import Click
 from textual.message import Message
+from textual.widgets import Static
 
 
 class Action(Static, can_focus=True):

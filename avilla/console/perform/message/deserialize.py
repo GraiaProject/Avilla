@@ -6,7 +6,7 @@ from avilla.core.elements import Text as BaseText
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 
-from avilla.console.element import Emoji, Markup, Markdown, ConsoleElement, Text
+from avilla.console.element import ConsoleElement, Emoji, Markdown, Markup, Text
 
 if TYPE_CHECKING:
     from ...account import ConsoleAccount  # noqa
@@ -15,7 +15,9 @@ if TYPE_CHECKING:
 ConsoleMessageDeserialize = MessageDeserialize[ConsoleElement]
 
 
-class ConsoleMessageDeserializePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
+class ConsoleMessageDeserializePerform(
+    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
+):
     m.post_applying = True
 
     # LINK: https://github.com/microsoft/pyright/issues/5409

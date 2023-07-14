@@ -1,9 +1,9 @@
-from textual.widget import Widget
 from textual.binding import Binding
+from textual.widget import Widget
 
+from .history import ChatHistory
 from .input import InputBox
 from .toolbar import Toolbar
-from .history import ChatHistory
 
 
 class ChatRoom(Widget):

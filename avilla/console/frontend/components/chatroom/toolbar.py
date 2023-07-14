@@ -7,8 +7,8 @@ from ...router import RouteChange
 from ..general.action import Action
 
 if TYPE_CHECKING:
-    from .history import ChatHistory
     from ...views.horizontal import HorizontalView
+    from .history import ChatHistory
 
 
 class Toolbar(Widget):

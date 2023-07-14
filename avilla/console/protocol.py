@@ -1,15 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
-from avilla.console.frontend.info import Event
-from loguru import logger
-from .service import ConsoleService
-from .staff import ConsoleStaff
 
-if TYPE_CHECKING:
-    from .account import ConsoleAccount
+
+from .service import ConsoleService
 
 
 class ConsoleProtocol(BaseProtocol):
@@ -34,18 +29,10 @@ class ConsoleProtocol(BaseProtocol):
 
         # :: Event
         from .perform.event.message import ConsoleEventMessagePerform
-        # from .perform.event.lifespan import OneBot11EventLifespanPerform
 
+        # from .perform.event.lifespan import OneBot11EventLifespanPerform
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
         self.service = ConsoleService(self)
         avilla.launch_manager.add_component(self.service)
-
-    async def parse_event(self, account: ConsoleAccount, event: Event):
-        res = await ConsoleStaff(account).parse_event(event.type, event)
-        if res is None:
-            logger.warning(f"received unsupported event {event.type}: {event}")
-            return
-        logger.debug(f"{account.route['account']} received event {event.type}")
-        self.post_event(res)

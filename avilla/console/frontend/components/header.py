@@ -1,6 +1,7 @@
-from textual.widgets import Header as TextualHeader
 from textual.reactive import Reactive
-from textual.widgets._header import HeaderIcon, HeaderTitle, HeaderClock
+from textual.widgets import Header as TextualHeader
+from textual.widgets._header import HeaderClock, HeaderIcon, HeaderTitle
+
 
 class _Icon(HeaderIcon):
     def render(self):

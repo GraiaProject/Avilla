@@ -1,8 +1,8 @@
-from typing import Dict, Callable, Optional
+from typing import Callable, Dict, Optional
 
-from textual.widget import Widget
 from textual.message import Message
 from textual.reactive import Reactive
+from textual.widget import Widget
 
 
 class RouteChange(Message, bubble=True):

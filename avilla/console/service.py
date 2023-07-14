@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING
-from avilla.console.frontend import Frontend
-from avilla.standard.core.account import AccountAvailable, AccountUnavailable
+
 from launart import Launart, Launchable
+
+from avilla.console.frontend import Frontend
 
 if TYPE_CHECKING:
     from .protocol import ConsoleProtocol
@@ -24,12 +25,12 @@ class ConsoleService(Launchable):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, self.app.account))
+            ...
+
         async with self.stage("blocking"):
             task = asyncio.create_task(self.app.run_async())
             await manager.status.wait_for_sigexit()
         async with self.stage("cleanup"):
             self.app.exit()
-            self.protocol.avilla.broadcast.postEvent(AccountUnavailable(self.protocol.avilla, self.app.account))
             if task:
                 await task

@@ -2,16 +2,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.standard.core.profile import Summary, Nick
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
+from avilla.standard.core.profile import Nick, Summary
 
 if TYPE_CHECKING:
     from ...account import ConsoleAccount  # noqa
     from ...protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleProfileActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
+class ConsoleProfileActionPerform(
+    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
+):
     m.post_applying = True
 
     @m.pull("lang.console", Nick)
@@ -22,6 +24,4 @@ class ConsoleProfileActionPerform((m := AccountCollector["ConsoleProtocol", "Con
     @m.pull("lang.console", Summary)
     async def get_summary(self, target: Selector) -> Summary:
         console = self.account.client.storage.current_user
-        return Summary(
-            console.nickname, console.nickname
-        )
+        return Summary(console.nickname, console.nickname)

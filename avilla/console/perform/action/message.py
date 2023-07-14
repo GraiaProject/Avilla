@@ -3,12 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend
 from graia.amnesia.message import MessageChain
 from loguru import logger
+
 from ...frontend.info import Robot
 from ...staff import ConsoleStaff
 
@@ -17,7 +17,9 @@ if TYPE_CHECKING:
     from ...protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
+class ConsoleMessageActionPerform(
+    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
+):
     m.post_applying = True
 
     @MessageSend.send.collect(m, "land.console")
@@ -33,22 +35,13 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
         serialized_msg = await ConsoleStaff(self.account).serialize_message(message)
 
         await self.account.client.call(
-            "send_msg",
-            {
-                "message": serialized_msg,
-                "info": Robot(self.protocol.name)
-            }
+            "send_msg", {"message": serialized_msg, "info": Robot(self.protocol.name)}
         )
         logger.info(  # TODO: wait for solution of ActiveMessage
-            f"{self.account.route['land']}: [send]"
-            f"[Console]"
-            f" <- {str(message)!r}"
+            f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}"
         )
-        message_metadata = Message(
-            id=str(datetime.now().timestamp()),
-            scene=target,
-            content=message,
-            time=datetime.now(),
-            sender=self.account.route,
+        return (
+            Selector()
+            .land(self.account.route["land"])
+            .message(f"{datetime.now().timestamp()}#N")
         )
-        return message_metadata.to_selector()

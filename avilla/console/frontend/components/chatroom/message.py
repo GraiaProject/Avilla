@@ -1,12 +1,12 @@
-from enum import Enum
 from datetime import datetime
+from enum import Enum
 
+from rich.console import RenderableType
 from textual.widget import Widget
 from textual.widgets import Static
-from rich.console import RenderableType
 
+from ...info import MessageEvent, User
 from ...utils import truncate
-from ...info import User, MessageEvent
 
 
 class Timer(Widget):

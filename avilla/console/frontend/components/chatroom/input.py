@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, cast
 
+from textual.binding import Binding
 from textual.widget import Widget
 from textual.widgets import Input
-from textual.binding import Binding
 
 if TYPE_CHECKING:
     from ...app import Frontend
