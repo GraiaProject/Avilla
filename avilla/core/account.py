@@ -35,9 +35,6 @@ class BaseAccount:
     async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
         return await self.staff.get_context(target, via=via)
 
-    async def call(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
-        raise NotImplementedError
-
     @property
     def info(self) -> AccountInfo:
         return self.avilla.accounts[self.route]
