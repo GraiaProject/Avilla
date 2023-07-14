@@ -29,7 +29,6 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
     async def connect(self, raw_event: dict):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
-        print("111111111111111", account)
         if account is None:
             # TODO: land should not be hardcoded as qq
             # create account instance

@@ -17,17 +17,20 @@ class ElizabethService(Launchable):
 
     protocol: ElizabethProtocol
     connections: list[ElizabethWsClientNetworking]
+    account_map: dict[int, ElizabethNetworking]
 
     def __init__(self, protocol: ElizabethProtocol):
         self.protocol = protocol
         self.connections = []
+        self.account_map = {}
         super().__init__()
 
     def has_connection(self, account_id: str):
-        ...  # TODO
+        return int(account_id) in self.account_map
 
     def get_connection(self, account_id: str) -> ElizabethNetworking:
-        ...  # TODO
+        print("get", account_id)
+        return self.account_map[int(account_id)]
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):

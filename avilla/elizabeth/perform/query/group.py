@@ -14,10 +14,9 @@ if TYPE_CHECKING:
 class ElizabethGroupQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @CoreCapability.query.collect(m, "group")
+    @CoreCapability.query.collect(m, "land.group")
     async def query_group(self, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):
         result = await self.account.connection.call("fetch", "groupList", {})
         result = cast(list, result)
         for i in result:
             yield Selector().land(self.account.route["land"]).group(str(i["id"]))
-            # TODO:

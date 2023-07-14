@@ -35,7 +35,9 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 result["reply"] = str(raw_element["id"])
                 raw_elements.pop(index + 1)
                 break
-        result["content"] = await Staff(self.connection).deserialize_message(raw_elements[1:])
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        result["content"] = await Staff(account).deserialize_message(raw_elements[1:])
         return cast(MessageDeserializeResult, result)
 
     @EventParse.collect(m, "FriendMessage")

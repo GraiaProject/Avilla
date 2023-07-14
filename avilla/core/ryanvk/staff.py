@@ -107,15 +107,13 @@ class Staff:
     async def query_entities(self, pattern: str, **predicators: FollowsPredicater):
         items = _parse_follows(pattern, **predicators)
         steps = find_querier_steps(self.artifacts, items)
+
         if steps is None:
             return
 
         def build_handler(artifact: tuple[BaseCollector, QueryHandlerPerform]) -> QueryHandler:
             async def handler(predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):
-                async with use_record(
-                    self.components,
-                    artifact,
-                ) as entity:
+                async with use_record(self.components, artifact) as entity:
                     async for i in entity(predicate, previous):
                         yield i
 
@@ -136,7 +134,10 @@ class Staff:
 
             return predicater
 
-        handlers = map(lambda x: (x[0], build_handler(self.artifacts[x[1]])), steps)
+        handlers = []
+        for follow_item, query_record in steps:
+            handlers.append((follow_item, build_handler(self.artifacts[query_record])))
+
         r = reduce(
             lambda previous, current: query_depth_generator(current[1], build_predicate(current[0]), previous),
             handlers,
@@ -144,5 +145,6 @@ class Staff:
         )
         if TYPE_CHECKING:
             assert r is not None
+
         async for i in r:
             yield i

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.account import BaseAccount
 from avilla.elizabeth.connection.base import ElizabethNetworking
 
@@ -9,6 +10,7 @@ if TYPE_CHECKING:
     from ..elizabeth.protocol import ElizabethProtocol
 
 
+@dataclass
 class ElizabethAccount(BaseAccount):
     protocol: ElizabethProtocol
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import ChainMap
+from contextlib import suppress
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
@@ -10,11 +11,15 @@ from loguru import logger
 from yarl import URL
 
 from avilla.core._vendor.dataclasses import dataclass
+from avilla.core.account import AccountInfo
+from avilla.core.selector import Selector
 from avilla.elizabeth.connection.base import CallMethod
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
 
+from ..account import ElizabethAccount
+from ..const import PLATFORM
 from .base import ElizabethNetworking
 from .util import validate_response
 
@@ -42,6 +47,10 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
     def __init__(self, protocol: ElizabethProtocol, config: ElizabethWsClientConfig) -> None:
         super().__init__(protocol)
         self.config = config
+
+    @property
+    def account_id(self):
+        return self.config.qq
 
     async def message_receive(self):
         if self.connection is None:
@@ -113,6 +122,21 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 self.config.base_url / "all", params={"verifyKey": self.config.access_token, "qq": str(self.config.qq)}
             ) as self.connection:
                 logger.info(f"{self} Websocket client connected")
+
+                account_route = Selector().land("qq").account(str(self.config.qq))
+                if account_route in self.protocol.avilla.accounts:
+                    account = cast(ElizabethAccount, self.protocol.avilla.accounts[account_route].account)
+                else:
+                    account = ElizabethAccount(account_route, self.protocol.avilla, self.protocol)
+                    self.protocol.avilla.accounts[account_route] = AccountInfo(
+                        account_route,
+                        account,
+                        self.protocol,
+                        PLATFORM,
+                    )
+
+                self.protocol.service.account_map[self.config.qq] = self
+
                 self.close_signal.clear()
                 close_task = asyncio.create_task(self.close_signal.wait())
                 receiver_task = asyncio.create_task(self.message_handle())
@@ -128,12 +152,17 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                     await self.connection.close()
                     self.close_signal.set()
                     self.connection = None
-                    # TODO: unregister account
+                    with suppress(KeyError):
+                        del self.protocol.service.account_map[self.config.qq]
+                        del self.protocol.avilla.accounts[account_route]
                     return
                 if close_task in done:
                     receiver_task.cancel()
                     logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
-                    # TODO: unregister account, including app & conn ref.
+
+                    with suppress(KeyError):
+                        del self.protocol.service.account_map[self.config.qq]
+                        del self.protocol.avilla.accounts[account_route]
                     await asyncio.sleep(5)
                     logger.info(f"{self} Reconnecting...")
                     continue

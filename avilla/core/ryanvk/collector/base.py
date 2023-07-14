@@ -15,7 +15,6 @@ from typing import (
 
 from typing_extensions import ParamSpec, Self, Unpack
 
-from avilla.core.builtins.capability import CoreCapability
 from avilla.core.selector import Selector
 
 from ..descriptor.fetch import Fetch
@@ -125,27 +124,25 @@ class BaseCollector:
     def apply(self, isolate: Isolate):
         self.defer(lambda x: isolate.apply(x))
 
-    
     @overload
     def pull(
         self, target: str, route: type[M], **patterns: FollowsPredicater
     ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
         ...
-    
+
     @overload
     def pull(
         self, target: str, route: MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
     ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
         ...
 
-    def pull(
-        self, target: str, route: ..., **patterns: FollowsPredicater
-    ) -> ...:
+    def pull(self, target: str, route: ..., **patterns: FollowsPredicater) -> ...:
+        from avilla.core.builtins.capability import CoreCapability
+
         return self.entity(CoreCapability.pull, target, route, **patterns)
 
     def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
         return self.entity(Fetch, resource_type)
-
 
     def __post_collect__(self, cls: type[PerformTemplate]):
         self._cls = cls
