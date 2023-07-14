@@ -155,7 +155,6 @@ def cancel_alive_tasks(loop: asyncio.AbstractEventLoop):
     to_cancel = asyncio.tasks.all_tasks(loop)
     if to_cancel:
         for tsk in to_cancel:
-            print(tsk)
             tsk.cancel()
         loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
 
