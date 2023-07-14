@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Container, Protocol
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Container, Protocol, overload
 from typing import NoReturn as Never
 
 from avilla.core._vendor.dataclasses import dataclass
@@ -26,8 +26,34 @@ class QueryHandlerPerform(Protocol):
         ...
 
 
+class QueryHandlerPerformNoPrev(Protocol):
+    def __call__(
+        self, _p0: Never, predicate: Callable[[str, str], bool] | str, previous: None
+    ) -> AsyncGenerator[Selector, None]:
+        ...
+
+
+class QueryHandlerPerformPrev(Protocol):
+    def __call__(
+        self, _p0: Never, predicate: Callable[[str, str], bool] | str, previous: Selector
+    ) -> AsyncGenerator[Selector, None]:
+        ...
+
+
 class QuerySchema:
-    def collect(self, collector: BaseCollector, target: str, previous: str | None = None):
+    @overload
+    def collect(
+        self, collector: BaseCollector, target: str, previous: None = None
+    ) -> Callable[[QueryHandlerPerformNoPrev], QueryHandlerPerformNoPrev]:
+        ...
+
+    @overload
+    def collect(
+        self, collector: BaseCollector, target: str, previous: str
+    ) -> Callable[[QueryHandlerPerformPrev], QueryHandlerPerformPrev]:
+        ...
+
+    def collect(self, collector: BaseCollector, target: str, previous: ... = None) -> ...:
         def receive(entity: QueryHandlerPerform):
             collector.artifacts[QueryRecord(previous, target)] = (collector, entity)
             return entity
