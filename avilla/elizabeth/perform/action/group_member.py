@@ -15,7 +15,7 @@ class ElizabethGroupMemberActionPerform((m := ContextCollector["ElizabethProtoco
     m.post_applying = True
 
     @m.pull("lang.group.member", Nick)
-    async def get_group_member_nick(self, target: Selector, r: type[Nick]) -> Nick:
+    async def get_group_member_nick(self, target: Selector) -> Nick:
         result = await self.account.connection.call(
             "fetch",
             "memberInfo",
@@ -24,4 +24,5 @@ class ElizabethGroupMemberActionPerform((m := ContextCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
+        assert result is not None
         return Nick(result["memberName"], result["memberName"], result.get("specialTitle"))

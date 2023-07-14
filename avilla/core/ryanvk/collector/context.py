@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ClassVar, Generic, TypeVar, cast, overload
 
 from typing_extensions import Unpack
 
 from avilla.core.builtins.capability import CoreCapability
+from avilla.core.selector import Selector
 
 from .._runtime import processing_isolate, processing_protocol
 from ..descriptor.fetch import Fetch
@@ -50,10 +51,22 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
     def __init__(self):
         super().__init__()
 
+    @overload
     def pull(
-        self, target: str, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
-    ):
-        return self.entity(cast("PullFn[M]", CoreCapability.pull), target, route, **patterns)
+        self, target: str, route: type[M], **patterns: FollowsPredicater
+    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
+        ...
+    
+    @overload
+    def pull(
+        self, target: str, route: MetadataRoute[Unpack[tuple[Any, ...]], M], **patterns: FollowsPredicater
+    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
+        ...
+
+    def pull(
+        self, target: str, route: ..., **patterns: FollowsPredicater
+    ) -> ...:
+        return self.entity(CoreCapability.pull, target, route, **patterns)
 
     def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
         return self.entity(Fetch, resource_type)

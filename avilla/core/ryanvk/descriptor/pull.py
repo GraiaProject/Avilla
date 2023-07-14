@@ -1,15 +1,6 @@
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    ChainMap,
-    Generic,
-    TypeVar,
-    Union,
-)
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, Generic, TypeVar, Union, cast, overload
 
 from typing_extensions import ParamSpec, TypeAlias, Unpack
 
@@ -17,7 +8,7 @@ from avilla.core.selector import FollowsPredicater, Selectable, Selector
 
 from ..._vendor.dataclasses import dataclass
 from ...metadata import Metadata, MetadataRoute
-from .target import TargetArtifactStore, TargetFn
+from .target import LookupBranch, TargetArtifactStore, TargetFn
 
 if TYPE_CHECKING:
     from .base import BaseCollector
@@ -45,15 +36,36 @@ class PullFn(
     def into(self, route: type[M1] | MetadataRoute[Unpack[tuple[Metadata, ...]], M1]) -> PullFn[M1]:
         return self  # type: ignore[reportGeneral]
 
+    @overload
     def collect(
         self: PullFn[M],
         collector: BaseCollector,
         pattern: str,
-        route: Route[M],
+        route: type[M],
         **kwargs: FollowsPredicater,
-    ):
-        def receive(entity: Callable[[HQ, Selector, Route[M]], Awaitable[M]]):
+    ) -> Callable[[Callable[[HQ, Selector], Awaitable[M]]], Callable[[HQ, Selector], Awaitable[M]]]:
+        ...
+
+    @overload
+    def collect(
+        self: PullFn[M],
+        collector: BaseCollector,
+        pattern: str,
+        route: MetadataRoute[Unpack[tuple[Any, ...]], M],
+        **kwargs: FollowsPredicater,
+    ) -> Callable[[Callable[[HQ, Selector], Awaitable[M]]], Callable[[HQ, Selector], Awaitable[M]],]:
+        ...
+
+    def collect(
+        self: PullFn[M],
+        collector: BaseCollector,
+        pattern: str,
+        route: ...,
+        **kwargs: FollowsPredicater,
+    ) -> ...:
+        def receive(entity: Callable[[HQ, Selector], Awaitable[M]]):
             branch = self.get_collect_layout(collector, pattern, **kwargs)
+            branch = cast("LookupBranch[Callable[[Any, Selector], Awaitable[M]]]", branch)
             signature = PullImplement(route)
             artifact = TargetArtifactStore(collector, entity)
             branch.artifacts[signature] = artifact

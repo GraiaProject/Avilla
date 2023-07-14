@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections import ChainMap
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from statv import Stats, Statv
 
@@ -32,12 +32,20 @@ class BaseAccount:
     route: Selector
     avilla: Avilla
 
-    async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
-        return await self.staff.get_context(target, via=via)
-
     @property
     def info(self) -> AccountInfo:
         return self.avilla.accounts[self.route]
+
+    @property
+    def staff(self):
+        return Staff(self)
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
+        return await self.staff.get_context(target, via=via)
 
     def get_self_context(self):
         from avilla.core.context import Context
@@ -50,10 +58,6 @@ class BaseAccount:
             self.route,
         )
 
-    @property
-    def available(self) -> bool:
-        return True
-
     def get_staff_components(self):
         return {"account": self, "protocol": self.info.protocol, "avilla": self.avilla}
 
@@ -63,10 +67,6 @@ class BaseAccount:
             self.info.protocol.isolate.artifacts,
             self.avilla.isolate.artifacts,
         )
-
-    @property
-    def staff(self):
-        return Staff(self)
 
 
 class AccountStatus(Statv):

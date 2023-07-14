@@ -16,7 +16,7 @@ class ElizabethGroupActionPerform((m := ContextCollector["ElizabethProtocol", "E
     m.post_applying = True
 
     @m.pull("lang.group", Summary)
-    async def get_summary(self, target: Selector, r: type[Summary]) -> Summary:
+    async def get_summary(self, target: Selector) -> Summary:
         result = await self.account.connection.call(
             "fetch",
             "groupConfig",
@@ -24,11 +24,12 @@ class ElizabethGroupActionPerform((m := ContextCollector["ElizabethProtocol", "E
                 "target": int(target.pattern["group"]),
             },
         )
+        assert result is not None
         return Summary(result["name"], None)
 
     @CoreCapability.query.collect(m, "group")
     async def query_group(self, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None) -> bool:
         result = await self.account.connection.call("fetch", "groupList", {})
         for i in result:
-            group = Selector().land(self.account.route["land"]).group(str(i["id"]))
+            Selector().land(self.account.route["land"]).group(str(i["id"]))
             # TODO:

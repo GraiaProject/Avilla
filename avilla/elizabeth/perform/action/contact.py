@@ -15,7 +15,7 @@ class ElizabethContactActionPerform((m := ContextCollector["ElizabethProtocol", 
     m.post_applying = True
 
     @m.pull("lang.contact", Nick)
-    async def get_contact_nick(self, target: Selector, r: type[Nick]) -> Nick:
+    async def get_contact_nick(self, target: Selector) -> Nick:
         result = await self.account.connection.call(
             "fetch",
             "userProfile",
@@ -23,10 +23,11 @@ class ElizabethContactActionPerform((m := ContextCollector["ElizabethProtocol", 
                 "target": int(target.pattern["contact"]),
             },
         )
+        assert result is not None
         return Nick(result["nickname"], result["nickname"], None)
 
     @m.pull("lang.contact", Summary)
-    async def get_contact_summary(self, target: Selector, r: type[Summary]) -> Summary:
+    async def get_contact_summary(self, target: Selector) -> Summary:
         result = await self.account.connection.call(
             "fetch",
             "userProfile",
@@ -34,4 +35,5 @@ class ElizabethContactActionPerform((m := ContextCollector["ElizabethProtocol", 
                 "target": int(target.pattern["contact"]),
             },
         )
+        assert result is not None
         return Summary(result["nickname"], "a strange contact on platform qq")

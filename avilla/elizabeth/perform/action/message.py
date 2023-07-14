@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.ryanvk.collector.context import ContextCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageSend, MessageRevoke
+from avilla.standard.core.message import MessageRevoke, MessageSend
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
