@@ -24,10 +24,10 @@ class ElizabethMessageActionPerform((m := ContextCollector["ElizabethProtocol", 
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        result = await self.account.call(
+        result = await self.account.connection.call(
+            "update",
             "sendGroupMessage",
             {
-                "__method__": "update",
                 "target": int(target.pattern["group"]),
                 "messageChain": await Staff(self.account).serialize_message(message),
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
