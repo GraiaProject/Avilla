@@ -11,8 +11,10 @@ from typing import (
     Protocol,
     TypeVar,
 )
-from graia.broadcast.utilles import run_always_await
+
 from typing_extensions import Concatenate, ParamSpec
+
+from graia.broadcast.utilles import run_always_await
 
 if TYPE_CHECKING:
     # from .descriptor.base import VnCollector

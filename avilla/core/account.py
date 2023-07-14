@@ -7,8 +7,9 @@ from statv import Stats, Statv
 
 from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.ryanvk import Isolate
-from avilla.core.selector import Selector
 from avilla.core.ryanvk.staff import Staff
+from avilla.core.selector import Selector
+
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
     from avilla.core.context import Context

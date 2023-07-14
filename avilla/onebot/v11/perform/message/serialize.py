@@ -49,9 +49,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
                 "file": resource.file
                 if isinstance(resource := element.resource, OneBot11ImageResource)
                 else "base64://"
-                + base64.b64encode(
-                    cast(bytes, await Staff(self.account).fetch_resource(resource))
-                ).decode("utf-8")
+                + base64.b64encode(cast(bytes, await Staff(self.account).fetch_resource(resource))).decode("utf-8")
             },
         }
 

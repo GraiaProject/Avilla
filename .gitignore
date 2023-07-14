@@ -134,7 +134,9 @@ docs/node_modules
 
 # PDM
 .pdm-python
+.pdm-build
 
 development
 .ruff_cache
 test_env.py
+avilla/elizabeth_old

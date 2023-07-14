@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
+from avilla.core.ryanvk._runtime import processing_protocol
 from avilla.core.ryanvk.collector.base import (
     BaseCollector,
     ComponentEntrypoint,
@@ -46,4 +46,3 @@ class ConnectionCollector(BaseCollector):
             if (protocol := processing_protocol.get(None)) is None:
                 raise RuntimeError("expected processing protocol")
             protocol.isolate.apply(cls)
-            
