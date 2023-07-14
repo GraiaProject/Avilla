@@ -77,7 +77,7 @@ class ElizabethNetworking(Generic[T]):
                 if event is None:
                     logger.warning(f"received unsupported event {event_type}: {data}")
                     return
-               # logger.debug(f"{data['self_id']} received event {event_type}")
+                # logger.debug(f"{data['self_id']} received event {event_type}")
                 await self.protocol.post_event(event)
 
             asyncio.create_task(event_parse_task(body))

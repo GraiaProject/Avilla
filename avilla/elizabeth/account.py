@@ -33,4 +33,4 @@ class ElizabethAccount(BaseAccount):
             await self.connection.wait_for_available()  # wait until session_key is present
             session_key = self.connection.session_key
             params["sessionKey"] = session_key
-        return await self.connection.call(endpoint, method, params)
+        return await self.connection.call(method, endpoint, params)
