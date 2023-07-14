@@ -11,8 +11,6 @@ from avilla.core.exceptions import (
     UnknownError,
     UnknownTarget,
 )
-from graia.amnesia.builtins.aiohttp import AiohttpRouter
-from launart import Launart
 
 from ..exception import (
     AccountNotFound,
@@ -20,24 +18,6 @@ from ..exception import (
     InvalidVerifyKey,
     UnVerifiedSession,
 )
-
-try:
-    from graia.amnesia.builtins.starlette import StarletteRouter
-
-    def get_router(mgr: Launart) -> AiohttpRouter | StarletteRouter:
-        if AiohttpRouter in mgr._service_bind:
-            return mgr.get_interface(AiohttpRouter)
-        if StarletteRouter in mgr._service_bind:
-            return mgr.get_interface(StarletteRouter)
-        raise ValueError("No router found")
-
-except ImportError:
-
-    def get_router(mgr: Launart) -> AiohttpRouter | StarletteRouter:
-        if AiohttpRouter in mgr._service_bind:
-            return mgr.get_interface(AiohttpRouter)
-        raise ValueError("No router found")
-
 
 code_exceptions_mapping: dict[int, type[Exception]] = {
     1: InvalidVerifyKey,
@@ -64,7 +44,7 @@ def validate_response(data: Any, raising: Literal[True] = True) -> Any:
     ...
 
 
-def validate_response(data: Any, raising: bool = True):
+def validate_response(data: dict, raising: bool = True):
     int_code = data.get("code") if isinstance(data, dict) else data
     if not isinstance(int_code, int) or int_code == 200 or int_code == 0:
         return data.get("data", data)

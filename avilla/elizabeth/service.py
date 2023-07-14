@@ -1,24 +1,20 @@
 from __future__ import annotations
 
-import asyncio
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Set
 
-from graia.amnesia.transport.common.client import AbstractClientInterface
-from launart import Launart, Service
+from launart import Launart, Launchable
 
-from .connection import ElizabethConnection
-from .connection.config import U_Config
+from .connection.base import ElizabethNetworking
 
 if TYPE_CHECKING:
     from .protocol import ElizabethProtocol
 
 
-class ElizabethService(Service):
+class ElizabethService(Launchable):
     id = "elizabeth.service"
-    supported_interface_types = set()
 
     protocol: ElizabethProtocol
-    connections: list[ElizabethConnection[U_Config]]
+    connections: list[ElizabethNetworking]
 
     def __init__(self, protocol: ElizabethProtocol):
         self.protocol = protocol
@@ -26,13 +22,10 @@ class ElizabethService(Service):
         super().__init__()
 
     def has_connection(self, account_id: str):
-        return any(conn.config.account == account_id for conn in self.connections)
+        ... # TODO
 
     def get_connection(self, account_id: str):
-        for conn in self.connections:
-            if conn.config.account == account_id:
-                return conn
-        raise ValueError(f"Account {account_id} not found")
+        ... # TODO
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
@@ -42,22 +35,15 @@ class ElizabethService(Service):
 
         async with self.stage("blocking"):
             if self.connections:
-                await asyncio.wait(
-                    map(
-                        asyncio.ensure_future, (conn.status.wait_for("blocking-completed") for conn in self.connections)
-                    )
-                )
+                ...
 
         async with self.stage("cleanup"):
             ...  # TODO
 
     @property
-    def required(self):
-        return {AbstractClientInterface}
-
-    @property
     def stages(self):
         return {"preparing", "blocking", "cleanup"}
 
-    def get_interface(self, _):
-        return None
+    @property
+    def required(self) -> Set[str]:
+        return set()

@@ -5,38 +5,22 @@ from typing import TYPE_CHECKING, Any
 from avilla.core.account import BaseAccount
 from avilla.core.context import Context
 from avilla.core.selector import Selector
-from avilla.elizabeth.connection import ElizabethConnection
 from avilla.elizabeth.connection.util import CallMethod
+from avilla.elizabeth_old.connection import ElizabethConnection
 
 if TYPE_CHECKING:
-    from .protocol import ElizabethProtocol
+    from ..elizabeth_old.protocol import ElizabethProtocol
 
 
 class ElizabethAccount(BaseAccount):
     protocol: ElizabethProtocol
 
     async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
-        # TODO: 对象存在性检查
-        if "land" not in target:
-            target = target.land(self.protocol.land)
-        if target.path == "land.group":
-            return Context(self, self.to_selector(), target, target, target.member(self.id))
-        elif target.path == "land.friend":
-            return Context(self, target, target, self.to_selector(), self.to_selector())
-        elif target.path == "land.group.member":
-            return Context(
-                self,
-                target,
-                Selector().land(self.land.name).group(target.pattern["group"]),
-                Selector().land(self.land.name).group(target.pattern["group"]).member(self.id),
-                self.to_selector(),
-            )
-        else:
-            raise NotImplementedError()
+        ...
 
     @property
     def connection(self) -> ElizabethConnection:
-        return self.protocol.service.get_connection(self.id)
+        return self.protocol.service.get_connection(self.route['account'])
 
     @property
     def available(self) -> bool:
