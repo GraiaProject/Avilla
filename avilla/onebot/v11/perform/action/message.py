@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.ryanvk.collector.context import ContextCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageSend
+from avilla.standard.core.message import MessageRevoke, MessageSend
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "O
     m.post_applying = True
 
     @MessageSend.send.collect(m, "land.group")
-    async def send_group_message(
+    async def send_group_msg(
         self,
         target: Selector,
         message: MessageChain,
@@ -34,3 +34,12 @@ class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "O
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['group']}: {message}")
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["message_id"])
+
+    @MessageRevoke.revoke.collect(m, "land.group.message")
+    async def delete_msg(self, target: Selector):
+        await self.account.call(
+            "delete_msg",
+            {
+                "message_id": int(target['message'])
+            }
+        )
