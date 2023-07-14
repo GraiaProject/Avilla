@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 
 
 class _Callable(Protocol):
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        ...
+    __call__: Callable
 
 
 T = TypeVar("T")

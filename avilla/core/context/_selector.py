@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Awaitable, Iterable, Mapping
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, overload, Callable, Awaitable
 
-from typing_extensions import Self, Unpack
+from typing_extensions import Self, Unpack, ParamSpec, Concatenate
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.message import Message
@@ -14,11 +14,15 @@ from avilla.standard.core.request import RequestCapability
 from avilla.standard.core.scene import SceneCapability
 from graia.amnesia.message import Element, MessageChain, Text
 
+from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk.descriptor.base import Fn
+
 if TYPE_CHECKING:
     from . import Context
 
+R = TypeVar("R", covariant=True)
+P = ParamSpec("P")
 _MetadataT = TypeVar("_MetadataT", bound=Metadata)
-
 
 class ContextSelector(Selector):
     context: Context
@@ -36,6 +40,21 @@ class ContextSelector(Selector):
     ) -> Awaitable[_MetadataT]:
         return self.context.pull(metadata, self)
 
+    @overload
+    def __getitem__(self, item: str) -> str:
+        ...
+    
+    @overload
+    def __getitem__(self, item: Fn[Callable[Concatenate[Selector, P], Awaitable[R]]]) -> Callable[P, Awaitable[R]]:
+        ...
+    
+    def __getitem__(self, item: str | Fn[Callable[Concatenate[Selector, P], Awaitable[R]]]) -> str | Callable[P, Awaitable[R]]:
+        if isinstance(item, str):
+            return super().__getitem__(item)
+        
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            return await Staff(self.context).call_fn(item, self, *args, **kwargs)
+        return wrapper
 
 class ContextClientSelector(ContextSelector):
     ...
