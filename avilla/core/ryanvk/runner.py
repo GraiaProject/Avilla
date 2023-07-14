@@ -11,7 +11,7 @@ from typing import (
     Protocol,
     TypeVar,
 )
-
+from graia.broadcast.utilles import run_always_await
 from typing_extensions import Concatenate, ParamSpec
 
 if TYPE_CHECKING:
@@ -75,4 +75,4 @@ async def run_fn(
     **kwargs: P.kwargs,
 ) -> R:
     async with use_artifact(artifact_collection, components, schema, *args, **kwargs) as entity:
-        return await entity(*args, **kwargs)
+        return await run_always_await(entity, *args, **kwargs)

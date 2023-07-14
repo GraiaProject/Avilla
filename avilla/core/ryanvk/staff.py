@@ -44,6 +44,9 @@ class Staff:
         self.components = focus.get_staff_components()
         self.artifacts = focus.get_staff_artifacts()
 
+    async def get_context(self, target: Selector, *, via: Selector | None = None):
+        return await self.call_fn(CoreCapability.get_context, target, via=via)
+
     async def call_fn(self, fn: Fn[Callable[P, Awaitable[R]]], *args: P.args, **kwargs: P.kwargs) -> R:
         return await run_fn(self.artifacts, self.components, fn, *args, **kwargs)
 

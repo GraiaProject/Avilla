@@ -8,7 +8,7 @@ from statv import Stats, Statv
 from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.ryanvk import Isolate
 from avilla.core.selector import Selector
-
+from avilla.core.ryanvk.staff import Staff
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
     from avilla.core.context import Context
@@ -32,7 +32,7 @@ class BaseAccount:
     avilla: Avilla
 
     async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
-        raise NotImplementedError
+        return await self.staff.get_context(target, via=via)
 
     async def call(self, endpoint: str, params: dict[str, Any] | None = None) -> Any:
         raise NotImplementedError
@@ -65,6 +65,10 @@ class BaseAccount:
             self.info.protocol.isolate.artifacts,
             self.avilla.isolate.artifacts,
         )
+
+    @property
+    def staff(self):
+        return Staff(self)
 
 
 class AccountStatus(Statv):
