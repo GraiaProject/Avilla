@@ -35,7 +35,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
     @ElizabethMessageSerialize.collect(m, Text)
     async def text(self, element: Text) -> dict:
         return {"type": "Plain", "text": element.text}
-    
+
     @ElizabethMessageSerialize.collect(m, Notice)
     async def notice(self, element: Notice):
         return {"type": "At", "target": int(element.target.last_value)}
@@ -47,7 +47,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
     @ElizabethMessageSerialize.collect(m, Face)
     async def face(self, element: Face) -> dict:
         return {"type": "Face", "faceId": element.id, "name": element.name}
-    
+
     @ElizabethMessageSerialize.collect(m, Json)
     async def json(self, element: Json):
         return {"type": "Json", "json": element.content}
@@ -59,26 +59,26 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
     @ElizabethMessageSerialize.collect(m, App)
     async def app(self, element: App):
         return {"type": "App", "content": element.content}
-    
+
     @ElizabethMessageSerialize.collect(m, Poke)
     async def poke(self, element: Poke):
         return {"type": "Poke", "name": element.kind.value}
-    
+
     @ElizabethMessageSerialize.collect(m, Dice)
     async def dice(self, element: Dice):
         return {"type": "Dice", "value": element.value}
-    
+
     @ElizabethMessageSerialize.collect(m, MusicShare)
     async def music_share(self, element: MusicShare):
         return {
-            "type": "MusicShare", 
-            "kind": element.kind.value, 
-            "title": element.title, 
-            "summary": element.content, 
-            "jumpUrl": element.url, 
-            "pictureUrl": element.thumbnail, 
+            "type": "MusicShare",
+            "kind": element.kind.value,
+            "title": element.title,
+            "summary": element.content,
+            "jumpUrl": element.url,
+            "pictureUrl": element.thumbnail,
             "musicUrl": element.audio,
-            "brief": element.brief
+            "brief": element.brief,
         }
 
     @ElizabethMessageSerialize.collect(m, Picture)
@@ -100,7 +100,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
         raw = await self.image(element)
         raw["type"] = "FlashImage"
         return raw
-    
+
     @ElizabethMessageSerialize.collect(m, Audio)
     async def audio(self, element: Audio):
         if isinstance(element.resource, ElizabethVoiceResource):

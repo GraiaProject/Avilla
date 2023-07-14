@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T", bound="SupportsStaff")
 
+
 class OneBot11Networking(Generic[T]):
     protocol: OneBot11Protocol
     accounts: dict[int, OneBot11Account]

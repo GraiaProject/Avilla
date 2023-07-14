@@ -87,6 +87,7 @@ class Video(Element):
     def __repr__(self):
         return f"[$Video:resource={self.resource.to_selector()}]"
 
+
 class File(Element):
     resource: Resource[bytes]
 
@@ -96,6 +97,7 @@ class File(Element):
         elif isinstance(resource, str):
             resource = LocalFileResource(Path(resource))
         self.resource = resource
+
     def __str__(self) -> str:
         return "[$File]"
 

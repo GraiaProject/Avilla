@@ -14,7 +14,7 @@ class ElizabethAccount(BaseAccount):
 
     @property
     def connection(self) -> ElizabethNetworking:
-        return self.protocol.service.get_connection(self.route['account'])
+        return self.protocol.service.get_connection(self.route["account"])
 
     @property
     def available(self) -> bool:

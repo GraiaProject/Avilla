@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, TypedDict, cast
+from typing import Any, TypedDict, cast
 
 from avilla.core.context import Context
 from avilla.core.message import Message, MessageChain
@@ -12,9 +12,6 @@ from avilla.standard.core.message import MessageReceived
 
 from ...collector.connection import ConnectionCollector
 
-if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
 
 class MessageDeserializeResult(TypedDict):
     content: MessageChain
@@ -63,7 +60,6 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 reply=friend.appendix("message", message_result["reply"]) if message_result["reply"] else None,
             ),
         )
-
 
     @EventParse.collect(m, "GroupMessage")
     async def group(self, raw_event: dict):

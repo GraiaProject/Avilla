@@ -25,6 +25,7 @@ class ElizabethProtocol(BaseProtocol):
 
         ## :: Event
         from .perform.event.message import ElizabethEventMessagePerform
+
         # from .perform.event.lifespan import ElizabethEventLifespanPerform
 
         ## :: Resource Fetch

@@ -37,9 +37,4 @@ class OneBot11MessageActionPerform((m := ContextCollector["OneBot11Protocol", "O
 
     @MessageRevoke.revoke.collect(m, "land.group.message")
     async def delete_msg(self, target: Selector):
-        await self.account.call(
-            "delete_msg",
-            {
-                "message_id": int(target['message'])
-            }
-        )
+        await self.account.call("delete_msg", {"message_id": int(target["message"])})

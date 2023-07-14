@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from ..context import Context
     from ..selector import Selector
 
+
 class CoreCapability(Capability):
     pull = PullFn()
     query = QuerySchema()
