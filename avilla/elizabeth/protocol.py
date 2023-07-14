@@ -21,6 +21,10 @@ class ElizabethProtocol(BaseProtocol):
         from .perform.message.serialize import ElizabethMessageSerializePerform
 
         ## :: Action
+        from .perform.action.contact import ElizabethContactActionPerform
+        from .perform.action.friend import ElizabethFriendActionPerform
+        from .perform.action.group import ElizabethGroupActionPerform
+        from .perform.action.group_member import ElizabethGroupMemberActionPerform
         from .perform.action.message import ElizabethMessageActionPerform
 
         ## :: Event
@@ -29,7 +33,7 @@ class ElizabethProtocol(BaseProtocol):
         # from .perform.event.lifespan import ElizabethEventLifespanPerform
 
         ## :: Resource Fetch
-        # from .perform.resource_fetch import ElizabethResourceFetchPerform
+        from .perform.resource_fetch import ElizabethResourceFetchPerform
         ...
 
     def ensure(self, avilla: Avilla):
