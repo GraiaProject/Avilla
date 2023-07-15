@@ -3,7 +3,6 @@ from __future__ import annotations
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
 
-
 from .service import ConsoleService
 
 

@@ -4,15 +4,17 @@ import sys
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional, TextIO, cast
 
+from avilla.core.account import AccountInfo
+from avilla.core.ryanvk.staff import Staff
+from avilla.standard.core.account import AccountAvailable, AccountUnavailable
 from loguru import logger
 from textual.app import App
 from textual.binding import Binding
 from textual.widgets import Input
 
-from avilla.core.account import AccountInfo
-from avilla.console.account import ConsoleAccount, PLATFORM
-from avilla.console.message import ConsoleMessage, Text
-from avilla.standard.core.account import AccountAvailable, AccountUnavailable
+from avilla.console.account import PLATFORM, ConsoleAccount
+from avilla.console.element import Text
+from avilla.console.message import ConsoleMessage
 
 from .components.footer import Footer
 from .components.header import Header
@@ -22,7 +24,6 @@ from .router import RouterView
 from .storage import Storage
 from .views.horizontal import HorizontalView
 from .views.log_view import LogView
-from ..staff import ConsoleStaff
 
 if TYPE_CHECKING:
     from avilla.console.protocol import ConsoleProtocol
@@ -141,7 +142,7 @@ class Frontend(App):
         asyncio.create_task(self.post_event(self.account, event))
 
     async def post_event(self, account: ConsoleAccount, event: Event):
-        res = await ConsoleStaff(account).parse_event(event.type, event)
+        res = await Staff(account).parse_event(event.type, event)
         if res is None:
             logger.warning(f"received unsupported event {event.type}: {event}")
             return

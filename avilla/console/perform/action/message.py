@@ -4,13 +4,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend
 from graia.amnesia.message import MessageChain
 from loguru import logger
 
 from ...frontend.info import Robot
-from ...staff import ConsoleStaff
+from ...message import ConsoleMessage
 
 if TYPE_CHECKING:
     from ...account import ConsoleAccount  # noqa
@@ -32,12 +33,14 @@ class ConsoleMessageActionPerform(
     ) -> Selector:
         if TYPE_CHECKING:
             assert isinstance(self.protocol, ConsoleProtocol)
-        serialized_msg = await ConsoleStaff(self.account).serialize_message(message)
+        serialized_msg = ConsoleMessage(
+            await Staff(self.account).serialize_message(message)
+        )
 
         await self.account.client.call(
             "send_msg", {"message": serialized_msg, "info": Robot(self.protocol.name)}
         )
-        logger.info(  # TODO: wait for solution of ActiveMessage
+        logger.info(
             f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}"
         )
         return (

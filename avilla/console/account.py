@@ -6,7 +6,8 @@ from avilla.core.account import AccountInfo, AccountStatus, BaseAccount
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.selector import Selector
 
-from .staff import ConsoleStaff
+from .element import ConsoleElement
+from .frontend.info import Event
 
 if TYPE_CHECKING:
     from .protocol import ConsoleProtocol
@@ -37,13 +38,12 @@ class ConsoleAccount(BaseAccount):
         self.status = AccountStatus()
 
     @property
-    def staff(self):
-        return ConsoleStaff(self)
-
-    @property
     def client(self):
         return self.protocol.service.app
 
     @property
     def available(self) -> bool:
         return self.status.enabled
+
+    def __staff_generic__(self, element_type: ConsoleElement, event_type: Event):
+        ...
