@@ -90,6 +90,6 @@ class Avilla:
 
     def get_staff_artifacts(self):
         return ChainMap(self.isolate.artifacts)
-    
+
     def __staff_generic__(self, element_type: dict, event_type: dict):
         ...

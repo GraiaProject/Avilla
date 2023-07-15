@@ -14,6 +14,7 @@ T = TypeVar("T")
 VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
 VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
 
+
 class SupportsCollect(Protocol[C, P, R]):
     def collect(self, collector: C, *args: P.args, **kwargs: P.kwargs) -> R:
         ...

@@ -26,6 +26,7 @@ class MessageReceived(AvillaEvent):
                 return interface.event.message.content
             return await super().catch(interface)
 
+
 @dataclass
 class MessageSent(AvillaEvent):
     message: Message
