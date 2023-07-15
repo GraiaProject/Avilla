@@ -7,6 +7,7 @@ from avilla.core.event import AvillaEvent
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
+    from avilla.core.account import BaseAccount
     from avilla.core.message import Message
     from avilla.core.selector import Selector
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -15,6 +16,20 @@ if TYPE_CHECKING:
 @dataclass
 class MessageReceived(AvillaEvent):
     message: Message
+
+    class Dispatcher(AvillaEvent.Dispatcher):
+        @classmethod
+        async def catch(cls, interface: DispatcherInterface[MessageReceived]):
+            if interface.annotation is interface.event.message.__class__:
+                return interface.event.message
+            elif interface.annotation is MessageChain:
+                return interface.event.message.content
+            return await super().catch(interface)
+
+@dataclass
+class MessageSent(AvillaEvent):
+    message: Message
+    account: BaseAccount
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @classmethod

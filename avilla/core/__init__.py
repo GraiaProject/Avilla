@@ -66,6 +66,7 @@ from avilla.standard.core.message import MessageReceived as MessageReceived
 from avilla.standard.core.message import MessageRevoke as MessageRevoke
 from avilla.standard.core.message import MessageRevoked as MessageRevoked
 from avilla.standard.core.message import MessageSend as MessageSend
+from avilla.standard.core.message import MessageSent as MessageSent
 from avilla.standard.core.privilege import BanCapability as BanCapability
 from avilla.standard.core.privilege import BanInfo as BanInfo
 from avilla.standard.core.privilege import MuteAllCapability as MuteAllCapability
