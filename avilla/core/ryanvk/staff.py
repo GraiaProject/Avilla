@@ -43,9 +43,16 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
     components: dict[str, SupportsArtifacts]
     artifacts: ChainMap[Any, Any]
 
-    def __init__(self, focus: SupportsStaff[VnElementRaw, VnEventRaw]) -> None:
+    def __init__(
+        self,
+        focus: SupportsStaff[VnElementRaw, VnEventRaw],
+        *,
+        element_typer: Callable[[VnElementRaw], Any] | None = None,
+    ) -> None:
         self.components = focus.get_staff_components()
         self.artifacts = focus.get_staff_artifacts()
+        if element_typer is not None:
+            self.get_element_type = element_typer  # type: ignore
 
     def get_element_type(self, raw_element: VnElementRaw):
         return raw_element["type"]  # type: ignore
