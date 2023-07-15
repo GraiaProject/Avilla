@@ -47,57 +47,6 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
 
 @dataclass
-class Op:
-    operator: Fn
-    effects: dict[tuple[Selector, MetadataRoute], list[Effect]]
-
-
-@dataclass
-class NamelessOp:
-    effects: dict[tuple[Selector, MetadataRoute], list[Effect]]
-
-
-T = TypeVar("T")
-
-
-@dataclass
-class Effect(Generic[T]):
-    field: MetadataFieldReference[Any, T]
-
-
-@dataclass
-class Bind(Effect[T]):
-    value: T
-
-
-@dataclass
-class Unbind(Effect):
-    ...
-
-
-@dataclass
-class Update(Effect[T]):
-    present: T
-    past: T | None = None
-
-
-# TODO: Metadata Effect 原语补充
-
-
-@dataclass
-class MetadataModified(AvillaEvent):
-    endpoint: Selector
-    modifies: list[Op | NamelessOp]
-    client: Selector | None = None
-    scene: Selector | None = None
-
-    class Dispatcher(AvillaEvent.Dispatcher):
-        @staticmethod
-        async def catch(interface: DispatcherInterface["MetadataModified"]):
-            return await super().catch(interface)
-
-
-@dataclass
 class RelationshipCreated(AvillaEvent):
     ...
 
@@ -116,3 +65,5 @@ class RelationshipDestroyed(AvillaEvent):
         @staticmethod
         async def catch(interface: DispatcherInterface["RelationshipDestroyed"]):
             return await super().catch(interface)
+
+
