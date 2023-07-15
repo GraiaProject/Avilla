@@ -40,7 +40,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
                 return interface.event.context
 
         @staticmethod
-        async def afterExecution(interface: DispatcherInterface[AvillaEvent]):
+        async def afterExecution(interface: DispatcherInterface[AvillaEvent], exc, tb):
             # FIXME: wait solution of GraiaProject/BroadcastControl#61
             with suppress(KeyError, RuntimeError):
                 cx_context.reset(interface.local_storage["_context_token"])
