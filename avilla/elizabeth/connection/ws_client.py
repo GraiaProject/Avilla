@@ -112,6 +112,9 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
     def get_staff_artifacts(self):
         return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
 
+    def __staff_generic__(self, element_type: dict, event_type: dict):
+        ...
+
     @property
     def alive(self):
         return self.connection is not None and not self.connection.closed

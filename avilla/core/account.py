@@ -69,6 +69,9 @@ class BaseAccount:
             self.avilla.isolate.artifacts,
         )
 
+    def __staff_generic__(self, element_type: dict, event_type: dict):
+        ...
+
 
 class AccountStatus(Statv):
     enabled = Stats[bool]("enabled", default=False)

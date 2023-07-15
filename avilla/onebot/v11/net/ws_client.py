@@ -69,6 +69,9 @@ class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"
     def get_staff_components(self):
         return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
 
+    def __staff_generic__(self, element_type: dict, event_type: dict):
+        ...
+
     def get_staff_artifacts(self):
         return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
 

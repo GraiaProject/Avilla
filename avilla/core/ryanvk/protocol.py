@@ -30,4 +30,5 @@ class SupportsComponent(Protocol):
 
 
 class SupportsStaff(SupportsArtifacts, SupportsComponent, Protocol[VnElementRaw, VnEventRaw]):
-    ...
+    def __staff_generic__(self, element_type: VnElementRaw, event_type: VnEventRaw):
+        ...

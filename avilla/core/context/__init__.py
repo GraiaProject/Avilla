@@ -165,3 +165,6 @@ class Context:
             return await self.staff.call_fn(closure, *args, **kwargs)
 
         return run
+
+    def __staff_generic__(self, element_type: dict, event_type: dict):
+        ...
