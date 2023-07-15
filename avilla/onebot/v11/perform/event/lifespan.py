@@ -6,17 +6,16 @@ from loguru import logger
 
 from avilla.core.account import AccountInfo
 from avilla.core.platform import Abstract, Branch, Land, Platform, Version
+from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
+from avilla.onebot.v11.account import OneBot11Account
+from avilla.onebot.v11.collector.connection import ConnectionCollector
+from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
 from avilla.standard.core.account.event import (
     AccountAvailable,
     AccountRegistered,
     AccountUnavailable,
 )
-
-from .....core.ryanvk.descriptor.event import EventParse
-from ...account import OneBot11Account
-from ...collector.connection import ConnectionCollector
-from ...net.ws_client import OneBot11WsClientNetworking
 
 if TYPE_CHECKING:
     ...
