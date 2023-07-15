@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Any, ChainMap, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, ChainMap, Protocol
 
-from typing_extensions import ParamSpec
+from typing_extensions import ParamSpec, TypeVar
 
 if TYPE_CHECKING:
     from .collector.base import BaseCollector
@@ -11,6 +11,8 @@ C1 = TypeVar("C1", bound="BaseCollector")
 R = TypeVar("R", covariant=True)
 T = TypeVar("T")
 
+VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
+VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
 
 class SupportsCollect(Protocol[C, P, R]):
     def collect(self, collector: C, *args: P.args, **kwargs: P.kwargs) -> R:
@@ -27,5 +29,5 @@ class SupportsComponent(Protocol):
         ...
 
 
-class SupportsStaff(SupportsArtifacts, SupportsComponent, Protocol):
+class SupportsStaff(SupportsArtifacts, SupportsComponent, Protocol[VnElementRaw, VnEventRaw]):
     ...

@@ -35,15 +35,15 @@ R = TypeVar("R", covariant=True)
 _MetadataT = TypeVar("_MetadataT", bound="Metadata")
 P = ParamSpec("P")
 
-VnEventRaw = TypeVar("VnEventRaw", default=dict)
-VnElementRaw = TypeVar("VnElementRaw", default=dict)
+VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
+VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
 
 
 class Staff(Generic[VnElementRaw, VnEventRaw]):
     components: dict[str, SupportsArtifacts]
     artifacts: ChainMap[Any, Any]
 
-    def __init__(self, focus: SupportsStaff) -> None:
+    def __init__(self, focus: SupportsStaff[VnElementRaw, VnEventRaw]) -> None:
         self.components = focus.get_staff_components()
         self.artifacts = focus.get_staff_artifacts()
 
