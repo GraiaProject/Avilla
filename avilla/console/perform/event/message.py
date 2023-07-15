@@ -6,17 +6,18 @@ from typing import TYPE_CHECKING
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
 
-from avilla.console.frontend.info import MessageEvent
-
-from ...descriptor.event import ConsoleEventParse
+from avilla.console.frontend.info import Event, MessageEvent
+from avilla.console.staff import ConsoleStaff
 
 if TYPE_CHECKING:
     from ...account import ConsoleAccount
     from ...protocol import ConsoleProtocol
+
+ConsoleEventParse = EventParse[Event]
 
 
 class ConsoleEventMessagePerform(
@@ -24,9 +25,11 @@ class ConsoleEventMessagePerform(
 ):
     m.post_applying = True
 
-    @ConsoleEventParse.collect(m, "console.message", MessageEvent)
-    async def console_message(self, raw_event: MessageEvent):
-        message = await Staff(self.account).deserialize_message(
+    @ConsoleEventParse.collect(m, "console.message")
+    async def console_message(self, raw_event: Event):
+        if TYPE_CHECKING:
+            assert isinstance(raw_event, MessageEvent)
+        message = await ConsoleStaff(self.account).deserialize_message(
             raw_event.message.content
         )
         console = (

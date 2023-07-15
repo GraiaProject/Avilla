@@ -146,5 +146,4 @@ class Frontend(App):
         if res is None:
             logger.warning(f"received unsupported event {event.type}: {event}")
             return
-        logger.debug(f"{account.route['account']} received event {event.type}")
         self.protocol.post_event(res)
