@@ -13,6 +13,7 @@ from avilla.core.selector import Selector
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.onebot.v11.element import Reply
 from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.message.event import MessageSent
 
 if TYPE_CHECKING:
     ...
@@ -180,4 +181,34 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
                 time=datetime.fromtimestamp(raw_event["time"]),
                 reply=reply,
             ),
+        )
+
+    @EventParse.collect(m, "message_sent.group.normal")
+    async def message_sent(self, raw_event: dict):
+        self_id = raw_event["self_id"]
+        account = self.connection.accounts.get(self_id)
+        if account is None:
+            logger.warning(f"Unknown account {self_id} sent message {raw_event}")
+            return
+
+        group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
+        member = group.member(str(raw_event["user_id"]))
+        message = await Staff(account).deserialize_message(raw_event["message"])
+        reply = None
+        if i := message.get(Reply):
+            reply = member.message(i[0].id)
+            message = message.exclude(Reply)
+        return MessageSent(
+            Context(
+                account, member, group, group, member
+            ),
+            Message(
+                str(raw_event['message_id']),
+                group,
+                member,
+                message,
+                datetime.fromtimestamp(raw_event['time']),
+                reply
+            ),
+            account
         )

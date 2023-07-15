@@ -29,7 +29,6 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            # TODO: land should not be hardcoded as qq
             # create account instance
             account = OneBot11Account(route=Selector().land("qq").account(str(self_id)), protocol=self.protocol)
         else:
