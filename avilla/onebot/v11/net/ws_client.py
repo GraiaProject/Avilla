@@ -46,8 +46,6 @@ class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"
             raise RuntimeError("connection is not established")
 
         async for msg in self.connection:
-            logger.debug(f"{msg=}")
-
             if msg.type in {aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED}:
                 self.close_signal.set()
                 break
