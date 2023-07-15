@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from avilla.console.frontend.info import Event, MessageEvent
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
@@ -11,11 +12,9 @@ from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
 
-from avilla.console.frontend.info import Event, MessageEvent
-
 if TYPE_CHECKING:
-    from ...account import ConsoleAccount
-    from ...protocol import ConsoleProtocol
+    from ...account import ConsoleAccount  # noqa
+    from ...protocol import ConsoleProtocol  # noqa
 
 ConsoleEventParse = EventParse[Event]
 

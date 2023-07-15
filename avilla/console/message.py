@@ -1,9 +1,10 @@
 from typing import Iterator, Sequence, Union, overload
 
-from graia.amnesia.message.element import Element
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.measure import Measurement, measure_renderables
 from rich.segment import Segment
+
+from graia.amnesia.message.element import Element
 
 from .element import ConsoleElement, Markdown
 

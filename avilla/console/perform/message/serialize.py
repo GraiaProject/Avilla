@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.console.element import ConsoleElement, Emoji, Markdown, Markup
+from avilla.console.element import Text as RichText
 from avilla.core.elements import Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
-
-from avilla.console.element import ConsoleElement, Emoji, Markdown, Markup
-from avilla.console.element import Text as RichText
 
 if TYPE_CHECKING:
     from ...account import ConsoleAccount  # noqa

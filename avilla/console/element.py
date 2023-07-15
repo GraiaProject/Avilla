@@ -2,8 +2,6 @@ from abc import ABCMeta, abstractmethod
 from dataclasses import asdict, dataclass, field
 from typing import Optional, Union
 
-from graia.amnesia.message.element import Element
-from graia.amnesia.message.element import Text as BaseText
 from rich.console import Console, ConsoleOptions, JustifyMethod, RenderResult
 from rich.emoji import Emoji as RichEmoji
 from rich.emoji import EmojiVariant
@@ -11,6 +9,9 @@ from rich.markdown import Markdown as RichMarkdown
 from rich.measure import Measurement, measure_renderables
 from rich.style import Style
 from rich.text import Text as RichText
+
+from graia.amnesia.message.element import Element
+from graia.amnesia.message.element import Text as BaseText
 
 
 class ConsoleElement(Element, metaclass=ABCMeta):

@@ -3,9 +3,8 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from launart import Launart, Launchable
-
 from avilla.console.frontend import Frontend
+from launart import Launart, Launchable
 
 if TYPE_CHECKING:
     from .protocol import ConsoleProtocol

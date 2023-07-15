@@ -1,4 +1,3 @@
-from textual.reactive import Reactive
 from textual.widgets import Header as TextualHeader
 from textual.widgets._header import HeaderClock, HeaderIcon, HeaderTitle
 

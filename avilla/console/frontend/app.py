@@ -5,9 +5,6 @@ import sys
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional, TextIO, cast
 
-from avilla.core.account import AccountInfo
-from avilla.core.ryanvk.staff import Staff
-from avilla.standard.core.account import AccountAvailable, AccountUnavailable
 from loguru import logger
 from textual.app import App
 from textual.binding import Binding
@@ -16,6 +13,9 @@ from textual.widgets import Input
 from avilla.console.account import PLATFORM, ConsoleAccount
 from avilla.console.element import Text
 from avilla.console.message import ConsoleMessage
+from avilla.core.account import AccountInfo
+from avilla.core.ryanvk.staff import Staff
+from avilla.standard.core.account import AccountAvailable, AccountUnavailable
 
 from .components.footer import Footer
 from .components.header import Header

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.account import AccountInfo, AccountStatus, BaseAccount
+from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.selector import Selector
 

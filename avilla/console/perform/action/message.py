@@ -2,12 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from loguru import logger
+
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend
 from graia.amnesia.message import MessageChain
-from loguru import logger
 
 from ...frontend.info import Robot
 from ...message import ConsoleMessage
