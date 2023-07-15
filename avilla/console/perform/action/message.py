@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
@@ -37,14 +36,12 @@ class ConsoleMessageActionPerform(
             await Staff(self.account).serialize_message(message)
         )
 
-        await self.account.client.call(
+        msg_id = await self.account.client.call(
             "send_msg", {"message": serialized_msg, "info": Robot(self.protocol.name)}
         )
+        if not msg_id:
+            raise RuntimeError(f"Failed to send message to console: {message}")
         logger.info(
             f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}"
         )
-        return (
-            Selector()
-            .land(self.account.route["land"])
-            .message(f"{datetime.now().timestamp()}#N")
-        )
+        return Selector().land(self.account.route["land"]).message(msg_id)

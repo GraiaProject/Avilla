@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import secrets
 import sys
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, Optional, TextIO, cast
@@ -110,18 +111,22 @@ class Frontend(App):
         logger.warning("Press Ctrl-C for Application exit")
 
     async def call(self, api: str, data: Dict[str, Any]):
-        if api == "send_msg":
-            self.storage.write_chat(
-                MessageEvent(
-                    type="console.message",
-                    time=datetime.now(),
-                    self_id=data["info"].id,
-                    message=data["message"],
-                    user=data["info"],
-                )
-            )
-        elif api == "bell":
+        if api == "bell":
             await self.run_action("bell")
+        elif api == "send_msg":
+            msg_id = secrets.token_hex(16)
+            with contextlib.suppress(Exception):
+                self.storage.write_chat(
+                    MessageEvent(
+                        type="console.message",
+                        time=datetime.now(),
+                        self_id=data["info"].id,
+                        msg_id=msg_id,
+                        message=data["message"],
+                        user=data["info"],
+                    )
+                )
+                return msg_id
 
     def action_focus_input(self):
         with contextlib.suppress(Exception):
@@ -132,6 +137,7 @@ class Frontend(App):
             type="console.message",
             time=datetime.now(),
             self_id=self.account.route["account"],
+            msg_id=secrets.token_hex(16),
             message=ConsoleMessage([Text(message)]),
             user=self.storage.current_user,
         )
