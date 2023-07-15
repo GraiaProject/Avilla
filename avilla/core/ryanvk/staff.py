@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, TypeVar
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, Generic
 
-from typing_extensions import ParamSpec, Unpack
+from typing_extensions import ParamSpec, TypeVar, Unpack
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import MetadataRoute
@@ -35,14 +35,20 @@ R = TypeVar("R", covariant=True)
 _MetadataT = TypeVar("_MetadataT", bound="Metadata")
 P = ParamSpec("P")
 
+VnEventRaw = TypeVar("VnEventRaw", default=dict)
+VnElementRaw = TypeVar("VnElementRaw", default=dict)
 
-class Staff:
+
+class Staff(Generic[VnElementRaw, VnEventRaw]):
     components: dict[str, SupportsArtifacts]
     artifacts: ChainMap[Any, Any]
 
     def __init__(self, focus: SupportsStaff) -> None:
         self.components = focus.get_staff_components()
         self.artifacts = focus.get_staff_artifacts()
+
+    def get_element_type(self, raw_element: VnElementRaw):
+        return raw_element["type"]  # type: ignore
 
     async def get_context(self, target: Selector, *, via: Selector | None = None):
         return await self.call_fn(CoreCapability.get_context, target, via=via)
@@ -53,19 +59,19 @@ class Staff:
     async def parse_event(
         self,
         event_type: str,
-        data: dict,
+        data: VnEventRaw,
     ) -> AvillaEvent | None:
         sign = EventParserSign(event_type)
         if sign not in self.artifacts:
             return
 
-        record: tuple[Any, Callable[[Any, dict], Awaitable[AvillaEvent | None]]] = self.artifacts[sign]
+        record: tuple[Any, Callable[[Any, VnEventRaw], Awaitable[AvillaEvent | None]]] = self.artifacts[sign]
 
         async with use_record(self.components, record) as entity:
             return await entity(data)
 
-    async def serialize_message(self, message: MessageChain) -> list[dict]:
-        result: list[dict] = []
+    async def serialize_message(self, message: MessageChain) -> list[VnElementRaw]:
+        result: list[VnElementRaw] = []
         for element in message.content:
             element_type = type(element)
             sign = MessageSerializeSign(element_type)
@@ -76,10 +82,10 @@ class Staff:
                 result.append(await entity(element))
         return result
 
-    async def deserialize_message(self, raw_elements: list[dict]) -> MessageChain:
+    async def deserialize_message(self, raw_elements: list[VnElementRaw]) -> MessageChain:
         result: list[Element] = []
         for raw_element in raw_elements:
-            element_type = raw_element["type"]
+            element_type = self.get_element_type(raw_element)
             sign = MessageDeserializeSign(element_type)
             if sign not in self.artifacts:
                 raise NotImplementedError(f"Element {element_type} descrialize is not supported")
