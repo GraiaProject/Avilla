@@ -18,7 +18,7 @@ dependencies = [
     "ichika>=0.0.8",
     #"launart>=0.6.0,<1.0.0",
     "graia-saya>=0.0.17",
-    "textual<1.0.0,>=0.17.0",
+    "textual<1.0.0,>=0.29.0",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -110,7 +110,7 @@ repository = "https://github.com/GraiaProject/Avilla"
 includes = ["avilla/console"]
 raw-dependencies = [
   "avilla-core >= 1.0.0-alpha.5",
-  "textual<1.0.0,>=0.17.0",
+  "textual<1.0.0,>=0.29.0",
 ]
 
 [tool.mina.packages.console.project]
