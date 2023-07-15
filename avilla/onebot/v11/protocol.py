@@ -22,6 +22,10 @@ class OneBot11Protocol(BaseProtocol):
 
         # :: Action
         from .perform.action.message import OneBot11MessageActionPerform
+        from .perform.action.admin import OneBot11PrivilegeActionPerform
+        from .perform.action.ban import OneBot11BanActionPerform
+        from .perform.action.leave import OneBot11LeaveActionPerform
+        from .perform.action.mute import OneBot11MuteActionPerform
 
         # :: Event
         from .perform.event.message import OneBot11EventMessagePerform
@@ -29,6 +33,9 @@ class OneBot11Protocol(BaseProtocol):
 
         # :: Resource Fetch
         from .perform.resource_fetch import OneBot11ResourceFetchPerform
+
+        # :: Query
+        from .perform.query.group import OneBot11GroupQueryPerform
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
