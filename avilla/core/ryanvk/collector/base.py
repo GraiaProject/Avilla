@@ -71,6 +71,10 @@ class PerformTemplate:
     async def run_with_lifespan(self):
         # TODO
         yield self
+    
+    @classmethod
+    def __post_collected__(cls, collect: BaseCollector):
+        ...
 
 
 class _ResultCollect(Protocol[R]):
@@ -111,6 +115,8 @@ class BaseCollector:
 
                 for i in self.defer_callbacks:
                     i(cls)
+                
+                cls.__post_collected__(self)
 
         return LocalPerformTemplate
 
