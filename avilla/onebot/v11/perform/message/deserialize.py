@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.standard.qq.elements import Dice, Face, FlashImage, Json, Poke, Share, Xml
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 OneBot11MessageDeserialize = MessageDeserialize[dict]
 
 
-class OneBot11MessageDeserializePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
+class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
@@ -35,7 +35,7 @@ class OneBot11MessageDeserializePerform((m := AccountCollector["OneBot11Protocol
     async def image(self, raw_element: dict) -> Picture | FlashImage:
         data: dict = raw_element["data"]
         resource = OneBot11ImageResource(
-            Selector().land(self.account.route["land"]).picture(file := data["file"]), file, data["url"]
+            Selector().land('qq').picture(file := data["file"]), file, data["url"]
         )
         return FlashImage(resource) if raw_element.get("type") == "flash" else Picture(resource)
 

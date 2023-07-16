@@ -87,6 +87,10 @@ class BaseCollector:
     artifacts: dict[Any, Any]
     defer_callbacks: list[Callable[[type[PerformTemplate]], Any]]
 
+    def __init__(self):
+        self.artifacts = {"current_collection": {}}
+        self.defer_callbacks = [self.__post_collect__]
+
     @property
     def cls(self: _ResultCollect[R]) -> R:
         if TYPE_CHECKING:
@@ -97,9 +101,6 @@ class BaseCollector:
     def _(self):
         return self.get_collect_template()
 
-    def __init__(self):
-        self.artifacts = {"current_collection": {}}
-        self.defer_callbacks = [self.__post_collect__]
 
     def entity(self, signature: SupportsCollect[Self, P, R], *args: P.args, **kwargs: P.kwargs) -> R:
         return signature.collect(self, *args, **kwargs)

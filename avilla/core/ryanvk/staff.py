@@ -40,6 +40,8 @@ VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
 
 
 class Staff(Generic[VnElementRaw, VnEventRaw]):
+    """手杖与核心工艺 (Staff & Focus Craft)."""
+
     components: dict[str, SupportsArtifacts]
     artifacts: ChainMap[Any, Any]
 
