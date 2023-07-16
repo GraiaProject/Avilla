@@ -1,7 +1,9 @@
+from contextlib import contextmanager
 from typing import Any
 
 from avilla.core._vendor.dataclasses import dataclass, field
 
+from ._runtime import processing_isolate
 from .collector.base import PerformTemplate
 
 
@@ -15,3 +17,9 @@ class Isolate:
             self.artifacts.setdefault("lookup_collections", []).append(arti.pop("current_collection"))
 
         self.artifacts.update(arti)
+
+    @contextmanager
+    def imports(self):
+        token = processing_isolate.set(self)
+        yield
+        processing_isolate.reset(token)
