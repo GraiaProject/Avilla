@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, Generic, T
 
 from typing_extensions import ParamSpec, TypeAlias, Unpack
 
-from avilla.core.selector import FollowsPredicater, Selectable, Selector
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.metadata import Metadata, MetadataRoute
+from avilla.core.selector import FollowsPredicater, Selectable, Selector
 
 from .target import LookupBranch, TargetArtifactStore, TargetFn
 
