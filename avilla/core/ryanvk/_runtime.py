@@ -3,11 +3,9 @@ from __future__ import annotations
 from contextvars import ContextVar
 from typing import TYPE_CHECKING
 
-from .isolate import Isolate
-
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
-
+    from .isolate import Isolate
     from ..protocol import BaseProtocol
 
 processing_protocol: ContextVar[type[BaseProtocol]] = ContextVar("processing_protocol")
