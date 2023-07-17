@@ -15,6 +15,7 @@ from avilla.qqguild.element import Reference
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.message.event import MessageSent
 from graia.amnesia.message import MessageChain, Text
+from avilla.core.elements import Notice
 
 if TYPE_CHECKING:
     ...
@@ -53,6 +54,42 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
 
     @EventParse.collect(m, "at_message_create")
     async def at_message(self, raw_event: dict):
+        account_route = Selector().land("qqguild").account(self.connection.account_id)
+        account = self.protocol.avilla.accounts.get(account_route)
+        if account is None:
+            logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
+            return
+        guild = Selector().land("qqguild").guild(raw_event["guild_id"])
+        channel = guild.channel(raw_event["channel_id"])
+        author = channel.user(raw_event["author"]["id"])
+        reply = None
+        # if i := message.get(Reply):
+        #     reply = friend.message(i[0].id)
+        #     message = message.exclude(Reply)
+        ats = [
+            Notice(channel.user(i['id'])) for i in raw_event["mentions"]
+        ]
+        return MessageReceived(
+            Context(
+                account.account,
+                author,
+                channel,
+                channel,
+                account_route,
+            ),
+            Message(
+                id=raw_event["id"],
+                scene=channel,
+                sender=author,
+                # TODO: deserialize message
+                content=MessageChain([*ats, Text(raw_event["content"])]),
+                time=datetime.fromisoformat(raw_event["timestamp"]),
+                reply=reply,
+            ),
+        )
+    
+    @EventParse.collect(m, "message_create")
+    async def message(self, raw_event: dict):
         account_route = Selector().land("qqguild").account(self.connection.account_id)
         account = self.protocol.avilla.accounts.get(account_route)
         if account is None:

@@ -3,12 +3,13 @@ import os
 from creart import create
 from yarl import URL
 
+from avilla.core.elements import Text
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
 
-from avilla.qqguild.connection.ws_client import QQGuildWsClientConfig, QQGuildWsClientNetworking
+from avilla.qqguild.connection.ws_client import QQGuildWsClientConfig, QQGuildWsClientNetworking, Intents
 from avilla.qqguild.protocol import QQGuildProtocol
 
 # from graia.amnesia.builtins.aiohttp import AiohttpClientService
@@ -28,7 +29,8 @@ config = QQGuildWsClientConfig(
     os.getenv("QQGUILD_ID"),
     os.getenv("QQGUILD_TOKEN"),
     os.getenv("QQGUILD_SECRET"),
-    is_sandbox=True
+    is_sandbox=True,
+    intent=Intents(guild_messages=True),
 )
 conn = QQGuildWsClientNetworking(protocol, config)
 service.connections.append(conn)
@@ -49,7 +51,8 @@ protocol.avilla = avilla
 @broadcast.receiver(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
-    print(cx.endpoint, cx.scene, cx.client, cx.self, cx.account)
+    print(cx.endpoint, cx.client)
+    await cx.scene.send_message(str(event.message.content.include(Text)), reply=event.message)
     print(
         await cx.scene.send_message("Hello! Avilla", reply=event.message)
     )

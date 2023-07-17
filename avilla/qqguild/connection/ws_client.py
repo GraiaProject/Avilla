@@ -6,13 +6,12 @@ import sys
 from collections import ChainMap
 from contextlib import suppress
 from typing import TYPE_CHECKING, cast
-from dataclasses import asdict
+from dataclasses import asdict, dataclass, field
 
 import aiohttp
 from loguru import logger
 from yarl import URL
 
-from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
 from avilla.standard.core.account import AccountAvailable, AccountUnavailable, AccountRegistered, AccountUnregistered
