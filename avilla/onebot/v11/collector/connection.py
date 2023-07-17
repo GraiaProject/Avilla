@@ -40,8 +40,8 @@ class ConnectionCollector(BaseCollector):
 
         return PerformTemplate
 
-    def __post_collect__(self, cls: type[ConnectionBasedPerformTemplate]):
-        super().__post_collect__(cls)
+    def __post_collected__(self, cls: type[ConnectionBasedPerformTemplate]):
+        super().__post_collected__(cls)
         if self.post_applying:
             if (protocol := processing_protocol.get(None)) is None:
                 raise RuntimeError("expected processing protocol")

@@ -36,8 +36,8 @@ class ApplicationCollector(BaseCollector):
 
         return LocalPerformTemplate
 
-    def __post_collect__(self, cls: type[ApplicationBasedPerformTemplate]):
-        super().__post_collect__(cls)
+    def __post_collected__(self, cls: type[ApplicationBasedPerformTemplate]):
+        super().__post_collected__(cls)
         if self.post_applying:
             if (application := processing_application.get(None)) is None:
                 if (isolate := processing_isolate.get(None)) is not None:

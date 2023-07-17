@@ -43,8 +43,8 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol]):
 
         return LocalPerformTemplate[TProtocol]
 
-    def __post_collect__(self, cls: type[ProtocolBasedPerformTemplate]):
-        super().__post_collect__(cls)
+    def __post_collected__(self, cls: type[ProtocolBasedPerformTemplate]):
+        super().__post_collected__(cls)
         if self.post_applying:
             if (protocol := processing_protocol.get(None)) is None:
                 if (isolate := processing_isolate.get(None)) is not None:
