@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class QQGuildService(Launchable):
-    id = "QQGuild.service"
+    id = "qqguild.service"
 
     protocol: QQGuildProtocol
     connections: list[QQGuildWsClientNetworking]

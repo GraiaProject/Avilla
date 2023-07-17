@@ -33,7 +33,7 @@ class QQGuildNetworking(Generic[T]):
         self.response_waiters = {}
         self.close_signal = asyncio.Event()
 
-    def message_receive(self) -> AsyncIterator[tuple[T, dict]]:
+    def message_receive(self, shard: tuple[int, int]) -> AsyncIterator[tuple[T, dict]]:
         ...
 
     @property
@@ -46,8 +46,8 @@ class QQGuildNetworking(Generic[T]):
     async def send(self, payload: dict) -> None:
         ...
 
-    async def message_handle(self):
-        async for connection, data in self.message_receive():
+    async def message_handle(self, shard: tuple[int, int]):
+        async for connection, data in self.message_receive(shard):
             if data["op"] != 0:
                 logger.debug(f"received other payload: {data}")
                 continue

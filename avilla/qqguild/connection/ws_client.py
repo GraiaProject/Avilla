@@ -61,7 +61,7 @@ class QQGuildWsClientConfig:
     id: str
     token: str
     secret: str
-    shard: tuple[int, int] = (0, 1)
+    shard: tuple[int, int] | None = None
     intent: Intents = field(default_factory=Intents)
     is_sandbox: bool = False
     api_base: URL = URL("https://api.sgroup.qq.com/")
@@ -80,13 +80,14 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     config: QQGuildWsClientConfig
-    connection: aiohttp.ClientWebSocketResponse | None = None
+    connections: dict[tuple[int, int], aiohttp.ClientWebSocketResponse]
     session: aiohttp.ClientSession
     sequence: int | None
 
     def __init__(self, protocol: QQGuildProtocol, config: QQGuildWsClientConfig) -> None:
         super().__init__(protocol)
         self.config = config
+        self.connections = {}
         self.session_id = None
         self.sequence = None
 
@@ -94,11 +95,11 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
     def account_id(self):
         return self.config.id
 
-    async def message_receive(self):
-        if self.connection is None:
+    async def message_receive(self, shard: tuple[int, int]):
+        if (connection := self.connections.get(shard)) is None:
             raise RuntimeError("connection is not established")
 
-        async for msg in self.connection:
+        async for msg in connection:
             logger.debug(f"{msg=}")
 
             if msg.type in {aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED}:
@@ -121,11 +122,11 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         self.sequence = None
         self.close_signal.set()
 
-    async def send(self, payload: dict):
-        if self.connection is None:
+    async def send(self, payload: dict, shard: tuple[int, int]):
+        if (connection := self.connections.get(shard)) is None:
             raise RuntimeError("connection is not established")
 
-        await self.connection.send_json(payload)
+        await connection.send_json(payload)
 
     async def call(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
         action = action.replace("_", "/")
@@ -185,14 +186,14 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
 
     @property
     def alive(self):
-        return self.connection is not None and not self.connection.closed
+        return self.connections and any(not connection.closed for connection in self.connections.values())
 
-    async def _hello(self) -> int | None:
+    async def _hello(self, shard: tuple[int, int]) -> int | None:
         """接收并处理服务器的 Hello 事件"""
-        if self.connection is None:
+        if not (connection := self.connections.get(shard)):
             raise RuntimeError("connection is not established")
         try:
-            payload = Payload(**await self.connection.receive_json())
+            payload = Payload(**await connection.receive_json())
             return payload.data["heartbeat_interval"]
         except Exception as e:
             logger.error(
@@ -200,9 +201,9 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 e,
             )
 
-    async def _authenticate(self, shard: tuple[int, int] = (0, 1)):
+    async def _authenticate(self, shard: tuple[int, int]):
         """鉴权连接"""
-        if self.connection is None:
+        if not (connection := self.connections.get(shard)):
             raise RuntimeError("connection is not established")
         if not self.session_id:
             payload = Payload(
@@ -228,7 +229,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             )
 
         try:
-            await self.send(asdict(payload))
+            await self.send(asdict(payload), shard)
         except Exception as e:
             logger.error(
                 "Error while sending" + (
@@ -241,11 +242,11 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         if not self.session_id:
             # https://bot.q.qq.com/wiki/develop/api/gateway/reference.html#_2-%E9%89%B4%E6%9D%83%E8%BF%9E%E6%8E%A5
             # 鉴权成功之后，后台会下发一个 Ready Event
-            payload = Payload(**await self.connection.receive_json())
+            payload = Payload(**await connection.receive_json())
             assert (payload.op == 0 and payload.t == "READY" and payload.d), f"Received unexpected payload: {payload}"
             self.sequence = payload.s
             self.session_id = payload.d["session_id"]
-            account_route = Selector().land("qqguild").account(payload.d["user"]["id"])
+            account_route = Selector().land("qqguild").account(self.config.id)
             if account_route in self.protocol.avilla.accounts:
                 account = cast(QQGuildAccount, self.protocol.avilla.accounts[account_route].account)
             else:
@@ -263,32 +264,30 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
 
         return True
 
-    async def _heartbeat(self, heartbeat_interval: int):
+    async def _heartbeat(self, heartbeat_interval: int, shard: tuple[int, int]):
         """心跳"""
         while True:
             if self.sequence:
                 with suppress(Exception):
-                    await self.send({"op": 1, "d": self.sequence})
+                    await self.send({"op": 1, "d": self.sequence}, shard=shard)
             await asyncio.sleep(heartbeat_interval / 1000)
 
     async def connection_daemon(
         self,
         manager: Launart,
         session: aiohttp.ClientSession,
-        shard: dict,
+        url: str,
+        shard: tuple[int, int]
     ):
-        ws_url = shard["url"]
-        remain = shard.get("session_start_limit", {}).get("remaining", 0)
-        if remain <= 0:
-            raise RuntimeError("No session available")
         while not manager.status.exiting:
-            async with session.ws_connect(ws_url, timeout=30) as self.connection:
+            async with session.ws_connect(url, timeout=30) as conn:
+                self.connections[shard] = conn
                 logger.info(f"{self} Websocket client connected")
-                heartbeat_interval = await self._hello()
+                heartbeat_interval = await self._hello(shard)
                 if not heartbeat_interval:
                     await asyncio.sleep(3)
                     continue
-                result = await self._authenticate(self.config.shard)
+                result = await self._authenticate(shard)
                 if not result:
                     await asyncio.sleep(3)
                     continue
@@ -301,9 +300,9 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 )
                 self.close_signal.clear()
                 close_task = asyncio.create_task(self.close_signal.wait())
-                receiver_task = asyncio.create_task(self.message_handle())
+                receiver_task = asyncio.create_task(self.message_handle(shard))
                 sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
-                heartbeat_task = asyncio.create_task(self._heartbeat(heartbeat_interval))
+                heartbeat_task = asyncio.create_task(self._heartbeat(heartbeat_interval, shard))
                 done, pending = await any_completed(
                     sigexit_task,
                     close_task,
@@ -312,10 +311,10 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 )
                 if sigexit_task in done:
                     logger.info(f"{self} Websocket client exiting...")
-                    await self.connection.close()
+                    await conn.close()
                     self.close_signal.set()
-                    self.connection = None
                     with suppress(KeyError):
+                        del self.connections[shard]
                         await self.protocol.avilla.broadcast.postEvent(
                             AccountUnavailable(
                                 self.protocol.avilla,
@@ -347,10 +346,36 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         async with self.stage("preparing"):
             self.session = aiohttp.ClientSession()
             gateway_info = await self.call("get", "gateway/bot")
-
+        ws_url = gateway_info["url"]
+        remain = gateway_info.get("session_start_limit", {}).get("remaining")
+        if remain is not None and remain <= 0:
+            logger.error("Session start limit reached, please wait for a while")
+            return
+        tasks = []
         async with self.stage("blocking"):
-            await self.connection_daemon(manager, self.session, gateway_info)
+            if self.config.shard:
+                tasks.append(
+                    asyncio.create_task(
+                        self.connection_daemon(manager, self.session, ws_url, self.config.shard)
+                    )
+                )
+            else:
+                shards = gateway_info.get("shards") or 1
+                for i in range(shards):
+                    tasks.append(
+                        asyncio.create_task(
+                            self.connection_daemon(manager, self.session, ws_url, (i, shards))
+                        )
+                    )
+                    await asyncio.sleep(
+                        gateway_info.get("session_start_limit", {}).get("max_concurrency", 1)
+                    )
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+
 
         async with self.stage("cleanup"):
             await self.session.close()
-            self.connection = None
+            for task in tasks:
+                task.cancel()
+            await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+            self.connections.clear()
