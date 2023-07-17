@@ -56,7 +56,7 @@ class QQGuildNetworking(Generic[T]):
             async def event_parse_task(data: Payload):
                 event_type = data.type
                 assert event_type is not None, "event type is None"
-                event = await Staff(connection).parse_event(event_type, data.data)
+                event = await Staff.focus(connection).parse_event(event_type.lower(), data.data)
                 if event is None:
                     logger.warning(f"received unsupported event {event_type}: {data.data}")
                     return

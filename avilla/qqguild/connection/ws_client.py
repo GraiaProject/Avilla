@@ -87,6 +87,8 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
     def __init__(self, protocol: QQGuildProtocol, config: QQGuildWsClientConfig) -> None:
         super().__init__(protocol)
         self.config = config
+        if any([not config.id, not config.token, not config.secret]):
+            raise ValueError("config is not complete")
         self.connections = {}
         self.session_id = None
         self.sequence = None
@@ -346,11 +348,12 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         async with self.stage("preparing"):
             self.session = aiohttp.ClientSession()
             gateway_info = await self.call("get", "gateway/bot")
-        ws_url = gateway_info["url"]
-        remain = gateway_info.get("session_start_limit", {}).get("remaining")
-        if remain is not None and remain <= 0:
-            logger.error("Session start limit reached, please wait for a while")
-            return
+            ws_url = gateway_info["url"]
+            remain = gateway_info.get("session_start_limit", {}).get("remaining")
+            if remain is not None and remain <= 0:
+                logger.error("Session start limit reached, please wait for a while")
+                manager.status.exiting = True
+                return
         tasks = []
         async with self.stage("blocking"):
             if self.config.shard:
