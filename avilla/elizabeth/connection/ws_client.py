@@ -13,9 +13,9 @@ from yarl import URL
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
+from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.connection.base import CallMethod
-from elizabeth.account import ElizabethAccount
-from elizabeth.const import PLATFORM
+from avilla.elizabeth.const import PLATFORM
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
@@ -24,7 +24,7 @@ from .base import ElizabethNetworking
 from .util import validate_response
 
 if TYPE_CHECKING:
-    from elizabeth.protocol import ElizabethProtocol
+    from avilla.elizabeth.protocol import ElizabethProtocol
 
 
 @dataclass

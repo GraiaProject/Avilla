@@ -6,7 +6,7 @@ from aiohttp import ClientSession
 
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.ryanvk.descriptor.fetch import Fetch
-from v11.resource import (
+from avilla.onebot.v11.resource import (
     OneBot11FileResource,
     OneBot11ImageResource,
     OneBot11RecordResource,

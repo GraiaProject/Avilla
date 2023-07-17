@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
-    from core.protocol import BaseProtocol
+    from avilla.core.protocol import BaseProtocol
 
     from .isolate import Isolate
 

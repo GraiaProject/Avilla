@@ -7,8 +7,8 @@ from avilla.core.context import Context
 from avilla.core.message import Message, MessageChain
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
+from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.standard.core.message import MessageReceived
-from elizabeth.collector.connection import ConnectionCollector
 
 
 class MessageDeserializeResult(TypedDict):

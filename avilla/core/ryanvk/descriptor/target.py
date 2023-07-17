@@ -23,7 +23,7 @@ from avilla.core.utilles import identity
 from .base import Fn, FnImplement
 
 if TYPE_CHECKING:
-    from core.ryanvk.collector.base import BaseCollector, PerformTemplate
+    from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
 
 
 T = TypeVar("T")

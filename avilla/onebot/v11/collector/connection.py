@@ -10,8 +10,8 @@ from avilla.core.ryanvk.collector.base import (
 )
 
 if TYPE_CHECKING:
-    from v11.net.ws_client import OneBot11WsClientNetworking
-    from v11.protocol import OneBot11Protocol
+    from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
+    from avilla.onebot.v11.protocol import OneBot11Protocol
 
 
 T = TypeVar("T")

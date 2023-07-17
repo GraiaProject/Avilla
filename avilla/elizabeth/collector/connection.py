@@ -10,8 +10,8 @@ from avilla.core.ryanvk.collector.base import (
 )
 
 if TYPE_CHECKING:
-    from elizabeth.connection.ws_client import ElizabethWsClientNetworking
-    from elizabeth.protocol import ElizabethProtocol
+    from avilla.elizabeth.connection.ws_client import ElizabethWsClientNetworking
+    from avilla.elizabeth.protocol import ElizabethProtocol
 
 
 T = TypeVar("T")

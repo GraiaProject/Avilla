@@ -7,12 +7,12 @@ from loguru import logger
 
 from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.staff import Staff
-from v11.account import OneBot11Account
-from v11.utilles import onebot11_event_type
+from avilla.onebot.v11.account import OneBot11Account
+from avilla.onebot.v11.utilles import onebot11_event_type
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
-    from v11.protocol import OneBot11Protocol
+    from avilla.onebot.v11.protocol import OneBot11Protocol
 
 
 T = TypeVar("T", bound="SupportsStaff")

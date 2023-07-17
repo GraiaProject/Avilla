@@ -14,15 +14,15 @@ from typing import (
 
 from typing_extensions import Concatenate, ParamSpec
 
+from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.ryanvk.descriptor.target import TargetFn
 from avilla.core.selector import Selectable
-from core._vendor.dataclasses import dataclass
-from core.utilles import identity
+from avilla.core.utilles import identity
 
 if TYPE_CHECKING:
-    from core.metadata import Metadata, MetadataRoute
-    from core.ryanvk.capability import Capability
-    from core.selector import Selector
+    from avilla.core.metadata import Metadata, MetadataRoute
+    from avilla.core.ryanvk.capability import Capability
+    from avilla.core.selector import Selector
 
 
 P = ParamSpec("P")

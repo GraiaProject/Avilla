@@ -12,7 +12,7 @@ from launart.manager import Launart
 from launart.utilles import any_completed
 
 if TYPE_CHECKING:
-    from v11.protocol import OneBot11Protocol
+    from avilla.onebot.v11.protocol import OneBot11Protocol
 
 
 @dataclass

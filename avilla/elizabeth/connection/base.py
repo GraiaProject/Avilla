@@ -11,7 +11,7 @@ from .util import validate_response
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
-    from elizabeth.protocol import ElizabethProtocol
+    from avilla.elizabeth.protocol import ElizabethProtocol
 
 
 T = TypeVar("T", bound="SupportsStaff")

@@ -10,15 +10,15 @@ from loguru import logger
 from yarl import URL
 
 from avilla.core._vendor.dataclasses import dataclass
+from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
-from v11.account import OneBot11Account
 
 if TYPE_CHECKING:
-    from v11.protocol import OneBot11Protocol
+    from avilla.onebot.v11.protocol import OneBot11Protocol
 
 
 @dataclass
