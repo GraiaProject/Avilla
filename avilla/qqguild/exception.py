@@ -13,7 +13,7 @@ class ActionFailed(HttpRequestError, BaseActionFailed):
         self.code: Optional[int] = self.body.get("code", None)
         self.message: Optional[str] = self.body.get("message", None)
         self.data: Optional[dict] = self.body.get("data", None)
-        super().__init__(status, self.message)
+        super().__init__(status, self.message or "Unknown")
 
     def __repr__(self) -> str:
         return (
