@@ -3,9 +3,12 @@ from __future__ import annotations
 from abc import ABCMeta
 from contextlib import suppress
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
+from typing_extensions import Unpack
 
 from avilla.core._vendor.dataclasses import dataclass, field
+from avilla.core.selector import Selector
+from avilla.core.metadata import Metadata, MetadataRoute, FieldReference
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 
@@ -63,3 +66,22 @@ class RelationshipDestroyed(AvillaEvent):
             return await super().catch(interface)
 
 
+@dataclass
+class ModifyDetail:
+    type: Literal['set', 'clear', 'update']
+    current: Any = None
+    previous: Any = None
+
+
+@dataclass
+class MetadataModified(AvillaEvent):
+    endpoint: Selector
+    route: type[Metadata] | MetadataRoute[Unpack[tuple[Any, ...]], Metadata]
+    details: dict[FieldReference, ModifyDetail]
+    operator: Selector | None = None
+    scene: Selector | None = None
+
+    class Dispatcher(AvillaEvent.Dispatcher):
+        @staticmethod
+        async def catch(interface: DispatcherInterface["RelationshipDestroyed"]):
+            return await super().catch(interface)
