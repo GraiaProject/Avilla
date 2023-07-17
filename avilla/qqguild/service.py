@@ -29,7 +29,6 @@ class QQGuildService(Launchable):
         return account_id in self.account_map
 
     def get_connection(self, account_id: str) -> QQGuildNetworking:
-        print("get", account_id)
         return self.account_map[account_id]
 
     async def launch(self, manager: Launart):

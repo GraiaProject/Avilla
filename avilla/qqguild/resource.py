@@ -7,7 +7,7 @@ from avilla.core.selector import Selector
 class QQGuildResource(Resource[bytes]):
     url: str
 
-    def __init__(self, selector: Selector, url: str | None = None):
+    def __init__(self, selector: Selector, url: str):
         super().__init__(selector)
         self.url = url
 

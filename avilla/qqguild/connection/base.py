@@ -58,7 +58,7 @@ class QQGuildNetworking(Generic[T]):
                 assert event_type is not None, "event type is None"
                 event = await Staff.focus(connection).parse_event(event_type.lower(), data.data)
                 if event is None:
-                    logger.warning(f"received unsupported event {event_type}: {data.data}")
+                    logger.warning(f"received unsupported event {event_type.lower()}: {data.data}")
                     return
                 # logger.debug(f"{data['self_id']} received event {event_type}")
                 await self.protocol.post_event(event)

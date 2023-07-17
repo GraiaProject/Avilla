@@ -25,9 +25,10 @@ launart = Launart()
 protocol = QQGuildProtocol()
 service = protocol.service
 config = QQGuildWsClientConfig(
-    os.getenv("BBOT_ID"),
-    os.getenv("BBOT_TOKEN"),
-    os.getenv("BBOT_SECRET")
+    os.getenv("QQGUILD_ID"),
+    os.getenv("QQGUILD_TOKEN"),
+    os.getenv("QQGUILD_SECRET"),
+    is_sandbox=True
 )
 conn = QQGuildWsClientNetworking(protocol, config)
 service.connections.append(conn)
@@ -49,7 +50,9 @@ protocol.avilla = avilla
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
     print(cx.endpoint, cx.scene, cx.client, cx.self, cx.account)
-
+    print(
+        await cx.scene.send_message("Hello! Avilla", reply=event.message)
+    )
 
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

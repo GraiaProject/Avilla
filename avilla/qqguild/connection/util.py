@@ -84,6 +84,7 @@ class Payload:
     d: dict | None = None
     s: int | None = None
     t: str | None = None
+    id: str | None = None
 
     @property
     def opcode(self) -> Opcode:
@@ -91,6 +92,8 @@ class Payload:
 
     @property
     def data(self) -> dict:
+        if self.d == "":
+            return {}
         if not self.d:
             raise ValueError("Payload has no data")
         return self.d

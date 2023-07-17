@@ -26,10 +26,10 @@ class QQGuildProtocol(BaseProtocol):
         # from .perform.action.friend import QQGuildFriendActionPerform
         # from .perform.action.group import QQGuildGroupActionPerform
         # from .perform.action.group_member import QQGuildGroupMemberActionPerform
-        # from .perform.action.message import QQGuildMessageActionPerform
+        from .perform.action.message import QQGuildMessageActionPerform
 
         ## :: Event
-        # from .perform.event.message import QQGuildEventMessagePerform
+        from .perform.event.message import QQGuildEventMessagePerform
 
         # from .perform.event.lifespan import QQGuildEventLifespanPerform
 

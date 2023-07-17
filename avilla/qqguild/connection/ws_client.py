@@ -109,7 +109,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 break
             elif msg.type == aiohttp.WSMsgType.TEXT:
                 data: dict = json.loads(cast(str, msg.data))
-                if data["op"]  == 7:
+                if data["op"] == 7:
                     break
                 if data["op"] == 9:
                     self.session_id = None
@@ -364,6 +364,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 )
             else:
                 shards = gateway_info.get("shards") or 1
+                print(shards)
                 for i in range(shards):
                     tasks.append(
                         asyncio.create_task(
