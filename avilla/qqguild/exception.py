@@ -4,19 +4,20 @@ from avilla.core.exceptions import (
     HttpRequestError,
     InvalidAuthentication,
     NetworkError as BaseNetworkError,
+    ActionFailed as BaseActionFailed,
 )
 
-class ActionFailed(HttpRequestError):
+class ActionFailed(HttpRequestError, BaseActionFailed):
     def __init__(self, status: int, body: Optional[dict] = None):
-        self.status_code: int = status
         self.body = body or {}
         self.code: Optional[int] = self.body.get("code", None)
         self.message: Optional[str] = self.body.get("message", None)
         self.data: Optional[dict] = self.body.get("data", None)
+        super().__init__(status, self.message)
 
     def __repr__(self) -> str:
         return (
-            f"<ActionFailed: {self.status_code}, code={self.code}, "
+            f"<ActionFailed: {self.status}, code={self.code}, "
             f"message={self.message}, data={self.data}>"
         )
 

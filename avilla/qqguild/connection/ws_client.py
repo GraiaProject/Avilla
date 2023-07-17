@@ -15,7 +15,7 @@ from yarl import URL
 from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
-from avilla.standard.core.account import AccountAvailable
+from avilla.standard.core.account import AccountAvailable, AccountUnavailable, AccountRegistered, AccountUnregistered
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
@@ -106,11 +106,20 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 break
             elif msg.type == aiohttp.WSMsgType.TEXT:
                 data: dict = json.loads(cast(str, msg.data))
-                if data["op"] in {7, 9}:
+                if data["op"]  == 7:
+                    break
+                if data["op"] == 9:
+                    self.session_id = None
+                    self.sequence = None
                     break
                 yield self, data
         else:
             await self.connection_closed()
+
+    async def connection_closed(self):
+        self.session_id = None
+        self.sequence = None
+        self.close_signal.set()
 
     async def send(self, payload: dict):
         if self.connection is None:
@@ -201,7 +210,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 d={
                     "token": self.config.get_authorization(),
                     "intents": self.config.intent.to_int(),
-                    "shard": list(self.config.shard),
+                    "shard": list(shard),
                     "properties": {
                         "$os": sys.platform,
                         "$sdk": "Avilla",
@@ -249,7 +258,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 )
             self.protocol.service.account_map[self.config.id] = self
             self.protocol.avilla.broadcast.postEvent(
-                AccountAvailable(self.protocol.avilla, account)
+                AccountRegistered(self.protocol.avilla, account)
             )
 
         return True
@@ -258,10 +267,8 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         """心跳"""
         while True:
             if self.sequence:
-                try:
+                with suppress(Exception):
                     await self.send({"op": 1, "d": self.sequence})
-                except Exception:
-                    pass
             await asyncio.sleep(heartbeat_interval / 1000)
 
     async def connection_daemon(
@@ -286,6 +293,12 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     await asyncio.sleep(3)
                     continue
                 account_route = Selector().land("qqguild").account(self.config.id)
+                self.protocol.avilla.broadcast.postEvent(
+                    AccountAvailable(
+                        self.protocol.avilla,
+                        self.protocol.avilla.accounts[account_route].account
+                    )
+                )
                 self.close_signal.clear()
                 close_task = asyncio.create_task(self.close_signal.wait())
                 receiver_task = asyncio.create_task(self.message_handle())
@@ -303,6 +316,12 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     self.close_signal.set()
                     self.connection = None
                     with suppress(KeyError):
+                        await self.protocol.avilla.broadcast.postEvent(
+                            AccountUnavailable(
+                                self.protocol.avilla,
+                                self.protocol.avilla.accounts[account_route].account
+                            )
+                        )
                         del self.protocol.service.account_map[self.config.id]
                         del self.protocol.avilla.accounts[account_route]
                     return
@@ -312,6 +331,12 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
 
                     with suppress(KeyError):
+                        await self.protocol.avilla.broadcast.postEvent(
+                            AccountUnregistered(
+                                self.protocol.avilla,
+                                self.protocol.avilla.accounts[account_route].account
+                            )
+                        )
                         del self.protocol.service.account_map[self.config.id]
                         del self.protocol.avilla.accounts[account_route]
                     await asyncio.sleep(5)
