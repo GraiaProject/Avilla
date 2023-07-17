@@ -19,21 +19,17 @@ if TYPE_CHECKING:
 ConsoleEventParse = EventParse[Event]
 
 
-class ConsoleEventMessagePerform(
-    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
-):
+class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
 
     @ConsoleEventParse.collect(m, "console.message")
     async def console_message(self, raw_event: Event):
         if TYPE_CHECKING:
             assert isinstance(raw_event, MessageEvent)
-        message = await Staff(
-            self.account, element_typer=lambda e: type(e).__name__
-        ).deserialize_message(raw_event.message.content)
-        console = (
-            Selector().land(self.account.route["land"]).console(str(raw_event.user.id))
+        message = await Staff.focus(self.account, element_typer=lambda e: type(e).__name__).deserialize_message(
+            raw_event.message.content
         )
+        console = Selector().land(self.account.route["land"]).console(str(raw_event.user.id))
         context = Context(
             account=self.account,
             client=console,

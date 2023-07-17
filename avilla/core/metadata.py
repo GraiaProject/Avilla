@@ -66,8 +66,8 @@ class Metadata(metaclass=MetadataMeta):
         super().__init_subclass__()
 
     @classmethod
-    def inh(cls: type[_MetadataT1], operator: Callable[[_MetadataT1], T]) -> MetadataFieldReference[_MetadataT1, T]:
-        return MetadataFieldReference(cls, operator)
+    def inh(cls: type[_MetadataT1], operator: Callable[[_MetadataT1], T]) -> FieldReference[_MetadataT1, T]:
+        return FieldReference(cls, operator)
 
     @classmethod
     def get_params(cls) -> dict[str, Any] | None:
@@ -131,8 +131,8 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
     @property
     def _(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]):
         @_GetItemAgent
-        def wrapper(operator: Callable[[_MetadataT1], T]) -> MetadataFieldReference[_MetadataT1, T]:
-            return MetadataFieldReference(self, operator)
+        def wrapper(operator: Callable[[_MetadataT1], T]) -> FieldReference[_MetadataT1, T]:
+            return FieldReference(self, operator)
 
         return wrapper
 
@@ -141,6 +141,6 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
 
 
 @dataclass(unsafe_hash=True)
-class MetadataFieldReference(Generic[_MetadataT1, T]):
+class FieldReference(Generic[_MetadataT1, T]):
     define: type[_MetadataT1] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]
     operator: Callable[[_MetadataT1], T]

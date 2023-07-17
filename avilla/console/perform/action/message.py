@@ -18,9 +18,7 @@ if TYPE_CHECKING:
     from ...protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleMessageActionPerform(
-    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
-):
+class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
 
     @MessageSend.send.collect(m, "land.console")
@@ -33,16 +31,12 @@ class ConsoleMessageActionPerform(
     ) -> Selector:
         if TYPE_CHECKING:
             assert isinstance(self.protocol, ConsoleProtocol)
-        serialized_msg = ConsoleMessage(
-            await Staff(self.account).serialize_message(message)
-        )
+        serialized_msg = ConsoleMessage(await Staff.focus(self.account).serialize_message(message))
 
         msg_id = await self.account.client.call(
             "send_msg", {"message": serialized_msg, "info": Robot(self.protocol.name)}
         )
         if not msg_id:
             raise RuntimeError(f"Failed to send message to console: {message}")
-        logger.info(
-            f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}"
-        )
+        logger.info(f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}")
         return Selector().land(self.account.route["land"]).message(msg_id)

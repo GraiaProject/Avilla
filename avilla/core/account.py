@@ -39,7 +39,7 @@ class BaseAccount:
 
     @property
     def staff(self):
-        return Staff(self)
+        return Staff.focus(self)
 
     @property
     def available(self) -> bool:

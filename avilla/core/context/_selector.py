@@ -56,7 +56,7 @@ class ContextSelector(Selector):
             return super().__getitem__(item)
 
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            return await Staff(self.context).call_fn(item, self, *args, **kwargs)
+            return await self.context.staff.call_fn(item, self, *args, **kwargs)
 
         return wrapper
 

@@ -28,7 +28,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
             "send_group_msg",
             {
                 "group_id": int(target.pattern["group"]),
-                "message": await Staff(self.account).serialize_message(message),
+                "message": await self.account.staff.serialize_message(message),
             },
         )
         if result is None:
