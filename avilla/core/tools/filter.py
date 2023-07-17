@@ -10,8 +10,8 @@ from typing_extensions import ParamSpec, Self
 
 from avilla.core.account import BaseAccount
 from avilla.core.context import Context
-from avilla.core.event import MetadataModified, Op
-from avilla.core.metadata import MetadataFieldReference
+from avilla.core.event import MetadataModified
+from avilla.core.metadata import FieldReference
 from avilla.core.ryanvk import Fn
 from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
@@ -135,26 +135,6 @@ class Filter(BaseDispatcher, Generic[T]):
     @classmethod
     def mod(cls) -> Filter[MetadataModified]:
         return cls().dispatch(MetadataModified)
-
-    def influen(self: Filter[MetadataModified], *fields: MetadataFieldReference):
-        def _check(x: MetadataModified):
-            if not fields:
-                return True
-            list(x.modifies[0].effects.values())[0][0].field
-            for i in (effect for mod in x.modifies for effects in mod.effects.values() for effect in effects):
-                if i.field in fields:
-                    return True
-
-            return False
-
-        return self.assert_true(_check)
-
-    def act(self: Filter[MetadataModified], *operators: Fn):
-        def _check(x: MetadataModified):
-            taken = {i.operator for i in x.modifies if isinstance(i, Op)}
-            return taken.issuperset(operators)
-
-        return self.assert_true(_check)
 
     async def beforeExecution(self, interface: DispatcherInterface):
         result: Awaitable[Any] | Any = interface  # type: ignore
