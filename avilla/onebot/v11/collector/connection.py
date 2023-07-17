@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from avilla.core.ryanvk._runtime import processing_protocol
 from avilla.core.ryanvk.collector.base import (
+    Access,
     BaseCollector,
-    ComponentEntrypoint,
     PerformTemplate,
 )
 
@@ -21,8 +21,8 @@ T1 = TypeVar("T1")
 class ConnectionBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ConnectionCollector]
 
-    protocol: ComponentEntrypoint[OneBot11Protocol] = ComponentEntrypoint()
-    connection: ComponentEntrypoint[OneBot11WsClientNetworking] = ComponentEntrypoint()
+    protocol: Access[OneBot11Protocol] = Access()
+    connection: Access[OneBot11WsClientNetworking] = Access()
 
 
 class ConnectionCollector(BaseCollector):

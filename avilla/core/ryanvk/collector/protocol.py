@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
-from avilla.core.ryanvk.collector.base import BaseCollector, ComponentEntrypoint, PerformTemplate
+from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
@@ -19,7 +19,7 @@ T1 = TypeVar("T1")
 class ProtocolBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ProtocolCollector]
 
-    protocol: ComponentEntrypoint[BaseProtocol] = ComponentEntrypoint()
+    protocol: Access[BaseProtocol] = Access()
 
 
 class ProtocolCollector(BaseCollector, Generic[TProtocol]):

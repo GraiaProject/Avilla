@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
-from avilla.core.ryanvk.collector.base import BaseCollector, ComponentEntrypoint, PerformTemplate
+from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.account import BaseAccount
@@ -26,7 +26,7 @@ M = TypeVar("M", bound="Metadata")
 class ContextBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ContextCollector]
 
-    context: ComponentEntrypoint[Context] = ComponentEntrypoint()
+    context: Access[Context] = Access()
 
     @property
     def protocol(self):

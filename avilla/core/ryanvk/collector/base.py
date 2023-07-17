@@ -31,7 +31,7 @@ T = TypeVar("T")
 M = TypeVar("M", bound="Metadata")
 
 
-class ComponentEntrypoint(Generic[T]):
+class Access(Generic[T]):
     name: str
 
     def __init__(self):
@@ -64,13 +64,13 @@ class PerformTemplate:
 
     @classmethod
     def entrypoints(cls):
-        return [k for k, v in cls.__dict__.items() if isinstance(v, ComponentEntrypoint)]
+        return [k for k, v in cls.__dict__.items() if isinstance(v, Access)]
 
     @asynccontextmanager
     async def run_with_lifespan(self):
         # TODO
         yield self
-    
+
     @classmethod
     def __post_collected__(cls, collect: BaseCollector):
         ...
@@ -100,7 +100,6 @@ class BaseCollector:
     def _(self):
         return self.get_collect_template()
 
-
     def entity(self, signature: SupportsCollect[Self, P, R], *args: P.args, **kwargs: P.kwargs) -> R:
         return signature.collect(self, *args, **kwargs)
 
@@ -115,7 +114,7 @@ class BaseCollector:
 
                 for i in self.defer_callbacks:
                     i(cls)
-                
+
                 cls.__post_collected__(self)
 
         return LocalPerformTemplate

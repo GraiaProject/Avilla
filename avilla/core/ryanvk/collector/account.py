@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
 from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
-from avilla.core.ryanvk.collector.base import BaseCollector, ComponentEntrypoint, PerformTemplate
+from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.account import BaseAccount
@@ -23,8 +23,8 @@ T1 = TypeVar("T1")
 class AccountBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[AccountCollector]
 
-    protocol: ComponentEntrypoint[BaseProtocol] = ComponentEntrypoint()
-    account: ComponentEntrypoint[BaseAccount] = ComponentEntrypoint()
+    protocol: Access[BaseProtocol] = Access()
+    account: Access[BaseAccount] = Access()
 
 
 class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):

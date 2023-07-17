@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from avilla.core.ryanvk._runtime import processing_application, processing_isolate
-from avilla.core.ryanvk.collector.base import BaseCollector, ComponentEntrypoint, PerformTemplate
+from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
@@ -15,7 +15,7 @@ T1 = TypeVar("T1")
 
 class ApplicationBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ApplicationCollector]
-    avilla: ComponentEntrypoint[Avilla] = ComponentEntrypoint()
+    avilla: Access[Avilla] = Access()
 
 
 class ApplicationCollector(BaseCollector):
