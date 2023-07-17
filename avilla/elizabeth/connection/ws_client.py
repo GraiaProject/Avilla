@@ -92,7 +92,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
             data = aiohttp.FormData(quote_fields=False)
             if params is None:
                 raise TypeError("multipart requires params")
-            for k, v in params:
+            for k, v in params.items():
                 if isinstance(v, dict):
                     data.add_field(k, **v)
                 else:
