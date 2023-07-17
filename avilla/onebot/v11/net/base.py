@@ -55,7 +55,7 @@ class OneBot11Networking(Generic[T]):
 
             async def event_parse_task(data: dict):
                 event_type = onebot11_event_type(data)
-                event = await Staff(connection).parse_event(event_type, data)
+                event = await Staff.focus(connection).parse_event(event_type, data)
                 if event is None:
                     logger.warning(f"received unsupported event {event_type}: {data}")
                     return

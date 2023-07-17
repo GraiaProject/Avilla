@@ -79,9 +79,7 @@ class Frontend(App):
             stderr = contextlib.redirect_stderr(self._fake_output)
             stderr.__enter__()
             self._redirect_stderr = stderr
-        self.protocol.avilla.broadcast.postEvent(
-            AccountAvailable(self.protocol.avilla, self.account)
-        )
+        self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, self.account))
 
     def on_unmount(self):
         del self.protocol.avilla.accounts[self.account.route]
@@ -104,9 +102,7 @@ class Frontend(App):
             )
             self._should_restore_logger = False
         self.account.status.enabled = False
-        self.protocol.avilla.broadcast.postEvent(
-            AccountUnavailable(self.protocol.avilla, self.account)
-        )
+        self.protocol.avilla.broadcast.postEvent(AccountUnavailable(self.protocol.avilla, self.account))
         logger.success("Console exit.")
         logger.warning("Press Ctrl-C for Application exit")
 
@@ -148,7 +144,7 @@ class Frontend(App):
         asyncio.create_task(self.post_event(self.account, event))
 
     async def post_event(self, account: ConsoleAccount, event: Event):
-        res = await Staff(account).parse_event(event.type, event)
+        res = await Staff.focus(account).parse_event(event.type, event)
         if res is None:
             logger.warning(f"received unsupported event {event.type}: {event}")
             return

@@ -77,7 +77,7 @@ class Avilla:
         return self.broadcast.loop
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
-        return await Staff(self).fetch_resource(resource)
+        return await Staff.focus(self).fetch_resource(resource)
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform

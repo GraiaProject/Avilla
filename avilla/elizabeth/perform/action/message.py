@@ -29,7 +29,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             "sendGroupMessage",
             {
                 "target": int(target.pattern["group"]),
-                "messageChain": await Staff(self.account).serialize_message(message),
+                "messageChain": await self.account.staff.serialize_message(message),
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
@@ -50,7 +50,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             "sendFriendMessage",
             {
                 "target": int(target.pattern["friend"]),
-                "messageChain": await Staff(self.account).serialize_message(message),
+                "messageChain": await self.account.staff.serialize_message(message),
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )

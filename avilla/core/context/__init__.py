@@ -122,7 +122,7 @@ class Context:
 
     @property
     def staff(self):
-        return Staff(self)
+        return Staff.focus(self)
 
     def query(self, pattern: str, **predicators: FollowsPredicater):
         return self.staff.query_entities(pattern, **predicators)

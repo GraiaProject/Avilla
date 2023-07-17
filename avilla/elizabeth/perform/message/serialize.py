@@ -92,7 +92,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
         else:
             return {
                 "type": "Image",
-                "base64": base64.b64encode(await Staff(self.account).fetch_resource(element.resource)).decode("utf-8"),
+                "base64": base64.b64encode(await self.account.staff.fetch_resource(element.resource)).decode("utf-8"),
             }
 
     @ElizabethMessageSerialize.collect(m, FlashImage)
@@ -112,5 +112,5 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
         else:
             return {
                 "type": "Voice",
-                "base64": base64.b64encode(await Staff(self.account).fetch_resource(element.resource)).decode("utf-8"),
+                "base64": base64.b64encode(await self.account.staff.fetch_resource(element.resource)).decode("utf-8"),
             }
