@@ -61,7 +61,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
             return
         guild = Selector().land("qqguild").guild(raw_event["guild_id"])
         channel = guild.channel(raw_event["channel_id"])
-        author = channel.user(raw_event["author"]["id"])
+        author = channel.member(raw_event["author"]["id"])
         reply = None
         # if i := message.get(Reply):
         #     reply = friend.message(i[0].id)
@@ -97,7 +97,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
             return
         guild = Selector().land("qqguild").guild(raw_event["guild_id"])
         channel = guild.channel(raw_event["channel_id"])
-        author = channel.user(raw_event["author"]["id"])
+        author = channel.member(raw_event["author"]["id"])
         reply = None
         # if i := message.get(Reply):
         #     reply = friend.message(i[0].id)

@@ -40,6 +40,10 @@ class Intents:
     audio_action: bool = False
     at_messages: bool = True
 
+    def __post_init__(self):
+        if self.at_messages and self.guild_messages:
+            logger.warning("at_messages and guild_messages are both enabled, which is not recommended.")
+
     def to_int(self) -> int:
         return (
             self.guilds << 0

@@ -30,7 +30,7 @@ config = QQGuildWsClientConfig(
     os.getenv("QQGUILD_TOKEN"),
     os.getenv("QQGUILD_SECRET"),
     is_sandbox=True,
-    intent=Intents(guild_messages=True),
+    intent=Intents(guild_messages=True, at_messages=False),
 )
 conn = QQGuildWsClientNetworking(protocol, config)
 service.connections.append(conn)
