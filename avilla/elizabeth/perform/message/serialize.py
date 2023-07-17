@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
-from avilla.core.ryanvk.staff import Staff
+from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource
 from avilla.standard.qq.elements import (
     App,
     Dice,
@@ -18,11 +18,9 @@ from avilla.standard.qq.elements import (
     Xml,
 )
 
-from ...resource import ElizabethImageResource, ElizabethVoiceResource
-
 if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
+    from avilla.elizabeth.account import ElizabethAccount  # noqa
+    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 ElizabethMessageSerialize = MessageSerialize[dict]
 

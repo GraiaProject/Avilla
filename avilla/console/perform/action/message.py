@@ -4,18 +4,17 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
+from avilla.console.frontend.info import Robot
+from avilla.console.message import ConsoleMessage
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend
 from graia.amnesia.message import MessageChain
 
-from ...frontend.info import Robot
-from ...message import ConsoleMessage
-
 if TYPE_CHECKING:
-    from ...account import ConsoleAccount  # noqa
-    from ...protocol import ConsoleProtocol  # noqa
+    from avilla.console.account import ConsoleAccount  # noqa
+    from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
 class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):

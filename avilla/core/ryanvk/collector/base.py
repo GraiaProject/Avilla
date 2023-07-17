@@ -15,15 +15,14 @@ from typing import (
 
 from typing_extensions import ParamSpec, Self, Unpack
 
+from avilla.core.ryanvk.descriptor.fetch import Fetch
+from avilla.core.ryanvk.protocol import SupportsCollect
 from avilla.core.selector import Selector
 
-from ..descriptor.fetch import Fetch
-from ..protocol import SupportsCollect
-
 if TYPE_CHECKING:
-    from ...metadata import Metadata, MetadataRoute
-    from ...selector import FollowsPredicater
-    from ..isolate import Isolate
+    from avilla.core.metadata import Metadata, MetadataRoute
+    from avilla.core.ryanvk.isolate import Isolate
+    from avilla.core.selector import FollowsPredicater
 
 
 P = ParamSpec("P")

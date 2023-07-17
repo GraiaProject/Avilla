@@ -8,9 +8,8 @@ from avilla.core._vendor.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
+    from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
     from avilla.standard.core.account.event import AvillaLifecycleEvent
-
-    from ..collector.base import BaseCollector, PerformTemplate
 
 M = TypeVar("M", bound="PerformTemplate", contravariant=True)
 VnEventRaw = TypeVar("VnEventRaw", default=dict)

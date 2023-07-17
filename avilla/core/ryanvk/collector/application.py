@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from .._runtime import processing_application, processing_isolate
-from .base import BaseCollector, ComponentEntrypoint, PerformTemplate
+from avilla.core.ryanvk._runtime import processing_application, processing_isolate
+from avilla.core.ryanvk.collector.base import BaseCollector, ComponentEntrypoint, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla

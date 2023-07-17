@@ -6,9 +6,9 @@ from textual.widget import Widget
 from .message import Message, Timer
 
 if TYPE_CHECKING:
-    from ...app import Frontend
-    from ...info import MessageEvent
-    from ...storage import StateChange, Storage
+    from avilla.console.frontend.app import Frontend
+    from avilla.console.frontend.info import MessageEvent
+    from avilla.console.frontend.storage import StateChange, Storage
 
 
 class ChatHistory(Widget):

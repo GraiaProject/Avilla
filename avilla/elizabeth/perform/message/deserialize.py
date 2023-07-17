@@ -6,6 +6,7 @@ from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
+from avilla.elizabeth.resource import ElizabethFileResource, ElizabethImageResource, ElizabethVoiceResource
 from avilla.standard.qq.elements import (
     App,
     Dice,
@@ -20,11 +21,9 @@ from avilla.standard.qq.elements import (
     Xml,
 )
 
-from ...resource import ElizabethFileResource, ElizabethImageResource, ElizabethVoiceResource
-
 if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
+    from avilla.elizabeth.account import ElizabethAccount  # noqa
+    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 ElizabethMessageDeserialize = MessageDeserialize[dict]
 

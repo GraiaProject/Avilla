@@ -11,8 +11,6 @@ from typing_extensions import ParamSpec, Self
 from avilla.core.account import BaseAccount
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified
-from avilla.core.metadata import FieldReference
-from avilla.core.ryanvk import Fn
 from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop

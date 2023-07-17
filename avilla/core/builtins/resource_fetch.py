@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from ..resource import LocalFileResource, RawResource
-from ..ryanvk.collector.application import ApplicationCollector
-from ..ryanvk.descriptor.fetch import Fetch
+from avilla.core.resource import LocalFileResource, RawResource
+from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk.descriptor.fetch import Fetch
 
 
 class CoreResourceFetchPerform((m := ApplicationCollector())._):

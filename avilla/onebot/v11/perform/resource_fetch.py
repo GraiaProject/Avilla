@@ -6,8 +6,7 @@ from aiohttp import ClientSession
 
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.ryanvk.descriptor.fetch import Fetch
-
-from ..resource import (
+from v11.resource import (
     OneBot11FileResource,
     OneBot11ImageResource,
     OneBot11RecordResource,
@@ -16,7 +15,7 @@ from ..resource import (
 )
 
 if TYPE_CHECKING:
-    from ..protocol import OneBot11Protocol  # noqa
+    from avilla.onebot.v11.protocol import OneBot11Protocol  # noqa
 
 
 class OneBot11ResourceFetchPerform((m := ProtocolCollector["OneBot11Protocol"]())._):

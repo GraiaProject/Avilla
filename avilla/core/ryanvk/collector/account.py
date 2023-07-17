@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
-from .._runtime import processing_isolate, processing_protocol
-from .base import BaseCollector, ComponentEntrypoint, PerformTemplate
+from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
+from avilla.core.ryanvk.collector.base import BaseCollector, ComponentEntrypoint, PerformTemplate
 
 if TYPE_CHECKING:
-    from ...account import BaseAccount
-    from ...protocol import BaseProtocol
+    from avilla.core.account import BaseAccount
+    from avilla.core.protocol import BaseProtocol
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")

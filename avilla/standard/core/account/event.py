@@ -3,10 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core._vendor.dataclasses import dataclass
+from avilla.standard.core.application.event import AvillaLifecycleEvent
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-
-from ..application.event import AvillaLifecycleEvent
 
 if TYPE_CHECKING:
     from avilla.core.account import BaseAccount

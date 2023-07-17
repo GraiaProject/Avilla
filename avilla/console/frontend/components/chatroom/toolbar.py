@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING, cast
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ...router import RouteChange
-from ..general.action import Action
+from avilla.console.frontend.components.general.action import Action
+from avilla.console.frontend.router import RouteChange
 
 if TYPE_CHECKING:
-    from ...views.horizontal import HorizontalView
-    from .history import ChatHistory
+    from avilla.console.frontend.components.chatroom.history import ChatHistory
+    from avilla.console.frontend.views.horizontal import HorizontalView
 
 
 class Toolbar(Widget):

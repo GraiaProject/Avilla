@@ -5,8 +5,8 @@ from rich.console import RenderableType
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ...info import MessageEvent, User
-from ...utils import truncate
+from avilla.console.frontend.info import MessageEvent, User
+from avilla.console.frontend.utils import truncate
 
 
 class Timer(Widget):

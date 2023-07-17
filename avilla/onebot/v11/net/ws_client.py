@@ -15,11 +15,10 @@ from avilla.standard.core.account import AccountUnregistered
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
-
-from ..account import OneBot11Account
+from v11.account import OneBot11Account
 
 if TYPE_CHECKING:
-    from ..protocol import OneBot11Protocol
+    from v11.protocol import OneBot11Protocol
 
 
 @dataclass

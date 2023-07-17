@@ -7,7 +7,7 @@ from avilla.core.account import BaseAccount
 from avilla.elizabeth.connection.base import ElizabethNetworking
 
 if TYPE_CHECKING:
-    from ..elizabeth.protocol import ElizabethProtocol
+    from avilla.elizabeth.protocol import ElizabethProtocol
 
 
 @dataclass

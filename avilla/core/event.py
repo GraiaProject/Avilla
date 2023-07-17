@@ -4,11 +4,12 @@ from abc import ABCMeta
 from contextlib import suppress
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal
+
 from typing_extensions import Unpack
 
 from avilla.core._vendor.dataclasses import dataclass, field
+from avilla.core.metadata import FieldReference, Metadata, MetadataRoute
 from avilla.core.selector import Selector
-from avilla.core.metadata import Metadata, MetadataRoute, FieldReference
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 

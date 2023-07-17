@@ -1,4 +1,5 @@
-from ..builtins.capability import CoreCapability as CoreCapability
+from core.builtins.capability import CoreCapability as CoreCapability
+
 from ._runtime import processing_protocol as processing_protocol
 from .capability import Capability as Capability
 from .collector.base import BaseCollector as BaseCollector

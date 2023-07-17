@@ -1,8 +1,8 @@
 from textual.widget import Widget
 from textual.widgets import Static
 
-from ...router import RouteChange
-from ..general.action import Action
+from avilla.console.frontend.components.general.action import Action
+from avilla.console.frontend.router import RouteChange
 
 
 class Toolbar(Widget):
