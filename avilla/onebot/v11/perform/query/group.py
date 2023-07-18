@@ -16,9 +16,7 @@ class OneBot11GroupQueryPerform((m := AccountCollector["OneBot11Protocol", "OneB
 
     @CoreCapability.query.collect(m, "land.group")
     async def query_group(self, predicate: Callable[[str, str], bool] | str, previous: None):
-        result = await self.account.call(
-            "get_group_list", {}
-        )
+        result = await self.account.call("get_group_list", {})
         result = cast(list, result)
         for i in result:
             group_id = str(i["group_id"])
@@ -27,9 +25,7 @@ class OneBot11GroupQueryPerform((m := AccountCollector["OneBot11Protocol", "OneB
 
     @CoreCapability.query.collect(m, "member", "land.group")
     async def query_group_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.call("get_group_member_list", {
-            "group_id": int(previous['group'])
-        })
+        result = await self.account.call("get_group_member_list", {"group_id": int(previous["group"])})
         result = cast(list, result)
         for i in result:
             member_id = str(i["user_id"])

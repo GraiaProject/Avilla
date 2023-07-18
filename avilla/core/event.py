@@ -69,7 +69,7 @@ class RelationshipDestroyed(AvillaEvent):
 
 @dataclass
 class ModifyDetail:
-    type: Literal['set', 'clear', 'update']
+    type: Literal["set", "clear", "update"]
     current: Any = None
     previous: Any = None
 

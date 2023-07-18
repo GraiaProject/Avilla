@@ -23,14 +23,10 @@ class ConsoleElement(Element, metaclass=ABCMeta):
     def __str__(self) -> str:
         return str(self.rich)
 
-    def __rich_console__(
-        self, console: "Console", options: "ConsoleOptions"
-    ) -> "RenderResult":
+    def __rich_console__(self, console: "Console", options: "ConsoleOptions") -> "RenderResult":
         yield self.rich
 
-    def __rich_measure__(
-        self, console: "Console", options: "ConsoleOptions"
-    ) -> Measurement:
+    def __rich_measure__(self, console: "Console", options: "ConsoleOptions") -> Measurement:
         return measure_renderables(console, options, (self.rich,))
 
 

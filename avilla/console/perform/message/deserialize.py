@@ -14,9 +14,7 @@ if TYPE_CHECKING:
 ConsoleMessageDeserialize = MessageDeserialize[ConsoleElement]
 
 
-class ConsoleMessageDeserializePerform(
-    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
-):
+class ConsoleMessageDeserializePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
 
     # LINK: https://github.com/microsoft/pyright/issues/5409

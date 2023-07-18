@@ -62,6 +62,9 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
             self.get_element_type = element_typer  # type: ignore
         return self
 
+    def x(self, components: dict[str, SupportsArtifacts]):
+        return type(self)({**self.components, **components}, self.artifacts)
+
     def get_element_type(self, raw_element: VnElementRaw):
         return raw_element["type"]  # type: ignore
 

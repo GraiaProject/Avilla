@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
+from avilla.core.ryanvk.collector.access.base import OptionalAccess
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -8,12 +11,16 @@ from avilla.onebot.v11.element import Reply
 from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import Dice, Face, FlashImage, Json, Poke, Share, Xml
 
+if TYPE_CHECKING:
+    from avilla.core.context import Context
+
 OneBot11MessageDeserialize = MessageDeserialize[dict]
 
 
 class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
 
+    context: OptionalAccess[Context] = OptionalAccess()
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
     @OneBot11MessageDeserialize.collect(m, "text")
@@ -27,9 +34,7 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     @OneBot11MessageDeserialize.collect(m, "image")
     async def image(self, raw_element: dict) -> Picture | FlashImage:
         data: dict = raw_element["data"]
-        resource = OneBot11ImageResource(
-            Selector().land('qq').picture(file := data["file"]), file, data["url"]
-        )
+        resource = OneBot11ImageResource(Selector().land("qq").picture(file := data["file"]), file, data["url"])
         return FlashImage(resource) if raw_element.get("type") == "flash" else Picture(resource)
 
     @OneBot11MessageDeserialize.collect(m, "at")
@@ -37,7 +42,7 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
         # FIXME: 这里是个 Selector 但这里没办法获取到...hmmm
         if raw_element["data"]["qq"] == "all":
             return NoticeAll()
-        return Notice(Selector().member(raw_element["data"]["qq"]))
+        return Notice((self.context.scene if self.context else Selector()).member(raw_element["data"]["qq"]))
 
     @OneBot11MessageDeserialize.collect(m, "reply")
     async def reply(self, raw_element: dict):

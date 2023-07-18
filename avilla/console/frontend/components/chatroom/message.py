@@ -62,9 +62,7 @@ class Message(Widget):
     def __init__(self, event: "MessageEvent"):
         self.event = event
         self.side: Side = Side.LEFT if event.user.id == event.self_id else Side.RIGHT
-        super().__init__(
-            classes="left -hidden" if self.side == Side.LEFT else "right -hidden"
-        )
+        super().__init__(classes="left -hidden" if self.side == Side.LEFT else "right -hidden")
 
     def compose(self):
         if self.side == Side.LEFT:

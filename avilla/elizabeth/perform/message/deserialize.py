@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
+from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -22,6 +23,7 @@ from avilla.standard.qq.elements import (
 )
 
 if TYPE_CHECKING:
+    from avilla.core.context import Context
     from avilla.elizabeth.account import ElizabethAccount  # noqa
     from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
@@ -30,6 +32,8 @@ ElizabethMessageDeserialize = MessageDeserialize[dict]
 
 class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
+
+    context: OptionalAccess[Context] = OptionalAccess()
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
@@ -40,7 +44,7 @@ class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtoc
     @ElizabethMessageDeserialize.collect(m, "At")
     async def at(self, raw_element: dict) -> Notice:
         # TODO: get context
-        return Notice(Selector().member(raw_element["target"]))
+        return Notice((self.context.scene if self.context else Selector()).member(raw_element["target"]))
 
     @ElizabethMessageDeserialize.collect(m, "AtAll")
     async def at_all(self, raw_element: dict) -> NoticeAll:

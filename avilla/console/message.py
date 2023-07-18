@@ -20,9 +20,7 @@ class ConsoleMessage(Sequence[ConsoleElement]):
     def __getitem__(self, index: slice) -> Sequence[Element]:
         ...
 
-    def __getitem__(
-        self, index: Union[int, slice]
-    ) -> Union[Element, Sequence[Element]]:
+    def __getitem__(self, index: Union[int, slice]) -> Union[Element, Sequence[Element]]:
         return self.content[index]
 
     def __len__(self) -> int:
@@ -43,14 +41,10 @@ class ConsoleMessage(Sequence[ConsoleElement]):
     def __reversed__(self) -> Iterator[ConsoleElement]:
         yield from reversed(self.content)
 
-    def __rich_console__(
-        self, console: "Console", options: "ConsoleOptions"
-    ) -> "RenderResult":
+    def __rich_console__(self, console: "Console", options: "ConsoleOptions") -> "RenderResult":
         yield from self
         if self.content and not isinstance(self.content[-1], Markdown):
             yield Segment("\n")
 
-    def __rich_measure__(
-        self, console: "Console", options: "ConsoleOptions"
-    ) -> Measurement:
+    def __rich_measure__(self, console: "Console", options: "ConsoleOptions") -> Measurement:
         return measure_renderables(console, options, self)

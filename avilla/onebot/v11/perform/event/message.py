@@ -29,20 +29,21 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         friend = Selector().land(account.route["land"]).friend(str(raw_event["sender"]["user_id"]))
-        message = await account.staff.deserialize_message(raw_event["message"])
+        context = Context(
+            account,
+            friend,
+            friend,
+            friend,
+            Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
+        )
+        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = friend.message(i[0].id)
             message = message.exclude(Reply)
 
         return MessageReceived(
-            Context(
-                account,
-                friend,
-                friend,
-                friend,
-                Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
-            ),
+            context,
             Message(
                 id=raw_event["message_id"],
                 scene=friend,
@@ -63,19 +64,20 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
         group = Selector().land(account.route["land"]).group(str(raw_event["sender"]["group_id"]))
         # 好像 ob11 本来没这个字段, 但 gocq 是有的, 不过嘛, 管他呢
         member = group.member(str(raw_event["sender"]["user_id"]))
-        message = await account.staff.deserialize_message(raw_event["message"])
+        context = Context(
+            account,
+            member,
+            group,
+            group,
+            Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
+        )
+        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = member.message(i[0].id)
             message = message.exclude(Reply)
         return MessageReceived(
-            Context(
-                account,
-                member,
-                group,
-                group,
-                Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
-            ),
+            context,
             Message(
                 id=raw_event["message_id"],
                 scene=group,
@@ -96,19 +98,20 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             return
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         member = group.member(str(raw_event["sender"]["user_id"]))
-        message = await account.staff.deserialize_message(raw_event["message"])
+        context = Context(
+            account,
+            member,
+            group,
+            group,
+            Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
+        )
+        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = group.message(i[0].id)
             message = message.exclude(Reply)
         return MessageReceived(
-            Context(
-                account,
-                member,
-                group,
-                group,
-                Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
-            ),
+            context,
             Message(
                 id=raw_event["message_id"],
                 scene=group,
@@ -127,19 +130,20 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         stranger = Selector().land(account.route["land"]).stranger(str(raw_event["sender"]["user_id"]))
-        message = await account.staff.deserialize_message(raw_event["message"])
+        context = Context(
+            account,
+            stranger,
+            stranger,
+            stranger,
+            Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
+        )
+        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = stranger.message(i[0].id)
             message = message.exclude(Reply)
         return MessageReceived(
-            Context(
-                account,
-                stranger,
-                stranger,
-                stranger,
-                Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
-            ),
+            context,
             Message(
                 id=raw_event["message_id"],
                 scene=stranger,
@@ -159,19 +163,20 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             return
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         people = group.anonymous(str(raw_event["anonymous"]["flag"]))
-        message = await account.staff.deserialize_message(raw_event["message"])
+        context = Context(
+            account,
+            people,
+            group,
+            group,
+            Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
+        )
+        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = group.message(i[0].id)
             message = message.exclude(Reply)
         return MessageReceived(
-            Context(
-                account,
-                people,
-                group,
-                group,
-                Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
-            ),
+            context,
             Message(
                 id=raw_event["message_id"],
                 scene=group,
@@ -192,22 +197,16 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
 
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         member = group.member(str(raw_event["user_id"]))
-        message = await account.staff.deserialize_message(raw_event["message"])
+        context = Context(account, member, group, group, member)
+        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = member.message(i[0].id)
             message = message.exclude(Reply)
         return MessageSent(
-            Context(
-                account, member, group, group, member
-            ),
+            context,
             Message(
-                str(raw_event['message_id']),
-                group,
-                member,
-                message,
-                datetime.fromtimestamp(raw_event['time']),
-                reply
+                str(raw_event["message_id"]), group, member, message, datetime.fromtimestamp(raw_event["time"]), reply
             ),
-            account
+            account,
         )
