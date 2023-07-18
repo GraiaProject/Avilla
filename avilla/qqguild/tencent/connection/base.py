@@ -7,7 +7,7 @@ from loguru import logger
 
 from avilla.core.ryanvk.staff import Staff
 
-from .util import Payload
+from .util import Payload, Opcode
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
@@ -48,18 +48,18 @@ class QQGuildNetworking(Generic[T]):
 
     async def message_handle(self, shard: tuple[int, int]):
         async for connection, data in self.message_receive(shard):
-            if data["op"] != 0:
+            if data["op"] != Opcode.DISPATCH:
                 logger.debug(f"received other payload: {data}")
                 continue
             payload = Payload(**data)
             connection.sequence = payload.sequence  # type: ignore
 
-            async def event_parse_task(data: Payload):
-                event_type = data.type
+            async def event_parse_task(_data: Payload):
+                event_type = _data.type
                 assert event_type is not None, "event type is None"
-                event = await Staff.focus(connection).parse_event(event_type.lower(), data.data)
+                event = await Staff.focus(connection).parse_event(event_type.lower(), _data.data)
                 if event is None:
-                    logger.warning(f"received unsupported event {event_type.lower()}: {data.data}")
+                    logger.warning(f"received unsupported event {event_type.lower()}: {_data.data}")
                     return
                 # logger.debug(f"{data['self_id']} received event {event_type}")
                 await self.protocol.post_event(event)

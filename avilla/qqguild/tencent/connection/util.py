@@ -48,22 +48,6 @@ def validate_response(data: dict, code: int, raising: bool = True):
 CallMethod = Literal["get", "post", "fetch", "update", "multipart"]
 
 
-class UploadMethod(str, Enum):
-    """用于向 `upload` 系列方法描述上传类型"""
-
-    Friend = "friend"
-    """好友"""
-
-    Group = "group"
-    """群组"""
-
-    Temp = "temp"
-    """临时消息"""
-
-    def __str__(self) -> str:
-        return self.value
-
-
 class Opcode(int, Enum):
     DISPATCH = 0
     HEARTBEAT = 1
@@ -77,7 +61,7 @@ class Opcode(int, Enum):
 
 @dataclass
 class Payload:
-    op: int
+    op: int | Opcode
     d: dict | None = None
     s: int | None = None
     t: str | None = None
@@ -89,11 +73,7 @@ class Payload:
 
     @property
     def data(self) -> dict:
-        if self.d == "":
-            return {}
-        if not self.d:
-            raise ValueError("Payload has no data")
-        return self.d
+        return self.d or {}
 
     @property
     def sequence(self) -> int | None:

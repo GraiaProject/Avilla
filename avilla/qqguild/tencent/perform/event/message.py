@@ -24,6 +24,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
 
     @EventParse.collect(m, "at_message_create")
     async def at_message(self, raw_event: dict):
+        #TODO: put the author.bot metadata
         account_route = Selector().land("qqguild").account(self.connection.account_id)
         account = self.protocol.avilla.accounts.get(account_route)
         if account is None:
@@ -37,7 +38,6 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = channel.message(i[0].message_id)
             message = message.exclude(Reference)
-        ats = [Notice(channel.user(i["id"])) for i in raw_event["mentions"]]
         return MessageReceived(
             Context(
                 account.account,

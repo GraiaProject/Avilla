@@ -27,7 +27,7 @@ from launart.utilles import any_completed
 from ..account import QQGuildAccount
 from ..const import PLATFORM
 from .base import CallMethod, QQGuildNetworking
-from .util import Payload, validate_response
+from .util import Payload, validate_response, Opcode
 
 if TYPE_CHECKING:
     from ..protocol import QQGuildProtocol
@@ -226,7 +226,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             raise RuntimeError("connection is not established")
         if not self.session_id:
             payload = Payload(
-                op=2,
+                op=Opcode.IDENTIFY,
                 d={
                     "token": self.config.get_authorization(),
                     "intents": self.config.intent.to_int(),
@@ -239,7 +239,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             )
         else:
             payload = Payload(
-                op=6,
+                op=Opcode.RESUME,
                 d={
                     "token": self.config.get_authorization(),
                     "session_id": self.session_id,
@@ -250,19 +250,16 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         try:
             await self.send(asdict(payload), shard)
         except Exception as e:
-            logger.error(
-                "Error while sending" + ("Identify" if payload.op == 2 else "Resume") + " event",
-                e,
-            )
+            logger.error(f"Error while sending {payload.opcode.name.title()} event: {e}")
             return
 
         if not self.session_id:
             # https://bot.q.qq.com/wiki/develop/api/gateway/reference.html#_2-%E9%89%B4%E6%9D%83%E8%BF%9E%E6%8E%A5
             # 鉴权成功之后，后台会下发一个 Ready Event
             payload = Payload(**await connection.receive_json())
-            assert payload.op == 0 and payload.t == "READY" and payload.d, f"Received unexpected payload: {payload}"
-            self.sequence = payload.s
-            self.session_id = payload.d["session_id"]
+            assert payload.opcode == Opcode.DISPATCH and payload.type == "READY" and payload.data, f"Received unexpected payload: {payload}"
+            self.sequence = payload.sequence
+            self.session_id = payload.data["session_id"]
             account_route = Selector().land("qqguild").account(self.config.id)
             if account_route in self.protocol.avilla.accounts:
                 account = cast(QQGuildAccount, self.protocol.avilla.accounts[account_route].account)
