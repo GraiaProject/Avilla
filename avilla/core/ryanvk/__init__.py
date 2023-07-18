@@ -1,5 +1,4 @@
 from avilla.core.builtins.capability import CoreCapability as CoreCapability
-from avilla.core.ryanvk._runtime import processing_protocol as processing_protocol
 from avilla.core.ryanvk.capability import Capability as Capability
 from avilla.core.ryanvk.collector.base import BaseCollector as BaseCollector
 from avilla.core.ryanvk.collector.context import (

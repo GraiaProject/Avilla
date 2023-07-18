@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk._runtime import processing_application, processing_isolate
 from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
@@ -35,13 +34,3 @@ class ApplicationCollector(BaseCollector):
             __native__ = True
 
         return LocalPerformTemplate
-
-    def __post_collected__(self, cls: type[ApplicationBasedPerformTemplate]):
-        super().__post_collected__(cls)
-        if self.post_applying:
-            if (application := processing_application.get(None)) is None:
-                if (isolate := processing_isolate.get(None)) is not None:
-                    isolate.apply(cls)
-                return
-
-            application.isolate.apply(cls)

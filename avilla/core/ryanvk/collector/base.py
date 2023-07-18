@@ -17,6 +17,7 @@ from typing_extensions import ParamSpec, Self, Unpack
 
 from avilla.core.ryanvk.descriptor.fetch import Fetch
 from avilla.core.ryanvk.protocol import SupportsCollect
+from avilla.core.ryanvk._runtime import processing_isolate
 from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
@@ -85,6 +86,7 @@ class _ResultCollect(Protocol[R]):
 class BaseCollector:
     artifacts: dict[Any, Any]
     defer_callbacks: list[Callable[[type[PerformTemplate]], Any]]
+    post_applying: bool = False
 
     def __init__(self):
         self.artifacts = {"current_collection": {}}
@@ -102,6 +104,9 @@ class BaseCollector:
 
     def __post_collected__(self, cls: type[PerformTemplate]):
         self._cls = cls
+        if self.post_applying:
+            if (isolate := processing_isolate.get(None)) is not None:
+                isolate.apply(cls)
 
     def get_collect_template(self):
         class LocalPerformTemplate(PerformTemplate):
