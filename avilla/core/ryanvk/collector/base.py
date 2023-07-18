@@ -7,7 +7,6 @@ from typing import (
     Awaitable,
     Callable,
     ClassVar,
-    Generic,
     Protocol,
     TypeVar,
     overload,
@@ -15,9 +14,10 @@ from typing import (
 
 from typing_extensions import ParamSpec, Self, Unpack
 
+from avilla.core.ryanvk._runtime import processing_isolate
+from avilla.core.ryanvk.collector.access import Access
 from avilla.core.ryanvk.descriptor.fetch import Fetch
 from avilla.core.ryanvk.protocol import SupportsCollect
-from avilla.core.ryanvk._runtime import processing_isolate
 from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
@@ -30,30 +30,6 @@ P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
 T = TypeVar("T")
 M = TypeVar("M", bound="Metadata")
-
-
-class Access(Generic[T]):
-    name: str
-
-    def __init__(self):
-        ...
-
-    def __set_name__(self, owner: type, name: str):
-        self.name = name
-
-    @overload
-    def __get__(self, instance: None, owner: type) -> Self:
-        ...
-
-    @overload
-    def __get__(self, instance: PerformTemplate, owner: type) -> T:
-        ...
-
-    def __get__(self, instance: PerformTemplate | None, owner: type):
-        if instance is None:
-            return self
-
-        return instance.components[self.name]
 
 
 class PerformTemplate:
