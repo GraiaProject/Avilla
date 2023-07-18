@@ -19,7 +19,7 @@ class QQGuildMessageActionPerform((m := AccountCollector["QQGuildProtocol", "QQG
     m.post_applying = True
 
     @MessageSend.send.collect(m, "land.guild.channel")
-    async def send_group_msg(
+    async def send_channel_msg(
         self,
         target: Selector,
         message: MessageChain,
@@ -43,5 +43,32 @@ class QQGuildMessageActionPerform((m := AccountCollector["QQGuildProtocol", "QQG
             .land(self.account.route["land"])
             .guild(target.pattern["guild"])
             .channel(target.pattern["channel"])
+            .message(result["id"])
+        )
+
+    @MessageSend.send.collect(m, "land.guild.user")
+    async def send_direct_msg(
+        self,
+        target: Selector,
+        message: MessageChain,
+        *,
+        reply: Selector | None = None,
+    ) -> Selector:
+        serialize_msg = await Staff.focus(self.account).serialize_message(message)
+        _data = pro_serialize(serialize_msg)
+        if reply:
+            _data["msg_id"] = reply.pattern["message"]
+        method, data = form_data(_data)
+        result = await self.account.connection.call(
+            method,
+            f"channels/{target.pattern['guild']}/messages",
+            data
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to send message to {target.pattern['channel']}: {message}")
+        return (
+            Selector()
+            .land(self.account.route["land"])
+            .guild(target.pattern["guild"])
             .message(result["id"])
         )

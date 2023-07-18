@@ -7,6 +7,7 @@ from avilla.core.elements import Text
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
 from avilla.standard.qq.elements import Face
+from avilla.qqguild.element import Embed, Reference
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
 
@@ -31,7 +32,7 @@ config = QQGuildWsClientConfig(
     os.getenv("QQGUILD_TOKEN"),
     os.getenv("QQGUILD_SECRET"),
     is_sandbox=True,
-    intent=Intents(guild_messages=True, at_messages=False),
+    intent=Intents(guild_messages=True, at_messages=False, direct_message=True),
 )
 conn = QQGuildWsClientNetworking(protocol, config)
 service.connections.append(conn)
@@ -57,9 +58,13 @@ async def on_message_received(cx: Context, event: MessageReceived):
     print(
         await cx.scene.send_message(
             [
-                Notice(event.message.sender),
+                Reference(event.message.id),
                 Text("Hello, Avilla!"),
-                Face(4)
+                # Embed(
+                #     "Test Embed",
+                #     "Hello, Avilla!",
+                #     fields=["line1", "line2"],
+                # )
             ],
             reply=event.message
         )

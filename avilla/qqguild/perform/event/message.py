@@ -90,3 +90,36 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             ),
         )
+
+    @EventParse.collect(m, "direct_message_create")
+    async def message(self, raw_event: dict):
+        account_route = Selector().land("qqguild").account(self.connection.account_id)
+        account = self.protocol.avilla.accounts.get(account_route)
+        if account is None:
+            logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
+            return
+        guild = Selector().land("qqguild").guild(raw_event["guild_id"])
+        author = guild.user(raw_event["author"]["id"])
+        message = await account.account.staff.deserialize_message(pre_deserialize(raw_event))
+        reply = None
+        if i := message.get(Reference):
+            reply = guild.message(i[0].message_id)
+            message = message.exclude(Reference)
+
+        return MessageReceived(
+            Context(
+                account.account,
+                author,
+                author,
+                author,
+                account_route,
+            ),
+            Message(
+                id=raw_event["id"],
+                scene=author,
+                sender=author,
+                content=message,
+                time=datetime.fromisoformat(raw_event["timestamp"]),
+                reply=reply,
+            ),
+        )

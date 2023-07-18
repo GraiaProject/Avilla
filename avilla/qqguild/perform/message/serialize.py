@@ -56,13 +56,14 @@ class QQGuildMessageSerializePerform((m := AccountCollector["QQGuildProtocol", "
 
     @QQGuildMessageSerialize.collect(m, Embed)
     async def embed(self, element: Embed) -> dict:
-        return {
+        res = {
             "type": "embed",
             "title": element.title,
             "prompt": element.prompt,
             "thumbnail": {"url": element.thumbnail} if element.thumbnail else None,
             "fields": [{"name": i} for i in element.fields] if element.fields else None,
         }
+        return {k: v for k, v in res.items() if v}
 
     @QQGuildMessageSerialize.collect(m, Ark)
     async def ark(self, element: Ark) -> dict:
@@ -80,6 +81,5 @@ class QQGuildMessageSerializePerform((m := AccountCollector["QQGuildProtocol", "
                 )
                 for kv in element.kv
             ]
-            if element.kv != None
-            else None,
+            if element.kv else None,
         }

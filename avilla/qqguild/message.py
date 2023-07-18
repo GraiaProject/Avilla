@@ -66,11 +66,14 @@ def pro_serialize(message: list[dict]):
         elif elem["type"] == "local_iamge":
             res["file_image"] = elem["content"]
         elif elem["type"] == "embed":
-            res["embed"] = elem.copy().pop("type")
+            res["embed"] = elem
+            res["embed"].pop("type")
         elif elem["type"] == "ark":
-            res["ark"] = elem.copy().pop("type")
+            res["ark"] = elem
+            res["ark"].pop("type")
         elif elem["type"] == "message_reference":
-            res["message_reference"] = elem.copy().pop("type")
+            res["message_reference"] = elem
+            res["message_reference"].pop("type")
     if content:
         res["content"] = content
     return res
