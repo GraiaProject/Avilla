@@ -11,9 +11,7 @@ if TYPE_CHECKING:
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleProfileActionPerform(
-    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
-):
+class ConsoleProfileActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
 
     @m.pull("lang.console", Nick)

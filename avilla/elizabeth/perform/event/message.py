@@ -21,7 +21,7 @@ class MessageDeserializeResult(TypedDict):
 class ElizabethEventMessagePerform((m := ConnectionCollector())._):
     m.post_applying = True
 
-    async def _deserialize_message(self, raw_elements: list[dict]):
+    async def _deserialize_message(self, context: Context, raw_elements: list[dict]):
         result: dict[str, Any] = {
             "source": str(raw_elements[0]["id"]),
             "time": datetime.fromtimestamp(raw_elements[0]["time"]),
@@ -35,23 +35,24 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 break
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        result["content"] = await account.staff.deserialize_message(raw_elements[1:])
+        result["content"] = await account.staff.x({"context": context}).deserialize_message(raw_elements[1:])
         return cast(MessageDeserializeResult, result)
 
     @EventParse.collect(m, "FriendMessage")
     async def friend(self, raw_event: dict):
         account = Selector().land("qq").account(str(self.connection.account_id))
         friend = Selector().land(account["land"]).friend(str(raw_event["sender"]["id"]))
-        message_result = await self._deserialize_message(raw_event["messageChain"])
+        context = Context(
+            self.protocol.avilla.accounts[account].account,
+            friend,
+            friend,
+            friend,
+            account,
+        )
+        message_result = await self._deserialize_message(context, raw_event["messageChain"])
 
         return MessageReceived(
-            Context(
-                self.protocol.avilla.accounts[account].account,
-                friend,
-                friend,
-                friend,
-                account,
-            ),
+            context,
             Message(
                 id=message_result["source"],
                 scene=friend,
@@ -67,15 +68,16 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         account = Selector().land("qq").account(str(self.connection.account_id))
         group = Selector().land(account["land"]).group(str(raw_event["sender"]["group"]["id"]))
         member = group.member(str(raw_event["sender"]["id"]))
-        message_result = await self._deserialize_message(raw_event["messageChain"])
+        context = Context(
+            self.protocol.avilla.accounts[account].account,
+            member,
+            group,
+            group,
+            account,
+        )
+        message_result = await self._deserialize_message(context, raw_event["messageChain"])
         return MessageReceived(
-            Context(
-                self.protocol.avilla.accounts[account].account,
-                member,
-                group,
-                group,
-                account,
-            ),
+            context,
             Message(
                 id=message_result["source"],
                 scene=group,

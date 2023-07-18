@@ -16,25 +16,12 @@ class OneBot11LeaveActionPerform((m := AccountCollector["OneBot11Protocol", "One
 
     @SceneCapability.leave.collect(m, "land.group")
     async def leave_group(self, target: Selector):
-        result = self.account.call(
-            "set_group_leave",
-            {
-                "group_id": int(target['group'])
-            }
-        )
+        result = self.account.call("set_group_leave", {"group_id": int(target["group"])})
         if result is None:
             raise RuntimeError(f"Failed to leave group: {target}: {result}")
-    
+
     @SceneCapability.disband.collect(m, "land.group")
     async def disband_group(self, target: Selector):
-        result = self.account.call(
-            "set_group_leave",
-            {
-                "group_id": int(target['group']),
-                "is_dismiss": True
-            }
-        )
+        result = self.account.call("set_group_leave", {"group_id": int(target["group"]), "is_dismiss": True})
         if result is None:
             raise RuntimeError(f"Failed to disband group: {target}: {result}")
-    
-    

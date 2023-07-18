@@ -11,9 +11,7 @@ if TYPE_CHECKING:
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleActivityActionPerform(
-    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
-):
+class ConsoleActivityActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
 
     @ActivityTrigger.trigger.collect(m, "land.console.activity(bell)")

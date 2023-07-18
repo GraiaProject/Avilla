@@ -4,19 +4,13 @@ from typing import TYPE_CHECKING
 
 from avilla.console.element import ConsoleElement, Emoji, Markdown, Markup, Text
 from avilla.core.elements import Text as BaseText
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
-
-if TYPE_CHECKING:
-    from ...account import ConsoleAccount  # noqa
-    from ...protocol import ConsoleProtocol  # noqa
 
 ConsoleMessageDeserialize = MessageDeserialize[ConsoleElement]
 
 
-class ConsoleMessageDeserializePerform(
-    (m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._
-):
+class ConsoleMessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
 
     # LINK: https://github.com/microsoft/pyright/issues/5409

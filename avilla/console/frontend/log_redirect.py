@@ -32,6 +32,4 @@ class FakeIO:
         self._buffer.clear()
 
     def _write_to_storage(self) -> None:
-        self.storage.write_log(
-            Text.from_ansi("".join(self._buffer), end="", tab_size=4)
-        )
+        self.storage.write_log(Text.from_ansi("".join(self._buffer), end="", tab_size=4))

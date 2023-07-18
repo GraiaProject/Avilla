@@ -20,9 +20,9 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         result = await self.account.call(
             "set_group_kick",
             {
-                "group_id": int(target['group']),
-                "user_id": int(target['member']),
-            }
+                "group_id": int(target["group"]),
+                "user_id": int(target["member"]),
+            },
         )
         if result is None:
             raise RuntimeError(f"Failed to ban {target}: {result}")

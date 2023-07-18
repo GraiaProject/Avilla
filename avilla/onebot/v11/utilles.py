@@ -1,6 +1,5 @@
-SPECIAL_POST_TYPE = {
-    "message_sent": "message"
-}
+SPECIAL_POST_TYPE = {"message_sent": "message"}
+
 
 def onebot11_event_type(raw: dict) -> str:
     return (
