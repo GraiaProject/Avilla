@@ -7,12 +7,12 @@ from avilla.core.elements import Text
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
 from avilla.standard.qq.elements import Face
-from avilla.qqguild.element import Embed, Reference
+from avilla.qqguild.tencent.element import Embed, Reference
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
 
-from avilla.qqguild.connection.ws_client import QQGuildWsClientConfig, QQGuildWsClientNetworking, Intents
-from avilla.qqguild.protocol import QQGuildProtocol
+from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientConfig, QQGuildWsClientNetworking, Intents
+from avilla.qqguild.tencent.protocol import QQGuildProtocol
 
 # from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast

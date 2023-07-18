@@ -7,7 +7,7 @@ from avilla.core.elements import Element
 
 @dataclass
 class Embed(Element):
-    title: str | None = None
+    title: str
     prompt: str | None = None
     thumbnail: str | None = None
     fields: list[str] | None = None
@@ -41,7 +41,7 @@ class Ark(Element):
 @dataclass
 class Reference(Element):
     message_id: str
-    ignore_get_message_error: bool | None = None
+    ignore_get_message_error: bool = False
 
     def __str__(self):
         return "[$Reference:id={self.message_id}]"
