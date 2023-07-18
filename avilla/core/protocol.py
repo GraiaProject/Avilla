@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from avilla.core._runtime import cx_avilla, cx_context, cx_protocol
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk import processing_protocol
+from avilla.core.ryanvk._runtime import processing_isolate
 from avilla.core.ryanvk.isolate import Isolate
 
 if TYPE_CHECKING:
@@ -19,11 +19,11 @@ class BaseProtocol:
 
     def __init_subclass__(cls) -> None:
         cls.isolate = Isolate()
-        token = processing_protocol.set(cls)
+        token = processing_isolate.set(cls.isolate)
         try:
             cls.__init_isolate__()
         finally:
-            processing_protocol.reset(token)
+            processing_isolate.reset(token)
 
     @classmethod
     def __init_isolate__(cls):

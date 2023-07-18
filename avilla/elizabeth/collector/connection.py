@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk._runtime import processing_protocol
 from avilla.core.ryanvk.collector.base import (
     Access,
     BaseCollector,
@@ -39,10 +38,3 @@ class ConnectionCollector(BaseCollector):
             __native__ = True
 
         return PerformTemplate
-
-    def __post_collected__(self, cls: type[ConnectionBasedPerformTemplate]):
-        super().__post_collected__(cls)
-        if self.post_applying:
-            if (protocol := processing_protocol.get(None)) is None:
-                raise RuntimeError("expected processing protocol")
-            protocol.isolate.apply(cls)

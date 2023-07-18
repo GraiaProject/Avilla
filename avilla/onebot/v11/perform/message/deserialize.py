@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
-from avilla.core.ryanvk.collector.base import BaseCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.onebot.v11.element import Reply
@@ -14,12 +13,6 @@ OneBot11MessageDeserialize = MessageDeserialize[dict]
 
 class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
-
-    @classmethod
-    def __post_collected__(cls, collect: BaseCollector):
-        from avilla.core.ryanvk._runtime import processing_protocol
-        if (p := processing_protocol.get(None)) is not None:
-            p.isolate.apply(cls)
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 

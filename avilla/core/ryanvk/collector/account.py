@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
-from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
+from avilla.core.ryanvk._runtime import processing_isolate
 from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
@@ -48,13 +48,3 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
             account: TAccount1
 
         return LocalPerformTemplate[TProtocol, TAccount]
-
-    def __post_collected__(self, cls: type[AccountBasedPerformTemplate]):
-        super().__post_collected__(cls)
-        if self.post_applying:
-            if (protocol := processing_protocol.get(None)) is None:
-                if (isolate := processing_isolate.get(None)) is not None:
-                    isolate.apply(cls)
-                return
-
-            protocol.isolate.apply(cls)
