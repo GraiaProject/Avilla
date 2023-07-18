@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
+from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -9,6 +12,9 @@ from avilla.standard.qq.elements import Face
 from ...element import Ark, ArkKv, Embed, Reference
 from ...resource import QQGuildImageResource
 
+if TYPE_CHECKING:
+    from avilla.core.context import Context
+
 QQGuildMessageDeserialize = MessageDeserialize[dict]
 
 
@@ -16,6 +22,7 @@ class QQGuildMessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
+    context: OptionalAccess[Context] = OptionalAccess()
 
     @QQGuildMessageDeserialize.collect(m, "text")
     async def text(self, raw_element: dict) -> Text:
@@ -33,9 +40,11 @@ class QQGuildMessageDeserializePerform((m := ApplicationCollector())._):
     @QQGuildMessageDeserialize.collect(m, "mention")
     async def mention(self, raw_element: dict) -> Notice:
         if user_id := raw_element.get("user_id"):
-            return Notice(Selector().land("qqguild").member(user_id))
+            return Notice(self.context.scene.member(user_id))
         else:
-            return Notice(Selector().land("qqguild").channel(raw_element["channel_id"]))
+            return Notice(
+                Selector().land("qqguild").guild(self.context.scene["guild"]).channel(raw_element["channel_id"])
+            )
 
     @QQGuildMessageDeserialize.collect(m, "mention_everyone")
     async def mention_everyone(self, raw_element: dict) -> NoticeAll:
