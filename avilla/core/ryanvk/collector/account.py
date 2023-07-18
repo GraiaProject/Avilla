@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
-from .._runtime import processing_isolate, processing_protocol
-from .base import BaseCollector, ComponentEntrypoint, PerformTemplate
+from avilla.core.ryanvk._runtime import processing_isolate, processing_protocol
+from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
-    from ...account import BaseAccount
-    from ...protocol import BaseProtocol
+    from avilla.core.account import BaseAccount
+    from avilla.core.protocol import BaseProtocol
 
 
 TProtocol = TypeVar("TProtocol", bound="BaseProtocol")
@@ -23,8 +23,8 @@ T1 = TypeVar("T1")
 class AccountBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[AccountCollector]
 
-    protocol: ComponentEntrypoint[BaseProtocol] = ComponentEntrypoint()
-    account: ComponentEntrypoint[BaseAccount] = ComponentEntrypoint()
+    protocol: Access[BaseProtocol] = Access()
+    account: Access[BaseAccount] = Access()
 
 
 class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
@@ -49,8 +49,8 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
 
         return LocalPerformTemplate[TProtocol, TAccount]
 
-    def __post_collect__(self, cls: type[AccountBasedPerformTemplate]):
-        super().__post_collect__(cls)
+    def __post_collected__(self, cls: type[AccountBasedPerformTemplate]):
+        super().__post_collected__(cls)
         if self.post_applying:
             if (protocol := processing_protocol.get(None)) is None:
                 if (isolate := processing_isolate.get(None)) is not None:

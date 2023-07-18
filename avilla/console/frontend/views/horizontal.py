@@ -2,8 +2,8 @@ from textual.events import Resize
 from textual.reactive import Reactive
 from textual.widget import Widget
 
-from ..components.chatroom import ChatRoom
-from ..components.log import LogPanel
+from avilla.console.frontend.components.chatroom import ChatRoom
+from avilla.console.frontend.components.log import LogPanel
 
 SHOW_LOG_BREAKPOINT = 120
 

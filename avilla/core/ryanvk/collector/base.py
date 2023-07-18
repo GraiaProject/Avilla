@@ -15,15 +15,14 @@ from typing import (
 
 from typing_extensions import ParamSpec, Self, Unpack
 
+from avilla.core.ryanvk.descriptor.fetch import Fetch
+from avilla.core.ryanvk.protocol import SupportsCollect
 from avilla.core.selector import Selector
 
-from ..descriptor.fetch import Fetch
-from ..protocol import SupportsCollect
-
 if TYPE_CHECKING:
-    from ...metadata import Metadata, MetadataRoute
-    from ...selector import FollowsPredicater
-    from ..isolate import Isolate
+    from avilla.core.metadata import Metadata, MetadataRoute
+    from avilla.core.ryanvk.isolate import Isolate
+    from avilla.core.selector import FollowsPredicater
 
 
 P = ParamSpec("P")
@@ -32,7 +31,7 @@ T = TypeVar("T")
 M = TypeVar("M", bound="Metadata")
 
 
-class ComponentEntrypoint(Generic[T]):
+class Access(Generic[T]):
     name: str
 
     def __init__(self):
@@ -65,13 +64,13 @@ class PerformTemplate:
 
     @classmethod
     def entrypoints(cls):
-        return [k for k, v in cls.__dict__.items() if isinstance(v, ComponentEntrypoint)]
+        return [k for k, v in cls.__dict__.items() if isinstance(v, Access)]
 
     @asynccontextmanager
     async def run_with_lifespan(self):
         # TODO
         yield self
-    
+
     @classmethod
     def __post_collected__(cls, collect: BaseCollector):
         ...
@@ -89,7 +88,7 @@ class BaseCollector:
 
     def __init__(self):
         self.artifacts = {"current_collection": {}}
-        self.defer_callbacks = [self.__post_collect__]
+        self.defer_callbacks = [self.__post_collected__]
 
     @property
     def cls(self: _ResultCollect[R]) -> R:
@@ -101,9 +100,8 @@ class BaseCollector:
     def _(self):
         return self.get_collect_template()
 
-
-    def entity(self, signature: SupportsCollect[Self, P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-        return signature.collect(self, *args, **kwargs)
+    def __post_collected__(self, cls: type[PerformTemplate]):
+        self._cls = cls
 
     def get_collect_template(self):
         class LocalPerformTemplate(PerformTemplate):
@@ -116,7 +114,7 @@ class BaseCollector:
 
                 for i in self.defer_callbacks:
                     i(cls)
-                
+
                 cls.__post_collected__(self)
 
         return LocalPerformTemplate
@@ -124,12 +122,15 @@ class BaseCollector:
     def defer(self, func: Callable[[type], Any]):
         self.defer_callbacks.append(func)
 
-    def x(self, context_manager: AbstractContextManager[T]) -> T:
+    def with_(self, context_manager: AbstractContextManager[T]) -> T:
         self.defer(lambda _: context_manager.__exit__(None, None, None))
         return context_manager.__enter__()
 
-    def apply(self, isolate: Isolate):
+    def apply_defering(self, isolate: Isolate):
         self.defer(lambda x: isolate.apply(x))
+
+    def entity(self, signature: SupportsCollect[Self, P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+        return signature.collect(self, *args, **kwargs)
 
     @overload
     def pull(
@@ -150,6 +151,3 @@ class BaseCollector:
 
     def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
         return self.entity(Fetch, resource_type)
-
-    def __post_collect__(self, cls: type[PerformTemplate]):
-        self._cls = cls

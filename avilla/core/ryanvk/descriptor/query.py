@@ -8,7 +8,7 @@ from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector, _FollowItem
 
 if TYPE_CHECKING:
-    from ..collector.base import BaseCollector
+    from avilla.core.ryanvk.collector.base import BaseCollector
 
 
 @dataclass(unsafe_hash=True)

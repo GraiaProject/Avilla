@@ -13,8 +13,8 @@ from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
 
 if TYPE_CHECKING:
-    from ...account import ConsoleAccount  # noqa
-    from ...protocol import ConsoleProtocol  # noqa
+    from avilla.console.account import ConsoleAccount  # noqa
+    from avilla.console.protocol import ConsoleProtocol  # noqa
 
 ConsoleEventParse = EventParse[Event]
 

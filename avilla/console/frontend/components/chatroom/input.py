@@ -5,7 +5,7 @@ from textual.widget import Widget
 from textual.widgets import Input
 
 if TYPE_CHECKING:
-    from ...app import Frontend
+    from avilla.console.frontend.app import Frontend
 
 
 class InputBox(Widget):

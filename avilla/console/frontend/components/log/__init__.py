@@ -6,8 +6,8 @@ from textual.widget import Widget
 from textual.widgets import TextLog
 
 if TYPE_CHECKING:
-    from ...app import Frontend
-    from ...storage import StateChange, Storage
+    from avilla.console.frontend.app import Frontend
+    from avilla.console.frontend.storage import StateChange, Storage
 
 
 MAX_LINES = 1000

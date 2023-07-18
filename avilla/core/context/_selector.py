@@ -9,7 +9,6 @@ from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.ryanvk.descriptor.base import Fn
-from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import EMPTY_MAP, Selector
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.request import RequestCapability

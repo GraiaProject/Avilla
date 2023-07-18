@@ -5,7 +5,7 @@ from rich.console import RenderableType
 from textual.message import Message
 from textual.widget import Widget
 
-from ..info import MessageEvent, User
+from avilla.console.frontend.info import MessageEvent, User
 
 MAX_LOG_RECORDS = 500
 MAX_MSG_RECORDS = 500

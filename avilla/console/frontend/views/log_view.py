@@ -1,7 +1,7 @@
 from textual.widget import Widget
 
-from ..components.log import LogPanel
-from ..components.log.toolbar import Toolbar
+from avilla.console.frontend.components.log import LogPanel
+from avilla.console.frontend.components.log.toolbar import Toolbar
 
 
 class LogView(Widget):

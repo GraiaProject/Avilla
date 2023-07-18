@@ -6,11 +6,11 @@ from typing import TYPE_CHECKING, Any, Callable, Generic, Protocol
 
 from typing_extensions import Concatenate, ParamSpec, TypeVar
 
-from ..collector.base import BaseCollector
+from avilla.core.ryanvk.collector.base import BaseCollector
 
 if TYPE_CHECKING:
-    from ..capability import Capability
-    from ..collector.base import PerformTemplate
+    from avilla.core.ryanvk.capability import Capability
+    from avilla.core.ryanvk.collector.base import PerformTemplate
 
 
 class _Callable(Protocol):

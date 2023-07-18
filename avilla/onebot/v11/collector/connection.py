@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from avilla.core.ryanvk._runtime import processing_protocol
 from avilla.core.ryanvk.collector.base import (
+    Access,
     BaseCollector,
-    ComponentEntrypoint,
     PerformTemplate,
 )
 
 if TYPE_CHECKING:
-    from ..net.ws_client import OneBot11WsClientNetworking
-    from ..protocol import OneBot11Protocol
+    from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
+    from avilla.onebot.v11.protocol import OneBot11Protocol
 
 
 T = TypeVar("T")
@@ -21,8 +21,8 @@ T1 = TypeVar("T1")
 class ConnectionBasedPerformTemplate(PerformTemplate):
     __collector__: ClassVar[ConnectionCollector]
 
-    protocol: ComponentEntrypoint[OneBot11Protocol] = ComponentEntrypoint()
-    connection: ComponentEntrypoint[OneBot11WsClientNetworking] = ComponentEntrypoint()
+    protocol: Access[OneBot11Protocol] = Access()
+    connection: Access[OneBot11WsClientNetworking] = Access()
 
 
 class ConnectionCollector(BaseCollector):
@@ -40,8 +40,8 @@ class ConnectionCollector(BaseCollector):
 
         return PerformTemplate
 
-    def __post_collect__(self, cls: type[ConnectionBasedPerformTemplate]):
-        super().__post_collect__(cls)
+    def __post_collected__(self, cls: type[ConnectionBasedPerformTemplate]):
+        super().__post_collected__(cls)
         if self.post_applying:
             if (protocol := processing_protocol.get(None)) is None:
                 raise RuntimeError("expected processing protocol")

@@ -7,8 +7,8 @@ from avilla.core.selector import Selector
 from avilla.standard.core.activity import ActivityTrigger
 
 if TYPE_CHECKING:
-    from ...account import ConsoleAccount  # noqa
-    from ...protocol import ConsoleProtocol  # noqa
+    from avilla.console.account import ConsoleAccount  # noqa
+    from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
 class ConsoleActivityActionPerform(

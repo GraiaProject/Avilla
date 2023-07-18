@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar
 
-from ..._vendor.dataclasses import dataclass
+from avilla.core._vendor.dataclasses import dataclass
 
 if TYPE_CHECKING:
     from avilla.core.resource import Resource
-
-    from ..collector.base import BaseCollector
+    from avilla.core.ryanvk.collector.base import BaseCollector
 
 
 T = TypeVar("T")

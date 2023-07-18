@@ -1,17 +1,17 @@
-from ..builtins.capability import CoreCapability as CoreCapability
-from ._runtime import processing_protocol as processing_protocol
-from .capability import Capability as Capability
-from .collector.base import BaseCollector as BaseCollector
-from .collector.context import (
+from avilla.core.builtins.capability import CoreCapability as CoreCapability
+from avilla.core.ryanvk._runtime import processing_protocol as processing_protocol
+from avilla.core.ryanvk.capability import Capability as Capability
+from avilla.core.ryanvk.collector.base import BaseCollector as BaseCollector
+from avilla.core.ryanvk.collector.context import (
     ContextBasedPerformTemplate as ContextBasedPerformTemplate,
 )
-from .collector.context import ContextCollector as ContextCollector
-from .descriptor.base import Fn as Fn
-from .descriptor.fetch import Fetch as Fetch
-from .descriptor.metadata import TargetMetadataUnitedFn as TargetMetadataUnitedFn
-from .descriptor.pull import PullFn as PullFn
-from .descriptor.query import QueryRecord as QueryRecord
-from .descriptor.query import QuerySchema as QuerySchema
-from .descriptor.target import TargetFn as TargetFn
-from .isolate import Isolate as Isolate
-from .protocol import SupportsCollect as SupportsCollect
+from avilla.core.ryanvk.collector.context import ContextCollector as ContextCollector
+from avilla.core.ryanvk.descriptor.base import Fn as Fn
+from avilla.core.ryanvk.descriptor.fetch import Fetch as Fetch
+from avilla.core.ryanvk.descriptor.metadata import TargetMetadataUnitedFn as TargetMetadataUnitedFn
+from avilla.core.ryanvk.descriptor.pull import PullFn as PullFn
+from avilla.core.ryanvk.descriptor.query import QueryRecord as QueryRecord
+from avilla.core.ryanvk.descriptor.query import QuerySchema as QuerySchema
+from avilla.core.ryanvk.descriptor.target import TargetFn as TargetFn
+from avilla.core.ryanvk.isolate import Isolate as Isolate
+from avilla.core.ryanvk.protocol import SupportsCollect as SupportsCollect

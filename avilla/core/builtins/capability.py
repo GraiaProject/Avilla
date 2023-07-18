@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..ryanvk.capability import Capability
-from ..ryanvk.descriptor.pull import PullFn
-from ..ryanvk.descriptor.query import QuerySchema
-from ..ryanvk.descriptor.target import TargetFn
+from avilla.core.ryanvk.capability import Capability
+from avilla.core.ryanvk.descriptor.pull import PullFn
+from avilla.core.ryanvk.descriptor.query import QuerySchema
+from avilla.core.ryanvk.descriptor.target import TargetFn
 
 if TYPE_CHECKING:
-    from ..context import Context
-    from ..selector import Selector
+    from avilla.core.context import Context
+    from avilla.core.selector import Selector
 
 
 class CoreCapability(Capability):
