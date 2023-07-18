@@ -6,6 +6,7 @@ from yarl import URL
 from avilla.core.elements import Text
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
+from avilla.standard.qq.elements import Face
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
 
@@ -52,9 +53,16 @@ protocol.avilla = avilla
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
     print(cx.endpoint, cx.client)
-    await cx.scene.send_message(str(event.message.content.include(Text)), reply=event.message)
+    print(event.message.content)
     print(
-        await cx.scene.send_message("Hello! Avilla", reply=event.message)
+        await cx.scene.send_message(
+            [
+                Notice(event.message.sender),
+                Text("Hello, Avilla!"),
+                Face(4)
+            ],
+            reply=event.message
+        )
     )
 
 

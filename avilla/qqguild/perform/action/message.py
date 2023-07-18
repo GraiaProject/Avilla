@@ -8,6 +8,8 @@ from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageRevoke, MessageSend
 from graia.amnesia.message import MessageChain
 
+from ...message import pro_serialize, form_data
+
 if TYPE_CHECKING:
     from ...account import QQGuildAccount  # noqa
     from ...protocol import QQGuildProtocol  # noqa
@@ -24,14 +26,15 @@ class QQGuildMessageActionPerform((m := AccountCollector["QQGuildProtocol", "QQG
         *,
         reply: Selector | None = None,
     ) -> Selector:
+        serialize_msg = await Staff.focus(self.account).serialize_message(message)
+        _data = pro_serialize(serialize_msg)
+        if reply:
+            _data["msg_id"] = reply.pattern["message"]
+        method, data = form_data(_data)
         result = await self.account.connection.call(
-            "post",
+            method,
             f"channels/{target.pattern['channel']}/messages",
-            {
-                # TODO: serialize message
-                "content": str(message),
-                "msg_id": reply.pattern["message"] if reply else None,
-            }
+            data
         )
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['channel']}: {message}")

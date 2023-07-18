@@ -162,7 +162,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 raise TypeError("multipart requires params")
             for k, v in params.items():
                 if isinstance(v, dict):
-                    data.add_field(k, **v)
+                    data.add_field(k, v['value'], **(v.pop("value")))
                 else:
                     data.add_field(k, v)
 

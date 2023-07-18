@@ -1,25 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TypedDict
 
 from avilla.core.elements import Element
-
-
-class EmbedThumbnail(TypedDict):
-    url: str
-
-
-class EmbedField(TypedDict):
-    name: str
 
 
 @dataclass
 class Embed(Element):
     title: str | None = None
     prompt: str | None = None
-    thumbnail: EmbedThumbnail | None = None
-    fields: list[EmbedField] | None = None
+    thumbnail: str | None = None
+    fields: list[str] | None = None
 
     def __str__(self):
         return "[$Embed]"
@@ -27,21 +18,11 @@ class Embed(Element):
     def __repr__(self):
         return f"[$Embed:title={self.title};prompt={self.prompt};thumbnail={self.thumbnail};fields={self.fields}]"
 
-
-class ArkObjKv(TypedDict):
-    key: str
-    value: str
-
-
-class ArkObj(TypedDict):
-    obj_kv: list[ArkObjKv]
-
-
 @dataclass
 class ArkKv:
     key: str
     value: str | None = None
-    obj: list[ArkObj] | None = None
+    obj: list[dict] | None = None
 
 
 @dataclass
