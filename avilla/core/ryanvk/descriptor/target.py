@@ -118,35 +118,30 @@ class TargetFn(
         )
 
         for collection in lookups:
-            # get branch
             branch = None
             for k, v in target.pattern.items():
-                if k not in collection:
+                if (branches := collection.get(k)) is None:
                     break
-                branches = collection[k]
-                if v in branches:
+
+                if v in branches:  # hit literal
                     header = v
                 else:
-                    header = None
-                    for header, branch in branches.items():
-                        if not callable(header):
-                            continue
-                        if header(v):
+                    for header, branch in branches.items():  # hit predicate
+                        if callable(header) and header(v):
                             break
-                    else:
+                    else:  # hit wildcard
                         if None not in branches:
                             break
                         header = None
 
                 branch = branches[header]
                 collection = branch.levels
-                if header is not None:
-                    if branch.metadata.override and None in branches:
-                        collection = {**(branches[None].levels), **collection}
-            if branch is None:
-                continue
 
-            yield branch
+                if header is not None and branch.metadata.override and None in branches:
+                    collection = branches[None].levels | collection
+
+            if branch is not None:
+                yield branch
 
     def get_artifact_signature(
         self: TargetFn[P, R],
