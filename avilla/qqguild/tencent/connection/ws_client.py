@@ -14,6 +14,8 @@ from yarl import URL
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
+from avilla.qqguild.tencent.account import QQGuildAccount
+from avilla.qqguild.tencent.const import PLATFORM
 from avilla.standard.core.account import (
     AccountAvailable,
     AccountRegistered,
@@ -23,14 +25,12 @@ from avilla.standard.core.account import (
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
-from tencent.account import QQGuildAccount
-from tencent.const import PLATFORM
 
 from .base import CallMethod, QQGuildNetworking
 from .util import Opcode, Payload, validate_response
 
 if TYPE_CHECKING:
-    from tencent.protocol import QQGuildProtocol
+    from avilla.qqguild.tencent.protocol import QQGuildProtocol
 
 
 @dataclass

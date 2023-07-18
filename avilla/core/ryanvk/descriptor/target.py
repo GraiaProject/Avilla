@@ -66,7 +66,6 @@ class TargetConcatenateOutbound(Protocol[P, R]):
 
 
 class TargetFn(
-    # Generic[P, R],
     Fn[TargetConcatenateOutbound[P, R]],
 ):
     def __init__(self, template: Callable[Concatenate[Any, P], R]) -> None:

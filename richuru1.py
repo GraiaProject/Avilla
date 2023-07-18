@@ -62,10 +62,11 @@ class LoguruRichHandler(RichHandler):
     """
 
     def render_message(self, record: LogRecord, message: str) -> "ConsoleRenderable":
-        import executing, sys
-        import inspect, devtools
         import ast
-        from typing import cast
+        import sys
+
+        import devtools
+        import executing
 
         n = devtools.debug(executing.Source.executing(sys._getframe(7)).node)
         if isinstance(n, ast.Call):
@@ -76,9 +77,9 @@ class LoguruRichHandler(RichHandler):
         time_format = time_format or self._log_render.time_format
         log_time = datetime.fromtimestamp(record.created)
         if callable(time_format):
-            log_time_display = time_format(log_time)
+            time_format(log_time)
         else:
-            log_time_display = Text(log_time.strftime(time_format))
+            Text(log_time.strftime(time_format))
         #if not (log_time_display == self._log_render._last_time and self._log_render.omit_repeated_times):
         #    self.console.print(log_time_display, style="log.time")
         #    self._log_render._last_time = log_time_display

@@ -11,7 +11,7 @@ from .util import Opcode, Payload
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
-    from tencent.protocol import QQGuildProtocol
+    from avilla.qqguild.tencent.protocol import QQGuildProtocol
 
 
 T = TypeVar("T", bound="SupportsStaff")
