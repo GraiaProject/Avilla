@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 from typing import TYPE_CHECKING, Any
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
-from avilla.core.selector import Selector
 from avilla.standard.qq.elements import Face
 
 from ...element import Ark, Embed, Reference
@@ -49,10 +49,7 @@ class QQGuildMessageSerializePerform((m := AccountCollector["QQGuildProtocol", "
 
     @QQGuildMessageSerialize.collect(m, Reference)
     async def reference(self, element: Reference) -> dict:
-        res: dict[str, Any] = {"type": "message_reference", "message_id": element.message_id}
-        if element.ignore_get_message_error != None:
-            res["ignore_get_message_error"] = element.ignore_get_message_error
-        return res
+        return {"type": "message_reference", **asdict(element)}
 
     @QQGuildMessageSerialize.collect(m, Embed)
     async def embed(self, element: Embed) -> dict:
@@ -74,7 +71,7 @@ class QQGuildMessageSerializePerform((m := AccountCollector["QQGuildProtocol", "
                 (
                     {
                         "key": kv.key,
-                        "obj": ([{"obj_kv": [{"key": k, "value": v} for k, v in obj_kv.items()]}] for obj_kv in kv.obj),
+                        "obj": [{"obj_kv": [{"key": k, "value": v} for k, v in obj_kv.items()]} for obj_kv in kv.obj],
                     }
                     if kv.obj
                     else {"key": kv.key, "value": kv.value}

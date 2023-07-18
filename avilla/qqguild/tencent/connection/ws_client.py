@@ -251,7 +251,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             await self.send(asdict(payload), shard)
         except Exception as e:
             logger.error(f"Error while sending {payload.opcode.name.title()} event: {e}")
-            return
+            return False
 
         if not self.session_id:
             # https://bot.q.qq.com/wiki/develop/api/gateway/reference.html#_2-%E9%89%B4%E6%9D%83%E8%BF%9E%E6%8E%A5
@@ -369,7 +369,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                         asyncio.create_task(self.connection_daemon(manager, self.session, ws_url, (i, shards)))
                     )
                     await asyncio.sleep(gateway_info.get("session_start_limit", {}).get("max_concurrency", 1))
-            await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
+            await any_completed(*tasks)
 
         async with self.stage("cleanup"):
             await self.session.close()

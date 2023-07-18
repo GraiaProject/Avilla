@@ -7,13 +7,13 @@ PLATFORM = Platform(
         humanized_name="QQ Guild",
     ),
     Abstract(
-        "qqguild",
+        "qqguild-official",
         [{"name": "Tencent"}],
         humanized_name="QQ Guild",
     ),
-    Land(
-        "qqguild",
+    Abstract(
+        "qqguild/tencent",
         [{"name": "GraiaProject"}],
-        humanized_name="QQ Guild Protocol for Avilla",
+        humanized_name="QQ Guild Protocol for Avilla, use offical API",
     ),
 )

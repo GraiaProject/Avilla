@@ -40,11 +40,14 @@ class QQGuildMessageDeserializePerform((m := ApplicationCollector())._):
     @QQGuildMessageDeserialize.collect(m, "mention")
     async def mention(self, raw_element: dict) -> Notice:
         if user_id := raw_element.get("user_id"):
-            return Notice(self.context.scene.member(user_id))
-        else:
+            if self.context:
+                return Notice(self.context.scene.member(user_id))
+            return Notice(Selector().land("qqguild").member(user_id))
+        if self.context:
             return Notice(
                 Selector().land("qqguild").guild(self.context.scene["guild"]).channel(raw_element["channel_id"])
             )
+        return Notice(Selector().land("qqguild").channel(raw_element["channel_id"]))
 
     @QQGuildMessageDeserialize.collect(m, "mention_everyone")
     async def mention_everyone(self, raw_element: dict) -> NoticeAll:
@@ -57,7 +60,7 @@ class QQGuildMessageDeserializePerform((m := ApplicationCollector())._):
     @QQGuildMessageDeserialize.collect(m, "embed")
     async def embed(self, raw_element: dict) -> Embed:
         return Embed(
-            raw_element.get("title"),
+            raw_element["title"],
             raw_element.get("prompt"),
             raw_element.get("thumbnail", {})["url"],
             [i["name"] for i in raw_element.get("fields", [])],
