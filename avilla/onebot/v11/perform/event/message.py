@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from loguru import logger
 
@@ -13,9 +12,6 @@ from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.onebot.v11.element import Reply
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.message.event import MessageSent
-
-if TYPE_CHECKING:
-    ...
 
 
 class OneBot11EventMessagePerform((m := ConnectionCollector())._):
@@ -206,7 +202,12 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
         return MessageSent(
             context,
             Message(
-                str(raw_event["message_id"]), group, member, message, datetime.fromtimestamp(raw_event["time"]), reply
+                str(raw_event["message_id"]),
+                group,
+                member,
+                message,
+                datetime.fromtimestamp(raw_event["time"]),
+                reply,
             ),
             account,
         )
