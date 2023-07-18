@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
+from avilla.qqguild.tencent.element import Ark, Embed, Reference
+from avilla.qqguild.tencent.resource import QQGuildImageResource
 from avilla.standard.qq.elements import Face
-
-from ...element import Ark, Embed, Reference
-from ...resource import QQGuildImageResource
 
 if TYPE_CHECKING:
     from ...account import QQGuildAccount  # noqa

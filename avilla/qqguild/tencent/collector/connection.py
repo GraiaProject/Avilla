@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
-    from ..connection.ws_client import QQGuildWsClientNetworking
-    from ..protocol import QQGuildProtocol
+    from tencent.connection.ws_client import QQGuildWsClientNetworking
+    from tencent.protocol import QQGuildProtocol
 
 
 T = TypeVar("T")

@@ -23,14 +23,14 @@ from avilla.standard.core.account import (
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
+from tencent.account import QQGuildAccount
+from tencent.const import PLATFORM
 
-from ..account import QQGuildAccount
-from ..const import PLATFORM
 from .base import CallMethod, QQGuildNetworking
-from .util import Payload, validate_response, Opcode
+from .util import Opcode, Payload, validate_response
 
 if TYPE_CHECKING:
-    from ..protocol import QQGuildProtocol
+    from tencent.protocol import QQGuildProtocol
 
 
 @dataclass
@@ -257,7 +257,9 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             # https://bot.q.qq.com/wiki/develop/api/gateway/reference.html#_2-%E9%89%B4%E6%9D%83%E8%BF%9E%E6%8E%A5
             # 鉴权成功之后，后台会下发一个 Ready Event
             payload = Payload(**await connection.receive_json())
-            assert payload.opcode == Opcode.DISPATCH and payload.type == "READY" and payload.data, f"Received unexpected payload: {payload}"
+            assert (
+                payload.opcode == Opcode.DISPATCH and payload.type == "READY" and payload.data
+            ), f"Received unexpected payload: {payload}"
             self.sequence = payload.sequence
             self.session_id = payload.data["session_id"]
             account_route = Selector().land("qqguild").account(self.config.id)

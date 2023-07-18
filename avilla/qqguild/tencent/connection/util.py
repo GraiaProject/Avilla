@@ -1,17 +1,11 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Literal, TypedDict, overload
+from typing import Any, Literal, overload
 
 from avilla.core.exceptions import InvalidOperation, UnknownError
-
-from ..exception import (
-    ActionFailed,
-    AuditException,
-    RateLimitException,
-    UnauthorizedException,
-)
+from tencent.exception import ActionFailed, AuditException, RateLimitException, UnauthorizedException
 
 
 @overload

@@ -7,10 +7,9 @@ from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
+from avilla.qqguild.tencent.element import Ark, ArkKv, Embed, Reference
+from avilla.qqguild.tencent.resource import QQGuildImageResource
 from avilla.standard.qq.elements import Face
-
-from ...element import Ark, ArkKv, Embed, Reference
-from ...resource import QQGuildImageResource
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

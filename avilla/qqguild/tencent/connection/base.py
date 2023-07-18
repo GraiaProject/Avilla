@@ -7,12 +7,11 @@ from loguru import logger
 
 from avilla.core.ryanvk.staff import Staff
 
-from .util import Payload, Opcode
+from .util import Opcode, Payload
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
-
-    from ..protocol import QQGuildProtocol
+    from tencent.protocol import QQGuildProtocol
 
 
 T = TypeVar("T", bound="SupportsStaff")
