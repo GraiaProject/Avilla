@@ -112,21 +112,21 @@ class TargetFn(
     def _iter_branches(
         self, artifact_collections: list[MutableMapping[Any, Any]], target: Selector
     ) -> Generator[LookupBranch[HnPerform[HQ, P, R]], Any, None]:
-        lookups: Iterable[PerformCollection[Any, P, R]] = itertools.chain(
-            *[i["lookup_collections"] for i in artifact_collections if "lookup_collections" in i]
+        lookups: Iterable[PerformCollection[Any, P, R]] = itertools.chain.from_iterable(
+            i["lookup_collections"] for i in artifact_collections if "lookup_collections" in i
         )
 
         for collection in lookups:
             branch = None
-            for k, v in target.pattern.items():
-                if (branches := collection.get(k)) is None:
+            for key, value in target.pattern.items():
+                if (branches := collection.get(key)) is None:
                     break
 
-                if v in branches:  # hit literal
-                    header = v
+                if value in branches:  # hit literal
+                    header = value
                 else:
                     for header, branch in branches.items():  # hit predicate
-                        if callable(header) and header(v):
+                        if callable(header) and header(value):
                             break
                     else:  # hit wildcard
                         if None not in branches:
