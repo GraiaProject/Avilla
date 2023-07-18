@@ -42,7 +42,9 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
         # FIXME: 这里是个 Selector 但这里没办法获取到...hmmm
         if raw_element["data"]["qq"] == "all":
             return NoticeAll()
-        return Notice((self.context.scene if self.context else Selector()).member(raw_element["data"]["qq"]))
+        if self.context:
+            return Notice(self.context.scene.member(raw_element["data"]["qq"]))
+        return Notice(Selector().land("qq").member(raw_element["data"]["qq"]))
 
     @OneBot11MessageDeserialize.collect(m, "reply")
     async def reply(self, raw_element: dict):

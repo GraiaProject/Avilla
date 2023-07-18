@@ -94,7 +94,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 raise TypeError("multipart requires params")
             for k, v in params.items():
                 if isinstance(v, dict):
-                    data.add_field(k, **v)
+                    data.add_field(k, v["value"], filename=v.get("filename"), content_type=v.get("content_type"))
                 else:
                     data.add_field(k, v)
 

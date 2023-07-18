@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.access import OptionalAccess
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.elizabeth.resource import ElizabethFileResource, ElizabethImageResource, ElizabethVoiceResource
@@ -24,13 +24,11 @@ from avilla.standard.qq.elements import (
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
-    from avilla.elizabeth.account import ElizabethAccount  # noqa
-    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 ElizabethMessageDeserialize = MessageDeserialize[dict]
 
 
-class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
 
     context: OptionalAccess[Context] = OptionalAccess()
@@ -43,8 +41,9 @@ class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtoc
 
     @ElizabethMessageDeserialize.collect(m, "At")
     async def at(self, raw_element: dict) -> Notice:
-        # TODO: get context
-        return Notice((self.context.scene if self.context else Selector()).member(raw_element["target"]))
+        if self.context:
+            return Notice(self.context.scene.member(raw_element["target"]))
+        return Notice(Selector().land("qq").member(raw_element["target"]))
 
     @ElizabethMessageDeserialize.collect(m, "AtAll")
     async def at_all(self, raw_element: dict) -> NoticeAll:
@@ -94,7 +93,7 @@ class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtoc
     async def file(self, raw_element: dict) -> File:
         return File(
             ElizabethFileResource(
-                Selector().land(self.account.route["land"]).file(raw_element["id"]),
+                Selector().land("qq").file(raw_element["id"]),
                 raw_element["id"],
                 None,
                 raw_element["name"],
@@ -105,7 +104,7 @@ class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtoc
     @ElizabethMessageDeserialize.collect(m, "Image")
     async def image(self, raw_element: dict) -> Picture:
         resource = ElizabethImageResource(
-            Selector().land(self.account.route["land"]).picture(raw_element["imageId"]),
+            Selector().land("qq").picture(raw_element["imageId"]),
             raw_element["imageId"],
             raw_element["url"],
         )
@@ -114,7 +113,7 @@ class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtoc
     @ElizabethMessageDeserialize.collect(m, "FlashImage")
     async def flash_image(self, raw_element: dict) -> FlashImage:
         resource = ElizabethImageResource(
-            Selector().land(self.account.route["land"]).picture(raw_element["imageId"]),
+            Selector().land("qq").picture(raw_element["imageId"]),
             raw_element["id"],
             raw_element["url"],
         )
@@ -123,7 +122,7 @@ class ElizabethMessageDeserializePerform((m := AccountCollector["ElizabethProtoc
     @ElizabethMessageDeserialize.collect(m, "Voice")
     async def voice(self, raw_element: dict) -> Audio:
         resource = ElizabethVoiceResource(
-            Selector().land(self.account.route["land"]).voice(raw_element["voiceId"]),
+            Selector().land("qq").voice(raw_element["voiceId"]),
             raw_element["voiceId"],
             raw_element["url"],
             raw_element["length"],
