@@ -153,3 +153,25 @@ requires-python = ">=3.9"
 [tool.mina.packages."spec/qq".project.urls]
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
+
+[tool.mina.packages."qqguild/tencent"]
+includes = ["avilla/qqguild/tencent"]
+raw_dependencies = [
+  "avilla-core >= 1.0.0-alpha.5",
+]
+
+[tool.mina.packages."qqguild/tencent".project]
+name = "avilla-qqguild"
+version = "1.0.0-alpha.5"
+authors = [
+  {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
+]
+dependencies = []
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.mina.packages."qqguild/tencent".project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
