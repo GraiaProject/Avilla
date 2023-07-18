@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.account import BaseAccount
-from avilla.qqguild.connection.base import QQGuildNetworking
+from avilla.qqguild.tencent.connection.base import QQGuildNetworking
 
 if TYPE_CHECKING:
     from .protocol import QQGuildProtocol

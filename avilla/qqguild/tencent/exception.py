@@ -1,11 +1,9 @@
 from typing import Optional
 
-from avilla.core.exceptions import (
-    HttpRequestError,
-    InvalidAuthentication,
-    NetworkError as BaseNetworkError,
-    ActionFailed as BaseActionFailed,
-)
+from avilla.core.exceptions import ActionFailed as BaseActionFailed
+from avilla.core.exceptions import HttpRequestError, InvalidAuthentication
+from avilla.core.exceptions import NetworkError as BaseNetworkError
+
 
 class ActionFailed(HttpRequestError, BaseActionFailed):
     def __init__(self, status: int, body: Optional[dict] = None):
@@ -16,10 +14,7 @@ class ActionFailed(HttpRequestError, BaseActionFailed):
         super().__init__(status, self.message or "Unknown")
 
     def __repr__(self) -> str:
-        return (
-            f"<ActionFailed: {self.status}, code={self.code}, "
-            f"message={self.message}, data={self.data}>"
-        )
+        return f"<ActionFailed: {self.status}, code={self.code}, " f"message={self.message}, data={self.data}>"
 
 
 class UnauthorizedException(ActionFailed, InvalidAuthentication):

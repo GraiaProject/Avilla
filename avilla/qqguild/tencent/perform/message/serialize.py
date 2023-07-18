@@ -81,5 +81,6 @@ class QQGuildMessageSerializePerform((m := AccountCollector["QQGuildProtocol", "
                 )
                 for kv in element.kv
             ]
-            if element.kv else None,
+            if element.kv
+            else None,
         }

@@ -5,8 +5,8 @@ import json
 import sys
 from collections import ChainMap
 from contextlib import suppress
-from typing import TYPE_CHECKING, cast
 from dataclasses import asdict, dataclass, field
+from typing import TYPE_CHECKING, cast
 
 import aiohttp
 from loguru import logger
@@ -14,15 +14,20 @@ from yarl import URL
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
-from avilla.standard.core.account import AccountAvailable, AccountUnavailable, AccountRegistered, AccountUnregistered
+from avilla.standard.core.account import (
+    AccountAvailable,
+    AccountRegistered,
+    AccountUnavailable,
+    AccountUnregistered,
+)
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
 
 from ..account import QQGuildAccount
 from ..const import PLATFORM
-from .base import QQGuildNetworking, CallMethod
-from .util import validate_response, Payload
+from .base import CallMethod, QQGuildNetworking
+from .util import Payload, validate_response
 
 if TYPE_CHECKING:
     from ..protocol import QQGuildProtocol
@@ -58,7 +63,6 @@ class Intents:
         )
 
 
-
 @dataclass
 class QQGuildWsClientConfig:
     id: str
@@ -75,6 +79,7 @@ class QQGuildWsClientConfig:
 
     def get_authorization(self) -> str:
         return f"Bot {self.id}.{self.token}"
+
 
 class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], Launchable):
     id = "qqguild/connection/client"
@@ -146,6 +151,15 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 validate_response(result, resp.status)
                 return result
 
+        if method == "delete":
+            async with self.session.delete(
+                (self.config.get_api_base() / action).with_query(params),
+                headers={"Authorization": self.config.get_authorization()},
+            ) as resp:
+                result = await resp.json()
+                validate_response(result, resp.status)
+                return result
+
         if method in {"post", "update"}:
             async with self.session.post(
                 (self.config.get_api_base() / action),
@@ -162,7 +176,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 raise TypeError("multipart requires params")
             for k, v in params.items():
                 if isinstance(v, dict):
-                    data.add_field(k, v['value'], **(v.pop("value")))
+                    data.add_field(k, v["value"], **(v.pop("value")))
                 else:
                     data.add_field(k, v)
 
@@ -237,9 +251,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             await self.send(asdict(payload), shard)
         except Exception as e:
             logger.error(
-                "Error while sending" + (
-                    "Identify" if payload.op == 2 else "Resume"
-                ) + " event",
+                "Error while sending" + ("Identify" if payload.op == 2 else "Resume") + " event",
                 e,
             )
             return
@@ -248,7 +260,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             # https://bot.q.qq.com/wiki/develop/api/gateway/reference.html#_2-%E9%89%B4%E6%9D%83%E8%BF%9E%E6%8E%A5
             # 鉴权成功之后，后台会下发一个 Ready Event
             payload = Payload(**await connection.receive_json())
-            assert (payload.op == 0 and payload.t == "READY" and payload.d), f"Received unexpected payload: {payload}"
+            assert payload.op == 0 and payload.t == "READY" and payload.d, f"Received unexpected payload: {payload}"
             self.sequence = payload.s
             self.session_id = payload.d["session_id"]
             account_route = Selector().land("qqguild").account(self.config.id)
@@ -263,9 +275,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     PLATFORM,
                 )
             self.protocol.service.account_map[self.config.id] = self
-            self.protocol.avilla.broadcast.postEvent(
-                AccountRegistered(self.protocol.avilla, account)
-            )
+            self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
 
         return True
 
@@ -278,11 +288,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             await asyncio.sleep(heartbeat_interval / 1000)
 
     async def connection_daemon(
-        self,
-        manager: Launart,
-        session: aiohttp.ClientSession,
-        url: str,
-        shard: tuple[int, int]
+        self, manager: Launart, session: aiohttp.ClientSession, url: str, shard: tuple[int, int]
     ):
         while not manager.status.exiting:
             async with session.ws_connect(url, timeout=30) as conn:
@@ -298,10 +304,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     continue
                 account_route = Selector().land("qqguild").account(self.config.id)
                 self.protocol.avilla.broadcast.postEvent(
-                    AccountAvailable(
-                        self.protocol.avilla,
-                        self.protocol.avilla.accounts[account_route].account
-                    )
+                    AccountAvailable(self.protocol.avilla, self.protocol.avilla.accounts[account_route].account)
                 )
                 self.close_signal.clear()
                 close_task = asyncio.create_task(self.close_signal.wait())
@@ -322,8 +325,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                         del self.connections[shard]
                         await self.protocol.avilla.broadcast.postEvent(
                             AccountUnavailable(
-                                self.protocol.avilla,
-                                self.protocol.avilla.accounts[account_route].account
+                                self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
                             )
                         )
                         del self.protocol.service.account_map[self.config.id]
@@ -337,8 +339,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     with suppress(KeyError):
                         await self.protocol.avilla.broadcast.postEvent(
                             AccountUnregistered(
-                                self.protocol.avilla,
-                                self.protocol.avilla.accounts[account_route].account
+                                self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
                             )
                         )
                         del self.protocol.service.account_map[self.config.id]
@@ -361,24 +362,17 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         async with self.stage("blocking"):
             if self.config.shard:
                 tasks.append(
-                    asyncio.create_task(
-                        self.connection_daemon(manager, self.session, ws_url, self.config.shard)
-                    )
+                    asyncio.create_task(self.connection_daemon(manager, self.session, ws_url, self.config.shard))
                 )
             else:
                 shards = gateway_info.get("shards") or 1
                 print(shards)
                 for i in range(shards):
                     tasks.append(
-                        asyncio.create_task(
-                            self.connection_daemon(manager, self.session, ws_url, (i, shards))
-                        )
+                        asyncio.create_task(self.connection_daemon(manager, self.session, ws_url, (i, shards)))
                     )
-                    await asyncio.sleep(
-                        gateway_info.get("session_start_limit", {}).get("max_concurrency", 1)
-                    )
+                    await asyncio.sleep(gateway_info.get("session_start_limit", {}).get("max_concurrency", 1))
             await asyncio.wait(tasks, return_when=asyncio.FIRST_COMPLETED)
-
 
         async with self.stage("cleanup"):
             await self.session.close()

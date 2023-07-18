@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-from enum import Enum
-from typing import Any, Literal, overload, TypedDict
 from dataclasses import dataclass, field
-from avilla.core.exceptions import (
-    InvalidOperation,
-    UnknownError,
-)
+from enum import Enum
+from typing import Any, Literal, TypedDict, overload
+
+from avilla.core.exceptions import InvalidOperation, UnknownError
 
 from ..exception import (
     ActionFailed,
-    UnauthorizedException,
-    RateLimitException,
     AuditException,
+    RateLimitException,
+    UnauthorizedException,
 )
 
 
@@ -47,8 +45,6 @@ def validate_response(data: dict, code: int, raising: bool = True):
     return exc
 
 
-
-
 CallMethod = Literal["get", "post", "fetch", "update", "multipart"]
 
 
@@ -66,6 +62,7 @@ class UploadMethod(str, Enum):
 
     def __str__(self) -> str:
         return self.value
+
 
 class Opcode(int, Enum):
     DISPATCH = 0
@@ -97,11 +94,11 @@ class Payload:
         if not self.d:
             raise ValueError("Payload has no data")
         return self.d
-    
+
     @property
     def sequence(self) -> int | None:
         return self.s
-    
+
     @property
     def type(self) -> str | None:
         return self.t

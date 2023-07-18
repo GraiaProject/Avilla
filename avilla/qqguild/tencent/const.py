@@ -1,4 +1,4 @@
-from avilla.core.platform import Land, Platform, Abstract
+from avilla.core.platform import Abstract, Land, Platform
 
 PLATFORM = Platform(
     Land(

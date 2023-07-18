@@ -2,11 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk.collector.base import (
-    BaseCollector,
-    Access,
-    PerformTemplate,
-)
+from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from ..connection.ws_client import QQGuildWsClientNetworking

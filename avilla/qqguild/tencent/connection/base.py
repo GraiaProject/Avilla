@@ -7,7 +7,7 @@ from loguru import logger
 
 from avilla.core.ryanvk.staff import Staff
 
-from .util import validate_response, Payload
+from .util import Payload
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T", bound="SupportsStaff")
-CallMethod = Literal["get", "post", "fetch", "update", "multipart"]
+CallMethod = Literal["get", "post", "fetch", "update", "multipart", "put", "delete"]
 
 
 class QQGuildNetworking(Generic[T]):
@@ -53,6 +53,7 @@ class QQGuildNetworking(Generic[T]):
                 continue
             payload = Payload(**data)
             connection.sequence = payload.sequence  # type: ignore
+
             async def event_parse_task(data: Payload):
                 event_type = data.type
                 assert event_type is not None, "event type is None"

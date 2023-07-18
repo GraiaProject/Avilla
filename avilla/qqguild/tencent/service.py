@@ -3,10 +3,9 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Set
 
+from avilla.qqguild.tencent.connection.base import QQGuildNetworking
+from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientNetworking
 from launart import Launart, Launchable
-
-from .connection.base import QQGuildNetworking
-from .connection.ws_client import QQGuildWsClientNetworking
 
 if TYPE_CHECKING:
     from .protocol import QQGuildProtocol

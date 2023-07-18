@@ -7,10 +7,7 @@ from aiohttp import ClientSession
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.ryanvk.descriptor.fetch import Fetch
 
-from ..resource import (
-    QQGuildResource,
-    QQGuildImageResource
-)
+from ..resource import QQGuildImageResource, QQGuildResource
 
 if TYPE_CHECKING:
     from ..protocol import QQGuildProtocol  # noqa

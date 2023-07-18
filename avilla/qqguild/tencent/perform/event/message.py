@@ -6,17 +6,18 @@ from typing import TYPE_CHECKING
 from loguru import logger
 
 from avilla.core.context import Context
+from avilla.core.elements import Notice
 from avilla.core.message import Message
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
-from avilla.qqguild.collector.connection import ConnectionCollector
-from avilla.qqguild.element import Reference
-from avilla.qqguild.message import pre_deserialize
+from avilla.qqguild.tencent.collector.connection import ConnectionCollector
+from avilla.qqguild.tencent.element import Reference
+from avilla.qqguild.tencent.message import pre_deserialize
 from avilla.standard.core.message import MessageReceived
-from avilla.core.elements import Notice
 
 if TYPE_CHECKING:
     ...
+
 
 class QQGuildEventMessagePerform((m := ConnectionCollector())._):
     m.post_applying = True
@@ -36,9 +37,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = channel.message(i[0].message_id)
             message = message.exclude(Reference)
-        ats = [
-            Notice(channel.user(i['id'])) for i in raw_event["mentions"]
-        ]
+        ats = [Notice(channel.user(i["id"])) for i in raw_event["mentions"]]
         return MessageReceived(
             Context(
                 account.account,
@@ -56,7 +55,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             ),
         )
-    
+
     @EventParse.collect(m, "message_create")
     async def message(self, raw_event: dict):
         account_route = Selector().land("qqguild").account(self.connection.account_id)
@@ -92,7 +91,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
         )
 
     @EventParse.collect(m, "direct_message_create")
-    async def message(self, raw_event: dict):
+    async def direct_message(self, raw_event: dict):
         account_route = Selector().land("qqguild").account(self.connection.account_id)
         account = self.protocol.avilla.accounts.get(account_route)
         if account is None:

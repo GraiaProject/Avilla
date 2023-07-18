@@ -18,6 +18,7 @@ class Embed(Element):
     def __repr__(self):
         return f"[$Embed:title={self.title};prompt={self.prompt};thumbnail={self.thumbnail};fields={self.fields}]"
 
+
 @dataclass
 class ArkKv:
     key: str

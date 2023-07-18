@@ -1,5 +1,5 @@
-import re
 import json
+import re
 
 
 def escape(s: str) -> str:
@@ -8,7 +8,6 @@ def escape(s: str) -> str:
 
 def unescape(s: str) -> str:
     return s.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&")
-
 
 
 def handle_text(msg: str):
@@ -29,6 +28,7 @@ def handle_text(msg: str):
             yield {"type": "emoji", "id": embed.group("id")}
     if content := msg[text_begin:]:
         yield {"type": "text", "text": unescape(content)}
+
 
 def pre_deserialize(message: dict) -> list[dict]:
     res = []
@@ -82,20 +82,10 @@ def pro_serialize(message: list[dict]):
 def form_data(message: dict):
     if not (file_image := message.pop("file_image", None)):
         return "post", message
-    data_ = {
-        "file_image": {
-            "value": file_image, "content_type": None, "filename": "file_image"
-        }
-    }
+    data_ = {"file_image": {"value": file_image, "content_type": None, "filename": "file_image"}}
     for key, value in message.items():
         if isinstance(value, (list, dict)):
-            data_[key] = {
-                "value": json.dumps({key: value}).encode("utf-8"), 
-                "content_type": "application/json"
-            }
+            data_[key] = {"value": json.dumps({key: value}).encode("utf-8"), "content_type": "application/json"}
         else:
-            data_[key] = {
-                "value": str(value).encode("utf-8"),
-                "content_type": "text/plain"
-            }
+            data_[key] = {"value": str(value).encode("utf-8"), "content_type": "text/plain"}
     return "multipart", data_
