@@ -38,7 +38,7 @@ HnPerform = Callable[Concatenate[HQ, Selector, P], R]
 
 @dataclass
 class LookupBranchMetadata:
-    override: bool
+    ...
 
 
 @dataclass
@@ -83,7 +83,7 @@ class TargetFn(
         collection: PerformCollection[Any, P, R] = collector.artifacts["current_collection"]
 
         if TYPE_CHECKING:
-            branch: PerformBranch[Any, P, R] = LookupBranch(LookupBranchMetadata(True), {}, {})
+            branch: PerformBranch[Any, P, R] = LookupBranch(LookupBranchMetadata(), {}, {})
 
         for i in items:
             if i.name not in collection:
@@ -94,7 +94,7 @@ class TargetFn(
             if (i.literal or i.predicate) in branches:
                 branch = branches[i.literal or i.predicate]
             else:
-                branch = LookupBranch(LookupBranchMetadata(True), {}, {})
+                branch = LookupBranch(LookupBranchMetadata(), {}, {})
                 branches[i.literal or i.predicate] = branch
             collection = branch.levels
 
@@ -137,7 +137,7 @@ class TargetFn(
                 branch = branches[header]
                 collection = branch.levels
 
-                if header is not None and branch.metadata.override and None in branches:
+                if header is not None and None in branches:
                     collection = branches[None].levels | collection
 
             if branch is not None:
