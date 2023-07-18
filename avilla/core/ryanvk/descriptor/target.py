@@ -131,7 +131,7 @@ class TargetFn(
                     for header, branch in branches.items():
                         if not callable(header):
                             continue
-                        if not header(v):
+                        if header(v):
                             break
                     else:
                         if None not in branches:
