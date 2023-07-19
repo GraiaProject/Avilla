@@ -9,15 +9,18 @@ from typing import (
     ChainMap,
     Protocol,
     TypeVar,
+    Union,
     overload,
 )
 
 from typing_extensions import Concatenate, ParamSpec
 
 from avilla.core._vendor.dataclasses import dataclass
-from avilla.core.ryanvk.descriptor.target import TargetFn
-from avilla.core.selector import Selectable
+from avilla.core.ryanvk.descriptor.target import TargetArtifactStore, TargetFn
+from avilla.core.selector import FollowsPredicater, Selectable
 from avilla.core.utilles import identity
+
+from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.metadata import Metadata, MetadataRoute
@@ -31,6 +34,7 @@ R = TypeVar("R", covariant=True)
 R1 = TypeVar("R1", covariant=True)
 R2 = TypeVar("R2", covariant=True)
 C = TypeVar("C", bound="Capability")
+HQ = TypeVar("HQ", bound="PerformTemplate", contravariant=True)
 
 
 class UnitedFnPerformBranch(Protocol[P, R1, R2]):
@@ -57,9 +61,34 @@ class UnitedFnImplement:
     metadata: type[Metadata] | MetadataRoute | None = None
 
 
-class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRoute | None", P], R]):
+class TargetMetadataUnitedFn(TargetFn[Concatenate[Union[type[Metadata], MetadataRoute], P], R]):
     def __init__(self, template: Callable[Concatenate[C, P], Awaitable[R]]) -> None:
         self.template = template
+
+    def get_collect_signature(
+        self,
+        collector: BaseCollector,
+        pattern: str,
+        route: type[Metadata] | MetadataRoute,
+        **kwargs: FollowsPredicater,
+    ):
+        return UnitedFnImplement(self.capability, self.name, route)
+
+    def collect(
+        self,
+        collector: BaseCollector,
+        pattern: str,
+        route: type[Metadata] | MetadataRoute,
+        **kwargs: FollowsPredicater,
+    ):
+        def receive(entity: Callable[Concatenate[HQ, Selector, type[Metadata] | MetadataRoute, P], R]):
+            branch = self.get_collect_layout(collector, pattern, **kwargs)
+            signature = self.get_collect_signature(collector, pattern, route, **kwargs)
+            artifact = TargetArtifactStore(collector, entity)
+            branch.artifacts[signature] = artifact
+            return entity
+
+        return receive
 
     def get_artifact_signature(
         self,
