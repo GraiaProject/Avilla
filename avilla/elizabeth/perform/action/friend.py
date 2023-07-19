@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @m.pull("lang.friend", Nick)
+    @m.pull("land.friend", Nick)
     async def get_contact_nick(self, target: Selector) -> Nick:
         result = await self.account.connection.call(
             "fetch",
@@ -23,10 +23,9 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
                 "target": int(target.pattern["friend"]),
             },
         )
-        assert result is not None
         return Nick(result["nickname"], result["nickname"], None)
 
-    @m.pull("lang.friend", Summary)
+    @m.pull("land.friend", Summary)
     async def get_contact_summary(self, target: Selector) -> Summary:
         result = await self.account.connection.call(
             "fetch",
@@ -35,5 +34,4 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
                 "target": int(target.pattern["friend"]),
             },
         )
-        assert result is not None
         return Summary(result["nickname"], "a friend contact assigned to this account")
