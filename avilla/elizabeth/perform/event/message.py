@@ -128,7 +128,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             member,
             group,
             group,
-            group.member(str(account_route["account"])),
+            group.member(account_route["account"]),
         )
         return MessageRevoked(
             context,

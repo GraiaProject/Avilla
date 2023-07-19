@@ -17,11 +17,7 @@ class ElizabethAnnouncementQueryPerform((m := AccountCollector["ElizabethProtoco
     @CoreCapability.query.collect(m, "announcement", "land.group")
     async def query_group_announcement(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         result = await self.account.connection.call(
-            "fetch", "anno_list", {
-                "target": int(previous["group"]),
-                "offset": 0,
-                "size": 10
-            }
+            "fetch", "anno_list", {"target": int(previous["group"]), "offset": 0, "size": 10}
         )
         result = cast(list, result)
         for i in result:

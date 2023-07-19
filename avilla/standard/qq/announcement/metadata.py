@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from avilla.core.selector import Selector
-from avilla.core.platform import Land
 from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.metadata import Metadata
+from avilla.core.platform import Land
+from avilla.core.selector import Selector
 
 
 @dataclass(slots=True)
@@ -21,5 +21,6 @@ class Announcement(Metadata):
     @property
     def land(self):
         return Land(self.scene["land"])
+
     def to_selector(self) -> Selector:
         return self.scene.announcement(self.id)

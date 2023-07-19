@@ -8,7 +8,6 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.request import RequestCapability
 
-
 if TYPE_CHECKING:
     from ...account import ElizabethAccount  # noqa
     from ...protocol import ElizabethProtocol  # noqa
@@ -62,7 +61,6 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-
     @RequestCapability.accept.collect(m, "land.group.contact.request")
     async def accept_contact_request(self, target: Selector) -> None:
         await self.account.connection.call(
@@ -106,7 +104,9 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
 
     @RequestCapability.reject.collect(m, "land.group.member.request")
-    async def reject_bot_invited_request(self, target: Selector, reason: str | None = None, forever: bool = False) -> None:
+    async def reject_bot_invited_request(
+        self, target: Selector, reason: str | None = None, forever: bool = False
+    ) -> None:
         await self.account.connection.call(
             "update",
             "resp_botInvitedJoinGroupRequestEvent",

@@ -24,7 +24,7 @@ class ElizabethEventActivityPerform((m := ConnectionCollector())._):
                 sender,
                 target,
                 group,
-                group.member(str(account_route["account"])),
+                group.member(account_route["account"]),
             )
             nudge = sender.activity("nudge")
             activity = sender.nudge("nudge").action(raw_event["action"]).suffix(raw_event["suffix"])

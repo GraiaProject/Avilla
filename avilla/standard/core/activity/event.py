@@ -20,6 +20,7 @@ class ActivityEvent(AvillaEvent):
         async def catch(interface: DispatcherInterface[ActivityEvent]):
             ...
 
+
 @dataclass
 class ActivityAvailable(ActivityEvent):
     pass

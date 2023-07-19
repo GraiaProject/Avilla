@@ -11,12 +11,12 @@ if TYPE_CHECKING:
     from ...protocol import ElizabethProtocol  # noqa
 
 
-class ElizabethAccountQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+class ElizabethBotQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
     @CoreCapability.query.collect(m, "land.account")
     async def query_account(self, predicate: Callable[[str, str], bool] | str, previous: None):
-        result = await self.account.connection.call("fetch", "botList", {})
+        result = await self.account.connection.call("fetch", "botList", {}, session=False)
         result = cast(list, result)
         for i in result:
             account_id = str(i)

@@ -3,10 +3,10 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL, PRIVILEGE_TRANS
-from avilla.elizabeth.exception import permission_error_message
 from avilla.standard.core.privilege import (
     MuteCapability,
     MuteInfo,
@@ -52,7 +52,9 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 target.into(f"~.member({self.account.route['account']})")
             )
             raise PermissionError(
-                permission_error_message(f"mute@{target.path}", self_permission.name, ["group_owner", "group_admin"])
+                permission_error_message(
+                    f"set_name@{target.path}", self_permission.name, ["group_owner", "group_admin"]
+                )
             )
         await self.account.connection.call(
             "update",
@@ -98,7 +100,6 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
-        assert result is not None
         return MuteInfo(
             result.get("mutetimeRemaining") is not None,
             timedelta(seconds=result.get("mutetimeRemaining", 0)),
@@ -165,7 +166,6 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
-        assert self_info is not None and target_info is not None
         return Privilege(
             PRIVILEGE_LEVEL[self_info["permission"]] > 0,
             PRIVILEGE_LEVEL[self_info["permission"]] > PRIVILEGE_LEVEL[target_info["permission"]],

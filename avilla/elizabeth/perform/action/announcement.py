@@ -9,7 +9,11 @@ from typing import TYPE_CHECKING
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.qq.announcement import AnnouncementPublish, AnnouncementDelete, Announcement
+from avilla.standard.qq.announcement import (
+    Announcement,
+    AnnouncementDelete,
+    AnnouncementPublish,
+)
 
 if TYPE_CHECKING:
     from ...account import ElizabethAccount  # noqa
@@ -23,11 +27,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
     async def get_announcement(self, target: Selector) -> Announcement:
         group = Selector().land(self.account.route["land"]).group(target.pattern["group"])
         for data in await self.account.connection.call(
-            "fetch", "anno_list", {
-                "target": int(target.pattern["group"]),
-                "offset": 0,
-                "size": 100
-            }
+            "fetch", "anno_list", {"target": int(target.pattern["group"]), "offset": 0, "size": 100}
         ):
             if str(data["fid"]) == target.pattern["announcement"]:
                 return Announcement(
@@ -72,11 +72,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
                 data["imageBase64"] = base64.b64encode(image.read()).decode("ascii")
             elif isinstance(image, str):
                 data["imageUrl"] = image
-        result = await self.account.connection.call(
-            "update",
-            "anno_publish",
-            data
-        )
+        result = await self.account.connection.call("update", "anno_publish", data)
         return target.announcement(str(result["fid"]))
 
     @AnnouncementDelete.delete.collect(m, "land.group.announcement")
@@ -84,8 +80,5 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         await self.account.connection.call(
             "update",
             "anno_delete",
-            {
-                "target": int(target.pattern["group"]),
-                "fid": int(target.pattern["announcement"])
-            }
+            {"target": int(target.pattern["group"]), "fid": int(target.pattern["announcement"])},
         )

@@ -42,7 +42,7 @@ class ElizabethProtocol(BaseProtocol):
         # from .perform.event.lifespan import ElizabethEventLifespanPerform
 
         ## :: Query
-        from .perform.query.account import ElizabethAccountQueryPerform
+        from .perform.query.bot import ElizabethBotQueryPerform
         from .perform.query.announcement import ElizabethAnnouncementQueryPerform
         from .perform.query.friend import ElizabethFriendQueryPerform
         from .perform.query.group import ElizabethGroupQueryPerform

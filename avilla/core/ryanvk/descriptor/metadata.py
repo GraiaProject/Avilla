@@ -54,7 +54,7 @@ class UnitedFnPerformBranch(Protocol[P, R1, R2]):
         ...
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class UnitedFnImplement:
     capability: type[Capability]
     name: str

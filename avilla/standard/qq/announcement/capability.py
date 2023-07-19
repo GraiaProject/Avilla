@@ -6,6 +6,7 @@ import os
 from avilla.core.ryanvk import Capability, TargetFn
 from avilla.core.selector import Selector
 
+
 class AnnouncementPublish(Capability):
     @TargetFn
     async def publish(
@@ -24,6 +25,7 @@ class AnnouncementPublish(Capability):
         target 是公告发布到的群
         """
         ...
+
 
 class AnnouncementDelete(Capability):
     @TargetFn

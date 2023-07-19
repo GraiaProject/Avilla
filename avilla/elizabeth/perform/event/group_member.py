@@ -23,18 +23,20 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         land = Selector().land("qq")
         group = land.group(str(raw_event["member"]["group"]["id"]))
         member = group.member(str(raw_event["member"]["id"]))
+        operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
         context = Context(
             account,
-            group,
+            operator or group.member(account_route["account"]),
             member,
             group,
-            group.member(str(account_route["account"])),
+            group.member(account_route["account"]),
         )
         return MetadataModified(
             context,
             member,
             Nick,
             {Nick.inh(lambda x: x.nickname): ModifyDetail("update", raw_event["current"], raw_event["origin"])},
+            operator=operator or group.member(account_route["account"]),
             scene=group,
         )
 
@@ -45,18 +47,24 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         land = Selector().land("qq")
         group = land.group(str(raw_event["member"]["group"]["id"]))
         member = group.member(str(raw_event["member"]["id"]))
+        members: list[dict] = await self.account.connection.call(
+            "fetch", "memberList", {"target": raw_event["group"]["id"]}
+        )
+        operator_id = next((d["id"] for d in members if d["permission"] == "OWNER"), None)
+        operator = group.member(str(operator_id)) if operator_id else group
         context = Context(
             account,
-            group,
+            operator,
             member,
             group,
-            group.member(str(account_route["account"])),
+            group.member(account_route["account"]),
         )
         return MetadataModified(
             context,
             member,
             Nick,
             {Nick.inh(lambda x: x.badge): ModifyDetail("update", raw_event["current"], raw_event["origin"])},
+            operator=operator,
             scene=group,
         )
 
@@ -67,12 +75,17 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         land = Selector().land("qq")
         group = land.group(str(raw_event["member"]["group"]["id"]))
         member = group.member(str(raw_event["member"]["id"]))
+        members: list[dict] = await self.account.connection.call(
+            "fetch", "memberList", {"target": raw_event["group"]["id"]}
+        )
+        operator_id = next((d["id"] for d in members if d["permission"] == "OWNER"), None)
+        operator = group.member(str(operator_id)) if operator_id else group
         context = Context(
             account,
-            group,
+            operator,
             member,
             group,
-            group.member(str(account_route["account"])),
+            group.member(account_route["account"]),
         )
         available = PRIVILEGE_LEVEL[raw_event["current"]] > PRIVILEGE_LEVEL[raw_event["origin"]]
         return MetadataModified(
@@ -83,6 +96,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                 Privilege.inh(lambda x: x.available): ModifyDetail("update", available, not available),
                 Privilege.inh(lambda x: x.effective): ModifyDetail("update", available, not available),
             },
+            operator=operator,
             scene=group,
         )
 
@@ -96,10 +110,10 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         member = group.member(str(raw_event["member"]["id"]))
         context = Context(
             account,
-            operator or group.member(str(account_route["account"])),  # bot self if no operator
+            operator or group.member(account_route["account"]),  # bot self if no operator
             member,
             group,
-            group.member(str(account_route["account"])),
+            group.member(account_route["account"]),
         )
         return MetadataModified(
             context,
@@ -111,7 +125,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                     "set", timedelta(seconds=raw_event["durationSeconds"]), None
                 ),
             },
-            operator=operator or group.member(str(account_route["account"])),
+            operator=operator or group.member(account_route["account"]),
             scene=group,
         )
 
@@ -125,10 +139,10 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         member = group.member(str(raw_event["member"]["id"]))
         context = Context(
             account,
-            operator or group.member(str(account_route["account"])),  # bot self if no operator
+            operator or group.member(account_route["account"]),  # bot self if no operator
             member,
             group,
-            group.member(str(account_route["account"])),
+            group.member(account_route["account"]),
         )
         return MetadataModified(
             context,
@@ -138,7 +152,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                 MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
                 MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", None, timedelta(0)),
             },
-            operator=operator or group.member(str(account_route["account"])),
+            operator=operator or group.member(account_route["account"]),
             scene=group,
         )
 
@@ -154,7 +168,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             group,
             member,
             group,
-            group.member(str(account_route["account"])),
+            group.member(account_route["account"]),
         )
         return MetadataModified(
             context,

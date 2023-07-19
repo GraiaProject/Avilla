@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core.builtins.capability import CoreCapability
+from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
@@ -60,6 +61,16 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
 
     @SummaryCapability.set_name.collect(m, "land.group", Summary)
     async def group_set_name(self, target: Selector, t: ..., name: str):
+        privilege_info = await self.get_group_member_privilege(target)
+        if not privilege_info.available:
+            self_permission = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(
+                    f"set_name@{target.path}", self_permission.name, ["group_owner", "group_admin"]
+                )
+            )
         await self.account.connection.call(
             "update",
             "groupConfig",

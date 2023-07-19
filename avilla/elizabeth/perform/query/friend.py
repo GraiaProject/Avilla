@@ -22,4 +22,3 @@ class ElizabethFriendQueryPerform((m := AccountCollector["ElizabethProtocol", "E
             friend_id = str(i["id"])
             if callable(predicate) and predicate("friend", friend_id) or friend_id == predicate:
                 yield Selector().land(self.account.route["land"]).friend(friend_id)
-
