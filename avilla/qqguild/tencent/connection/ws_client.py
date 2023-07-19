@@ -101,10 +101,6 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         self.session_id = None
         self.sequence = None
 
-    @property
-    def account_id(self):
-        return self.config.id
-
     async def message_receive(self, shard: tuple[int, int]):
         if (connection := self.connections.get(shard)) is None:
             raise RuntimeError("connection is not established")
@@ -262,7 +258,8 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             ), f"Received unexpected payload: {payload}"
             self.sequence = payload.sequence
             self.session_id = payload.data["session_id"]
-            account_route = Selector().land("qqguild").account(self.config.id)
+            self.account_id = payload.data["user"]["id"]
+            account_route = Selector().land("qqguild").account(self.account_id)
             if account_route in self.protocol.avilla.accounts:
                 account = cast(QQGuildAccount, self.protocol.avilla.accounts[account_route].account)
             else:
@@ -273,7 +270,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     self.protocol,
                     PLATFORM,
                 )
-            self.protocol.service.account_map[self.config.id] = self
+            self.protocol.service.account_map[self.account_id] = self
             self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
 
         return True
@@ -301,7 +298,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 if not result:
                     await asyncio.sleep(3)
                     continue
-                account_route = Selector().land("qqguild").account(self.config.id)
+                account_route = Selector().land("qqguild").account(self.account_id)
                 self.protocol.avilla.broadcast.postEvent(
                     AccountAvailable(self.protocol.avilla, self.protocol.avilla.accounts[account_route].account)
                 )
@@ -327,7 +324,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                                 self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
                             )
                         )
-                        del self.protocol.service.account_map[self.config.id]
+                        del self.protocol.service.account_map[self.account_id]
                         del self.protocol.avilla.accounts[account_route]
                     return
                 if close_task in done:
@@ -341,7 +338,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                                 self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
                             )
                         )
-                        del self.protocol.service.account_map[self.config.id]
+                        del self.protocol.service.account_map[self.account_id]
                         del self.protocol.avilla.accounts[account_route]
                     await asyncio.sleep(5)
                     logger.info(f"{self} Reconnecting...")
