@@ -30,10 +30,10 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             mediums=[group.member(str(raw_event["invitorId"]))] if raw_event.get("invitorId") else None,
         )
         request = Request(
-            f"{raw_event['eventId']}",
+            f"{raw_event['eventId']}/{raw_event['fromId']}",
             LAND,
-            group,
-            group,
+            group, #
+            sender,
             account,
             datetime.now(),
             request_type="member_join",
@@ -45,11 +45,11 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        sender = land.contact(str(raw_event["fromId"]))
+        sender = land.group(str(raw_event["groupId"])).contact(str(raw_event["fromId"]))
         context = Context(
             account,
             sender,
-            sender,
+            account_route,
             sender,
             account_route,
             mediums=[land.group(str(raw_event["groupId"]))] if raw_event.get("groupId") else None,
@@ -71,19 +71,19 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         group = land.group(str(raw_event["groupId"]))
-        sender = land.friend(str(raw_event["fromId"]))
+        member = group.member(str(raw_event["fromId"]))
         context = Context(
             account,
-            sender,
-            group,
-            sender,
+            member,
+            account_route,
+            member,
             account_route,
         )
         request = Request(
             f"{raw_event['eventId']}",
             LAND,
-            sender,
-            sender,
+            member,
+            member,
             account,
             datetime.now(),
             request_type="bot_invited_join_group",

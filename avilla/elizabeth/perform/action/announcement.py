@@ -31,7 +31,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         ):
             if str(data["fid"]) == target.pattern["announcement"]:
                 return Announcement(
-                    target,
+                    data["fid"],
                     group,
                     group.member(data["senderId"]),
                     content=data["content"],

@@ -28,6 +28,7 @@ class ElizabethProtocol(BaseProtocol):
         from .perform.action.group import ElizabethGroupActionPerform
         from .perform.action.group_member import ElizabethGroupMemberActionPerform
         from .perform.action.message import ElizabethMessageActionPerform
+        from .perform.action.request import ElizabethRequestActionPerform
 
         ## :: Event
         from .perform.event.activity import ElizabethEventActivityPerform
