@@ -34,6 +34,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
                     target,
                     group,
                     group.member(data["senderId"]),
+                    content=data["content"],
                     all_confirmed=data["allConfirmed"],
                     confirmed_members=data["confirmedMembersCount"],
                     time=datetime.fromtimestamp(data["publicationTime"]),

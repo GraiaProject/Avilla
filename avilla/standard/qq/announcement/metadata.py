@@ -13,6 +13,7 @@ class Announcement(Metadata):
     id: str
     scene: Selector
     sender: Selector
+    content: str
     all_confirmed: bool
     confirmed_members: int
     time: datetime
