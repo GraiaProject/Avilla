@@ -6,7 +6,11 @@ from aiohttp import ClientSession
 
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.ryanvk.descriptor.fetch import Fetch
-from avilla.elizabeth.resource import ElizabethImageResource, ElizabethResource, ElizabethVoiceResource
+from avilla.elizabeth.resource import (
+    ElizabethImageResource,
+    ElizabethResource,
+    ElizabethVoiceResource,
+)
 
 if TYPE_CHECKING:
     from avilla.elizabeth.protocol import ElizabethProtocol  # noqa

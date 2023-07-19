@@ -21,6 +21,7 @@ class ElizabethProtocol(BaseProtocol):
         from .perform.message.serialize import ElizabethMessageSerializePerform
 
         ## :: Action
+        from .perform.action.activity import ElizabethActivityActionPerform
         from .perform.action.contact import ElizabethContactActionPerform
         from .perform.action.friend import ElizabethFriendActionPerform
         from .perform.action.group import ElizabethGroupActionPerform
@@ -28,7 +29,11 @@ class ElizabethProtocol(BaseProtocol):
         from .perform.action.message import ElizabethMessageActionPerform
 
         ## :: Event
+        from .perform.event.activity import ElizabethEventActivityPerform
+        from .perform.event.friend import ElizabethEventFriendPerform
         from .perform.event.message import ElizabethEventMessagePerform
+        from .perform.event.relationship import ElizabethEventRelationshipPerform
+        from .perform.event.request import ElizabethEventRequestPerform
 
         # from .perform.event.lifespan import ElizabethEventLifespanPerform
 

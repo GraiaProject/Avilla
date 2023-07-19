@@ -1,0 +1,91 @@
+from __future__ import annotations
+
+from datetime import datetime
+
+from avilla.core.context import Context
+from avilla.core.request import Request
+from avilla.core.ryanvk.descriptor.event import EventParse
+from avilla.core.selector import Selector
+from avilla.elizabeth.collector.connection import ConnectionCollector
+from avilla.elizabeth.const import LAND
+from avilla.standard.core.request import RequestReceived
+
+
+class ElizabethEventRequestPerform((m := ConnectionCollector())._):
+    m.post_applying = True
+
+    @EventParse.collect(m, "MemberJoinRequestEvent")
+    async def member_join_request(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        group = land.group(str(raw_event["groupId"]))
+        sender = land.contact(str(raw_event["fromId"]))
+        context = Context(
+            account,
+            sender,
+            group,
+            group,
+            account_route,
+            mediums=[group.member(str(raw_event["invitorId"]))] if raw_event.get("invitorId") else None,
+        )
+        request = Request(
+            f"{raw_event['eventId']}",
+            LAND,
+            group,
+            group,
+            account,
+            datetime.now(),
+            request_type="member_join",
+        )
+        return RequestReceived(context, request)
+
+    @EventParse.collect(m, "NewFriendRequestEvent")
+    async def new_friend_request(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        sender = land.contact(str(raw_event["fromId"]))
+        context = Context(
+            account,
+            sender,
+            sender,
+            sender,
+            account_route,
+            mediums=[land.group(str(raw_event["groupId"]))] if raw_event.get("groupId") else None,
+        )
+        request = Request(
+            f"{raw_event['eventId']}",
+            LAND,
+            sender,
+            sender,
+            account,
+            datetime.now(),
+            request_type="new_friend",
+        )
+        return RequestReceived(context, request)
+
+    @EventParse.collect(m, "BotInvitedJoinGroupRequestEvent")
+    async def bot_invited_join_group_request(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        group = land.group(str(raw_event["groupId"]))
+        sender = land.friend(str(raw_event["fromId"]))
+        context = Context(
+            account,
+            sender,
+            group,
+            sender,
+            account_route,
+        )
+        request = Request(
+            f"{raw_event['eventId']}",
+            LAND,
+            sender,
+            sender,
+            account,
+            datetime.now(),
+            request_type="bot_invited_join_group",
+        )
+        return RequestReceived(context, request)

@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Summary, SummaryCapability
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
+from avilla.standard.core.profile import Summary, SummaryCapability
 from avilla.standard.core.scene import SceneCapability
 
 if TYPE_CHECKING:
@@ -47,7 +47,6 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
                 "target": int(target.pattern["group"]),
             },
         )
-
 
     @SceneCapability.leave.collect(m, "land.group")
     async def group_leave(self, target: Selector):

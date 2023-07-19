@@ -102,7 +102,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 result = await resp.json()
                 validate_response(result)
                 return result
-            
+
         raise ValueError(f"Unknown method {method}")
 
     async def wait_for_available(self):

@@ -20,15 +20,17 @@ class ActivityEvent(AvillaEvent):
         async def catch(interface: DispatcherInterface[ActivityEvent]):
             ...
 
-
+@dataclass
 class ActivityAvailable(ActivityEvent):
     pass
 
 
+@dataclass
 class ActivityUnavailable(ActivityEvent):
     pass
 
 
+@dataclass
 class ActivityTrigged(ActivityEvent):
     trigger: Selector  # who trigged the activity
     scene: Selector

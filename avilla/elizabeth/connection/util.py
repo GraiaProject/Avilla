@@ -11,7 +11,12 @@ from avilla.core.exceptions import (
     UnknownError,
     UnknownTarget,
 )
-from avilla.elizabeth.exception import AccountNotFound, InvalidSession, InvalidVerifyKey, UnVerifiedSession
+from avilla.elizabeth.exception import (
+    AccountNotFound,
+    InvalidSession,
+    InvalidVerifyKey,
+    UnVerifiedSession,
+)
 
 code_exceptions_mapping: dict[int, type[Exception]] = {
     1: InvalidVerifyKey,
