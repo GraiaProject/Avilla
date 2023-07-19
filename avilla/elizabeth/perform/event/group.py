@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from typing import cast
 
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
@@ -22,9 +23,10 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         group = land.group(str(raw_event["group"]["id"]))
-        members: list[dict] = await self.account.connection.call(
+        members = await self.connection.call(
             "fetch", "memberList", {"target": raw_event["group"]["id"]}
         )
+        members = cast("list[dict]", members)
         operator_id = next((d["id"] for d in members if d["permission"] == "OWNER"), None)
         operator = group.member(str(operator_id)) if operator_id else group
         context = Context(

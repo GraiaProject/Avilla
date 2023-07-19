@@ -27,7 +27,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
     async def get_announcement(self, target: Selector) -> Announcement:
         group = Selector().land(self.account.route["land"]).group(target.pattern["group"])
         for data in await self.account.connection.call(
-            "fetch", "anno_list", {"target": int(target.pattern["group"]), "offset": 0, "size": 100}
+            "fetch", "anno_list", {"id": int(target.pattern["group"]), "offset": 0, "size": 100}
         ):
             if str(data["fid"]) == target.pattern["announcement"]:
                 return Announcement(
@@ -80,5 +80,5 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         await self.account.connection.call(
             "update",
             "anno_delete",
-            {"target": int(target.pattern["group"]), "fid": int(target.pattern["announcement"])},
+            {"id": int(target.pattern["group"]), "fid": int(target.pattern["announcement"])},
         )

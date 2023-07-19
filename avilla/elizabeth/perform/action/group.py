@@ -61,10 +61,11 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
 
     @SummaryCapability.set_name.collect(m, "land.group", Summary)
     async def group_set_name(self, target: Selector, t: ..., name: str):
-        privilege_info = await self.get_group_member_privilege(target)
+        privilege_info = await self.account.staff.pull_metadata(target, Privilege)
         if not privilege_info.available:
-            self_permission = await self.get_group_member_privilege_summary(
-                target.into(f"~.member({self.account.route['account']})")
+            self_permission = await self.account.staff.pull_metadata(
+                target.into(f"~.member({self.account.route['account']})"),
+                Privilege >> Summary
             )
             raise PermissionError(
                 permission_error_message(

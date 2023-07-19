@@ -29,7 +29,6 @@ class ElizabethService(Launchable):
         return int(account_id) in self.account_map
 
     def get_connection(self, account_id: str) -> ElizabethNetworking:
-        print("get", account_id)
         return self.account_map[int(account_id)]
 
     async def launch(self, manager: Launart):

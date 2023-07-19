@@ -9,7 +9,9 @@ from avilla.core.elements import Notice, Picture
 from avilla.standard.qq.elements import Face
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
+from avilla.core import Selector
 from avilla.standard.core.message import MessageRevoke
+from avilla.standard.qq.announcement import Announcement
 
 from avilla.elizabeth.connection.ws_client import ElizabethWsClientConfig, ElizabethWsClientNetworking
 from avilla.elizabeth.protocol import ElizabethProtocol
@@ -67,10 +69,12 @@ async def on_message_received(cx: Context, event: MessageReceived):
                 ],
             )
         )
-        await asyncio.sleep(1)
-        msg = await cx.scene.send_message("test")
-        await asyncio.sleep(3)
-        await cx[MessageRevoke.revoke](msg)
-
+        # await asyncio.sleep(1)
+        # msg = await cx.scene.send_message("test")
+        # await asyncio.sleep(3)
+        # await cx[MessageRevoke.revoke](msg)
+        print(await cx.account.connection.call("fetch", "friendList", {}))
+        async for i in cx.query("land.group(592387986).announcement"):
+            print(await cx.pull(Announcement, i))
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)
