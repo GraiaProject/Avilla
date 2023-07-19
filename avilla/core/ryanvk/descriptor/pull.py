@@ -1,15 +1,14 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, Generic, TypeVar, Union, cast, overload
 
-from typing_extensions import Concatenate, ParamSpec, TypeAlias, Unpack
+from typing_extensions import ParamSpec, TypeAlias, Unpack
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.metadata import Metadata, MetadataRoute
-from avilla.core.selector import FollowsPredicater, Selectable, Selector
-
 from avilla.core.ryanvk.collector.base import BaseCollector
 from avilla.core.ryanvk.descriptor.target import TargetFn
+from avilla.core.selector import FollowsPredicater, Selectable, Selector
 
 from .target import LookupBranch, TargetArtifactStore, TargetFn
 
@@ -84,8 +83,8 @@ class PullFn(
     def get_outbound_callable(self, instance: Any, entity: Callable[[Any, Selector], Awaitable[M]]):
         def wrapper(target: Selector):
             return entity(instance, target)
-        return wrapper
 
+        return wrapper
 
     def __repr__(self) -> str:
         return "<Fn#pull>"

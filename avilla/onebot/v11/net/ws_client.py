@@ -3,13 +3,13 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import ChainMap
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
 from loguru import logger
 from yarl import URL
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered

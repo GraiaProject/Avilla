@@ -1,11 +1,10 @@
 from contextlib import contextmanager
+from dataclasses import dataclass, field
 from typing import Any
-
-from avilla.core._vendor.dataclasses import dataclass, field
 
 from ._runtime import processing_isolate
 from .collector.base import PerformTemplate
-from .descriptor.target import LookupCollection, PerformCollection
+from .descriptor.target import LookupCollection
 
 
 def _merge_lookup_collection(self: LookupCollection, other: LookupCollection):

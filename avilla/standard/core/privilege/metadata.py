@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.metadata import Metadata
 
 

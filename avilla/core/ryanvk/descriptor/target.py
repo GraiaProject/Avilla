@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import inspect
 import itertools
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -16,7 +17,6 @@ from typing import (
 
 from typing_extensions import Concatenate, ParamSpec, TypeAlias, TypeVar
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import FollowsPredicater, Selectable, Selector, _parse_follows
 from avilla.core.utilles import identity
 

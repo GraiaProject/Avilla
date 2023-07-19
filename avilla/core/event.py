@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from abc import ABCMeta
 from contextlib import suppress
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Unpack
 
-from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.metadata import FieldReference, Metadata, MetadataRoute
 from avilla.core.selector import Selector
 from graia.broadcast.entities.dispatcher import BaseDispatcher
