@@ -31,6 +31,8 @@ class ElizabethProtocol(BaseProtocol):
         ## :: Event
         from .perform.event.activity import ElizabethEventActivityPerform
         from .perform.event.friend import ElizabethEventFriendPerform
+        from .perform.event.group import ElizabethEventGroupPerform
+        from .perform.event.group_member import ElizabethEventGroupMemberPerform
         from .perform.event.message import ElizabethEventMessagePerform
         from .perform.event.relationship import ElizabethEventRelationshipPerform
         from .perform.event.request import ElizabethEventRequestPerform
