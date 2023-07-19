@@ -61,8 +61,8 @@ class UnitedFnImplement:
     metadata: type[Metadata] | MetadataRoute | None = None
 
 
-class TargetMetadataUnitedFn(TargetFn[Concatenate[Union[type[Metadata], MetadataRoute], P], R]):
-    def __init__(self, template: Callable[Concatenate[C, P], Awaitable[R]]) -> None:
+class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRoute", P], R]):
+    def __init__(self, template: Callable[Concatenate[C, P], R]) -> None:
         self.template = template
 
     def get_collect_signature(
