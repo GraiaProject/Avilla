@@ -74,7 +74,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
 
         await self.connection.send_json(payload)
 
-    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict | None:
+    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
         action = action.replace("_", "/")
         if method in {"get", "fetch"}:
             async with self.session.get((self.config.base_url / action).with_query(params or {})) as resp:
@@ -102,6 +102,8 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 result = await resp.json()
                 validate_response(result)
                 return result
+            
+        raise ValueError(f"Unknown method {method}")
 
     async def wait_for_available(self):
         await self.status.wait_for_available()

@@ -735,7 +735,7 @@ summary = "a uniform status implementation for graia project"
 
 [[package]]
 name = "textual"
-version = "0.29.0"
+version = "0.30.0"
 requires_python = ">=3.7,<4.0"
 summary = "Modern Text User Interface framework"
 dependencies = [
@@ -777,12 +777,13 @@ summary = "Micro subset of unicode data files for linkify-it-py projects."
 
 [[package]]
 name = "uvicorn"
-version = "0.23.0"
+version = "0.23.1"
 requires_python = ">=3.8"
 summary = "The lightning-fast ASGI server."
 dependencies = [
     "click>=7.0",
     "h11>=0.8",
+    "typing-extensions>=4.0; python_version < \"3.11\"",
 ]
 
 [[package]]
@@ -1782,9 +1783,9 @@ content_hash = "sha256:c207f0330b1e9117243b2326e61eb785911e4bed24084164849197a3d
     {url = "https://files.pythonhosted.org/packages/17/94/90af52fbb882f7d5a86f75b8f151fabb3540a01b592d5c12646b55712266/statv-0.3.2-py3-none-any.whl", hash = "sha256:32e430b21ab6a62695c67ab6cae3dba6e01e9c3fdbc9344e3236ad7a1f51d0c7"},
     {url = "https://files.pythonhosted.org/packages/eb/34/55f3fde006d8d6c1f8d2422856360a9fde6a3f81dcd79f9203cfeac5b9dc/statv-0.3.2.tar.gz", hash = "sha256:fb4df2a37bf7a792e36a6e657c74cbdef9e2cdb8de3a0762b28b35c9e13f0fdd"},
 ]
-"textual 0.29.0" = [
-    {url = "https://files.pythonhosted.org/packages/28/1c/4d301eff65948a444ea83261dea5497995373b557c6ef4d6eb159e185c01/textual-0.29.0-py3-none-any.whl", hash = "sha256:949fd8f16a412404ba785605dda1e2fab8166656e4d29d4177ec63cd73ba83d4"},
-    {url = "https://files.pythonhosted.org/packages/7d/38/ab2589259690dbbf035845db73d621219cb6fada117ef75cdd7d3973bf26/textual-0.29.0.tar.gz", hash = "sha256:7eb87b6d007dc9bd08e00e893b860ecb7a11ca815c8866db39fe17ec547e2fcf"},
+"textual 0.30.0" = [
+    {url = "https://files.pythonhosted.org/packages/a9/a3/c39654e9fa0b8d3e34c7b7fe0dd97bfeae14dbf930cf960afdfdb2c4a1bb/textual-0.30.0-py3-none-any.whl", hash = "sha256:e87d587e4569236f3809d41955ed9556287dbedaca64724e1d6ad5adbb69c9c5"},
+    {url = "https://files.pythonhosted.org/packages/f8/7e/0917924079aeab58c18ac8d34c0f318daa3a956f1d6caff81b334f411076/textual-0.30.0.tar.gz", hash = "sha256:bf7045a7e9b7dc3ac589c38ce86ac31aecf0e76e8c8ce09aee474316bc2e2c03"},
 ]
 "tomli 2.0.1" = [
     {url = "https://files.pythonhosted.org/packages/97/75/10a9ebee3fd790d20926a90a2547f0bf78f371b2f13aa822c759680ca7b9/tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
@@ -1815,9 +1816,9 @@ content_hash = "sha256:c207f0330b1e9117243b2326e61eb785911e4bed24084164849197a3d
     {url = "https://files.pythonhosted.org/packages/75/db/241444fe6df6970a4c18d227193cad77fab7cec55d98e296099147de017f/uc-micro-py-1.0.2.tar.gz", hash = "sha256:30ae2ac9c49f39ac6dce743bd187fcd2b574b16ca095fa74cd9396795c954c54"},
     {url = "https://files.pythonhosted.org/packages/d1/1c/5aeb94aa980da111e4fd0c0fbe5ad95ed5bf9bd957f8e2a6178b85ff4da8/uc_micro_py-1.0.2-py3-none-any.whl", hash = "sha256:8c9110c309db9d9e87302e2f4ad2c3152770930d88ab385cd544e7a7e75f3de0"},
 ]
-"uvicorn 0.23.0" = [
-    {url = "https://files.pythonhosted.org/packages/41/77/d8962af1c0169cf0883fbd3542c2252f3393f71c527479e5058c66869754/uvicorn-0.23.0.tar.gz", hash = "sha256:d38ab90c0e2c6fe3a054cddeb962cfd5d0e0e6608eaaff4a01d5c36a67f3168c"},
-    {url = "https://files.pythonhosted.org/packages/69/53/0230c9d254130fb16481ecb0c037b9ca7a6b25035d397b6f8126e6fbd1ad/uvicorn-0.23.0-py3-none-any.whl", hash = "sha256:479599b2c0bb1b9b394c6d43901a1eb0c1ec72c7d237b5bafea23c5b2d4cdf10"},
+"uvicorn 0.23.1" = [
+    {url = "https://files.pythonhosted.org/packages/46/b7/b97c7ad40f2433a4986c8786cb188f0bc42f3d0e6d826940c1dc3bd6c4f5/uvicorn-0.23.1.tar.gz", hash = "sha256:da9b0c8443b2d7ee9db00a345f1eee6db7317432c9d4400f5049cc8d358383be"},
+    {url = "https://files.pythonhosted.org/packages/5d/07/b9eac057f7efa56900640a233c1ed63db83568322c6bcbabe98f741d5289/uvicorn-0.23.1-py3-none-any.whl", hash = "sha256:1d55d46b83ee4ce82b4e82f621f2050adb3eb7b5481c13f9af1744951cae2f1f"},
 ]
 "virtualenv 20.23.0" = [
     {url = "https://files.pythonhosted.org/packages/d6/37/3ff25b2ad0d51cfd752dc68ee0ad4387f058a5ceba4d89b47ac478de3f59/virtualenv-20.23.0.tar.gz", hash = "sha256:a85caa554ced0c0afbd0d638e7e2d7b5f92d23478d05d17a76daeac8f279f924"},

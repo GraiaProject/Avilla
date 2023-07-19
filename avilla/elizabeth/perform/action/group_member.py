@@ -1,20 +1,26 @@
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Nick
+from avilla.standard.core.profile import Summary, SummaryCapability
+from avilla.standard.core.privilege import MuteCapability, MuteInfo, Privilege, PrivilegeCapability
+from avilla.standard.core.scene import SceneCapability
+from avilla.elizabeth.exception import permission_error_message
+from avilla.elizabeth.const import PRIVILEGE_TRANS, PRIVILEGE_LEVEL
 
 if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
+    from avilla.elizabeth.account import ElizabethAccount  # noqa
+    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 
 class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @m.pull("lang.group.member", Nick)
+    @m.pull("land.group.member", Nick)
     async def get_group_member_nick(self, target: Selector) -> Nick:
         result = await self.account.connection.call(
             "fetch",
@@ -24,5 +30,190 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
-        assert result is not None
         return Nick(result["memberName"], result["memberName"], result.get("specialTitle"))
+
+    @m.pull("land.group.member", MuteInfo)
+    async def get_group_member_mute_info(self, target: Selector) -> MuteInfo:
+        result = await self.account.connection.call(
+            "fetch",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+            },
+        )
+        assert result is not None
+        return MuteInfo(
+            result.get("mutetimeRemaining") is not None,
+            timedelta(seconds=result.get("mutetimeRemaining", 0)),
+            None,
+        )
+
+    @MuteCapability.mute.collect(m, "land.group.member")
+    async def group_member_mute(self, target: Selector, duration: timedelta):
+        privilege_info = await self.get_group_member_privilege(target)
+        if not privilege_info.effective:
+            self_permission = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(f"mute@{target.path}", self_permission.name, ["group_owner", "group_admin"])
+            )
+        time = max(0, min(int(duration.total_seconds()), 2592000))
+        if not time:
+            return
+        await self.account.connection.call(
+            "update",
+            "mute",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+                "time": time,
+            },
+        )
+
+    @MuteCapability.unmute.collect(m, "land.group.member")
+    async def group_member_unmute(self, target: Selector):
+        privilege_info = await self.get_group_member_privilege(target)
+        if not privilege_info.effective:
+            self_permission = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(f"unmute@{target.path}", self_permission.name, ["group_owner", "group_admin"])
+            )
+        await self.account.connection.call(
+            "update",
+            "unmute",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+            },
+        )
+
+    @m.pull("land.group.member", Privilege)
+    async def get_group_member_privilege(self, target: Selector) -> Privilege:
+        self_info = await self.account.connection.call(
+            "fetch",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(self.account.route["account"]),
+            },
+        )
+        target_info = await self.account.connection.call(
+            "fetch",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+            },
+        )
+        assert self_info is not None and target_info is not None
+        return Privilege(
+            PRIVILEGE_LEVEL[self_info["permission"]] > 0,
+            PRIVILEGE_LEVEL[self_info["permission"]] > PRIVILEGE_LEVEL[target_info["permission"]],
+        )
+
+    @m.pull("land.group.member", Privilege >> Summary)
+    async def get_group_member_privilege_summary(self, target: Selector) -> Summary:
+        target_info = await self.account.connection.call(
+            "fetch",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+            },
+        )
+        return Summary(
+            PRIVILEGE_TRANS[target_info["permission"]],
+            "the permission info of current account in the group"
+        ).infers(Privilege >> Summary)
+
+    @m.pull("land.group.member", Privilege >> Privilege)
+    async def get_group_member_privilege_privilege(self, target: Selector) -> Privilege:
+        self_info = await self.account.connection.call(
+            "fetch",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(self.account.route["account"]),
+            },
+        )
+        return Privilege(
+            PRIVILEGE_LEVEL[self_info["permission"]] == 2,
+            PRIVILEGE_LEVEL[self_info["permission"]] == 2,
+        ).infers(Privilege >> Privilege)
+    
+    @m.pull("land.group.member", Privilege >> Privilege >> Summary)
+    async def get_group_member_privilege_privilege_summary(self, target: Selector) -> Summary:
+        self_info = await self.account.connection.call(
+            "fetch",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(self.account.route["account"]),
+            },
+        )
+        return Summary(
+            PRIVILEGE_TRANS[self_info["permission"]],
+            "the permission of controling administration of the group, to be noticed that is only group owner could do this.",
+        ).infers(Privilege >> Privilege >> Summary)
+
+    @PrivilegeCapability.upgrade.collect(m, "land.group.member")
+    async def group_member_upgrade(self, target: Selector, dest: str | None = None):
+        if not (await self.get_group_member_privilege_privilege(target)).available:
+            self_privilege_info = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(f"upgrade_permission@{target.path}", self_privilege_info.name, ["group_owner"])
+            )
+        await self.account.connection.call(
+            "update",
+            "memberAdmin",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+                "assign": True,
+            },
+        )
+
+    @PrivilegeCapability.downgrade.collect(m, "land.group.member")
+    async def group_member_downgrade(self, target: Selector, dest: str | None = None):
+        if not (await self.get_group_member_privilege_privilege(target)).available:
+            self_privilege_info = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(f"downgrade_permission@{target.path}", self_privilege_info.name, ["group_owner"])
+            )
+        await self.account.connection.call(
+            "update",
+            "memberAdmin",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+                "assign": False,
+            },
+        )
+
+    @SceneCapability.remove_member.collect(m, "land.group.member")
+    async def group_member_remove(self, target: Selector, reason: str | None = None):
+        if not (await self.get_group_member_privilege(target)).effective:
+            self_privilege_info = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(f"remove_member@{target.path}", self_privilege_info.name, ["group_owner"])
+            )
+        await self.account.connection.call(
+            "update",
+            "kick",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+            },
+        )
+
+

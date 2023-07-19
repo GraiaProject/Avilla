@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageRevoke, MessageSend
+from avilla.standard.core.message import MessageRevoke, MessageSend, MessageReceived
+from avilla.core.message import Message
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -32,7 +34,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
-        if result is None:
+        if result["msg"] != "success" or result["messageId"] < 0:
             raise RuntimeError(f"Failed to send message to {target.pattern['group']}: {message}")
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["messageId"])
 
@@ -53,7 +55,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
-        if result is None:
+        if result["msg"] != "success" or result["messageId"] < 0:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {message}")
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["messageId"])
 
@@ -78,3 +80,37 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
                 "target": int(message.pattern["friend"]),
             },
         )
+
+    @CoreCapability.pull.collect(m, "land.group.message", Message)
+    async def get_group_message(self, message: Selector) -> Message:
+        result = await self.account.connection.call(
+            "fetch",
+            "messageFromId",
+            {
+                "messageId": int(message.pattern["message"]),
+                "target": int(message.pattern["group"]),
+            },
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
+        event = await self.account.staff.parse_event(result["data"]["type"], result["data"])
+        if TYPE_CHECKING:
+            assert isinstance(event, MessageReceived)
+        return event.message
+
+    @CoreCapability.pull.collect(m, "land.friend.message", Message)
+    async def get_friend_message(self, message: Selector) -> Message:
+        result = await self.account.connection.call(
+            "fetch",
+            "messageFromId",
+            {
+                "messageId": int(message.pattern["message"]),
+                "target": int(message.pattern["friend"]),
+            },
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
+        event = await self.account.staff.parse_event(result["data"]["type"], result["data"])
+        if TYPE_CHECKING:
+            assert isinstance(event, MessageReceived)
+        return event.message

@@ -92,7 +92,7 @@ class ElizabethNetworking(Generic[T]):
         params: dict | None = None,
         *,
         session: bool = True,
-    ) -> dict | None:
+    ) -> dict:
         if not self.alive:
             raise RuntimeError("connection is not established")
         if session and self.session_key is None:
@@ -123,5 +123,5 @@ class ElizabethNetworking(Generic[T]):
         finally:
             del self.response_waiters[echo]
 
-    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict | None:
+    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
         ...

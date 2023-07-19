@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class ElizabethContactActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @m.pull("lang.contact", Nick)
+    @m.pull("land.contact", Nick)
     async def get_contact_nick(self, target: Selector) -> Nick:
         result = await self.account.connection.call(
             "fetch",
@@ -23,10 +23,9 @@ class ElizabethContactActionPerform((m := AccountCollector["ElizabethProtocol", 
                 "target": int(target.pattern["contact"]),
             },
         )
-        assert result is not None
         return Nick(result["nickname"], result["nickname"], None)
 
-    @m.pull("lang.contact", Summary)
+    @m.pull("land.contact", Summary)
     async def get_contact_summary(self, target: Selector) -> Summary:
         result = await self.account.connection.call(
             "fetch",
@@ -35,5 +34,4 @@ class ElizabethContactActionPerform((m := AccountCollector["ElizabethProtocol", 
                 "target": int(target.pattern["contact"]),
             },
         )
-        assert result is not None
         return Summary(result["nickname"], "a strange contact on platform qq")
