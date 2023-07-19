@@ -73,7 +73,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             member,
             group,
             group,
-            account,
+            group.member(str(account["account"])),
         )
         message_result = await self._deserialize_message(context, raw_event["messageChain"])
         return MessageReceived(
@@ -128,7 +128,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             member,
             group,
             group,
-            account_route,
+            group.member(str(account_route["account"])),
         )
         return MessageRevoked(
             context,

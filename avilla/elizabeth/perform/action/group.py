@@ -58,8 +58,8 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @SummaryCapability.set_name.collect(m, "land.group")
-    async def group_set_name(self, target: Selector, name: str):
+    @SummaryCapability.set_name.collect(m, "land.group", Summary)
+    async def group_set_name(self, target: Selector, t: ..., name: str):
         await self.account.connection.call(
             "update",
             "groupConfig",

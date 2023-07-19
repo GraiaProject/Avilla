@@ -5,7 +5,7 @@ from avilla.core.event import MetadataModified, ModifyDetail
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
-from avilla.elizabeth.metadata import Status
+from avilla.elizabeth.metadata import InputtingStatus
 
 class ElizabethEventFriendPerform((m := ConnectionCollector())._):
     m.post_applying = True
@@ -26,7 +26,7 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
         return MetadataModified(
             context, 
             friend, 
-            Status, 
-            {Status.inh(lambda x: x.name): ModifyDetail("update", raw_event["inputting"])}, 
+            InputtingStatus, 
+            {InputtingStatus.inh(lambda x: x.value): ModifyDetail("update", raw_event["inputting"], not raw_event["inputting"])}, 
             scene=friend
         )

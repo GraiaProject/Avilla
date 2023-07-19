@@ -5,6 +5,5 @@ from avilla.core.metadata import Metadata
 
 
 @dataclass
-class Status(Metadata):
-    name: str
-    description: str | None
+class InputtingStatus(Metadata):
+    value: bool

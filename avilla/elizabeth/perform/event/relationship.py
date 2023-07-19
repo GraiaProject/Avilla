@@ -23,7 +23,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             member,
             group,
             group,
-            account_route,
+            group.member(str(account_route["account"])),
             mediums=[inviter] if inviter else None,
         )
         return RelationshipCreated(context)
@@ -38,11 +38,10 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
         context = Context(
             account,
+            operator or group.member(str(account_route["account"])),  # bot self if no operator
             member,
             group,
-            group,
-            account_route,
-            mediums=[operator] if operator else None,
+            group.member(str(account_route["account"])),
         )
         return RelationshipDestroyed(context, active=False)
 
@@ -56,9 +55,9 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             member,
+            member,
             group,
-            group,
-            account_route,
+            group.member(str(account_route["account"])),
         )
         return RelationshipDestroyed(context, active=True)
 
@@ -71,10 +70,10 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         inviter = group.member(str(raw_event["inviter"]["id"])) if raw_event.get("inviter") else None
         context = Context(
             account,
-            account_route,
+            group.member(str(account_route["account"])),
             group,
             group,
-            account_route,
+            group.member(str(account_route["account"])),
             mediums=[inviter] if inviter else None,
         )
         return RelationshipCreated(context)
@@ -87,10 +86,10 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         group = land.group(str(raw_event["group"]["id"]))
         context = Context(
             account,
-            account_route,
+            group.member(str(account_route["account"])),
+            group.member(str(account_route["account"])),
             group,
-            group,
-            account_route,
+            group.member(str(account_route["account"])),
         )
         return RelationshipDestroyed(context, active=True)
 
@@ -100,14 +99,13 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         group = land.group(str(raw_event["group"]["id"]))
-        operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
+        operator = group.member(str(raw_event["operator"]["id"]))
         context = Context(
             account,
-            account_route,
+            operator,
+            group.member(str(account_route["account"])),
             group,
-            group,
-            account_route,
-            mediums=[operator] if operator else None,
+            group.member(str(account_route["account"])),
         )
         return RelationshipDestroyed(context, active=False)
 
@@ -120,10 +118,9 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
         context = Context(
             account,
+            operator or group.member(str(account_route["account"])),  # bot self if no operator
             group,
             group,
-            group,
-            account_route,
-            mediums=[operator] if operator else None,
+            group.member(str(account_route["account"])),
         )
         return RelationshipDestroyed(context, active=False, indirect=True)
