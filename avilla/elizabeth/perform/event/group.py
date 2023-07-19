@@ -10,6 +10,7 @@ from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteInfo, Privilege
 from avilla.standard.core.profile import Summary
+from avilla.standard.qq.announcement import Announcement
 
 
 class ElizabethEventGroupPerform((m := ConnectionCollector())._):
@@ -140,7 +141,32 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    # TODO: GroupEntranceAnnouncementChangeEvent
+
+    @EventParse.collect(m, "GroupEntranceAnnouncementChangeEvent")
+    async def group_entrance_announcement_change(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        group = land.group(str(raw_event["group"]["id"]))
+        operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
+        context = Context(
+            account,
+            operator or group.member(str(account_route["account"])),  # bot self if no operator
+            group,
+            group,
+            group.member(str(account_route["account"])),
+        )
+        return MetadataModified(
+            context,
+            group,
+            Announcement,
+            {
+                Announcement.inh(lambda x: x.content): ModifyDetail("update", raw_event["current"], raw_event["origin"]),
+            },
+            operator=operator or group.member(str(account_route["account"])),  # bot self if no operator
+            scene=group,
+        )
+
     # TODO: GroupAllowAnonymousChatEvent
     # TODO: GroupAllowConfessTalkEvent
     # TODO: GroupAllowMemberInviteEvent
