@@ -8,9 +8,9 @@ from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
-from avilla.elizabeth.metadata import Honor
 from avilla.standard.core.privilege import MuteInfo, Privilege
 from avilla.standard.core.profile import Nick
+from avilla.standard.qq.honor import Honor
 
 
 class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):

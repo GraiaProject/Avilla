@@ -22,6 +22,7 @@ class ElizabethProtocol(BaseProtocol):
 
         ## :: Action
         from .perform.action.activity import ElizabethActivityActionPerform
+        from .perform.action.announcement import ElizabethAnnouncementActionPerform
         from .perform.action.contact import ElizabethContactActionPerform
         from .perform.action.friend import ElizabethFriendActionPerform
         from .perform.action.group import ElizabethGroupActionPerform
@@ -40,6 +41,9 @@ class ElizabethProtocol(BaseProtocol):
         # from .perform.event.lifespan import ElizabethEventLifespanPerform
 
         ## :: Query
+        from .perform.query.account import ElizabethAccountQueryPerform
+        from .perform.query.announcement import ElizabethAnnouncementQueryPerform
+        from .perform.query.friend import ElizabethFriendQueryPerform
         from .perform.query.group import ElizabethGroupQueryPerform
 
         ## :: Resource Fetch
