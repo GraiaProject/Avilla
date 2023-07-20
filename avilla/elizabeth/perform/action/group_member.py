@@ -197,7 +197,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(self.account.route["account"]),
             },
         )
-        target = await self.account.connection.call(
+        result = await self.account.connection.call(
             "fetch",
             "memberInfo",
             {
@@ -206,8 +206,8 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             },
         )
         return Privilege(
-            PRIVILEGE_LEVEL[target["permission"]] == 2,
-            PRIVILEGE_LEVEL[self_info["permission"]] > PRIVILEGE_LEVEL[target["permission"]],
+            PRIVILEGE_LEVEL[result["permission"]] == 2,
+            PRIVILEGE_LEVEL[self_info["permission"]] > PRIVILEGE_LEVEL[result["permission"]],
         ).infers(Privilege >> Privilege)
 
     @m.pull("land.group.member", Privilege >> Privilege >> Summary)
