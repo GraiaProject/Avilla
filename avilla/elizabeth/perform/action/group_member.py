@@ -272,7 +272,9 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 target.into(f"~.member({self.account.route['account']})")
             )
             raise PermissionError(
-                permission_error_message(f"remove_member@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"])
+                permission_error_message(
+                    f"remove_member@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"]
+                )
             )
         await self.account.connection.call(
             "update",

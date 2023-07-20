@@ -48,9 +48,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         land = Selector().land("qq")
         group = land.group(str(raw_event["member"]["group"]["id"]))
         member = group.member(str(raw_event["member"]["id"]))
-        members = await self.connection.call(
-            "fetch", "memberList", {"target": raw_event["group"]["id"]}
-        )
+        members = await self.connection.call("fetch", "memberList", {"target": raw_event["group"]["id"]})
         members = cast("list[dict]", members)
         operator_id = next((d["id"] for d in members if d["permission"] == "OWNER"), None)
         operator = group.member(str(operator_id)) if operator_id else group
@@ -77,9 +75,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         land = Selector().land("qq")
         group = land.group(str(raw_event["member"]["group"]["id"]))
         member = group.member(str(raw_event["member"]["id"]))
-        members = await self.connection.call(
-            "fetch", "memberList", {"target": raw_event["group"]["id"]}
-        )
+        members = await self.connection.call("fetch", "memberList", {"target": raw_event["group"]["id"]})
         members = cast("list[dict]", members)
         operator_id = next((d["id"] for d in members if d["permission"] == "OWNER"), None)
         operator = group.member(str(operator_id)) if operator_id else group

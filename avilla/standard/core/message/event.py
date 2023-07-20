@@ -7,11 +7,10 @@ from avilla.core.event import AvillaEvent
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
-    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-
     from avilla.core.account import BaseAccount
     from avilla.core.message import Message
     from avilla.core.selector import Selector
+    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 @dataclass

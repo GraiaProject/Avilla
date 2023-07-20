@@ -65,8 +65,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
         privilege_info = await self.account.staff.pull_metadata(target, Privilege)
         if not privilege_info.available:
             self_permission = await self.account.staff.pull_metadata(
-                target.into(f"~.member({self.account.route['account']})"),
-                Privilege >> Summary
+                target.into(f"~.member({self.account.route['account']})"), Privilege >> Summary
             )
             raise PermissionError(
                 permission_error_message(

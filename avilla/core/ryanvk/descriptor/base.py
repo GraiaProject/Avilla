@@ -64,4 +64,5 @@ class Fn(Generic[VnCallable]):
     def get_outbound_callable(self: Fn[Callable[P, R]], instance: Any, entity: Callable[Concatenate[Any, P], R]):
         def wrapper(*args: P.args, **kwargs: P.kwargs):
             return entity(instance, *args, **kwargs)
+
         return wrapper

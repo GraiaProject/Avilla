@@ -37,7 +37,7 @@ class ArtifactSchema(Protocol[P, R, P1]):
         **kwargs: P.kwargs,
     ) -> tuple[Any, Callable[Concatenate[Any, P], R]]:
         ...
-    
+
     def get_outbound_callable(self, instance: Any, entity: Callable[Concatenate[Any, P], R]) -> Callable[P1, R]:
         ...
 

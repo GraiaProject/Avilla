@@ -128,7 +128,7 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         route: type[M],
     ) -> M:
         ...
-    
+
     @overload
     async def pull_metadata(
         self,
