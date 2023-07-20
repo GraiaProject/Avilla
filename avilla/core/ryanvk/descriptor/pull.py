@@ -81,7 +81,7 @@ class PullFn(
         return PullImplement(route)
 
     def get_outbound_callable(self, instance: Any, entity: Callable[[Any, Selector], Awaitable[M]]):
-        def wrapper(target: Selector):
+        def wrapper(target: Selector, route: ...):
             return entity(instance, target)
 
         return wrapper

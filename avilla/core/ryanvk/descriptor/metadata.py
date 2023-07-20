@@ -92,6 +92,8 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
         collection: ChainMap[Any, Any],
         target: Selectable,
         route: type[Metadata] | MetadataRoute | None,
+        *args: P.args,
+        **kwargs: P.kwargs,
     ) -> Any:
         return UnitedFnImplement(self.capability, self.name, route)
 
