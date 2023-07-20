@@ -107,10 +107,10 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         group = land.group(str(raw_event["group"]["id"]))
-        operator = group.member(str(raw_event["operator"]["id"]))
+        operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
         context = Context(
             account,
-            operator,
+            operator or group.member(account_route["account"]),  # bot self if no operator
             group,
             group,
             group.member(account_route["account"]),
@@ -120,7 +120,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             group,
             Summary,
             {Summary.inh(lambda x: x.name): ModifyDetail("update", raw_event["current"], raw_event["origin"])},
-            operator=operator,
+            operator=operator or group.member(account_route["account"]),
             scene=group,
         )
 

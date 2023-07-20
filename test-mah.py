@@ -6,7 +6,9 @@ from yarl import URL
 from avilla.core.elements import Text
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
+from avilla.standard.core.profile import NickCapability, SummaryCapability, Summary
 from avilla.standard.qq.elements import Face
+from avilla.standard.core.privilege import Privilege
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
 from avilla.core import Selector
@@ -60,7 +62,7 @@ async def on_message_received(cx: Context, event: MessageReceived):
                 [
                     Notice(cx.client),
                     Text("\nHello, Avilla!"),
-                    Picture("C:\\Users\\TR\\Pictures\\QQ图片20210814001401.jpg")
+                    # Picture("C:\\Users\\TR\\Pictures\\QQ图片20210814001401.jpg")
                     # Embed(
                     #     "Test Embed",
                     #     "Hello, Avilla!",
@@ -73,8 +75,12 @@ async def on_message_received(cx: Context, event: MessageReceived):
         # msg = await cx.scene.send_message("test")
         # await asyncio.sleep(3)
         # await cx[MessageRevoke.revoke](msg)
-        print(await cx.account.connection.call("fetch", "friendList", {}))
-        async for i in cx.query("land.group(592387986).announcement"):
-            print(await cx.pull(Announcement, i))
-
+        # print(await cx.account.connection.call("fetch", "friendList", {}))
+        # async for i in cx.query("land.group(592387986).announcement"):
+        #     print(await cx.pull(Announcement, i))
+        # await cx[NickCapability.set_nickname](cx.scene.into("~.member(2582049752)"), "Abylance")
+        # await cx[SummaryCapability.set_name](cx.scene, Summary, "测试群")
+        print(await cx.pull(Privilege, cx.scene))
+        print(await cx.pull(Privilege, cx.client))
+        print(await cx.pull(Privilege, cx.self))
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

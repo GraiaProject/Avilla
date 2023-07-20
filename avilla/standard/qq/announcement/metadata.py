@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.metadata import Metadata
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
 
 
-@dataclass(slots=True)
+@dataclass
 class Announcement(Metadata):
     id: str
     scene: Selector

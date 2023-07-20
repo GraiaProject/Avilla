@@ -6,6 +6,7 @@ from avilla.core.builtins.capability import CoreCapability
 from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
+from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
 from avilla.standard.core.profile import Summary, SummaryCapability
 from avilla.standard.core.scene import SceneCapability
@@ -94,6 +95,6 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
         return Privilege(
-            self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
-            self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
+            PRIVILEGE_LEVEL[self_info["permission"]] > 0,
+            PRIVILEGE_LEVEL[self_info["permission"]] > 0,
         )
