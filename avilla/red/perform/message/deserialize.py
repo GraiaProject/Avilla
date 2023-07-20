@@ -8,7 +8,7 @@ from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.red.resource import RedImageResource
-from avilla.standard.qq.elements import Face
+from avilla.standard.qq.elements import Face, MarketFace, App
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -41,7 +41,20 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
         resource = RedImageResource(
             Selector().land("red").picture(md5 := raw_element["md5HexStr"]),
             md5,
+            raw_element["fileSize"],
             raw_element["fileName"],
             raw_element["sourcePath"],
+            raw_element["picWidth"],
+            raw_element["picHeight"],
         )
         return Picture(resource)
+
+    @RedMessageDeserialize.collect(m, "marketFace")
+    async def market_face(self, raw_element: dict) -> MarketFace:
+        return MarketFace(
+            f"{raw_element['emojiId']}/{raw_element['key']}/{raw_element['emojiPackageId']}",
+        )
+
+    @RedMessageDeserialize.collect(m, "ark")
+    async def ark(self, raw_element: dict) -> App:
+        return App(raw_element["bytesData"])

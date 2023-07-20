@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
+from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar, Literal, overload
 
 from loguru import logger
 
@@ -77,3 +77,30 @@ class RedNetworking(Generic[T]):
         #     raise ActionFailed(f"{result['retcode']}: {result}")
 
         return # result["data"]
+    @overload
+    async def call_http(
+        self,
+        method: Literal["get", "post", "multipart"],
+        action: str,
+        params: dict | None = None
+    ) -> dict:
+        ...
+
+    @overload
+    async def call_http(
+        self,
+        method: Literal["get", "post", "multipart"],
+        action: str,
+        params: dict | None = None,
+        raw: Literal[True] = True
+    ) -> bytes:
+        ...
+
+    async def call_http(
+        self,
+        method: Literal["get", "post", "multipart"],
+        action: str,
+        params: dict | None = None,
+        raw: bool = False
+    ) -> dict | bytes:
+        ...

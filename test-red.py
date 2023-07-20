@@ -39,9 +39,6 @@ protocol.avilla = avilla
 # debug(protocol.isolate.artifacts)
 # exit()
 
-# TODO(Networking): 自动注册 Account
-
-
 @broadcast.receiver(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)

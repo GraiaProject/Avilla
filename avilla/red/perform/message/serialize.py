@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
-from avilla.red.resource import RedImageResource
-from avilla.standard.qq.elements import Face
+from avilla.standard.qq.elements import Face, MarketFace
 
 if TYPE_CHECKING:
     from ...account import RedAccount  # noqa
@@ -38,13 +37,38 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
 
     @RedMessageSerialize.collect(m, Picture)
     async def picture(self, element: Picture) -> dict:
-        if isinstance(element.resource, RedImageResource):
-            return {
-                "elementType": 2,
-                "picElement": {
-                    "md5HexStr": element.resource.id,
-                    "fileName": element.resource.name,
-                    "sourcePath": str(element.resource.path.absolute()),
-                },
+        data = await self.account.staff.fetch_resource(element.resource)
+        resp = await self.account.websocket_client.call_http(
+            "multipart",
+            "api/upload",
+            {
+                "file": {
+                    "value": data,
+                    "content_type": None,
+                    "filename": "file_image",
+                }
             }
-        raise NotImplementedError
+        )
+        return {
+            "elementType": 2,
+            "picElement": {
+                "original": True,
+                "md5HexStr": resp["md5"],
+                "picWidth": resp["imageInfo"]["width"],
+                "picHeight": resp["imageInfo"]["height"],
+                "fileSize": resp["fileSize"],
+                "sourcePath": resp["ntFilePath"],
+            },
+        }
+
+    @RedMessageSerialize.collect(m, MarketFace)
+    async def market_face(self, element: MarketFace) -> dict:
+        emoji_id, key, emoji_package_id = element.id.split("/")
+        return {
+            "elementType": 11,
+            "marketFaceElement": {
+                "emojiId": int(emoji_id),
+                "key": key,
+                "emojiPackageId": int(emoji_package_id),
+            },
+        }

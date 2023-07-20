@@ -35,7 +35,7 @@ class RedProtocol(BaseProtocol):
         # from .perform.query.group import RedGroupQueryPerform
 
         ## :: Resource Fetch
-        # from .perform.resource_fetch import RedResourceFetchPerform
+        from .perform.resource_fetch import RedResourceFetchPerform
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla

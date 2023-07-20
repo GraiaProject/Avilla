@@ -25,6 +25,11 @@ def pre_deserialize(elements: list[dict]):
     fileUuid
     fileSubId
     picSubType {0: normal image (summary = ''), 1: emoji (summary = '[动画表情]')}
+3 ===> file
+    fileMd5
+    fileName
+    fileSize
+    fileUuid
 4 ===> voice(ptt)
     fileName
     filePath
@@ -61,10 +66,10 @@ def pre_deserialize(elements: list[dict]):
 10 ===> app(ark) # 小程序，公告什么的
     bytesData (application/json)
 11 ===> marketFace
-    itemType
-    faceInfo
+    itemType == 6
+    faceInfo == 1
     emojiPackageId
-    subType
+    subType == 3
     faceName
     emojiId
     key

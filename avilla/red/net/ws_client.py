@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import ChainMap
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, Literal
 
 import aiohttp
 from loguru import logger
@@ -25,6 +25,11 @@ if TYPE_CHECKING:
 class RedWsClientConfig:
     endpoint: URL
     access_token: str
+    http_endpoint: URL | None = None
+
+    def __post_init__(self):
+        if self.http_endpoint is None:
+            self.http_endpoint = URL(str(self.endpoint).replace("ws://", "http://").replace("wss://", "https://"))
 
 
 class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
@@ -35,6 +40,7 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
 
     config: RedWsClientConfig
     connection: aiohttp.ClientWebSocketResponse | None = None
+    session: aiohttp.ClientSession
 
     def __init__(self, protocol: RedProtocol, config: RedWsClientConfig) -> None:
         super().__init__(protocol)
@@ -59,6 +65,45 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
             raise RuntimeError("connection is not established")
 
         await self.connection.send_json(payload)
+
+    async def call_http(
+        self,
+        method: Literal["get", "post", "multipart"],
+        action: str,
+        params: dict | None = None,
+        raw: bool = False
+    ):
+        action = action.replace("_", "/")
+        if method == "get":
+            async with self.session.get(
+                (self.config.http_endpoint / action).with_query(params or {}),
+                headers={"Authorization": f"Bearer {self.config.access_token}"}
+            ) as resp:
+                return (await resp.content.read()) if raw else await resp.json(content_type=None)
+        if method == "post":
+            async with self.session.post(
+                (self.config.http_endpoint / action),
+                json=params or {},
+                headers={"Authorization": f"Bearer {self.config.access_token}"}
+            ) as resp:
+                return (await resp.content.read()) if raw else await resp.json(content_type=None)
+        if method == "multipart":
+            data = aiohttp.FormData(quote_fields=False)
+            if params is None:
+                raise TypeError("multipart requires params")
+            for k, v in params.items():
+                if isinstance(v, dict):
+                    data.add_field(k, v["value"], filename=v.get("filename"), content_type=v.get("content_type"))
+                else:
+                    data.add_field(k, v)
+
+            async with self.session.post(
+                (self.config.http_endpoint / action),
+                data=data,
+                headers={"Authorization": f"Bearer {self.config.access_token}"}
+            ) as resp:
+                return (await resp.content.read()) if raw else await resp.json(content_type=None)
+        raise ValueError(f"Unknown method {method}")
 
     async def wait_for_available(self):
         await self.status.wait_for_available()
@@ -128,11 +173,11 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            session = aiohttp.ClientSession()
+            self.session = aiohttp.ClientSession()
 
         async with self.stage("blocking"):
-            await self.connection_daemon(manager, session)
+            await self.connection_daemon(manager, self.session)
 
         async with self.stage("cleanup"):
-            await session.close()
+            await self.session.close()
             self.connection = None

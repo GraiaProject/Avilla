@@ -39,17 +39,19 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
         elements = pre_deserialize(payload["elements"])
         reply = None
         if elements[0]["type"] == "reply":
-            reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}|{elements[0]['replayMsgSeq']}")
+            reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}")
             elements = elements[1:]
         message = await account.staff.x({"context": context}).deserialize_message(elements)
+        msg = Message(
+            id=f'{payload["msgId"]}',
+            scene=group,
+            sender=member,
+            content=message,
+            time=datetime.fromtimestamp(int(payload["msgTime"])),
+            reply=reply,
+        )
+        context.cache["meta"][msg.to_selector()] = {Message: msg}
         return MessageReceived(
             context,
-            Message(
-                id=f'{payload["msgId"]}|{payload["msgRandom"]}|{payload["msgSeq"]}',
-                scene=group,
-                sender=member,
-                content=message,
-                time=datetime.fromtimestamp(int(payload["msgTime"])),
-                reply=reply,
-            ),
+            msg,
         )
