@@ -1,26 +1,23 @@
 from __future__ import annotations
 
 import inspect
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
     Callable,
     ChainMap,
     Protocol,
     TypeVar,
-    Union,
     overload,
 )
 
 from typing_extensions import Concatenate, ParamSpec
 
-from avilla.core._vendor.dataclasses import dataclass
+from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
 from avilla.core.ryanvk.descriptor.target import TargetArtifactStore, TargetFn
 from avilla.core.selector import FollowsPredicater, Selectable
 from avilla.core.utilles import identity
-
-from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.metadata import Metadata, MetadataRoute

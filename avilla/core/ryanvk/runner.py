@@ -26,15 +26,19 @@ Co = TypeVar("Co", bound="BaseCollector")
 T = TypeVar("T", covariant=True)
 R = TypeVar("R", covariant=True)
 P = ParamSpec("P")
+P1 = ParamSpec("P1")
 
 
-class ArtifactSchema(Protocol[P, T]):
+class ArtifactSchema(Protocol[P, R, P1]):
     def get_artifact_record(
         self,
         collection: ChainMap[Any, Any],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> tuple[Any, T]:
+    ) -> tuple[Any, Callable[Concatenate[Any, P], R]]:
+        ...
+    
+    def get_outbound_callable(self, instance: Any, entity: Callable[Concatenate[Any, P], R]) -> Callable[P1, R]:
         ...
 
 
@@ -42,17 +46,13 @@ class ArtifactSchema(Protocol[P, T]):
 async def use_artifact(
     artifact_collection: ChainMap[str, Any],
     components: dict[str, Any],
-    schema: ArtifactSchema[P, Callable[Concatenate[Any, P], R]],
+    schema: ArtifactSchema[P, R, P1],
     *args: P.args,
     **kwargs: P.kwargs,
-) -> AsyncGenerator[Callable[P, R], None]:
+) -> AsyncGenerator[Callable[P1, R], None]:
     collector, entity = schema.get_artifact_record(artifact_collection, *args, **kwargs)
     async with collector.cls(components).run_with_lifespan() as instance:
-
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            return entity(instance, *args, **kwargs)
-
-        yield wrapper
+        yield schema.get_outbound_callable(instance, entity)
 
 
 @asynccontextmanager

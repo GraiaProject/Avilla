@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 from contextvars import ContextVar
+from dataclasses import dataclass, field
 from typing import Any, Callable, Generic, TypeVar, overload
 from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
 
-from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.utilles import classproperty
 
 T = TypeVar("T")

@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar, overload
 
 from typing_extensions import Concatenate, ParamSpec, Self, Unpack
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.ryanvk.descriptor.base import Fn

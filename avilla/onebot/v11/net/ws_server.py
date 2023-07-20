@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 import aiohttp.web
 from yarl import URL
 
-from avilla.core._vendor.dataclasses import dataclass
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed

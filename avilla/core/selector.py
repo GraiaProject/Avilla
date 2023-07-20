@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from itertools import filterfalse
 from types import MappingProxyType
 from typing import Protocol, runtime_checkable
 
 from typing_extensions import Self, TypeAlias
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.platform import Land
 
 EMPTY_MAP = MappingProxyType({})

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import reduce
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, Generic
+from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, Generic, overload
 
 from typing_extensions import ParamSpec, TypeVar, Unpack
 
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 T = TypeVar("T")
 R = TypeVar("R", covariant=True)
-_MetadataT = TypeVar("_MetadataT", bound="Metadata")
+M = TypeVar("M", bound="Metadata")
 P = ParamSpec("P")
 
 VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
@@ -121,11 +121,27 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         async with use_record(self.components, record) as entity:
             return await entity(resource)
 
+    @overload
     async def pull_metadata(
         self,
         target: Selector,
-        route: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT],
-    ) -> _MetadataT:
+        route: type[M],
+    ) -> M:
+        ...
+    
+    @overload
+    async def pull_metadata(
+        self,
+        target: Selector,
+        route: MetadataRoute[Unpack[tuple[Any, ...]], T],
+    ) -> T:
+        ...
+
+    async def pull_metadata(
+        self,
+        target: Selector,
+        route: ...,
+    ):
         return await run_fn(self.artifacts, self.components, CoreCapability.pull, target, route)
 
     async def query_entities(self, pattern: str, **predicators: FollowsPredicater):
