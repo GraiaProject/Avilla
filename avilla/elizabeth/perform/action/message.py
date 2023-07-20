@@ -59,7 +59,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {message}")
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["messageId"])
 
-    @MessageRevoke.revoke.collect(m, "land.group")
+    @MessageRevoke.revoke.collect(m, "land.group.message")
     async def revoke_group_message(self, message: Selector):
         await self.account.connection.call(
             "update",
@@ -70,7 +70,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @MessageRevoke.revoke.collect(m, "land.friend")
+    @MessageRevoke.revoke.collect(m, "land.friend.message")
     async def revoke_friend_message(self, message: Selector):
         await self.account.connection.call(
             "update",
@@ -95,7 +95,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
         event = await self.account.staff.parse_event(result["data"]["type"], result["data"])
         if TYPE_CHECKING:
-            assert isinstance(event, MessageReceived)
+            assert isinstance(event, MessageReceived)  # noqa
         return event.message
 
     @CoreCapability.pull.collect(m, "land.friend.message", Message)
@@ -112,5 +112,5 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
         event = await self.account.staff.parse_event(result["data"]["type"], result["data"])
         if TYPE_CHECKING:
-            assert isinstance(event, MessageReceived)
+            assert isinstance(event, MessageReceived)  # noqa
         return event.message

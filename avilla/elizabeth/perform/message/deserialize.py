@@ -7,7 +7,11 @@ from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
-from avilla.elizabeth.resource import ElizabethFileResource, ElizabethImageResource, ElizabethVoiceResource
+from avilla.elizabeth.resource import (
+    ElizabethFileResource,
+    ElizabethImageResource,
+    ElizabethVoiceResource,
+)
 from avilla.standard.qq.elements import (
     App,
     Dice,

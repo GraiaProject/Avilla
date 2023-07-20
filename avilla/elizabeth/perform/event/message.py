@@ -8,7 +8,7 @@ from avilla.core.message import Message, MessageChain
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
-from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.message import MessageReceived, MessageRevoked
 
 
 class MessageDeserializeResult(TypedDict):
@@ -73,7 +73,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             member,
             group,
             group,
-            account,
+            group.member(str(account["account"])),
         )
         message_result = await self._deserialize_message(context, raw_event["messageChain"])
         return MessageReceived(
@@ -86,4 +86,52 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 time=message_result["time"],
                 reply=group.appendix("message", message_result["reply"]) if message_result["reply"] else None,
             ),
+        )
+
+    @EventParse.collect(m, "FriendRecallEvent")
+    async def friend_recall(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        friend = Selector().land("qq").friend(str(raw_event["operator"]))
+        message = Selector().land("qq").friend(str(raw_event["authorId"])).message(str(raw_event["messageId"]))
+        context = Context(
+            account,
+            friend,
+            friend,
+            friend,
+            account_route,
+        )
+        return MessageRevoked(
+            context,
+            message,
+            friend,
+        )
+
+    @EventParse.collect(m, "GroupRecallEvent")
+    async def group_recall(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        group = Selector().land("qq").group(str(raw_event["group"]["id"]))
+        if operator := raw_event.get("operator"):
+            member = group.member(str(operator["id"]))
+        else:
+            member = group.member(account_route["account"])
+        message = (
+            Selector()
+            .land("qq")
+            .group(str(raw_event["groupId"]))
+            .member(str(raw_event["authorId"]))
+            .message(str(raw_event["messageId"]))
+        )
+        context = Context(
+            account,
+            member,
+            group,
+            group,
+            group.member(account_route["account"]),
+        )
+        return MessageRevoked(
+            context,
+            message,
+            member,
         )

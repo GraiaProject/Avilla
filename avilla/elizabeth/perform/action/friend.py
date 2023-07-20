@@ -23,7 +23,7 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
                 "target": int(target.pattern["friend"]),
             },
         )
-        return Nick(result["nickname"], result["nickname"], None)
+        return Nick(result["nickname"], result["remark"] or result["nickname"], None)
 
     @m.pull("land.friend", Summary)
     async def get_contact_summary(self, target: Selector) -> Summary:
@@ -35,3 +35,5 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
             },
         )
         return Summary(result["nickname"], "a friend contact assigned to this account")
+
+    # TODO: delete friend

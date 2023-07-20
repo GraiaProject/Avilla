@@ -3,12 +3,17 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
+from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL, PRIVILEGE_TRANS
-from avilla.elizabeth.exception import permission_error_message
-from avilla.standard.core.privilege import MuteCapability, MuteInfo, Privilege, PrivilegeCapability
-from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.privilege import (
+    MuteCapability,
+    MuteInfo,
+    Privilege,
+    PrivilegeCapability,
+)
+from avilla.standard.core.profile import Nick, NickCapability, Summary
 from avilla.standard.core.scene import SceneCapability
 
 if TYPE_CHECKING:
@@ -29,7 +34,61 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
-        return Nick(result["memberName"], result["memberName"], result.get("specialTitle"))
+        result1 = await self.account.connection.call(
+            "fetch",
+            "memberProfile",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+            },
+        )
+        return Nick(result1["nickname"], result["memberName"], result.get("specialTitle"))
+
+    @NickCapability.set_nickname.collect(m, "land.group.member")
+    async def set_group_member_nick(self, target: Selector, nickname: str):
+        privilege_info = await self.get_group_member_privilege(target)
+        if not privilege_info.available:
+            self_permission = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(
+                    f"set_name@{target.path}", self_permission.name, ["group_owner", "group_admin"]
+                )
+            )
+        await self.account.connection.call(
+            "update",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+                "info": {
+                    "name": nickname,
+                },
+            },
+        )
+
+    @NickCapability.set_badge.collect(m, "land.group.member")
+    async def set_group_member_badge(self, target: Selector, badge: str):
+        privilege_info = await self.get_group_member_privilege_privilege(target)
+        if not privilege_info.available:
+            self_permission = await self.get_group_member_privilege_summary(
+                target.into(f"~.member({self.account.route['account']})")
+            )
+            raise PermissionError(
+                permission_error_message(f"mute@{target.path}", self_permission.name, ["group_owner"])
+            )
+        await self.account.connection.call(
+            "update",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
+                "info": {
+                    "specialTitle": badge,
+                },
+            },
+        )
 
     @m.pull("land.group.member", MuteInfo)
     async def get_group_member_mute_info(self, target: Selector) -> MuteInfo:
@@ -41,7 +100,6 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
-        assert result is not None
         return MuteInfo(
             result.get("mutetimeRemaining") is not None,
             timedelta(seconds=result.get("mutetimeRemaining", 0)),
@@ -92,6 +150,8 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
 
     @m.pull("land.group.member", Privilege)
     async def get_group_member_privilege(self, target: Selector) -> Privilege:
+        if target.pattern["member"] == self.account.route["account"]:
+            return Privilege(True, True)
         self_info = await self.account.connection.call(
             "fetch",
             "memberInfo",
@@ -108,9 +168,8 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
-        assert self_info is not None and target_info is not None
         return Privilege(
-            PRIVILEGE_LEVEL[self_info["permission"]] > 0,
+            PRIVILEGE_LEVEL[target_info["permission"]] > 0,
             PRIVILEGE_LEVEL[self_info["permission"]] > PRIVILEGE_LEVEL[target_info["permission"]],
         )
 
@@ -125,8 +184,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             },
         )
         return Summary(
-            PRIVILEGE_TRANS[target_info["permission"]],
-            "the permission info of current account in the group"
+            PRIVILEGE_TRANS[target_info["permission"]], "the permission info of current account in the group"
         ).infers(Privilege >> Summary)
 
     @m.pull("land.group.member", Privilege >> Privilege)
@@ -139,23 +197,31 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(self.account.route["account"]),
             },
         )
-        return Privilege(
-            PRIVILEGE_LEVEL[self_info["permission"]] == 2,
-            PRIVILEGE_LEVEL[self_info["permission"]] == 2,
-        ).infers(Privilege >> Privilege)
-    
-    @m.pull("land.group.member", Privilege >> Privilege >> Summary)
-    async def get_group_member_privilege_privilege_summary(self, target: Selector) -> Summary:
-        self_info = await self.account.connection.call(
+        target = await self.account.connection.call(
             "fetch",
             "memberInfo",
             {
                 "target": int(target.pattern["group"]),
-                "memberId": int(self.account.route["account"]),
+                "memberId": int(target.pattern["member"]),
+            },
+        )
+        return Privilege(
+            PRIVILEGE_LEVEL[target["permission"]] == 2,
+            PRIVILEGE_LEVEL[self_info["permission"]] > PRIVILEGE_LEVEL[target["permission"]],
+        ).infers(Privilege >> Privilege)
+
+    @m.pull("land.group.member", Privilege >> Privilege >> Summary)
+    async def get_group_member_privilege_privilege_summary(self, target: Selector) -> Summary:
+        target_info = await self.account.connection.call(
+            "fetch",
+            "memberInfo",
+            {
+                "target": int(target.pattern["group"]),
+                "memberId": int(target.pattern["member"]),
             },
         )
         return Summary(
-            PRIVILEGE_TRANS[self_info["permission"]],
+            PRIVILEGE_TRANS[target_info["permission"]],
             "the permission of controling administration of the group, to be noticed that is only group owner could do this.",
         ).infers(Privilege >> Privilege >> Summary)
 
@@ -185,7 +251,9 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 target.into(f"~.member({self.account.route['account']})")
             )
             raise PermissionError(
-                permission_error_message(f"downgrade_permission@{target.path}", self_privilege_info.name, ["group_owner"])
+                permission_error_message(
+                    f"downgrade_permission@{target.path}", self_privilege_info.name, ["group_owner"]
+                )
             )
         await self.account.connection.call(
             "update",
@@ -204,7 +272,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 target.into(f"~.member({self.account.route['account']})")
             )
             raise PermissionError(
-                permission_error_message(f"remove_member@{target.path}", self_privilege_info.name, ["group_owner"])
+                permission_error_message(f"remove_member@{target.path}", self_privilege_info.name, ["group_owner", "group_admin"])
             )
         await self.account.connection.call(
             "update",
@@ -214,5 +282,3 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
                 "memberId": int(target.pattern["member"]),
             },
         )
-
-

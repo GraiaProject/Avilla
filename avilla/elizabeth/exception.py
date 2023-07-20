@@ -34,11 +34,3 @@ class MissingNecessaryArgument(InvalidOperation):
 
 class ConflictItem(InvalidOperation):
     """项冲突/其中一项被重复定义"""
-
-
-def permission_error_message(operator: str, current: str, required: list[str]):
-    return (
-        f"missing permission: {operator} required "
-        + " or ".join(f'"{i}"' for i in required)
-        + f" but current is {current}"
-    )
