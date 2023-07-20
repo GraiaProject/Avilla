@@ -10,9 +10,8 @@ from avilla.core.message import Message
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.red.collector.connection import ConnectionCollector
-# from avilla.red.utils import pre_deserialize
+from avilla.red.utils import pre_deserialize
 from avilla.standard.core.message import MessageReceived
-from graia.amnesia.message import MessageChain, Text
 
 if TYPE_CHECKING:
     ...
@@ -37,10 +36,12 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(account.route["account"]),
         )
-        text = payload["elements"][0]["textElement"]
-        message = MessageChain([Text(text["content"] if text else "")])
-        # TODO: deserialize message
-        #message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
+        elements = pre_deserialize(payload["elements"])
+        reply = None
+        if elements[0]["type"] == "reply":
+            reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}|{elements[0]['replayMsgSeq']}")
+            elements = elements[1:]
+        message = await account.staff.x({"context": context}).deserialize_message(elements)
         return MessageReceived(
             context,
             Message(
@@ -49,5 +50,6 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 sender=member,
                 content=message,
                 time=datetime.fromtimestamp(int(payload["msgTime"])),
+                reply=reply,
             ),
         )

@@ -6,7 +6,6 @@ from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
-# from avilla.red.utils import pro_serialize
 from avilla.standard.core.message import MessageRevoke, MessageSend
 from graia.amnesia.message import MessageChain
 
@@ -26,7 +25,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        #TODO: serialize message
+        msg = await self.account.staff.serialize_message(message)
         await self.account.call(
             "message::send",
             {
@@ -35,14 +34,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                     "peerUid": target.pattern["group"],
                     "guildId": None,
                 },
-                "elements": [
-                    {
-                        "elementType": 1,
-                        "textElement": {
-                            "content": str(message),
-                        }
-                    }
-                ]
+                "elements": msg
             }
         )
         return (

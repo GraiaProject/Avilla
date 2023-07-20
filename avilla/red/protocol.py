@@ -17,8 +17,8 @@ class RedProtocol(BaseProtocol):
         # isort: off
 
         # :: Message
-        # from .perform.message.deserialize import RedMessageDeserializePerform
-        # from .perform.message.serialize import RedMessageSerializePerform
+        from .perform.message.deserialize import RedMessageDeserializePerform
+        from .perform.message.serialize import RedMessageSerializePerform
 
         ## :: Action
         # from .perform.action.contact import RedContactActionPerform

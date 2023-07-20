@@ -5,8 +5,6 @@ from yarl import URL
 
 from avilla.core.elements import Text
 from avilla.core import Avilla, Context, MessageReceived
-from avilla.core.platform import Abstract, Land, Platform
-from avilla.core.resource import LocalFileResource
 
 from avilla.red.net.ws_client import RedWsClientNetworking, RedWsClientConfig
 from avilla.red.protocol import RedProtocol
@@ -49,15 +47,12 @@ async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
     print(cx.endpoint, cx.client)
     print(event.message.content)
-    if cx.scene.follows("::group(481878114)") or cx.scene.follows("::group(941310484)"):
+    if cx.scene.follows("::group(941310484)"):
         await cx.scene.send_message("Hello, Avilla!")
 
-    if str(event.message.content).startswith("echo"):
-        content = str(event.message.content)[4:].lstrip()
+    if str(event.message.content).startswith("echo "):
         await cx.scene.send_message(
-            [
-                Text(content),
-            ],
+            event.message.content.removeprefix("echo ")
         )
 
 
