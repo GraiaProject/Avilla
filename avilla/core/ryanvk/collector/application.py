@@ -13,7 +13,9 @@ T1 = TypeVar("T1")
 
 
 class ApplicationBasedPerformTemplate(PerformTemplate):
+    __native__ = True
     __collector__: ClassVar[ApplicationCollector]
+
     avilla: Access[Avilla] = Access()
 
 
