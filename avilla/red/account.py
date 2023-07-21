@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.selector import Selector
 from avilla.standard.core.account import AccountAvailable, AccountUnavailable
-from launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from .net.base import RedNetworking
@@ -18,6 +17,7 @@ class RedAccount(BaseAccount):
     status: AccountStatus
 
     websocket_client: RedNetworking | None = None
+
     def __init__(self, route: Selector, protocol: RedProtocol):
         super().__init__(route, protocol.avilla)
         self.protocol = protocol

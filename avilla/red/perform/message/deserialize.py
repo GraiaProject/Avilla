@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
-from avilla.red.resource import RedImageResource
-from avilla.standard.qq.elements import Face, MarketFace, App
+from avilla.red.resource import RedFileResource, RedImageResource, RedVoiceResource
+from avilla.standard.qq.elements import App, Face, MarketFace, Poke, PokeKind
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -33,7 +33,9 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
         return Notice(Selector().land("red").member(raw_element.get("atNtUin", "atNtUid")))
 
     @RedMessageDeserialize.collect(m, "face")
-    async def face(self, raw_element: dict) -> Face:
+    async def face(self, raw_element: dict) -> Face | Poke:
+        if raw_element["faceType"] == 5:
+            return Poke(PokeKind.ChuoYiChuo)
         return Face(raw_element["faceIndex"], raw_element["faceText"])
 
     @RedMessageDeserialize.collect(m, "pic")
@@ -44,6 +46,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["fileSize"],
             raw_element["fileName"],
             raw_element["elementId"],
+            raw_element["uuid"],
             raw_element["sourcePath"],
             raw_element["picWidth"],
             raw_element["picHeight"],
@@ -59,3 +62,30 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     @RedMessageDeserialize.collect(m, "ark")
     async def ark(self, raw_element: dict) -> App:
         return App(raw_element["bytesData"])
+
+    @RedMessageDeserialize.collect(m, "file")
+    async def file(self, raw_element: dict) -> File:
+        return File(
+            RedFileResource(
+                Selector().land("red").file(raw_element["fileMd5"]),
+                raw_element["fileMd5"],
+                raw_element["fileSize"],
+                raw_element["fileName"],
+                raw_element["elementId"],
+                raw_element["fileUuid"],
+            )
+        )
+
+    @RedMessageDeserialize.collect(m, "ptt")
+    async def ptt(self, raw_element: dict) -> Audio:
+        return Audio(
+            RedVoiceResource(
+                Selector().land("red").voice(raw_element["md5HexStr"]),
+                raw_element["md5HexStr"],
+                raw_element.get("fileSize", 0),
+                raw_element["fileName"],
+                raw_element["elementId"],
+                raw_element["fileUuid"],
+                raw_element["filePath"],
+            )
+        )

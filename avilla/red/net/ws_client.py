@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import ChainMap
-from typing import TYPE_CHECKING, cast, Literal
+from typing import TYPE_CHECKING, Literal, cast
 
 import aiohttp
 from loguru import logger
@@ -67,24 +67,20 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
         await self.connection.send_json(payload)
 
     async def call_http(
-        self,
-        method: Literal["get", "post", "multipart"],
-        action: str,
-        params: dict | None = None,
-        raw: bool = False
+        self, method: Literal["get", "post", "multipart"], action: str, params: dict | None = None, raw: bool = False
     ):
         action = action.replace("_", "/")
         if method == "get":
             async with self.session.get(
                 (self.config.http_endpoint / action).with_query(params or {}),
-                headers={"Authorization": f"Bearer {self.config.access_token}"}
+                headers={"Authorization": f"Bearer {self.config.access_token}"},
             ) as resp:
                 return (await resp.content.read()) if raw else await resp.json(content_type=None)
         if method == "post":
             async with self.session.post(
                 (self.config.http_endpoint / action),
                 json=params or {},
-                headers={"Authorization": f"Bearer {self.config.access_token}"}
+                headers={"Authorization": f"Bearer {self.config.access_token}"},
             ) as resp:
                 return (await resp.content.read()) if raw else await resp.json(content_type=None)
         if method == "multipart":
@@ -100,7 +96,7 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
             async with self.session.post(
                 (self.config.http_endpoint / action),
                 data=data,
-                headers={"Authorization": f"Bearer {self.config.access_token}"}
+                headers={"Authorization": f"Bearer {self.config.access_token}"},
             ) as resp:
                 return (await resp.content.read()) if raw else await resp.json(content_type=None)
         raise ValueError(f"Unknown method {method}")
@@ -136,7 +132,7 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
                         "type": "meta::connect",
                         "payload": {
                             "token": self.config.access_token,
-                        }
+                        },
                     }
                 )
                 done, pending = await any_completed(

@@ -1,16 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar, Literal, overload
+from typing import TYPE_CHECKING, AsyncIterator, Generic, Literal, TypeVar, overload
 
 from loguru import logger
 
-from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.staff import Staff
 from avilla.red.account import RedAccount
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsStaff
+    from avilla.core.ryanvk.protocol import SupportsStaff  # noqa: F401
     from avilla.red.protocol import RedProtocol
 
 
@@ -45,6 +44,7 @@ class RedNetworking(Generic[T]):
 
     async def message_handle(self):
         async for connection, data in self.message_receive():
+
             async def event_parse_task(data: dict):
                 event_type = data["type"]
                 event = await Staff.focus(connection).parse_event(event_type, data["payload"])
@@ -76,13 +76,11 @@ class RedNetworking(Generic[T]):
         # if result["status"] != "ok":
         #     raise ActionFailed(f"{result['retcode']}: {result}")
 
-        return # result["data"]
+        return  # result["data"]
+
     @overload
     async def call_http(
-        self,
-        method: Literal["get", "post", "multipart"],
-        action: str,
-        params: dict | None = None
+        self, method: Literal["get", "post", "multipart"], action: str, params: dict | None = None
     ) -> dict:
         ...
 
@@ -92,15 +90,11 @@ class RedNetworking(Generic[T]):
         method: Literal["get", "post", "multipart"],
         action: str,
         params: dict | None = None,
-        raw: Literal[True] = True
+        raw: Literal[True] = True,
     ) -> bytes:
         ...
 
     async def call_http(
-        self,
-        method: Literal["get", "post", "multipart"],
-        action: str,
-        params: dict | None = None,
-        raw: bool = False
+        self, method: Literal["get", "post", "multipart"], action: str, params: dict | None = None, raw: bool = False
     ) -> dict | bytes:
         ...

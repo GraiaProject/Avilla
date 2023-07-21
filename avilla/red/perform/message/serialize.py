@@ -47,7 +47,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                     "content_type": None,
                     "filename": "file_image",
                 }
-            }
+            },
         )
         return {
             "elementType": 2,

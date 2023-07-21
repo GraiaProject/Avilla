@@ -2,11 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageRevoke, MessageSend
+from avilla.standard.core.message import MessageSend
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -34,15 +32,10 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                     "peerUid": target.pattern["group"],
                     "guildId": None,
                 },
-                "elements": msg
-            }
+                "elements": msg,
+            },
         )
-        return (
-            Selector()
-            .land(self.account.route["land"])
-            .group(target.pattern["group"])
-            .message("xxxx")
-        )
+        return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message("xxxx")
 
     @MessageSend.send.collect(m, "land.friend")
     async def send_friend_msg(
@@ -61,12 +54,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                     "peerUid": target.pattern["friend"].split("|")[1],
                     "guildId": None,
                 },
-                "elements": msg
-            }
+                "elements": msg,
+            },
         )
-        return (
-            Selector()
-            .land(self.account.route["land"])
-            .friend(target.pattern["friend"])
-            .message("xxxx")
-        )
+        return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message("xxxx")

@@ -31,8 +31,6 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
         if payload["chatType"] == 2:
             group = Selector().land(account.route["land"]).group(str(payload["peerUid"]))
             member = group.member(str(payload.get("senderUin", payload.get("senderUid"))))
-            if "senderUin" not in payload:
-                print(payload)
             context = Context(
                 account,
                 member,
@@ -55,8 +53,13 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             )
         else:
-            friend = Selector().land(account.route["land"]).friend(
-                f"{payload.get('peerUin', payload.get('senderUin'))}|{payload.get('peerUid', payload.get('senderUid'))}"
+            friend = (
+                Selector()
+                .land(account.route["land"])
+                .friend(
+                    f"{payload.get('peerUin', payload.get('senderUin'))}|"
+                    f"{payload.get('peerUid', payload.get('senderUid'))}"
+                )
             )
             context = Context(
                 account,

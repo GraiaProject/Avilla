@@ -11,14 +11,19 @@ class RedResource(Resource[bytes]):
     size: int
     name: str
     elem: str
-    path: Path | None
+    uuid: str
 
-    def __init__(self, selector: Selector, id: str, size: int, name: str, elem: str, path: str | Path | None = None):
+    def __init__(self, selector: Selector, id: str, size: int, name: str, elem: str, uuid: str):
         super().__init__(selector)
         self.id = id
         self.size = size
         self.name = name
-        self.path = Path(path) if path else None
+        self.elem = elem
+        self.uuid = uuid
+
+
+class RedFileResource(RedResource):
+    pass
 
 
 class RedImageResource(RedResource):
@@ -29,14 +34,31 @@ class RedImageResource(RedResource):
         size: int,
         name: str,
         elem: str,
+        uuid: str,
         path: str | Path,
         width: int,
         height: int,
     ):
-        super().__init__(selector, id, size, name, elem, path)
+        super().__init__(selector, id, size, name, elem, uuid)
+        self.path = Path(path)
         self.width = width
         self.height = height
 
+    @property
+    def url(self) -> str:
+        return f"https://gchat.qpic.cn/gchatpic_new/0/0-0-{self.id.upper()}/0"
+
 
 class RedVoiceResource(RedResource):
-    pass
+    def __init__(
+        self,
+        selector: Selector,
+        id: str,
+        size: int,
+        name: str,
+        elem: str,
+        uuid: str,
+        path: str | Path,
+    ):
+        super().__init__(selector, id, size, name, elem, uuid)
+        self.path = Path(path)
