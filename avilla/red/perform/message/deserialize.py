@@ -43,6 +43,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
             md5,
             raw_element["fileSize"],
             raw_element["fileName"],
+            raw_element["elementId"],
             raw_element["sourcePath"],
             raw_element["picWidth"],
             raw_element["picHeight"],

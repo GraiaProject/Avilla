@@ -42,7 +42,7 @@ def pre_deserialize(elements: list[dict]):
 6 ===> face, poke
     faceIndex
     faceText {None: normal, '/xxx': sticker, '': poke}
-    faceType {1: normal, 3: sticker, 5: poke}
+    faceType {1: normal, 2: normal-extended, 3: sticker, 5: poke}
     packId {None: other, '1': sticker}
     stickerId {None: other, 'xxx': sticker}
     sourceType {None: other, 1: sticker}
