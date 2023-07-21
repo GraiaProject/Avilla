@@ -14,6 +14,7 @@ T1 = TypeVar("T1")
 
 
 class ConnectionBasedPerformTemplate(PerformTemplate):
+    __native__ = True
     __collector__: ClassVar[ConnectionCollector]
 
     protocol: Access[ElizabethProtocol] = Access()
