@@ -41,16 +41,16 @@ VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
 VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
 
 
-class ArtifactSchema(Protocol[P, R, P1]):
+class ArtifactSchema(Protocol[P, T, P1]):
     def get_artifact_record(
         self,
         collection: ChainMap[Any, Any],
         *args: P.args,
         **kwargs: P.kwargs,
-    ) -> tuple[Any, Callable[Concatenate[Any, P], R]]:
+    ) -> tuple[Any, Callable[Concatenate[Any, P], T]]:
         ...
 
-    def get_outbound_callable(self, instance: Any, entity: Callable[Concatenate[Any, P], R]) -> Callable[P1, R]:
+    def get_outbound_callable(self, instance: Any, entity: Callable[Concatenate[Any, P], T]) -> Callable[P1, T]:
         ...
 
 
