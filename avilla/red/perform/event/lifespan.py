@@ -10,7 +10,6 @@ from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.red.account import RedAccount
 from avilla.red.collector.connection import ConnectionCollector
-from avilla.red.net.ws_client import RedWsClientNetworking
 from avilla.standard.core.account.event import AccountRegistered
 
 if TYPE_CHECKING:
@@ -39,10 +38,7 @@ class RedEventLifespanPerform((m := ConnectionCollector())._):
 
         self.connection.account = account
         self.protocol.avilla.accounts[account.route] = AccountInfo(account.route, account, self.protocol, platform)
-        # TODO: more networking support
-
-        if isinstance(self.connection, RedWsClientNetworking):
-            account.websocket_client = self.connection
+        account.websocket_client = self.connection
 
         logger.info(f"Account {self_id} connected and created")
         return AccountRegistered(self.protocol.avilla, account)

@@ -23,7 +23,8 @@ class RedProtocol(BaseProtocol):
         ## :: Action
         # from .perform.action.contact import RedContactActionPerform
         # from .perform.action.friend import RedFriendActionPerform
-        # from .perform.action.group import RedGroupActionPerform
+        from .perform.action.group import RedGroupActionPerform
+
         # from .perform.action.group_member import RedGroupMemberActionPerform
         from .perform.action.message import RedMessageActionPerform
 
@@ -32,7 +33,7 @@ class RedProtocol(BaseProtocol):
         from .perform.event.lifespan import RedEventLifespanPerform
 
         ## :: Query
-        # from .perform.query.group import RedGroupQueryPerform
+        from .perform.query import RedQueryPerform
 
         ## :: Resource Fetch
         from .perform.resource_fetch import RedResourceFetchPerform

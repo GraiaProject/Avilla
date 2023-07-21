@@ -3,13 +3,13 @@ from __future__ import annotations
 import asyncio
 import json
 from collections import ChainMap
+from dataclasses import InitVar, dataclass, field
 from typing import TYPE_CHECKING, Literal, cast
 
 import aiohttp
 from loguru import logger
 from yarl import URL
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.red.account import RedAccount
 from avilla.red.net.base import RedNetworking
 from avilla.standard.core.account import AccountUnregistered
@@ -25,11 +25,14 @@ if TYPE_CHECKING:
 class RedWsClientConfig:
     endpoint: URL
     access_token: str
-    http_endpoint: URL | None = None
+    _http_endpoint: InitVar[URL | None] = None
+    http_endpoint: URL = field(init=False)
 
-    def __post_init__(self):
-        if self.http_endpoint is None:
+    def __post_init__(self, _http_endpoint: URL | None):
+        if _http_endpoint is None:
             self.http_endpoint = URL(str(self.endpoint).replace("ws://", "http://").replace("wss://", "https://"))
+        else:
+            self.http_endpoint = _http_endpoint
 
 
 class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
@@ -118,7 +121,6 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
         return self.connection is not None and not self.connection.closed
 
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
-        avilla = self.protocol.avilla
         while not manager.status.exiting:
             async with session.ws_connect(self.config.endpoint) as self.connection:
                 logger.info(f"{self} Websocket client connected")
@@ -140,6 +142,7 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
                     close_task,
                     receiver_task,
                 )
+                avilla = self.protocol.avilla
                 if sigexit_task in done:
                     logger.info(f"{self} Websocket client exiting...")
                     await self.connection.close()
@@ -148,7 +151,7 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
                     for v in list(avilla.accounts.values()):
                         if v.protocol is self.protocol:
                             _account = v.route["account"]
-                            if _account == self.account.route["account"]:
+                            if _account == self.account.route["account"]:  # type: ignore
                                 self.account = None
                     return
                 if close_task in done:
@@ -160,7 +163,10 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
                         account = cast("RedAccount", avilla.accounts[n].account)
                         account.status.enabled = False
                         await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
-                        if n.follows("land(qq).account") and n["account"] == self.account["account"]:
+                        if (
+                            n.follows("land(qq).account") and
+                            n["account"] == self.account.route["account"]  # type: ignore
+                        ):
                             del avilla.accounts[n]
                     self.account = None
                     await asyncio.sleep(5)

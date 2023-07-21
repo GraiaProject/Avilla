@@ -82,7 +82,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 time=datetime.fromtimestamp(int(payload["msgTime"])),
                 reply=reply,
             )
-        context.cache["meta"][msg.to_selector()] = {Message: msg}
+        context.cache["meta"][msg.to_selector()] = {Message: msg}  # type: ignore
         return MessageReceived(
             context,
             msg,

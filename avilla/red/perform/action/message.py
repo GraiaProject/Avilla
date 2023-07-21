@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageSend
+from avilla.standard.core.message import MessageRevoke, MessageSend
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -58,3 +58,39 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             },
         )
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message("xxxx")
+
+    @MessageRevoke.revoke.collect(m, "land.group.message")
+    async def revoke_group_msg(
+        self,
+        target: Selector,
+    ) -> None:
+        await self.account.websocket_client.call_http(
+            "post",
+            "api/message/recall",
+            {
+                "peer": {
+                    "chatType": 2,
+                    "peerUid": target.pattern["group"],
+                    "guildId": None,
+                },
+                "msgId": [target.pattern["message"]],
+            },
+        )
+
+    @MessageRevoke.revoke.collect(m, "land.friend.message")
+    async def revoke_friend_msg(
+        self,
+        target: Selector,
+    ) -> None:
+        await self.account.websocket_client.call_http(
+            "post",
+            "api/message/recall",
+            {
+                "peer": {
+                    "chatType": 1,
+                    "peerUid": target.pattern["friend"].split("|")[1],
+                    "guildId": None,
+                },
+                "msgId": [target.pattern["message"]],
+            },
+        )

@@ -15,8 +15,7 @@ if TYPE_CHECKING:
 class RedAccount(BaseAccount):
     protocol: RedProtocol
     status: AccountStatus
-
-    websocket_client: RedNetworking | None = None
+    websocket_client: RedNetworking
 
     def __init__(self, route: Selector, protocol: RedProtocol):
         super().__init__(route, protocol.avilla)
