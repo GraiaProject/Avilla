@@ -26,7 +26,8 @@ class QQGuildProtocol(BaseProtocol):
 
         ## :: Event
         from .perform.event.message import QQGuildEventMessagePerform
-
+        from .perform.event.metadata import QQGuildEventMetadataPerform
+        from .perform.event.relationship import QQGuildEventRelationshipPerform
         ## :: Query
         # from .perform.query.group import QQGuildGroupQueryPerform
 

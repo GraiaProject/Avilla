@@ -38,12 +38,15 @@ class Intents:
     guilds: bool = True
     guild_members: bool = True
     guild_messages: bool = False
+    """GUILD_MESSAGES"""
     guild_message_reactions: bool = True
     direct_message: bool = False
+    """DIRECT_MESSAGES"""
     message_audit: bool = False
     forum_event: bool = False
     audio_action: bool = False
     at_messages: bool = True
+    """PUBLIC_GUILD_MESSAGES"""
 
     def __post_init__(self):
         if self.at_messages and self.guild_messages:
