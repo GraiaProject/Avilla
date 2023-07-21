@@ -1,10 +1,10 @@
 from __future__ import annotations
-from contextlib import asynccontextmanager
 
+from contextlib import asynccontextmanager
 from functools import reduce
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, ChainMap, Generic, Protocol, overload
 
-from typing_extensions import ParamSpec, TypeVar, Unpack, Concatenate
+from typing_extensions import Concatenate, ParamSpec, TypeVar, Unpack
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import MetadataRoute
@@ -12,13 +12,13 @@ from avilla.core.ryanvk.descriptor.base import Fn
 from avilla.core.selector import FollowsPredicater, Selector, _FollowItem, _parse_follows
 from avilla.core.utilles import identity
 from graia.amnesia.message import Element, MessageChain
+from graia.broadcast.utilles import run_always_await
 
 from .descriptor.event import EventParserSign
 from .descriptor.fetch import FetchImplement
 from .descriptor.message.deserialize import MessageDeserializeSign
 from .descriptor.message.serialize import MessageSerializeSign
 from .descriptor.query import find_querier_steps, query_depth_generator
-from graia.broadcast.utilles import run_always_await
 
 if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
@@ -39,6 +39,7 @@ Co = TypeVar("Co", bound="BaseCollector")
 
 VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
 VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
+
 
 class ArtifactSchema(Protocol[P, R, P1]):
     def get_artifact_record(

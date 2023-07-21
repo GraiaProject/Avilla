@@ -222,7 +222,8 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
         )
         return Summary(
             PRIVILEGE_TRANS[target_info["permission"]],
-            "the permission of controling administration of the group, to be noticed that is only group owner could do this.",
+            "the permission of controling administration of the group,"
+            "to be noticed that is only group owner could do this.",
         ).infers(Privilege >> Privilege >> Summary)
 
     @PrivilegeCapability.upgrade.collect(m, "land.group.member")

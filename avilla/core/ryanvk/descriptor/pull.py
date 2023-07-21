@@ -7,11 +7,8 @@ from typing_extensions import ParamSpec, TypeAlias, Unpack
 
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.ryanvk.collector.base import BaseCollector
-from avilla.core.ryanvk.descriptor.target import LookupBranch, TargetArtifactStore, TargetFn
+from avilla.core.ryanvk.descriptor.target import HQ, LookupBranch, TargetArtifactStore, TargetFn
 from avilla.core.selector import FollowsPredicater, Selectable, Selector
-
-if TYPE_CHECKING:
-    from .target import HQ
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)

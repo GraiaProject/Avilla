@@ -60,7 +60,6 @@ class ElizabethNetworking(Generic[T]):
             if "session" in body:
                 self.session_key = body["session"]
                 logger.success("session key got.")
-                # TODO: register account.
                 continue
 
             if sync_id in self.response_waiters:
