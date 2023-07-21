@@ -8,7 +8,8 @@ from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
 from avilla.standard.qq.elements import Face
 from avilla.qqguild.tencent.element import Embed, Reference
-from avilla.core.platform import Abstract, Land, Platform
+from avilla.standard.core.privilege import Privilege
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.resource import LocalFileResource
 
 from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientConfig, QQGuildWsClientNetworking, Intents
@@ -68,6 +69,15 @@ async def on_message_received(cx: Context, event: MessageReceived):
             ],
             reply=event.message
         )
+    )
+    print(
+        await cx.scene.pull(Privilege)
+    )
+    print(
+        await cx.client.pull(Privilege)
+    )
+    print(
+        await cx[CoreCapability.pull](cx.self, Privilege)
     )
 
 

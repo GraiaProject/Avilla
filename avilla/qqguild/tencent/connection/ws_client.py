@@ -150,6 +150,26 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 validate_response(result, resp.status)
                 return result
 
+        if method == "patch":
+            async with self.session.patch(
+                (self.config.get_api_base() / action),
+                json=params,
+                headers={"Authorization": self.config.get_authorization()},
+            ) as resp:
+                result = await resp.json()
+                validate_response(result, resp.status)
+                return result
+
+        if method == "put":
+            async with self.session.put(
+                (self.config.get_api_base() / action),
+                json=params,
+                headers={"Authorization": self.config.get_authorization()},
+            ) as resp:
+                result = await resp.json()
+                validate_response(result, resp.status)
+                return result
+
         if method == "delete":
             async with self.session.delete(
                 (self.config.get_api_base() / action).with_query(params),

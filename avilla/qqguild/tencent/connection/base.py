@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T", bound="SupportsStaff")
-CallMethod = Literal["get", "post", "fetch", "update", "multipart", "put", "delete"]
+CallMethod = Literal["get", "post", "fetch", "update", "multipart", "put", "delete", "patch"]
 
 
 class QQGuildNetworking(Generic[T]):
