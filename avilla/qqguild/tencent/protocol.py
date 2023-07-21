@@ -26,11 +26,13 @@ class QQGuildProtocol(BaseProtocol):
         from .perform.action.guild import QQGuildGuildActionPerform
         from .perform.action.member import QQGuildMemberActionPerform
         from .perform.action.message import QQGuildMessageActionPerform
+        from .perform.action.role import QQGuildRoleActionPerform
 
         ## :: Event
         from .perform.event.message import QQGuildEventMessagePerform
         from .perform.event.metadata import QQGuildEventMetadataPerform
         from .perform.event.relationship import QQGuildEventRelationshipPerform
+
         ## :: Query
         from .perform.query import QQGuildQueryPerform
 

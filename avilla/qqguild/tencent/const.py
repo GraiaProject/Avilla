@@ -20,7 +20,7 @@ PRIVILEGE_TRANS = defaultdict(
         13: "read+speak+live",
         14: "manage+speak+live",
         15: "read+manage+speak+live",
-    }
+    },
 )
 PLATFORM = Platform(
     Land(

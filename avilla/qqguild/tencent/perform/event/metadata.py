@@ -35,17 +35,13 @@ class QQGuildEventMetadataPerform((m := ConnectionCollector())._):
             guild,
             Summary,
             {
-                Summary.inh(lambda x: x.name): ModifyDetail(
-                    "set", raw_event["name"], None
-                ),
-                Summary.inh(lambda x: x.description): ModifyDetail(
-                    "set", raw_event["description"], None
-                )
-            }
+                Summary.inh(lambda x: x.name): ModifyDetail("set", raw_event["name"], None),
+                Summary.inh(lambda x: x.description): ModifyDetail("set", raw_event["description"], None),
+            },
         )
 
     @EventParse.collect(m, "channel_update")
-    async def guild_update(self, raw_event: dict):
+    async def channel_update(self, raw_event: dict):
         account_route = Selector().land("qqguild").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qqguild")
@@ -60,12 +56,5 @@ class QQGuildEventMetadataPerform((m := ConnectionCollector())._):
             channel.member(account_route["account"]),
         )
         return MetadataModified(
-            context,
-            channel,
-            Summary,
-            {
-                Summary.inh(lambda x: x.name): ModifyDetail(
-                    "set", raw_event["name"], None
-                )
-            }
+            context, channel, Summary, {Summary.inh(lambda x: x.name): ModifyDetail("set", raw_event["name"], None)}
         )

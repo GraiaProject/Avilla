@@ -8,7 +8,6 @@ from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.qqguild.tencent.collector.connection import ConnectionCollector
 
-
 if TYPE_CHECKING:
     ...
 

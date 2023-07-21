@@ -113,11 +113,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
             channel,
             channel.member(account_route["account"]),
         )
-        return MessageRevoked(
-            context,
-            author.message(raw_event["message"]["id"]),
-            operator
-        )
+        return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)
 
     @EventParse.collect(m, "direct_message_delete")
     async def direct_message_delete(self, raw_event: dict):
@@ -137,8 +133,4 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
             author,
             account_route,
         )
-        return MessageRevoked(
-            context,
-            author.message(raw_event["message"]["id"]),
-            operator
-        )
+        return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)

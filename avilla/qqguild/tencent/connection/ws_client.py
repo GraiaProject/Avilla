@@ -276,9 +276,9 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             # https://bot.q.qq.com/wiki/develop/api/gateway/reference.html#_2-%E9%89%B4%E6%9D%83%E8%BF%9E%E6%8E%A5
             # 鉴权成功之后，后台会下发一个 Ready Event
             payload = Payload(**await connection.receive_json())
-            assert (
-                payload.opcode == Opcode.DISPATCH and payload.type == "READY" and payload.data
-            ), f"Received unexpected payload: {payload}"
+            if not (payload.opcode == Opcode.DISPATCH and payload.type == "READY" and payload.data):
+                logger.error(f"Received unexpected payload: {payload}")
+                return False
             self.sequence = payload.sequence
             self.session_id = payload.data["session_id"]
             self.account_id = payload.data["user"]["id"]

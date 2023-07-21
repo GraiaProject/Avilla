@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Summary, SummaryCapability
-from avilla.standard.core.privilege import Privilege, MuteAllCapability
 from avilla.qqguild.tencent.const import PRIVILEGE_TRANS
+from avilla.standard.core.privilege import MuteAllCapability, Privilege
+from avilla.standard.core.profile import Summary, SummaryCapability
 
 if TYPE_CHECKING:
     from avilla.qqguild.tencent.account import QQGuildAccount  # noqa
@@ -40,7 +40,7 @@ class QQGuildChannelActionPerform((m := AccountCollector["QQGuildProtocol", "QQG
             if api["path"] == "channels/{channel_id}" and api["method"] == "PATCH":
                 await self.account.connection.call("patch", f"channels/{target.pattern['channel']}", {"name": name})
                 return
-        raise permission_error_message(f"set_name@{target.path}", "read", ["manage"])
+        raise PermissionError(permission_error_message(f"set_name@{target.path}", "read", ["manage"]))
 
     @MuteAllCapability.mute_all.collect(m, "land.guild.channel")
     async def channel_mute_all(self, target: Selector):
