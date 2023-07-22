@@ -1,15 +1,16 @@
 from __future__ import annotations
 
+from contextlib import suppress
 import asyncio
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-import aiohttp.web
-from yarl import URL
+from fastapi import FastAPI
 
+from graia.amnesia.builtins.asgi import UvicornASGIService
 from launart import Launchable
 from launart.manager import Launart
-from launart.utilles import any_completed
+from avilla.onebot.v11.net.base import OneBot11Networking
 
 if TYPE_CHECKING:
     from avilla.onebot.v11.protocol import OneBot11Protocol
@@ -17,40 +18,35 @@ if TYPE_CHECKING:
 
 @dataclass
 class OneBot11WsServerConfig:
-    endpoint: URL
+    endpoint: str
     access_token: str | None = None
 
 
+class OneBot11WsServerConnection(OneBot11Networking):
+    ...
+
 class OneBot11WsServerNetworking(Launchable):
     required: set[str] = set()
-    stages: set[str] = {"preparing", "blocking", "cleanup"}
+    stages: set[str] = {"preparing", "cleanup"}
 
     protocol: OneBot11Protocol
     config: OneBot11WsServerConfig
 
-    signal_close: asyncio.Event
-    response_waiters: dict[str, asyncio.Future]
-
-    def __init__(self) -> None:
+    def __init__(self, protocol: OneBot11Protocol) -> None:
+        self.protocol = protocol
         super().__init__()
-        self.close_signal = asyncio.Event()
-        self.response_waiters = {}
 
-    async def websocket_server_handler(self, request: aiohttp.web.Request):
-        ws = aiohttp.web.WebSocketResponse()
-        await ws.prepare(request)
-        # TODO
-        return ws
+    async def websocket_server_handler(self):
+        ...
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            # use richuru to redirect log to loguru
-            server = aiohttp.web.Application()
-            server.add_routes([aiohttp.web.get("/onebot/v11", self.websocket_server_handler)])
-
-        async with self.stage("blocking"):
-            task = asyncio.get_running_loop().create_task(aiohttp.web._run_app(server))
-            await any_completed(manager.status.wait_for_sigexit(), asyncio.shield(task))
+            asgi_service = manager.get_component("asgi.service/uvicorn")
+            assert isinstance(asgi_service, UvicornASGIService)
+            app = FastAPI()
+            app.add_api_websocket_route("/onebot/v11/ws", self.websocket_server_handler)
+            asgi_service.middleware.mounts[self.config.endpoint] = app  # type: ignore
 
         async with self.stage("cleanup"):
-            task.cancel()
+            with suppress(KeyError):
+                del asgi_service.middleware.mounts[self.config.endpoint]
