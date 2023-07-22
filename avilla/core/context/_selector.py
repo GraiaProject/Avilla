@@ -12,7 +12,7 @@ from avilla.core.ryanvk.descriptor.base import Fn
 from avilla.core.selector import EMPTY_MAP, Selector
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.request import RequestCapability
-from avilla.standard.core.scene import SceneCapability
+from avilla.standard.core.relation import SceneCapability
 from graia.amnesia.message import Element, MessageChain, Text
 
 if TYPE_CHECKING:

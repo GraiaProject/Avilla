@@ -9,7 +9,7 @@ from avilla.core.selector import Selector
 from avilla.qqguild.tencent.const import PRIVILEGE_TRANS
 from avilla.standard.core.privilege import MuteCapability, MuteInfo, Privilege
 from avilla.standard.core.profile import Nick, Summary
-from avilla.standard.core.scene import SceneCapability
+from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:
     from avilla.qqguild.tencent.account import QQGuildAccount  # noqa
