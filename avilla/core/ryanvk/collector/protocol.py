@@ -36,9 +36,8 @@ class ProtocolCollector(BaseCollector, Generic[TProtocol]):
             Generic[TProtocol1],
             ProtocolBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
-
             protocol: TProtocol1
 
         return LocalPerformTemplate[TProtocol]

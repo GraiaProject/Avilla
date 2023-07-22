@@ -41,9 +41,8 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
             Generic[TProtocol1, TAccount1],
             AccountBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
-
             protocol: TProtocol1
             account: TAccount1
 

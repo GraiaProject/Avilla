@@ -51,9 +51,8 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
             Generic[TProtocol1, TAccount1],
             ContextBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
-
             protocol: TProtocol1
             account: TAccount1
 

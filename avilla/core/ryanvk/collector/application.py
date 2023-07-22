@@ -32,7 +32,8 @@ class ApplicationCollector(BaseCollector):
         class LocalPerformTemplate(
             ApplicationBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
+            ...
 
         return LocalPerformTemplate
