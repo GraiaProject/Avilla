@@ -3,12 +3,13 @@ from __future__ import annotations
 import asyncio
 import logging
 
-from asgi_dispatcher_middleware import DispatcherMiddleware, asgitypes
 from loguru import logger
 from uvicorn import Config, Server
 
 from launart import Launart, Launchable
 from launart.utilles import any_completed
+
+from .middleware import DispatcherMiddleware, asgitypes
 
 
 class LoguruHandler(logging.Handler):
