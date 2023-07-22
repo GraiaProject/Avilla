@@ -20,6 +20,7 @@ dependencies = [
     "graia-saya>=0.0.17",
     "textual<1.0.0,>=0.29.0",
     "nonebot2>=2.0.0",
+    "asgi-dispatcher-middleware>=1.0.0",
 ]
 version = "0"
 requires-python = ">=3.9"
