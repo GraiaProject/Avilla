@@ -15,8 +15,7 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ProtocolBasedPerformTemplate(PerformTemplate):
-    __native__ = True
+class ProtocolBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[ProtocolCollector]
 
     protocol: Access[BaseProtocol] = Access()

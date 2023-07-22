@@ -22,8 +22,7 @@ T1 = TypeVar("T1")
 M = TypeVar("M", bound="Metadata")
 
 
-class ContextBasedPerformTemplate(PerformTemplate):
-    __native__ = True
+class ContextBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[ContextCollector]
 
     context: Access[Context] = Access()

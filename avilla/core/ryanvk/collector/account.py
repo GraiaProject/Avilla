@@ -19,8 +19,7 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class AccountBasedPerformTemplate(PerformTemplate):
-    __native__ = True
+class AccountBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[AccountCollector]
 
     protocol: Access[BaseProtocol] = Access()

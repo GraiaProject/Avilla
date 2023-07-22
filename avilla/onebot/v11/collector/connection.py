@@ -17,8 +17,7 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ConnectionBasedPerformTemplate(PerformTemplate):
-    __native__ = True
+class ConnectionBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[ConnectionCollector]
 
     protocol: Access[OneBot11Protocol] = Access()
@@ -35,7 +34,8 @@ class ConnectionCollector(BaseCollector):
         class PerformTemplate(
             ConnectionBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
+            ...
 
         return PerformTemplate
