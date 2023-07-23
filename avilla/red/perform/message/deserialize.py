@@ -30,7 +30,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
             return NoticeAll()
         if self.context:
             return Notice(self.context.scene.member(raw_element.get("atNtUin", "atNtUid")))
-        return Notice(Selector().land("red").member(raw_element.get("atNtUin", "atNtUid")))
+        return Notice(Selector().land("qq").member(raw_element.get("atNtUin", "atNtUid")))
 
     @RedMessageDeserialize.collect(m, "face")
     async def face(self, raw_element: dict) -> Face | Poke:
@@ -41,7 +41,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     @RedMessageDeserialize.collect(m, "pic")
     async def pic(self, raw_element: dict) -> Picture:
         resource = RedImageResource(
-            Selector().land("red").picture(md5 := raw_element["md5HexStr"]),
+            Selector().land("qq").picture(md5 := raw_element["md5HexStr"]),
             md5,
             raw_element["fileSize"],
             raw_element["fileName"],
@@ -67,7 +67,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     async def file(self, raw_element: dict) -> File:
         return File(
             RedFileResource(
-                Selector().land("red").file(raw_element["fileMd5"]),
+                Selector().land("qq").file(raw_element["fileMd5"]),
                 raw_element["fileMd5"],
                 raw_element["fileSize"],
                 raw_element["fileName"],
@@ -80,7 +80,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     async def ptt(self, raw_element: dict) -> Audio:
         return Audio(
             RedVoiceResource(
-                Selector().land("red").voice(raw_element["md5HexStr"]),
+                Selector().land("qq").voice(raw_element["md5HexStr"]),
                 raw_element["md5HexStr"],
                 raw_element.get("fileSize", 0),
                 raw_element["fileName"],

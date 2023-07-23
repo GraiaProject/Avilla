@@ -159,7 +159,7 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
                     logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
                     # TODO: unregister all accounts, or cause inconsistency
                     for n in list(avilla.accounts.keys()):
-                        logger.debug(f"Unregistering onebot(v11) account {n}...")
+                        logger.debug(f"Unregistering red-protocol account {n}...")
                         account = cast("RedAccount", avilla.accounts[n].account)
                         account.status.enabled = False
                         await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))

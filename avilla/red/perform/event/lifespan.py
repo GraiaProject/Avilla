@@ -31,7 +31,7 @@ class RedEventLifespanPerform((m := ConnectionCollector())._):
 
         version_info = raw_event["version"]
         platform = Platform(
-            Land("qq"),  # OneBot/v11 仅为 qq 设计。
+            Land("qq"),
             Abstract(f"red-protocol/{version_info}"),
             Version({"app": version_info}),
         )
