@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Set
 
 from launart import Launart, Launchable
 
-from .net.base import RedNetworking
 from .net.ws_client import RedWsClientNetworking
 
 if TYPE_CHECKING:

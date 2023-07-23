@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from graia.amnesia.message.element import Unknown
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.application import ApplicationCollector
@@ -10,6 +9,7 @@ from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.red.resource import RedFileResource, RedImageResource, RedVoiceResource
 from avilla.standard.qq.elements import App, Face, MarketFace, Poke, PokeKind
+from graia.amnesia.message.element import Unknown
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

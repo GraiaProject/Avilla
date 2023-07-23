@@ -164,8 +164,8 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
                         account.status.enabled = False
                         await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
                         if (
-                            n.follows("land(qq).account") and
-                            n["account"] == self.account.route["account"]  # type: ignore
+                            n.follows("land(qq).account")
+                            and n["account"] == self.account.route["account"]  # type: ignore
                         ):
                             del avilla.accounts[n]
                     self.account = None

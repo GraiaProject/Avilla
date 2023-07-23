@@ -12,7 +12,7 @@ from avilla.core.selector import Selector
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.red.utils import pre_deserialize
 from avilla.standard.core.message import MessageReceived
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     ...
