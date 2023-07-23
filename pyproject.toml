@@ -6,39 +6,21 @@ dependencies = [
     "graia-broadcast>=0.17.5",
     #"graia-amnesia>=0.5.2",
     #"launart>=0.6.0,<1.0.0",
-
     "loguru>=0.6.0",
     "yarl>=1.7.2",
     "statv>=0.2.2",
     "aiohttp>=3.8.1",
     "creart>=0.2.1",
     "creart-graia>=0.1.5",
-    "ipykernel>=6.23.2",
     "graia-saya>=0.0.17",
     "textual<1.0.0,>=0.29.0",
-    "nonebot2>=2.0.0",
-
-    "fastapi>=0.100.0",
+    "nonebot2>=2.0.1",
     "wsproto>=1.2.0",
+    "starlette>=0.30.0",
+    "uvicorn>=0.23.1",
 ]
 version = "0"
 requires-python = ">=3.9"
-
-[tool.pdm.dev-dependencies]
-dev = [
-    "black>=23.7.0",
-    "flake8>=4.0.1",
-    "isort>=5.10.1",
-    "typing-extensions>=4.2.0",
-    "graia-scheduler>=0.0.8",
-    "mina-build>=0.2.6",
-    "pre-commit>=2.20.0",
-    "devtools>=0.9.0",
-    "richuru>=0.1.1",
-    "ruff>=0.0.272",
-    "uvicorn>=0.22.0",
-    "python-devtools>=2",
-]
 
 [build-system]
 requires = ["mina-build", "editables"]
@@ -176,3 +158,15 @@ requires-python = ">=3.9"
 [tool.mina.packages."qqguild/tencent".project.urls]
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
+
+[tool.pdm.dev-dependencies]
+dev = [
+    "black>=23.7.0",
+    "graia-scheduler>=0.0.8",
+    "mina-build>=0.2.6",
+    "richuru>=0.1.1",
+    "ruff>=0.0.272",
+    "uvicorn>=0.22.0",
+    "python-devtools>=2",
+    "ipykernel>=6.23.2",
+]
