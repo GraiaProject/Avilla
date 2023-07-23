@@ -19,14 +19,12 @@ T = TypeVar("T", bound="SupportsStaff")
 class RedNetworking(Generic[T]):
     protocol: RedProtocol
     account: RedAccount | None
-    response_waiters: dict[str, asyncio.Future]
     close_signal: asyncio.Event
 
     def __init__(self, protocol: RedProtocol):
         super().__init__()
         self.protocol = protocol
         self.account = None
-        self.response_waiters = {}
         self.close_signal = asyncio.Event()
 
     def message_receive(self) -> AsyncIterator[tuple[T, dict]]:
@@ -58,25 +56,13 @@ class RedNetworking(Generic[T]):
     async def connection_closed(self):
         self.close_signal.set()
 
-    async def call(self, action: str, params: dict | None = None) -> dict | None:
+    async def call(self, action: str, params: dict | None = None) -> None:
         if not self.alive:
             raise RuntimeError("connection is not established")
 
-        future: asyncio.Future[dict] = asyncio.get_running_loop().create_future()
-        echo = str(hash(future))
-        self.response_waiters[echo] = future
-
-        try:
-            await self.wait_for_available()
-            await self.send({"type": action, "payload": params or {}})
-            # result = await future
-        finally:
-            del self.response_waiters[echo]
-
-        # if result["status"] != "ok":
-        #     raise ActionFailed(f"{result['retcode']}: {result}")
-
-        return  # result["data"]
+        await self.wait_for_available()
+        await self.send({"type": action, "payload": params or {}})
+        return
 
     @overload
     async def call_http(
