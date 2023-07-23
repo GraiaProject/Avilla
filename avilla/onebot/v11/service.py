@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
+from avilla.onebot.v11.net.ws_server import OneBot11WsServerNetworking
 from launart import Launart, Launchable
 from launart.utilles import any_completed
 
@@ -15,7 +16,7 @@ class OneBot11Service(Launchable):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    connections: list[OneBot11WsClientNetworking]
+    connections: list[OneBot11WsClientNetworking | OneBot11WsServerNetworking]
     protocol: OneBot11Protocol
 
     def __init__(self, protocol: OneBot11Protocol):

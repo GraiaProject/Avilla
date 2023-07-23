@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T", bound="SupportsStaff")
-CallMethod = Literal["get", "post", "fetch", "update", "multipart", "put", "delete"]
+CallMethod = Literal["get", "post", "fetch", "update", "multipart", "put", "delete", "patch"]
 
 
 class QQGuildNetworking(Generic[T]):
@@ -55,7 +55,8 @@ class QQGuildNetworking(Generic[T]):
 
             async def event_parse_task(_data: Payload):
                 event_type = _data.type
-                assert event_type is not None, "event type is None"
+                if not event_type:
+                    raise ValueError("event type is None")
                 event = await Staff.focus(connection).parse_event(event_type.lower(), _data.data)
                 if event is None:
                     logger.warning(f"received unsupported event {event_type.lower()}: {_data.data}")
@@ -69,5 +70,5 @@ class QQGuildNetworking(Generic[T]):
         self.session_id = None
         self.close_signal.set()
 
-    async def call(self, method: CallMethod, action: str, params: dict | None = None) -> dict | None:
+    async def call(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
         ...

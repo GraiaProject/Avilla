@@ -11,6 +11,7 @@ from avilla.core.selector import Selector
 from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
+from avilla.onebot.v11.net.ws_server import OneBot11WsServerConnection
 from avilla.standard.core.account.event import (
     AccountAvailable,
     AccountRegistered,
@@ -50,6 +51,8 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
 
         if isinstance(self.connection, OneBot11WsClientNetworking):
             account.websocket_client = self.connection
+        elif isinstance(self.connection, OneBot11WsServerConnection):
+            account.websocket_server = self.connection
 
         logger.info(f"Account {self_id} connected and created")
         return AccountRegistered(self.protocol.avilla, account)

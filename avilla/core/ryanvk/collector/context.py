@@ -22,7 +22,7 @@ T1 = TypeVar("T1")
 M = TypeVar("M", bound="Metadata")
 
 
-class ContextBasedPerformTemplate(PerformTemplate):
+class ContextBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[ContextCollector]
 
     context: Access[Context] = Access()
@@ -50,9 +50,8 @@ class ContextCollector(BaseCollector, Generic[TProtocol, TAccount]):
             Generic[TProtocol1, TAccount1],
             ContextBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
-
             protocol: TProtocol1
             account: TAccount1
 

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.event import AvillaEvent
 from avilla.core.selector import Selector
 
@@ -21,14 +21,17 @@ class ActivityEvent(AvillaEvent):
             ...
 
 
+@dataclass
 class ActivityAvailable(ActivityEvent):
     pass
 
 
+@dataclass
 class ActivityUnavailable(ActivityEvent):
     pass
 
 
+@dataclass
 class ActivityTrigged(ActivityEvent):
     trigger: Selector  # who trigged the activity
     scene: Selector

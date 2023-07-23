@@ -5,7 +5,12 @@ from enum import Enum
 from typing import Any, Literal, overload
 
 from avilla.core.exceptions import InvalidOperation, UnknownError
-from avilla.qqguild.tencent.exception import ActionFailed, AuditException, RateLimitException, UnauthorizedException
+from avilla.qqguild.tencent.exception import (
+    ActionFailed,
+    AuditException,
+    RateLimitException,
+    UnauthorizedException,
+)
 
 
 @overload

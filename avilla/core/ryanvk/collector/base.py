@@ -52,6 +52,14 @@ class PerformTemplate:
     def __post_collected__(cls, collect: BaseCollector):
         ...
 
+    def __init_subclass__(cls, *, native: bool = False) -> None:
+        if native:
+            return
+
+        for i in cls.__collector__.defer_callbacks:
+            i(cls)
+        cls.__post_collected__(cls.__collector__)
+
 
 class _ResultCollect(Protocol[R]):
     @property
@@ -85,18 +93,8 @@ class BaseCollector:
                 isolate.apply(cls)
 
     def get_collect_template(self):
-        class LocalPerformTemplate(PerformTemplate):
+        class LocalPerformTemplate(PerformTemplate, native=True):
             __collector__ = self
-
-            def __init_subclass__(cls) -> None:
-                if getattr(cls, "__native__", False):
-                    delattr(cls, "__native__")
-                    return
-
-                for i in self.defer_callbacks:
-                    i(cls)
-
-                cls.__post_collected__(self)
 
         return LocalPerformTemplate
 

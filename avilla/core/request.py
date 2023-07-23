@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.standard.core.request.capability import RequestCapability
 
 from ._runtime import cx_context

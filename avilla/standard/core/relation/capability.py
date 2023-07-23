@@ -38,3 +38,10 @@ class RequestJoinCapability(Capability):
     @Fn
     async def on_term(self, term: tuple[Literal["string", "url"] | str, str]) -> bool:
         ...
+
+
+class RelationshipTerminate(Capability):
+    @TargetFn
+    async def terminate(self) -> None:
+        # TODO: use wand
+        ...

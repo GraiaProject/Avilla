@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 from collections import deque
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Container, Protocol, overload
 from typing import NoReturn as Never
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.selector import Selector, _FollowItem
 
 if TYPE_CHECKING:

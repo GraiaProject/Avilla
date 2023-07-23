@@ -6,11 +6,10 @@ from heapq import heappop, heappush
 from time import time
 from typing import Any
 
-from graia.amnesia.transport.common.storage import CacheStorage
 from launart import Launart, Launchable
 
 
-class Memcache(CacheStorage[Any]):
+class Memcache:
     cache: dict[str, tuple[float | None, Any]]
     expire: list[tuple[float, str]]
 

@@ -2,11 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk.collector.base import (
-    Access,
-    BaseCollector,
-    PerformTemplate,
-)
+from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.elizabeth.connection.ws_client import ElizabethWsClientNetworking
@@ -17,7 +13,7 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ConnectionBasedPerformTemplate(PerformTemplate):
+class ConnectionBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[ConnectionCollector]
 
     protocol: Access[ElizabethProtocol] = Access()
@@ -34,7 +30,8 @@ class ConnectionCollector(BaseCollector):
         class PerformTemplate(
             ConnectionBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
+            ...
 
         return PerformTemplate

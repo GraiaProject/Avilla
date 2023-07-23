@@ -19,7 +19,7 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class AccountBasedPerformTemplate(PerformTemplate):
+class AccountBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[AccountCollector]
 
     protocol: Access[BaseProtocol] = Access()
@@ -40,9 +40,8 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
             Generic[TProtocol1, TAccount1],
             AccountBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
-
             protocol: TProtocol1
             account: TAccount1
 

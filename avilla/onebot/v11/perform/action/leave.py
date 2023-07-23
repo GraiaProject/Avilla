@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.scene import SceneCapability
+from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa

@@ -22,13 +22,19 @@ class QQGuildProtocol(BaseProtocol):
         from .perform.message.serialize import QQGuildMessageSerializePerform
 
         ## :: Action
+        from .perform.action.channel import QQGuildChannelActionPerform
+        from .perform.action.guild import QQGuildGuildActionPerform
+        from .perform.action.member import QQGuildMemberActionPerform
         from .perform.action.message import QQGuildMessageActionPerform
+        from .perform.action.role import QQGuildRoleActionPerform
 
         ## :: Event
         from .perform.event.message import QQGuildEventMessagePerform
+        from .perform.event.metadata import QQGuildEventMetadataPerform
+        from .perform.event.relationship import QQGuildEventRelationshipPerform
 
         ## :: Query
-        # from .perform.query.group import QQGuildGroupQueryPerform
+        from .perform.query import QQGuildQueryPerform
 
         ## :: Resource Fetch
         from .perform.resource_fetch import QQGuildResourceFetchPerform

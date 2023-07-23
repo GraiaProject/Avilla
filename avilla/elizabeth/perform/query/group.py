@@ -26,6 +26,9 @@ class ElizabethGroupQueryPerform((m := AccountCollector["ElizabethProtocol", "El
     @CoreCapability.query.collect(m, "member", "land.group")
     async def query_group_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         result = await self.account.connection.call("fetch", "memberList", {"target": int(previous["group"])})
+        if isinstance(predicate, str) and predicate == str(self.account.route["account"]):
+            yield previous.member(predicate)  # bot self not in memberList
+            return
         result = cast(list, result)
         for i in result:
             member_id = str(i["id"])

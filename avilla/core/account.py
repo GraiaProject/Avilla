@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from collections import ChainMap
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
 from statv import Stats, Statv
 
-from avilla.core._vendor.dataclasses import dataclass, field
 from avilla.core.ryanvk import Isolate
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector

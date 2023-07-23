@@ -1,26 +1,23 @@
 from __future__ import annotations
 
 import inspect
+from dataclasses import dataclass
 from typing import (
     TYPE_CHECKING,
     Any,
-    Awaitable,
     Callable,
     ChainMap,
     Protocol,
     TypeVar,
-    Union,
     overload,
 )
 
 from typing_extensions import Concatenate, ParamSpec
 
-from avilla.core._vendor.dataclasses import dataclass
+from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
 from avilla.core.ryanvk.descriptor.target import TargetArtifactStore, TargetFn
 from avilla.core.selector import FollowsPredicater, Selectable
 from avilla.core.utilles import identity
-
-from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
 
 if TYPE_CHECKING:
     from avilla.core.metadata import Metadata, MetadataRoute
@@ -54,7 +51,7 @@ class UnitedFnPerformBranch(Protocol[P, R1, R2]):
         ...
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class UnitedFnImplement:
     capability: type[Capability]
     name: str
@@ -95,6 +92,8 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
         collection: ChainMap[Any, Any],
         target: Selectable,
         route: type[Metadata] | MetadataRoute | None,
+        *args: P.args,
+        **kwargs: P.kwargs,
     ) -> Any:
         return UnitedFnImplement(self.capability, self.name, route)
 

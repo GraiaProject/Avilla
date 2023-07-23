@@ -4,13 +4,13 @@ import asyncio
 import json
 from collections import ChainMap
 from contextlib import suppress
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
 from loguru import logger
 from yarl import URL
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
@@ -102,7 +102,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 result = await resp.json()
                 validate_response(result)
                 return result
-            
+
         raise ValueError(f"Unknown method {method}")
 
     async def wait_for_available(self):

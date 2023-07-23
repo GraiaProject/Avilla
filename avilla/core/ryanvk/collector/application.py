@@ -12,8 +12,9 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ApplicationBasedPerformTemplate(PerformTemplate):
+class ApplicationBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[ApplicationCollector]
+
     avilla: Access[Avilla] = Access()
 
 
@@ -30,7 +31,8 @@ class ApplicationCollector(BaseCollector):
         class LocalPerformTemplate(
             ApplicationBasedPerformTemplate,
             upper,
+            native=True,
         ):
-            __native__ = True
+            ...
 
         return LocalPerformTemplate

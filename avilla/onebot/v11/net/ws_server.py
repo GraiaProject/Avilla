@@ -1,56 +1,123 @@
 from __future__ import annotations
 
-import asyncio
-from typing import TYPE_CHECKING
+from collections import ChainMap
+from contextlib import suppress
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, cast
 
-import aiohttp.web
-from yarl import URL
+from starlette.applications import Starlette
+from starlette.routing import WebSocketRoute
+from starlette.websockets import WebSocket
 
-from avilla.core._vendor.dataclasses import dataclass
+from avilla.onebot.v11.net.base import OneBot11Networking
+from avilla.standard.core.account import AccountUnregistered
+from graia.amnesia.builtins.asgi import UvicornASGIService
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
 
 if TYPE_CHECKING:
+    from avilla.onebot.v11.account import OneBot11Account
     from avilla.onebot.v11.protocol import OneBot11Protocol
-
 
 @dataclass
 class OneBot11WsServerConfig:
-    endpoint: URL
+    endpoint: str
     access_token: str | None = None
 
 
+class OneBot11WsServerConnection(OneBot11Networking['OneBot11WsServerConnection']):
+    connection: WebSocket
+
+    def __init__(self, connection: WebSocket, protocol: OneBot11Protocol):
+        self.connection = connection
+        super().__init__(protocol)
+    
+    @property
+    def id(self):
+        return self.connection.headers['X-Self-ID']
+
+    @property
+    def alive(self) -> bool:
+        return not self.close_signal.is_set()
+
+    async def message_receive(self):
+        async for msg in self.connection.iter_json():
+            yield self, msg
+        else:
+            await self.connection_closed()
+    
+    async def wait_for_available(self):
+        return
+
+    def get_staff_components(self):
+        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
+
+    def __staff_generic__(self, element_type: dict, event_type: dict):
+        ...
+
+    def get_staff_artifacts(self):
+        return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
+
+    async def send(self, payload: dict) -> None:
+        return await self.connection.send_json(payload)
+
+    async def unregister_account(self):
+        avilla = self.protocol.avilla
+        for n in list(avilla.accounts.keys()):
+            account = cast("OneBot11Account", avilla.accounts[n].account)
+            account.status.enabled = False
+            await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
+            if n.follows("land(qq).account") and int(n["account"]) in self.accounts:
+                del avilla.accounts[n]
+
 class OneBot11WsServerNetworking(Launchable):
-    required: set[str] = set()
+    id = "onebot/v11/connection/websocket/server"
+    required: set[str] = {"asgi.service/uvicorn"}
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     protocol: OneBot11Protocol
     config: OneBot11WsServerConfig
 
-    signal_close: asyncio.Event
-    response_waiters: dict[str, asyncio.Future]
+    connections: dict[str, OneBot11WsServerConnection]
 
-    def __init__(self) -> None:
+    def __init__(self, protocol: OneBot11Protocol, config: OneBot11WsServerConfig) -> None:
+        self.protocol = protocol
+        self.config = config
+        self.connections = {}
         super().__init__()
-        self.close_signal = asyncio.Event()
-        self.response_waiters = {}
 
-    async def websocket_server_handler(self, request: aiohttp.web.Request):
-        ws = aiohttp.web.WebSocketResponse()
-        await ws.prepare(request)
-        # TODO
-        return ws
+    async def websocket_server_handler(self, ws: WebSocket):
+        if ws.headers['Authorization'][6:] != self.config.access_token:
+            return await ws.close()
+    
+        account_id = ws.headers['X-Self-ID']
+
+        await ws.accept()
+        connection = OneBot11WsServerConnection(ws, self.protocol)
+        self.connections[account_id] = connection
+        
+        try:
+            await any_completed(
+                connection.message_handle(),
+                connection.close_signal.wait()
+            )
+        finally:
+            await connection.unregister_account()
+            del self.connections[account_id]
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            # use richuru to redirect log to loguru
-            server = aiohttp.web.Application()
-            server.add_routes([aiohttp.web.get("/onebot/v11", self.websocket_server_handler)])
+            asgi_service = manager.get_component("asgi.service/uvicorn")
+            assert isinstance(asgi_service, UvicornASGIService)
+            app = Starlette(routes=[
+                WebSocketRoute("/onebot/v11/ws/universal", self.websocket_server_handler)
+            ])
+            asgi_service.middleware.mounts[self.config.endpoint.rstrip('/')] = app  # type: ignore
 
         async with self.stage("blocking"):
-            task = asyncio.get_running_loop().create_task(aiohttp.web._run_app(server))
-            await any_completed(manager.status.wait_for_sigexit(), asyncio.shield(task))
+            await manager.status.wait_for_sigexit()
 
         async with self.stage("cleanup"):
-            task.cancel()
+            with suppress(KeyError):
+                del asgi_service.middleware.mounts[self.config.endpoint]

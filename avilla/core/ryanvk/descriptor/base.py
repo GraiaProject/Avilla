@@ -60,3 +60,9 @@ class Fn(Generic[VnCallable]):
         **kwargs: P.kwargs,
     ) -> tuple[BaseCollector, Callable[Concatenate[Any, P], Any]]:
         return collection[FnImplement(self.capability, self.name)]
+
+    def get_outbound_callable(self: Fn[Callable[P, R]], instance: Any, entity: Callable[Concatenate[Any, P], R]):
+        def wrapper(*args: P.args, **kwargs: P.kwargs):
+            return entity(instance, *args, **kwargs)
+
+        return wrapper

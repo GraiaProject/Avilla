@@ -3,11 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core.builtins.capability import CoreCapability
+from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Summary, SummaryCapability
+from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
-from avilla.standard.core.scene import SceneCapability
+from avilla.standard.core.profile import Summary, SummaryCapability
+from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -48,7 +50,6 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-
     @SceneCapability.leave.collect(m, "land.group")
     async def group_leave(self, target: Selector):
         await self.account.connection.call(
@@ -59,8 +60,18 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @SummaryCapability.set_name.collect(m, "land.group")
-    async def group_set_name(self, target: Selector, name: str):
+    @SummaryCapability.set_name.collect(m, "land.group", Summary)
+    async def group_set_name(self, target: Selector, t: ..., name: str):
+        privilege_info = await self.account.staff.pull_metadata(target, Privilege)
+        if not privilege_info.available:
+            self_permission = await self.account.staff.pull_metadata(
+                target.into(f"~.member({self.account.route['account']})"), Privilege >> Summary
+            )
+            raise PermissionError(
+                permission_error_message(
+                    f"set_name@{target.path}", self_permission.name, ["group_owner", "group_admin"]
+                )
+            )
         await self.account.connection.call(
             "update",
             "groupConfig",
@@ -83,6 +94,6 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
         return Privilege(
-            self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
-            self_info["permission"] in {"OWNER", "ADMINISTRATOR"},
+            PRIVILEGE_LEVEL[self_info["permission"]] > 0,
+            PRIVILEGE_LEVEL[self_info["permission"]] > 0,
         )

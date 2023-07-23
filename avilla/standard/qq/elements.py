@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from dataclasses import dataclass
 from enum import Enum
 
-from avilla.core._vendor.dataclasses import dataclass
 from avilla.core.elements import Picture
 from avilla.core.selector import Selector
 from graia.amnesia.message.element import Element
