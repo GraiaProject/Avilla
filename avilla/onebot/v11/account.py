@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.selector import Selector
+from avilla.onebot.v11.net.ws_server import OneBot11WsServerConnection
 from avilla.standard.core.account import AccountAvailable, AccountUnavailable
 from launart.utilles import any_completed
 
@@ -20,7 +21,7 @@ class OneBot11Account(BaseAccount):
     # http_client: OneBot11HttpClientConnection | None = None
     # http_server: OneBot11HttpServerConnection | None = None
     websocket_client: OneBot11WsClientNetworking | None = None
-    # websocket_server: OneBot11WebsocketServerConnection | None = None
+    websocket_server: OneBot11WsServerConnection | None = None
 
     def __init__(self, route: Selector, protocol: OneBot11Protocol):
         super().__init__(route, protocol.avilla)
@@ -37,19 +38,19 @@ class OneBot11Account(BaseAccount):
 
     async def call(self, endpoint: str, params: dict):
         coros = set()
-        for connection in (self.websocket_client,):  # TODO
+        for connection in (self.websocket_client,self.websocket_server):  # TODO
             if connection is None:
                 continue
-            if connection.status.available:
+            if connection.alive:
                 return await connection.call(endpoint, params)
-            coros.add(connection.status.wait_for_available())
+            coros.add(connection.wait_for_available())
 
         if coros:
             await any_completed(*coros)
-            for connection in (self.websocket_client,):
+            for connection in (self.websocket_client,self.websocket_server):
                 if connection is None:
                     continue
-                if connection.status.available:
+                if connection.alive:
                     return await connection.call(endpoint, params)
 
         raise RuntimeError("No available connection")

@@ -3,19 +3,20 @@ from __future__ import annotations
 from collections import ChainMap
 from contextlib import suppress
 from dataclasses import dataclass
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from fastapi import FastAPI, WebSocket
 
-from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.net.base import OneBot11Networking
-from avilla.onebot.v11.protocol import OneBot11Protocol
 from avilla.standard.core.account import AccountUnregistered
 from graia.amnesia.builtins.asgi import UvicornASGIService
 from launart import Launchable
 from launart.manager import Launart
 from launart.utilles import any_completed
 
+if TYPE_CHECKING:
+    from avilla.onebot.v11.account import OneBot11Account
+    from avilla.onebot.v11.protocol import OneBot11Protocol
 
 @dataclass
 class OneBot11WsServerConfig:
@@ -39,7 +40,7 @@ class OneBot11WsServerConnection(OneBot11Networking['OneBot11WsServerConnection'
         return not self.close_signal.is_set()
 
     async def message_receive(self):
-        async for msg in self.connection.iter_bytes():
+        async for msg in self.connection.iter_json():
             yield self, msg
         else:
             await self.connection_closed()
@@ -69,8 +70,9 @@ class OneBot11WsServerConnection(OneBot11Networking['OneBot11WsServerConnection'
                 del avilla.accounts[n]
 
 class OneBot11WsServerNetworking(Launchable):
+    id = "onebot/v11/connection/websocket/server"
     required: set[str] = {"asgi.service/uvicorn"}
-    stages: set[str] = {"preparing", "cleanup"}
+    stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     protocol: OneBot11Protocol
     config: OneBot11WsServerConfig
@@ -84,7 +86,7 @@ class OneBot11WsServerNetworking(Launchable):
         super().__init__()
 
     async def websocket_server_handler(self, ws: WebSocket):
-        if ws.headers['Authorization'][7:] != self.config.access_token:
+        if ws.headers['Authorization'][6:] != self.config.access_token:
             return await ws.close()
     
         account_id = ws.headers['X-Self-ID']
@@ -92,14 +94,15 @@ class OneBot11WsServerNetworking(Launchable):
         await ws.accept()
         connection = OneBot11WsServerConnection(ws, self.protocol)
         self.connections[account_id] = connection
-
-        await any_completed(
-            connection.message_handle(),
-            connection.close_signal
-        )
-
-        await connection.unregister_account()
-        del self.connections[account_id]
+        
+        try:
+            await any_completed(
+                connection.message_handle(),
+                connection.close_signal.wait()
+            )
+        finally:
+            await connection.unregister_account()
+            del self.connections[account_id]
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
@@ -107,7 +110,10 @@ class OneBot11WsServerNetworking(Launchable):
             assert isinstance(asgi_service, UvicornASGIService)
             app = FastAPI()
             app.add_api_websocket_route("/onebot/v11/ws/universal", self.websocket_server_handler)
-            asgi_service.middleware.mounts[self.config.endpoint] = app  # type: ignore
+            asgi_service.middleware.mounts[self.config.endpoint.rstrip('/')] = app  # type: ignore
+
+        async with self.stage("blocking"):
+            await manager.status.wait_for_sigexit()
 
         async with self.stage("cleanup"):
             with suppress(KeyError):
