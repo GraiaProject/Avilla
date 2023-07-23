@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from graia.amnesia.message.element import Unknown
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.application import ApplicationCollector
@@ -46,7 +47,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["fileSize"],
             raw_element["fileName"],
             raw_element["elementId"],
-            raw_element["uuid"],
+            raw_element["fileUuid"],
             raw_element["sourcePath"],
             raw_element["picWidth"],
             raw_element["picHeight"],
@@ -89,3 +90,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
                 raw_element["filePath"],
             )
         )
+
+    @RedMessageDeserialize.collect(m, "grayTip")
+    async def gray_tip(self, raw_element: dict) -> Unknown:
+        return Unknown("grayTip", raw_element)

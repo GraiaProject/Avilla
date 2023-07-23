@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from loguru import logger
@@ -12,6 +12,7 @@ from avilla.core.selector import Selector
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.red.utils import pre_deserialize
 from avilla.standard.core.message import MessageReceived
+from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
     ...
@@ -27,7 +28,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account received message {raw_event}")
             return
         payload = raw_event[0]
-
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService.id).cache
         if payload["chatType"] == 2:
             group = Selector().land(account.route["land"]).group(str(payload["peerUid"]))
             member = group.member(str(payload.get("senderUin", payload.get("senderUid"))))
@@ -41,6 +42,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             elements = pre_deserialize(payload["elements"])
             reply = None
             if elements[0]["type"] == "reply":
+                print(elements[0])
                 reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
             message = await account.staff.x({"context": context}).deserialize_message(elements)
@@ -82,6 +84,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 time=datetime.fromtimestamp(int(payload["msgTime"])),
                 reply=reply,
             )
+        await cache.set(f"qq/red:{payload['msgId']}", payload, timedelta(minutes=5))
         context.cache["meta"][msg.to_selector()] = {Message: msg}  # type: ignore
         return MessageReceived(
             context,

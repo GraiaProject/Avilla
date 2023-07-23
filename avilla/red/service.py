@@ -17,20 +17,11 @@ class RedService(Launchable):
 
     protocol: RedProtocol
     connections: list[RedWsClientNetworking]
-    account_map: dict[int, RedNetworking]
 
     def __init__(self, protocol: RedProtocol):
         self.protocol = protocol
         self.connections = []
-        self.account_map = {}
         super().__init__()
-
-    def has_connection(self, account_id: str):
-        return int(account_id) in self.account_map
-
-    def get_connection(self, account_id: str) -> RedNetworking:
-        print("get", account_id)
-        return self.account_map[int(account_id)]
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):

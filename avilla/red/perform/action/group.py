@@ -8,7 +8,7 @@ from avilla.core.selector import Selector
 from avilla.standard.core.common import Count
 from avilla.standard.core.privilege import MuteAllCapability
 from avilla.standard.core.profile import Nick, Summary
-from avilla.standard.core.scene import SceneCapability
+from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa

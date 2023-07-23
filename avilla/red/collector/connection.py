@@ -13,7 +13,7 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ConnectionBasedPerformTemplate(PerformTemplate):
+class ConnectionBasedPerformTemplate(PerformTemplate, native=True):
     __collector__: ClassVar[ConnectionCollector]
 
     protocol: Access[RedProtocol] = Access()

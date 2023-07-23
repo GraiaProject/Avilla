@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import contextlib
+
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
+from graia.amnesia.builtins.memcache import MemcacheService
 
 from .service import RedService
 
@@ -42,3 +45,5 @@ class RedProtocol(BaseProtocol):
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
+        with contextlib.suppress(ValueError):
+            avilla.launch_manager.add_component(MemcacheService())

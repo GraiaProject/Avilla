@@ -5,7 +5,6 @@ def pre_deserialize(elements: list[dict]):
         data = {k: v for k, v in elem.items() if v is not None}
         for k, v in data.items():
             if k.endswith("Element"):
-                print("element type", data["elementType"], "==>", k[:-7])
                 slot["type"] = k[:-7]
                 slot.update(v)
             elif k != "elementType":
