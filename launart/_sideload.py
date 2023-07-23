@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from typing import TYPE_CHECKING, Any, Dict, TypeVar, cast
 
 if TYPE_CHECKING:
@@ -16,14 +15,10 @@ class Override:
     def source(self):
         return self.__source
 
-    @property
-    def __data(self):
-        return ChainMap(self.__additional, vars(self.__source))
-
     def __getattr__(self, item):
-        if item not in self.__data:
-            raise AttributeError(f"'{self.__source.__class__.__name__}' object has no attribute '{item}'")
-        return self.__data[item]
+        if item in self.__additional:
+            return self.__additional[item]
+        return getattr(self.__source, item)
 
 
 T = TypeVar("T")
