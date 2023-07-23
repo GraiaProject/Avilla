@@ -22,7 +22,7 @@ class RedProtocol(BaseProtocol):
 
         ## :: Action
         # from .perform.action.contact import RedContactActionPerform
-        # from .perform.action.friend import RedFriendActionPerform
+        from .perform.action.friend import RedFriendActionPerform
         from .perform.action.group import RedGroupActionPerform
 
         # from .perform.action.group_member import RedGroupMemberActionPerform
