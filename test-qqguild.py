@@ -1,19 +1,14 @@
-import asyncio
 import os
+
 from creart import create
-from yarl import URL
 
-from avilla.core.elements import Text
 from avilla.core import Avilla, Context, MessageReceived
-from avilla.core.elements import Notice, Picture
-from avilla.standard.qq.elements import Face
-from avilla.qqguild.tencent.element import Embed, Reference
-from avilla.standard.core.privilege import Privilege
 from avilla.core.builtins.capability import CoreCapability
-from avilla.core.resource import LocalFileResource
-
-from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientConfig, QQGuildWsClientNetworking, Intents
+from avilla.core.elements import Text
+from avilla.qqguild.tencent.connection.ws_client import Intents, QQGuildWsClientConfig, QQGuildWsClientNetworking
+from avilla.qqguild.tencent.element import Reference
 from avilla.qqguild.tencent.protocol import QQGuildProtocol
+from avilla.standard.core.privilege import Privilege
 
 # from graia.amnesia.builtins.aiohttp import AiohttpClientService
 from graia.broadcast import Broadcast
@@ -21,7 +16,6 @@ from launart import Launart
 
 #from avilla.console.protocol import ConsoleProtocol
 
-import richuru1
 #richuru1.install()
 
 broadcast = create(Broadcast)

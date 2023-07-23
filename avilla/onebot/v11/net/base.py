@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
+from weakref import WeakValueDictionary
 
 from loguru import logger
 
@@ -21,14 +22,14 @@ T = TypeVar("T", bound="SupportsStaff")
 class OneBot11Networking(Generic[T]):
     protocol: OneBot11Protocol
     accounts: dict[int, OneBot11Account]
-    response_waiters: dict[str, asyncio.Future]
+    response_waiters: WeakValueDictionary[str, asyncio.Future]
     close_signal: asyncio.Event
 
     def __init__(self, protocol: OneBot11Protocol):
         super().__init__()
         self.protocol = protocol
         self.accounts = {}
-        self.response_waiters = {}
+        self.response_waiters = WeakValueDictionary()
         self.close_signal = asyncio.Event()
 
     def message_receive(self) -> AsyncIterator[tuple[T, dict]]:

@@ -78,6 +78,7 @@ from avilla.standard.core.profile import Nick as Nick
 from avilla.standard.core.profile import NickCapability as NickCapability
 from avilla.standard.core.profile import Summary as Summary
 from avilla.standard.core.profile import SummaryCapability as SummaryCapability
+from avilla.standard.core.relation import SceneCapability as SceneCapability
 from avilla.standard.core.request import Answers as Answers
 from avilla.standard.core.request import Comment as Comment
 from avilla.standard.core.request import Questions as Questions
@@ -94,5 +95,4 @@ from avilla.standard.core.resource import FileUploaded as FileUploaded
 from avilla.standard.core.resource import ResourceAvailable as ResourceAvailable
 from avilla.standard.core.resource import ResourceEvent as ResourceEvent
 from avilla.standard.core.resource import ResourceUnavailable as ResourceUnavailable
-from avilla.standard.core.relation import SceneCapability as SceneCapability
 from graia.amnesia.message import MessageChain as MessageChain
