@@ -5,7 +5,9 @@ from contextlib import suppress
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
-from fastapi import FastAPI, WebSocket
+from starlette.applications import Starlette
+from starlette.routing import WebSocketRoute
+from starlette.websockets import WebSocket
 
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
@@ -108,8 +110,9 @@ class OneBot11WsServerNetworking(Launchable):
         async with self.stage("preparing"):
             asgi_service = manager.get_component("asgi.service/uvicorn")
             assert isinstance(asgi_service, UvicornASGIService)
-            app = FastAPI()
-            app.add_api_websocket_route("/onebot/v11/ws/universal", self.websocket_server_handler)
+            app = Starlette(routes=[
+                WebSocketRoute("/onebot/v11/ws/universal", self.websocket_server_handler)
+            ])
             asgi_service.middleware.mounts[self.config.endpoint.rstrip('/')] = app  # type: ignore
 
         async with self.stage("blocking"):
