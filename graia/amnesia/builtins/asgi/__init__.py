@@ -9,7 +9,8 @@ from uvicorn import Config, Server
 from launart import Launart, Launchable
 from launart.utilles import any_completed
 
-from .middleware import DispatcherMiddleware, asgitypes
+from . import asgitypes
+from .middleware import DispatcherMiddleware
 
 
 async def _empty_asgi_handler(scope, receive, send):

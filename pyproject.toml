@@ -5,23 +5,19 @@ name = "avilla-workspace"
 dependencies = [
     "graia-broadcast>=0.17.5",
     #"graia-amnesia>=0.5.2",
+    #"launart>=0.6.0,<1.0.0",
+
     "loguru>=0.6.0",
     "yarl>=1.7.2",
-    #"launart>=0.6.2",
     "statv>=0.2.2",
     "aiohttp>=3.8.1",
     "creart>=0.2.1",
     "creart-graia>=0.1.5",
-    "funcparserlib>=1.0.1",
     "ipykernel>=6.23.2",
-    "pip>=23.1.2",
-    "ichika>=0.0.8",
-    #"launart>=0.6.0,<1.0.0",
     "graia-saya>=0.0.17",
     "textual<1.0.0,>=0.29.0",
     "nonebot2>=2.0.0",
-    "anyio>=3.7.1",
-    "asgiref>=3.7.2",
+
     "fastapi>=0.100.0",
     "wsproto>=1.2.0",
 ]

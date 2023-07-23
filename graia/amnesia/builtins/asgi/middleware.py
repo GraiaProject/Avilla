@@ -2,8 +2,7 @@ import asyncio
 import functools
 import typing
 
-import anyio
-from asgiref import typing as asgitypes
+from . import asgitypes
 
 MAX_QUEUE_SIZE = 10
 
@@ -48,14 +47,14 @@ class DispatcherMiddleware:
         self.startup_complete = {path: False for path in self.mounts}
         self.shutdown_complete = {path: False for path in self.mounts}
 
-        async with anyio.create_task_group() as tg:
+        tasks = []
+        try:
             for path, app in self.mounts.items():
-                await tg.spawn(
-                    app,
+                tasks.append(asyncio.create_task(app(
                     scope,
                     self.app_queues[path].get,
-                    functools.partial(self.send, path, send),
-                )
+                    functools.partial(self.send, path, send),  # type: ignore
+                )))
 
             while True:
                 message = await receive()
@@ -63,6 +62,8 @@ class DispatcherMiddleware:
                     await queue.put(message)
                 if message["type"] == "lifespan.shutdown":
                     break
+        finally:
+            await asyncio.wait(tasks)
 
     async def send(self, path: str, send: typing.Callable, message: dict) -> None:
         if message["type"] == "lifespan.startup.complete":
