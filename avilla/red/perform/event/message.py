@@ -42,7 +42,6 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             elements = pre_deserialize(payload["elements"])
             reply = None
             if elements[0]["type"] == "reply":
-                print(elements[0])
                 reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
             message = await account.staff.x({"context": context}).deserialize_message(elements)
