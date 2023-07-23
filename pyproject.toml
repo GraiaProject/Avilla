@@ -23,6 +23,7 @@ dependencies = [
     "anyio>=3.7.1",
     "asgiref>=3.7.2",
     "fastapi>=0.100.0",
+    "wsproto>=1.2.0",
 ]
 version = "0"
 requires-python = ">=3.9"

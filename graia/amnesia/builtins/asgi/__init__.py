@@ -12,6 +12,26 @@ from launart.utilles import any_completed
 from .middleware import DispatcherMiddleware, asgitypes
 
 
+async def _empty_asgi_handler(scope, receive, send):
+    if scope['type'] == 'lifespan':
+        while True:
+            message = await receive()
+            if message['type'] == 'lifespan.startup':
+                await send({'type': 'lifespan.startup.complete'})
+                return
+            elif message['type'] == 'lifespan.shutdown':
+                await send({'type': 'lifespan.shutdown.complete'})
+                return
+
+    await send(
+        {
+            "type": "http.response.start",
+            "status": 404,
+            "headers": [(b"content-length", b"0")],
+        }
+    )
+    await send({"type": "http.response.body"})
+
 class LoguruHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
         try:
@@ -46,11 +66,11 @@ class UvicornASGIService(Launchable):
         self,
         host: str,
         port: int,
-        mounts: dict[str, asgitypes.ASGIApplication] | None = None,
+        mounts: dict[str, asgitypes.ASGI3Application] | None = None,
     ):
         self.host = host
         self.port = port
-        self.middleware = DispatcherMiddleware(mounts or {})
+        self.middleware = DispatcherMiddleware(mounts or {"\0\0\0": _empty_asgi_handler})
         super().__init__()
 
     @property
@@ -59,27 +79,30 @@ class UvicornASGIService(Launchable):
 
     @property
     def stages(self):
-        return {"preparing", "cleanup"}
+        return {"preparing", "blocking", "cleanup"}
 
     async def launch(self, manager: Launart) -> None:
         async with self.stage("preparing"):
-            self.server = WithoutSigHandlerServer(Config(self.middleware, host=self.host, port=self.port))
-            # TODO: 使用户拥有更多的对 Config 的配置能力.
-    
-            PATCHES = "uvicorn.error", "uvicorn.asgi", "uvicorn.access", ""
+            self.server = WithoutSigHandlerServer(
+                Config(self.middleware, host=self.host, port=self.port, factory=False)
+            )
+
             level = logging.getLevelName(20)  # default level for uvicorn
             logging.basicConfig(handlers=[LoguruHandler()], level=level)
-
+            PATCHES = ["uvicorn.error", "uvicorn.asgi", "uvicorn.access", ""]
             for name in PATCHES:
-                target = logging.getLogger(name)
-                target.handlers = [LoguruHandler(level=level)]
-                target.propagate = False
+               target = logging.getLogger(name)
+               target.handlers = [LoguruHandler(level=level)]
+               target.propagate = False
 
             serve_task = asyncio.create_task(self.server.serve())
+
+        async with self.stage("blocking"):
+            await any_completed(serve_task, manager.status.wait_for_sigexit())
 
         async with self.stage("cleanup"):
             logger.warning("try to shutdown uvicorn server...")
             self.server.should_exit = True
-            await any_completed(serve_task, asyncio.sleep(10))
+            await any_completed(serve_task, asyncio.sleep(5))
             if not serve_task.done():
                 logger.warning("timeout, force exit uvicorn server...")
