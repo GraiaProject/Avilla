@@ -147,7 +147,7 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
             element_type = self.get_element_type(raw_element)
             sign = MessageDeserializeSign(element_type)
             if sign not in self.artifacts:
-                raise NotImplementedError(f"Element {element_type} descrialize is not supported")
+                raise NotImplementedError(f"Element {element_type} descrialize is not supported: {raw_element}")
 
             async with self.use_record(self.artifacts[sign]) as entity:
                 result.append(await entity(raw_element))
