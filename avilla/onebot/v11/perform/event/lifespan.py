@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from loguru import logger
 
 from avilla.core.account import AccountInfo
-from avilla.core.platform import Abstract, Branch, Land, Platform, Version
+from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.onebot.v11.account import OneBot11Account
@@ -35,14 +35,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         else:
             account.route = Selector().land("qq").account(str(self_id))
 
-        version_info = await self.connection.call("get_version_info")
-        assert version_info is not None
-        platform = Platform(
-            Land("qq"),  # OneBot/v11 仅为 qq 设计。
-            Abstract(f"onebot/{version_info['protocol_version']}"),
-            Branch(version_info["app_name"]),
-            Version({"app": version_info["app_version"]}),
-        )
+        platform = Platform(Land("qq"), Abstract("onebot/v11"))
         # TODO: more consistent platform info
 
         self.connection.accounts[self_id] = account
