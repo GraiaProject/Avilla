@@ -67,6 +67,11 @@ class Avilla:
             async def message_cacher(context: Context, message: Message):
                 if context.account.info.enabled_message_cache:
                     self.service.message_cache[context.account.route].push(message)
+            
+            message_cacher.__annotations__ = {
+                "context": Context,
+                "message": Message
+            }
 
     @classmethod
     def current(cls) -> "Avilla":
