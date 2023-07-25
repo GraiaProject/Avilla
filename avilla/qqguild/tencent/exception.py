@@ -14,7 +14,7 @@ class ActionFailed(HttpRequestError, BaseActionFailed):
         super().__init__(status, self.message or "Unknown")
 
     def __repr__(self) -> str:
-        return f"<ActionFailed: {self.status}, code={self.code}, " f"message={self.message}, data={self.data}>"
+        return f"<{self.__class__.__name__}: {self.status}, code={self.code}, " f"message={self.message}, data={self.data}>"
 
 
 class UnauthorizedException(ActionFailed, InvalidAuthentication):

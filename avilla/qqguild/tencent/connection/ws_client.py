@@ -16,6 +16,7 @@ from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
 from avilla.qqguild.tencent.account import QQGuildAccount
 from avilla.qqguild.tencent.const import PLATFORM
+from avilla.qqguild.tencent.exception import UnauthorizedException
 from avilla.standard.core.account import (
     AccountAvailable,
     AccountRegistered,
@@ -276,6 +277,8 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             # https://bot.q.qq.com/wiki/develop/api/gateway/reference.html#_2-%E9%89%B4%E6%9D%83%E8%BF%9E%E6%8E%A5
             # 鉴权成功之后，后台会下发一个 Ready Event
             payload = Payload(**await connection.receive_json())
+            if payload.opcode == Opcode.INVALID_SESSION:
+                raise UnauthorizedException(payload.op, {"message": "Invaild Intents."})
             if not (payload.opcode == Opcode.DISPATCH and payload.type == "READY" and payload.data):
                 logger.error(f"Received unexpected payload: {payload}")
                 return False
