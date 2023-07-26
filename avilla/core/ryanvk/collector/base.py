@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from contextlib import AbstractContextManager, asynccontextmanager
+from contextlib import AbstractContextManager, AsyncExitStack, asynccontextmanager
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -15,8 +15,8 @@ from typing import (
 from typing_extensions import ParamSpec, Self, Unpack
 
 from avilla.core.ryanvk._runtime import processing_isolate
-from avilla.core.ryanvk.collector.access import Access
 from avilla.core.ryanvk.descriptor.fetch import Fetch
+from avilla.core.ryanvk.endpoint import Endpoint
 from avilla.core.ryanvk.protocol import SupportsCollect
 from avilla.core.selector import Selector
 
@@ -40,13 +40,15 @@ class PerformTemplate:
         self.components = components
 
     @classmethod
-    def entrypoints(cls):
-        return [k for k, v in cls.__dict__.items() if isinstance(v, Access)]
+    def endpoints(cls):
+        return [(k, v) for k, v in cls.__dict__.items() if isinstance(v, Endpoint)]
 
     @asynccontextmanager
     async def run_with_lifespan(self):
-        # TODO
-        yield self
+        async with AsyncExitStack() as stack:
+            for _, v in self.endpoints():
+                await stack.enter_async_context(v.lifespan(self))
+            yield self
 
     @classmethod
     def __post_collected__(cls, collect: BaseCollector):

@@ -43,15 +43,13 @@ conn1 = ElizabethWsClientNetworking(
 mah.service.connections.append(conn1)
 
 console_protocol = ConsoleProtocol()
-avilla = Avilla(broadcast, launart, [protocol], message_cache_size=0)
+avilla = Avilla(broadcast, launart, [protocol, console_protocol], message_cache_size=0)
 
 protocol.avilla = avilla
 
 launart.add_component(UvicornASGIService(
     "127.0.0.1", 9090
 ))
-# debug(protocol.isolate.artifacts)
-# exit()
 
 @broadcast.receiver(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):

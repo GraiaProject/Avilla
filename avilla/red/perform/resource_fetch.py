@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from aiohttp import ClientSession
 
 from avilla.core import Context
-from avilla.core.ryanvk.collector.access import OptionalAccess
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.ryanvk.descriptor.fetch import Fetch
+from avilla.core.ryanvk.endpoint import OptionalAccess
 from avilla.red.resource import RedImageResource
 
 if TYPE_CHECKING:

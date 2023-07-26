@@ -169,4 +169,5 @@ dev = [
     "uvicorn>=0.22.0",
     "python-devtools>=2",
     "ipykernel>=6.23.2",
+    "pip>=23.2.1",
 ]

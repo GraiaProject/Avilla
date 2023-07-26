@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk.collector.base import Access, BaseCollector, PerformTemplate
+from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
+from avilla.core.ryanvk.endpoint import Access
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
 from typing import (
     TYPE_CHECKING,
     Generic,
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class Access(Generic[T]):
+class Endpoint(Generic[T]):
     name: str
 
     def __init__(self):
@@ -37,24 +38,11 @@ class Access(Generic[T]):
         if instance is None:
             return self
 
-        return instance.components[self.name]
+        return self.evaluate(instance)
 
-    @staticmethod
-    def optional():
-        return OptionalAccess()
-
-
-class OptionalAccess(Access[T]):
-    @overload
-    def __get__(self, instance: None, owner: type) -> Self:
+    def evaluate(self, instance: PerformTemplate) -> T:
         ...
 
-    @overload
-    def __get__(self, instance: PerformTemplate, owner: type) -> T | None:
-        ...
-
-    def __get__(self, instance: PerformTemplate | None, owner: type):
-        if instance is None:
-            return self
-
-        return instance.components.get(self.name)
+    @asynccontextmanager
+    async def lifespan(self, instance: PerformTemplate):
+        yield
