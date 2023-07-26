@@ -7,6 +7,7 @@ from typing import (
     Awaitable,
     Callable,
     ClassVar,
+    Iterable,
     Protocol,
     TypeVar,
     overload,
@@ -14,7 +15,7 @@ from typing import (
 
 from typing_extensions import ParamSpec, Self, Unpack
 
-from avilla.core.ryanvk._runtime import processing_isolate
+from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS, processing_isolate
 from avilla.core.ryanvk.descriptor.fetch import Fetch
 from avilla.core.ryanvk.endpoint import Endpoint
 from avilla.core.ryanvk.protocol import SupportsCollect
@@ -34,6 +35,7 @@ M = TypeVar("M", bound="Metadata")
 
 class PerformTemplate:
     __collector__: ClassVar[BaseCollector]
+    targets: ClassVar[Iterable[str]] = ()
     components: dict[str, Any]
 
     def __init__(self, components: dict[str, Any]):
@@ -60,7 +62,11 @@ class PerformTemplate:
 
         for i in cls.__collector__.defer_callbacks:
             i(cls)
+
         cls.__post_collected__(cls.__collector__)
+
+        for target in cls.targets:
+            ARTIFACT_COLLECTIONS.setdefault(target, []).append(cls.__collector__.artifacts)
 
 
 class _ResultCollect(Protocol[R]):
