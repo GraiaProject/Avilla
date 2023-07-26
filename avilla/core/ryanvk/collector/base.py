@@ -18,6 +18,7 @@ from typing_extensions import ParamSpec, Self, Unpack
 from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS, processing_isolate
 from avilla.core.ryanvk.descriptor.fetch import Fetch
 from avilla.core.ryanvk.endpoint import Endpoint
+from avilla.core.ryanvk.isolate import _merge_lookup_collection
 from avilla.core.ryanvk.protocol import SupportsCollect
 from avilla.core.selector import Selector
 
@@ -59,14 +60,27 @@ class PerformTemplate:
     def __init_subclass__(cls, *, native: bool = False) -> None:
         if native:
             return
+        
+        collector = cls.__collector__
+        artifacts = collector.artifacts
 
-        for i in cls.__collector__.defer_callbacks:
+        current_collection = None
+        if "current_collection" in artifacts:
+            current_collection = artifacts.pop("current_collection")
+
+        for i in collector.defer_callbacks:
             i(cls)
 
-        cls.__post_collected__(cls.__collector__)
+        cls.__post_collected__(collector)
 
         for target in cls.targets:
-            ARTIFACT_COLLECTIONS.setdefault(target, []).append(cls.__collector__.artifacts)
+            lookup_collection = {}
+            target_artifacts = ARTIFACT_COLLECTIONS.setdefault(target, {
+                "lookup_collections": [lookup_collection]
+            })
+            if current_collection is not None:
+                _merge_lookup_collection(lookup_collection, current_collection)
+            target_artifacts.update(artifacts)
 
 
 class _ResultCollect(Protocol[R]):

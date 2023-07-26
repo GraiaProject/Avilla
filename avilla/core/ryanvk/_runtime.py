@@ -8,4 +8,4 @@ if TYPE_CHECKING:
 
 processing_isolate: ContextVar[Isolate] = ContextVar("processing_isolate")
 
-ARTIFACT_COLLECTIONS: dict[str, list[dict[Any, Any]]] = {}
+ARTIFACT_COLLECTIONS: dict[str, dict[Any, Any]] = {}
