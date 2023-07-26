@@ -148,9 +148,9 @@ class Selector:
                 return True
             if item.name != name:
                 return False
-            if item.literal is not None and value != item.literal:
-                return False
             if item.predicate is not None and not item.predicate(value):
+                return False
+            if item.literal is not None and value != item.literal:
                 return False
         return index + 1 == len(self.pattern)
 
