@@ -81,12 +81,14 @@ class ContextSceneSelector(ContextSelector):
 
     def send_message(
         self,
-        message: MessageChain | str | Iterable[str | Element],
+        message: MessageChain | Iterable[str | Element] | Element | str ,
         *,
         reply: Message | Selector | str | None = None,
     ):
         if isinstance(message, str):
             message = MessageChain([Text(message)])
+        elif isinstance(message, Element):
+            message = MessageChain([message])
         elif not isinstance(message, MessageChain):
             message = MessageChain([]).extend(list(message))
         else:
