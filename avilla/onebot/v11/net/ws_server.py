@@ -108,8 +108,7 @@ class OneBot11WsServerNetworking(Launchable):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            asgi_service = manager.get_component("asgi.service/uvicorn")
-            assert isinstance(asgi_service, UvicornASGIService)
+            asgi_service = manager.get_component(UvicornASGIService)
             app = Starlette(routes=[
                 WebSocketRoute("/onebot/v11/ws/universal", self.websocket_server_handler)
             ])

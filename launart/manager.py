@@ -5,7 +5,7 @@ import contextlib
 import signal
 from contextvars import ContextVar
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, cast, overload, TypeVar
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, TypeVar, cast, overload
 
 from loguru import logger
 
@@ -219,8 +219,10 @@ class Launart:
             if target not in self.components:
                 raise ValueError(f"Launchable {target} does not exists.")
             return self.components[target]
+
         if _id := getattr(target, "id", None):
             return self.get_component(_id)
+
         try:
             return next(comp for comp in self.components.values() if isinstance(comp, target))
         except StopIteration as e:
