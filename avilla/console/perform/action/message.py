@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from loguru import logger
+from nonechat.info import Robot
+from nonechat.message import ConsoleMessage
 
-from avilla.console.frontend.info import Robot
-from avilla.console.message import ConsoleMessage
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector

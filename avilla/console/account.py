@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from nonechat.info import Event
+from nonechat.message import Element
+
 from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.selector import Selector
-
-from .element import ConsoleElement
-from .frontend.info import Event
 
 if TYPE_CHECKING:
     from .protocol import ConsoleProtocol
@@ -43,5 +43,5 @@ class ConsoleAccount(BaseAccount):
     def available(self) -> bool:
         return self.status.enabled
 
-    def __staff_generic__(self, element_type: ConsoleElement, event_type: Event):
+    def __staff_generic__(self, element_type: Element, event_type: Event):
         ...

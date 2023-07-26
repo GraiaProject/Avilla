@@ -1,9 +1,11 @@
 from __future__ import annotations
 
 from datetime import datetime
+from secrets import token_hex
 from typing import TYPE_CHECKING
 
-from avilla.console.frontend.info import Event, MessageEvent
+from nonechat.info import Event, MessageEvent
+
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
@@ -40,7 +42,7 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
         return MessageReceived(
             context,
             Message(
-                id=raw_event.msg_id,
+                id=token_hex(16),
                 scene=console,
                 sender=console,
                 content=message,

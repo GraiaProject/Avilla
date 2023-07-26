@@ -3,8 +3,12 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
-from avilla.console.frontend import Frontend
+from nonechat.app import Frontend
+
+from avilla.standard.core.account import AccountUnavailable
 from launart import Launart, Launchable
+
+from .backend import AvillaConsoleBackend
 
 if TYPE_CHECKING:
     from .protocol import ConsoleProtocol
@@ -14,11 +18,12 @@ class ConsoleService(Launchable):
     id = "console.service"
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
-    app: Frontend
+    app: Frontend[AvillaConsoleBackend]
     protocol: ConsoleProtocol
 
     def __init__(self, protocol: ConsoleProtocol):
-        self.app = Frontend(protocol)
+        self.app = Frontend(AvillaConsoleBackend)
+        self.app.backend.set_service(self)
         self.protocol = protocol
         super().__init__()
 
@@ -33,3 +38,4 @@ class ConsoleService(Launchable):
             self.app.exit()
             if task:
                 await task
+            self.protocol.avilla.broadcast.postEvent(AccountUnavailable(self.protocol.avilla, self.app.backend.account))

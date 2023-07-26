@@ -13,11 +13,11 @@ dependencies = [
     "creart>=0.2.1",
     "creart-graia>=0.1.5",
     "graia-saya>=0.0.17",
-    "textual<1.0.0,>=0.29.0",
     "nonebot2>=2.0.1",
     "wsproto>=1.2.0",
     "starlette>=0.30.0",
     "uvicorn>=0.23.1",
+    "nonechat>=0.2.0",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -93,7 +93,7 @@ repository = "https://github.com/GraiaProject/Avilla"
 includes = ["avilla/console"]
 raw-dependencies = [
   "avilla-core >= 1.0.0-alpha.5",
-  "textual<1.0.0,>=0.29.0",
+  "nonechat<1.0.0,>=0.2.0",
 ]
 
 [tool.mina.packages.console.project]

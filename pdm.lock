@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:66be91a9db5f1c85b3f878d543f7b951e4fada3ce2a921ac44bfbe571c5c4540"
+content_hash = "sha256:6708063f1d4d714f6afa0a043ca3ea04e6ee42e24fd253b629b9c8198eb2b11c"
 
 [[package]]
 name = "aiohttp"
@@ -1006,6 +1006,19 @@ files = [
 ]
 
 [[package]]
+name = "nonechat"
+version = "0.2.0"
+requires_python = "<4.0,>=3.8"
+summary = "Awesome chat console using Textual"
+dependencies = [
+    "textual~=0.29.0",
+]
+files = [
+    {file = "nonechat-0.2.0-py3-none-any.whl", hash = "sha256:97e3755afaa212baeb1c5315754fc05ddfb18273fb813e247a3aa1146b8204f1"},
+    {file = "nonechat-0.2.0.tar.gz", hash = "sha256:6214e4aede2c91d9504801581d5fcdd5ee4088f9afa75d0a875da7193555d179"},
+]
+
+[[package]]
 name = "packaging"
 version = "23.1"
 requires_python = ">=3.7"
@@ -1511,7 +1524,7 @@ files = [
 
 [[package]]
 name = "textual"
-version = "0.30.0"
+version = "0.29.0"
 requires_python = ">=3.7,<4.0"
 summary = "Modern Text User Interface framework"
 dependencies = [
@@ -1521,8 +1534,8 @@ dependencies = [
     "typing-extensions<5.0.0,>=4.4.0",
 ]
 files = [
-    {file = "textual-0.30.0-py3-none-any.whl", hash = "sha256:e87d587e4569236f3809d41955ed9556287dbedaca64724e1d6ad5adbb69c9c5"},
-    {file = "textual-0.30.0.tar.gz", hash = "sha256:bf7045a7e9b7dc3ac589c38ce86ac31aecf0e76e8c8ce09aee474316bc2e2c03"},
+    {file = "textual-0.29.0-py3-none-any.whl", hash = "sha256:949fd8f16a412404ba785605dda1e2fab8166656e4d29d4177ec63cd73ba83d4"},
+    {file = "textual-0.29.0.tar.gz", hash = "sha256:7eb87b6d007dc9bd08e00e893b860ecb7a11ca815c8866db39fe17ec547e2fcf"},
 ]
 
 [[package]]
