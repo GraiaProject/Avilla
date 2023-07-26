@@ -5,7 +5,7 @@ import contextlib
 import signal
 from contextvars import ContextVar
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, cast
+from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, cast, overload, TypeVar
 
 from loguru import logger
 
@@ -19,6 +19,7 @@ from launart.utilles import (
     resolve_requirements,
 )
 
+TL = TypeVar("TL", bound=Launchable)
 
 class Launart:
     components: Dict[str, Launchable]
@@ -204,10 +205,27 @@ class Launart:
 
         self.components[component.id] = component
 
-    def get_component(self, id: str) -> Launchable:
-        if id not in self.components:
-            raise ValueError(f"Launchable {id} does not exists.")
-        return self.components[id]
+    @overload
+    def get_component(self, target: type[TL]) -> TL:
+        ...
+
+    @overload
+    def get_component(self, target: str) -> Launchable:
+        ...
+
+
+    def get_component(self, target: str | type[TL]) -> TL | Launchable:
+        if isinstance(target, str):
+            if target not in self.components:
+                raise ValueError(f"Launchable {target} does not exists.")
+            return self.components[target]
+        if _id := getattr(target, "id", None):
+            return self.get_component(_id)
+        try:
+            return next(comp for comp in self.components.values() if isinstance(comp, target))
+        except StopIteration as e:
+            raise ValueError(f"Launchable {target.__name__} does not exists.") from e
+
 
     def remove_component(
         self,

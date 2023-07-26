@@ -4,6 +4,7 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from nonechat.app import Frontend
+from nonechat.setting import ConsoleSetting
 
 from avilla.standard.core.account import AccountUnavailable
 from launart import Launart, Launchable
@@ -22,7 +23,14 @@ class ConsoleService(Launchable):
     protocol: ConsoleProtocol
 
     def __init__(self, protocol: ConsoleProtocol):
-        self.app = Frontend(AvillaConsoleBackend)
+        self.app = Frontend(
+            AvillaConsoleBackend,
+            ConsoleSetting(
+                title="Console",
+                sub_title="Welcome to Avilla",
+                icon="Avilla",
+            )
+        )
         self.app.backend.set_service(self)
         self.protocol = protocol
         super().__init__()
