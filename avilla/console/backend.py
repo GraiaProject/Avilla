@@ -27,7 +27,7 @@ class AvillaConsoleBackend(Backend):
 
     def __init__(self, app: Frontend):
         super().__init__(app)
-        self._stderr = sys.stderr
+        self._stderr = sys.stdout
         self._logger_id: int | None = None
         self._should_restore_logger: bool = False
 
@@ -35,6 +35,7 @@ class AvillaConsoleBackend(Backend):
         self._service = service
 
     def on_console_load(self):
+        logger.remove()
         self._should_restore_logger = True
         self.account = ConsoleAccount(self._service.protocol)
         self._logger_id = logger.add(self.frontend._fake_output, level=0, diagnose=False)
