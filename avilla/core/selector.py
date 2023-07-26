@@ -154,21 +154,21 @@ class Selector:
                 return False
         return index + 1 == len(self.pattern)
 
-    def into(self, pattern: str) -> Selector:
+    def into(self, pattern: str, **kwargs: str) -> Selector:
         items = _parse_follows(pattern)
         new_patterns = {}
         iterator = iter(self.pattern)
         if items and items[0].name == "~":
-            if not all(item.literal for item in items[1:]):
+            if not all(item.literal or kwargs.get(item.name) for item in items[1:]):
                 raise ValueError("expected specific literals in follows pattern")
-            return Selector({**self.pattern, **{item.name: item.literal for item in items[1:]}})  # type: ignore
+            return Selector({**self.pattern, **{item.name: kwargs.get(item.name) or item.literal for item in items[1:]}})  # type: ignore
         for item in items:
             if item.name == "*":
                 raise TypeError("expected no wildcard")
             current_key = next(iterator)
             if item.name != current_key:
                 raise ValueError(f"expected {'.'.join(new_patterns)}.{item.name}, got {current_key}")
-            new_patterns[current_key] = item.literal or self.pattern[current_key]
+            new_patterns[current_key] = kwargs.get(item.name) or item.literal or self.pattern[current_key]
         return Selector(new_patterns)
 
     def expects(self, pattern: str, **kwargs: FollowsPredicater) -> Self:
