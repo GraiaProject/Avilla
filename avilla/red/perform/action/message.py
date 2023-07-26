@@ -19,7 +19,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
     m.post_applying = True
 
     async def handle_reply(self, target: Selector):
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService.id).cache
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         reply_msg = await cache.get(f"qq/red:{target.pattern['message']}")
         if reply_msg:
             return {

@@ -73,7 +73,7 @@ class Launchable(metaclass=ABCMeta):
     async def wait_for_required(self, stage: U_Stage = "prepared"):
         await self.wait_for(stage, *self.required)
 
-    async def wait_for(self, stage: U_Stage, *component_id: str):
+    async def wait_for(self, stage: U_Stage, *component_id: str | type[Launchable]):
         if self.manager is None:
             raise RuntimeError("attempted to wait for some components without a manager.")
         components = [self.manager.get_component(id) for id in component_id]

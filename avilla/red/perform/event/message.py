@@ -28,7 +28,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account received message {raw_event}")
             return
         payload = raw_event[0]
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService.id).cache
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if payload["chatType"] == 2:
             group = Selector().land(account.route["land"]).group(str(payload["peerUid"]))
             member = group.member(str(payload.get("senderUin", payload.get("senderUid"))))
