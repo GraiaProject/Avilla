@@ -29,8 +29,6 @@ class ConsoleProtocol(BaseProtocol):
         # :: Event
         from .perform.event.message import ConsoleEventMessagePerform
 
-        # from .perform.event.lifespan import OneBot11EventLifespanPerform
-
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
         self.service = ConsoleService(self)

@@ -31,7 +31,7 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
         message = await Staff.focus(self.account, element_typer=lambda e: type(e).__name__).deserialize_message(
             raw_event.message.content
         )
-        console = Selector().land(self.account.route["land"]).console(str(raw_event.user.id))
+        console = Selector().land(self.account.route["land"]).user(str(raw_event.user.id))
         context = Context(
             account=self.account,
             client=console,

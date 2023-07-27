@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from secrets import token_hex
 from typing import TYPE_CHECKING
 
 from loguru import logger
@@ -19,8 +20,9 @@ if TYPE_CHECKING:
 
 class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
+    targets = ["land.user"]
 
-    @MessageSend.send.collect(m, "land.console")
+    @MessageSend.send.collect(m, "land.user")
     async def send_console_message(
         self,
         target: Selector,
@@ -32,10 +34,8 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
             assert isinstance(self.protocol, ConsoleProtocol)
         serialized_msg = ConsoleMessage(await Staff.focus(self.account).serialize_message(message))
 
-        msg_id = await self.account.client.call(
+        await self.account.client.call(
             "send_msg", {"message": serialized_msg, "info": Robot(self.protocol.name)}
         )
-        if not msg_id:
-            raise RuntimeError(f"Failed to send message to console: {message}")
         logger.info(f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}")
-        return Selector().land(self.account.route["land"]).message(msg_id)
+        return Selector().land(self.account.route["land"]).message(token_hex(16))
