@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, AsyncIterator, Generic, Literal, TypeVar
 
 from loguru import logger
 
+from avilla.core.exceptions import InvalidAuthentication
 from avilla.core.ryanvk.staff import Staff
 
 from .util import validate_response
@@ -95,7 +96,7 @@ class ElizabethNetworking(Generic[T]):
         if not self.alive:
             raise RuntimeError("connection is not established")
         if session and self.session_key is None:
-            raise Exception  # FIXME
+            raise InvalidAuthentication
 
         if method == "multipart":
             return await self.call_http(method, action, params)

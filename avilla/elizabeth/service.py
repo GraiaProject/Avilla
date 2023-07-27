@@ -33,8 +33,6 @@ class ElizabethService(Launchable):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            # TODO: lifecycle event for account
-            # 主要有几点 - 配置的读取，应用; 子任务 (Launchable) 的堵塞 - 这个交给 blocking;
             for i in self.connections:
                 manager.add_component(i)
 
@@ -44,7 +42,7 @@ class ElizabethService(Launchable):
             )
 
         async with self.stage("cleanup"):
-            ...  # TODO
+            ...
 
     @property
     def stages(self):

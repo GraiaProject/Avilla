@@ -40,7 +40,6 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
 
         self.connection.accounts[self_id] = account
         self.protocol.avilla.accounts[account.route] = AccountInfo(account.route, account, self.protocol, platform)
-        # TODO: more networking support
 
         if isinstance(self.connection, OneBot11WsClientNetworking):
             account.websocket_client = self.connection
@@ -71,6 +70,7 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         account.status.enabled = False
         logger.warning(f"Account {self_id} disabled by remote")
         # TODO: remove registry after timeout
+        # 直接移交给网络层处理。
         return AccountUnavailable(self.protocol.avilla, account)
 
     @EventParse.collect(m, "meta_event.heartbeat")

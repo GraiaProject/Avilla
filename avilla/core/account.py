@@ -27,7 +27,6 @@ class AccountInfo:
     enabled_message_cache: bool = False
 
 
-# TODO: Review Account instance initizate
 @dataclass
 class BaseAccount:
     route: Selector

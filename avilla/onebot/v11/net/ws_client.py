@@ -111,7 +111,6 @@ class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"
                     receiver_task.cancel()
                     logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
                     accounts = {str(i) for i in self.accounts.keys()}
-                    # TODO: unregister all accounts, or cause inconsistency
                     for n in list(avilla.accounts.keys()):
                         logger.debug(f"Unregistering onebot(v11) account {n}...")
                         account = cast("OneBot11Account", avilla.accounts[n].account)

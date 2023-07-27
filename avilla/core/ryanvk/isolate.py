@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from ._runtime import processing_isolate
-from .collector.base import PerformTemplate
-from .descriptor.target import LookupCollection
+
+if TYPE_CHECKING:
+    from .collector.base import PerformTemplate
+    from .descriptor.target import LookupCollection
 
 
 def _merge_lookup_collection(self: LookupCollection, other: LookupCollection):

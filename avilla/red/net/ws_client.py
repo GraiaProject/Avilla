@@ -157,7 +157,6 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
                 if close_task in done:
                     receiver_task.cancel()
                     logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
-                    # TODO: unregister all accounts, or cause inconsistency
                     for n in list(avilla.accounts.keys()):
                         logger.debug(f"Unregistering red-protocol account {n}...")
                         account = cast("RedAccount", avilla.accounts[n].account)
