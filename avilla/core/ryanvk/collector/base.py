@@ -64,14 +64,14 @@ class PerformTemplate:
         collector = cls.__collector__
         artifacts = collector.artifacts
 
-        current_collection = None
-        if "current_collection" in artifacts:
-            current_collection = artifacts.pop("current_collection")
-
         for i in collector.defer_callbacks:
             i(cls)
 
         cls.__post_collected__(collector)
+
+        current_collection = None
+        if "current_collection" in artifacts:
+            current_collection = artifacts.pop("current_collection")
 
         for target in cls.targets:
             lookup_collection = {}
