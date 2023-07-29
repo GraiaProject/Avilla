@@ -171,9 +171,15 @@ class Selector:
             new_patterns[current_key] = kwargs.get(item.name) or item.literal or self.pattern[current_key]
         return Selector(new_patterns)
 
-    def expects(self, pattern: str, **kwargs: FollowsPredicater) -> Self:
+    def expects(
+        self,
+        pattern: str,
+        *,
+        exception_type: type[Exception] = ValueError,
+        **kwargs: FollowsPredicater,
+    ) -> Self:
         if not self.follows(pattern, **kwargs):
-            raise ValueError(f"Selector {self} does not follow {pattern}")
+            raise exception_type(f"Selector {self} does not follow {pattern}")
 
         return self
 
