@@ -161,7 +161,12 @@ class Selector:
         if items and items[0].name == "~":
             if not all(item.literal or kwargs.get(item.name) for item in items[1:]):
                 raise ValueError("expected specific literals in follows pattern")
-            return Selector({**self.pattern, **{item.name: kwargs.get(item.name) or item.literal for item in items[1:]}})  # type: ignore
+            return Selector(
+                {
+                    **self.pattern,
+                    **{item.name: kwargs.get(item.name) or item.literal for item in items[1:]},
+                }  # type: ignore
+            )
         for item in items:
             if item.name == "*":
                 raise TypeError("expected no wildcard")

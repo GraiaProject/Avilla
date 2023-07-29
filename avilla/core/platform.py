@@ -47,6 +47,14 @@ class Abstract(PlatformDescription):
 
 
 @dataclass
+class Distribution(PendingDeprecationWarning):
+    name: str
+    base: str
+    maintainers: list[Maintainer] = field(default_factory=list)
+    humanized_name: str | None = None
+
+
+@dataclass
 class Branch(PlatformDescription):
     value: str
 
