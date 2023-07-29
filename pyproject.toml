@@ -26,8 +26,8 @@ requires-python = ">=3.9"
 requires = ["mina-build", "editables"]
 build-backend = "mina.backend"
 
-[tool.pdm]
-includes = ["avilla", "graia", "launart"]
+[tool.pdm.build]
+includes = ["avilla/", "graia/", "launart/"]
 
 [tool.mina]
 enabled = false
