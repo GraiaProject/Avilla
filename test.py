@@ -81,7 +81,5 @@ async def log():
 
 from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS
 from devtools import debug
-debug(ARTIFACT_COLLECTIONS)
-exit()
 
-avilla.launch_manager.launch_blocking(loop=broadcast.loop)
+avilla.launch_manager.launch_blocking()

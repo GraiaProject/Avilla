@@ -77,9 +77,6 @@ class Avilla:
     def current(cls) -> "Avilla":
         return get_current_avilla()
 
-    @property
-    def loop(self):
-        return self.broadcast.loop
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
         return await Staff.focus(self).fetch_resource(resource)

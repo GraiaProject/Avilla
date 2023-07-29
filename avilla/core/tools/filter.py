@@ -32,6 +32,10 @@ class _SceneSpecified(Protocol[R]):
     scene: R
 
 
+class _SelfSpecified(Protocol[R]):
+    self: R
+
+
 class Filter(BaseDispatcher, Generic[T]):
     middlewares: list[Callable[[Any], Awaitable[Any] | Any]]
 
@@ -121,6 +125,10 @@ class Filter(BaseDispatcher, Generic[T]):
     @property
     def endpoint(self: Filter[_EndpointSpecified[R]]) -> Filter[R]:
         return self.step(lambda x: x.endpoint)
+
+    @property
+    def self(self: Filter[_SelfSpecified[R]]) -> Filter[R]:
+        return self.step(lambda x: x.self)
 
     @classmethod
     def account(cls) -> Filter[BaseAccount]:
