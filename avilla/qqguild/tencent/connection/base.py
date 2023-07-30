@@ -58,11 +58,12 @@ class QQGuildNetworking(Generic[T]):
                 if not event_type:
                     raise ValueError("event type is None")
                 event = await Staff.focus(connection).parse_event(event_type.lower(), _data.data)
-                if event is None:
+                if event == 'non-implemented':
                     logger.warning(f"received unsupported event {event_type.lower()}: {_data.data}")
                     return
                 # logger.debug(f"{data['self_id']} received event {event_type}")
-                await self.protocol.post_event(event)
+                elif event is not None:
+                    await self.protocol.post_event(event)
 
             asyncio.create_task(event_parse_task(payload))
 

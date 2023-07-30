@@ -99,8 +99,9 @@ class TargetFn(
 
         return branch
 
-    def collect(self, collector: BaseCollector, pattern: str, **kwargs: FollowsPredicater):
-        def receive(entity: Callable[Concatenate[HQ, Selector, P], R]):
+    def collect(self: TargetFn[P, R], collector: BaseCollector, pattern: str, **kwargs: FollowsPredicater
+    ) -> Callable[[Callable[Concatenate[HQ, Selector, P], R]], Callable[Concatenate[HQ, Selector, P], R]]:
+        def receive(entity):
             branch = self.get_collect_layout(collector, pattern, **kwargs)
             signature = self.get_collect_signature(collector, pattern, **kwargs)
             artifact = TargetArtifactStore(collector, entity)

@@ -38,9 +38,11 @@ class PerformTemplate:
     __collector__: ClassVar[BaseCollector]
     targets: ClassVar[Iterable[str]] = ()
     components: dict[str, Any]
+    dispatched_override: dict[tuple[type[PerformTemplate], str], Any]
 
     def __init__(self, components: dict[str, Any]):
         self.components = components
+        self.dispatched_override = {}
 
     @classmethod
     def endpoints(cls):

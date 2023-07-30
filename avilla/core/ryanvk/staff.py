@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from functools import reduce
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, ChainMap, Generic, Protocol, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, ChainMap, Generic, Literal, Protocol, overload
 
 from typing_extensions import Concatenate, ParamSpec, TypeVar, Unpack
 
@@ -119,10 +119,10 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         self,
         event_type: str,
         data: VnEventRaw,
-    ) -> AvillaEvent | None:
+    ) -> AvillaEvent | Literal['non-implemented'] | None:
         sign = EventParserSign(event_type)
         if sign not in self.artifacts:
-            return
+            return 'non-implemented'
 
         record: tuple[Any, Callable[[Any, VnEventRaw], Awaitable[AvillaEvent | None]]] = self.artifacts[sign]
 

@@ -54,10 +54,11 @@ class OneBot11Networking(Generic[T]):
             async def event_parse_task(data: dict):
                 event_type = onebot11_event_type(data)
                 event = await Staff.focus(connection).parse_event(event_type, data)
-                if event is None:
+                if event == 'non-implemented':
                     logger.warning(f"received unsupported event {event_type}: {data}")
                     return
-                self.protocol.post_event(event)
+                elif event is not None:
+                    await self.protocol.post_event(event)
 
             asyncio.create_task(event_parse_task(data))
 
