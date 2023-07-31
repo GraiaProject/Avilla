@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import asyncio
+import signal
 from collections import ChainMap
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Iterable, TypeVar
 
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AccountInfo
@@ -16,10 +18,9 @@ from launart import Launart
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsArtifacts
+    from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
 
     from .resource import Resource
-
-    from graia.broadcast import Dispatchable, T_Dispatcher, Decorator, Namespace
 
 T = TypeVar("T")
 
@@ -44,7 +45,7 @@ class Avilla:
         self.protocols = []
         self._protocol_map = {}
         self.accounts = {}
-    
+
         self.service = AvillaService(self, message_cache_size)
         self.isolate = Isolate()
 
@@ -106,3 +107,11 @@ class Avilla:
         decorators: list[Decorator] | None = None,
     ):
         return self.broadcast.receiver(event, priority, dispatchers, namespace, decorators)
+
+    def launch(
+        self,
+        *,
+        loop: asyncio.AbstractEventLoop | None = None,
+        stop_signal: Iterable[signal.Signals] = (signal.SIGINT,),
+    ):
+        self.launch_manager.launch_blocking(loop=loop, stop_signal=stop_signal)
