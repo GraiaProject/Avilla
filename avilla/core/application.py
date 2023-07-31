@@ -19,6 +19,8 @@ if TYPE_CHECKING:
 
     from .resource import Resource
 
+    from graia.broadcast import Dispatchable, T_Dispatcher, Decorator, Namespace
+
 T = TypeVar("T")
 
 
@@ -63,6 +65,21 @@ class Avilla:
 
             message_cacher.__annotations__ = {"context": Context, "message": Message}
 
+    def __init_isolate__(self):
+        from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
+
+        self.isolate.apply(CoreResourceFetchPerform)
+
+    def get_staff_components(self) -> dict[str, SupportsArtifacts]:
+        # 我确信这是个 pyright 的 bug, 把这个 return_type 去掉就来了。
+        return {"avilla": self}
+
+    def get_staff_artifacts(self):
+        return ChainMap(self.isolate.artifacts)
+
+    def __staff_generic__(self, element_type: dict, event_type: dict):
+        ...
+
     @classmethod
     def current(cls) -> "Avilla":
         return get_current_avilla()
@@ -80,17 +97,12 @@ class Avilla:
         for protocol in protocols:
             protocol.ensure(self)
 
-    def __init_isolate__(self):
-        from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
-
-        self.isolate.apply(CoreResourceFetchPerform)
-
-    def get_staff_components(self) -> dict[str, SupportsArtifacts]:
-        # 我确信这是个 pyright 的 bug, 把这个 return_type 去掉就来了。
-        return {"avilla": self}
-
-    def get_staff_artifacts(self):
-        return ChainMap(self.isolate.artifacts)
-
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
+    def listen(
+        self,
+        event: type[Dispatchable],
+        priority: int = 16,
+        dispatchers: list[T_Dispatcher] | None = None,
+        namespace: Namespace | None = None,
+        decorators: list[Decorator] | None = None,
+    ):
+        return self.broadcast.receiver(event, priority, dispatchers, namespace, decorators)
