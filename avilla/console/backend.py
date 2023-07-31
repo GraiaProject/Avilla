@@ -72,7 +72,8 @@ class AvillaConsoleBackend(Backend):
 
     async def post_event(self, event: Event):
         res = await Staff.focus(self.account).parse_event(event.type, event)
-        if res is None:
+        if res == "non-implemented":
             logger.warning(f"received unsupported event {event.type}: {event}")
             return
-        self._service.protocol.post_event(res)
+        elif res is not None:
+            await self._service.protocol.post_event(res)

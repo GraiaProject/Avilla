@@ -38,7 +38,6 @@ class RedQueryPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
             "post", "api/group/getMemberList", {"group": int(previous["group"])}
         )
         result = cast(list, result)
-        print(result)
         for i in result:
             member_id = str(i["qq"])
             if callable(predicate) and predicate("member", member_id) or member_id == predicate:
