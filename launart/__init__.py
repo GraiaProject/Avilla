@@ -8,5 +8,5 @@ from .utilles import RequirementResolveFailed as RequirementResolveFailed
 
 with _suppress(ImportError, ModuleNotFoundError):
     from .saya import LaunartBehaviour as LaunartBehaviour
-    from .saya import LaunchableSchema as LaunchableSchema
+    from .saya import ServiceSchema as ServiceSchema
 del _suppress

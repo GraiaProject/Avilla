@@ -9,7 +9,7 @@ from launart import Launart, Service
 
 
 @dataclass
-class LaunchableSchema(BaseSchema):
+class ServiceSchema(BaseSchema):
     pass
 
 
@@ -19,17 +19,17 @@ class LaunartBehaviour(Behaviour):
     def __init__(self, manager: Launart) -> None:
         self.manager = manager
 
-    def allocate(self, cube: Cube[LaunchableSchema]):
-        if isinstance(cube.metaclass, LaunchableSchema):
+    def allocate(self, cube: Cube[ServiceSchema]):
+        if isinstance(cube.metaclass, ServiceSchema):
             if not isinstance(cube.content, Service):
-                raise TypeError(f"{cube.content} is not a Launchable")
+                raise TypeError(f"{cube.content} is not a Service")
             self.manager.add_component(cube.content)
         else:
             return
         return True
 
-    def release(self, cube: Cube[LaunchableSchema]):
-        if isinstance(cube.metaclass, LaunchableSchema):
+    def release(self, cube: Cube[ServiceSchema]):
+        if isinstance(cube.metaclass, ServiceSchema):
             self.manager.remove_component(cube.content)
         else:
             return

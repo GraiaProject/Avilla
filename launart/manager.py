@@ -197,7 +197,7 @@ class Launart:
         component.ensure_manager(self)
 
         if component.id in self.components:
-            raise ValueError(f"Launchable {component.id} already exists.")
+            raise ValueError(f"Service {component.id} already exists.")
 
         if self.task_group is not None:
             tracker = asyncio.create_task(self._sideload_tracker(component))
@@ -217,7 +217,7 @@ class Launart:
     def get_component(self, target: str | type[TL]) -> TL | Service:
         if isinstance(target, str):
             if target not in self.components:
-                raise ValueError(f"Launchable {target} does not exists.")
+                raise ValueError(f"Service {target} does not exists.")
             return self.components[target]
 
         if _id := getattr(target, "id", None):
@@ -226,7 +226,7 @@ class Launart:
         try:
             return next(comp for comp in self.components.values() if isinstance(comp, target))
         except StopIteration as e:
-            raise ValueError(f"Launchable {target.__name__} does not exists.") from e
+            raise ValueError(f"Service {target.__name__} does not exists.") from e
 
     def remove_component(
         self,
@@ -237,7 +237,7 @@ class Launart:
                 if self.task_group and component in self.task_group.sideload_trackers:
                     # sideload tracking, cannot gracefully remove (into exiting phase)
                     return
-                raise ValueError(f"Launchable {id} does not exist.")
+                raise ValueError(f"Service {id} does not exist.")
             target = self.components[component]
         else:
             target = component

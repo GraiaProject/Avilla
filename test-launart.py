@@ -4,13 +4,13 @@ richuru.install()
 
 import asyncio
 
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 art = Launart()
 
 
 
-class TestSrv(Launchable):
+class TestSrv(Service):
     id = "test_srv"
 
     @property
@@ -26,7 +26,7 @@ class TestSrv(Launchable):
             print("TestSrv: prepared TestInterface")
 
 
-class TestLaunchable(Launchable):
+class TestService(Service):
     id = "test"
 
     @property
@@ -50,7 +50,7 @@ class TestLaunchable(Launchable):
             await asyncio.sleep(3)
 
 
-class Test2(Launchable):
+class Test2(Service):
     id = "test2"
 
     @property
@@ -81,7 +81,7 @@ class Test2(Launchable):
             print("cleanup2")
 
 
-class TestSideload(Launchable):
+class TestSideload(Service):
     id = "test_sideload"
 
     @property
@@ -107,7 +107,7 @@ class TestSideload(Launchable):
 
 
 art.add_component(TestSrv())
-art.add_component(TestLaunchable())
+art.add_component(TestService())
 art.add_component(Test2())
 
 
