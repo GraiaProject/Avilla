@@ -8,7 +8,7 @@ from nonechat.setting import ConsoleSetting
 from textual.color import Color
 
 from avilla.standard.core.account import AccountUnavailable
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 from .backend import AvillaConsoleBackend
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from .protocol import ConsoleProtocol
 
 
-class ConsoleService(Launchable):
+class ConsoleService(Service):
     id = "console.service"
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}

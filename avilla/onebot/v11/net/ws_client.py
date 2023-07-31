@@ -13,7 +13,7 @@ from yarl import URL
 from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
-from launart import Launchable
+from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 
@@ -27,7 +27,7 @@ class OneBot11WsClientConfig:
     access_token: str | None = None
 
 
-class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"], Launchable):
+class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"], Service):
     id = "onebot/v11/connection/websocket/client"
 
     required: set[str] = set()

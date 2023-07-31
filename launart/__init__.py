@@ -1,9 +1,9 @@
 from contextlib import suppress as _suppress
 
-from .component import Launchable as Launchable
+from .component import Service as Service
 from .component import U_Stage as U_Stage
 from .manager import Launart as Launart
-from .status import ComponentStatus as ComponentStatus
+from .status import ServiceStatus as ServiceStatus
 from .utilles import RequirementResolveFailed as RequirementResolveFailed
 
 with _suppress(ImportError, ModuleNotFoundError):

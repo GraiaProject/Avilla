@@ -12,7 +12,7 @@ from avilla.standard.core.application import (
     ApplicationPreparing,
     ApplicationReady,
 )
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 from .graia import AVILLA_ASCII_LOGO, AVILLA_ASCII_RAW_LOGO, log_telemetry
 
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from .selector import Selector
 
 
-class AvillaService(Launchable):
+class AvillaService(Service):
     id = "avilla.service"
     supported_interface_types = set()
 

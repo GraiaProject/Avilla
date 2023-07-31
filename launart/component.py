@@ -4,20 +4,20 @@ from abc import ABCMeta, abstractmethod
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Literal, Optional, Set
 
-from launart.status import STAGE_STAT, STATS, ComponentStatus, Phase, U_Stage
+from launart.status import STAGE_STAT, STATS, Phase, ServiceStatus, U_Stage
 from launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from launart.manager import Launart
 
 
-class Launchable(metaclass=ABCMeta):
+class Service(metaclass=ABCMeta):
     id: str
-    status: ComponentStatus
+    status: ServiceStatus
     manager: Optional[Launart] = None
 
     def __init__(self) -> None:
-        self.status = ComponentStatus()
+        self.status = ServiceStatus()
 
     @property
     @abstractmethod
@@ -35,7 +35,7 @@ class Launchable(metaclass=ABCMeta):
         self.manager = manager
 
     @asynccontextmanager
-    async def stage(self, stage: Literal['preparing', 'blocking', 'cleanup']):
+    async def stage(self, stage: Literal["preparing", "blocking", "cleanup"]):
         if self.manager is None:
             raise RuntimeError("attempted to set stage of a component without a manager.")
         if self.manager.status.stage is None:
@@ -73,7 +73,7 @@ class Launchable(metaclass=ABCMeta):
     async def wait_for_required(self, stage: U_Stage = "prepared"):
         await self.wait_for(stage, *self.required)
 
-    async def wait_for(self, stage: U_Stage, *component_id: str | type[Launchable]):
+    async def wait_for(self, stage: U_Stage, *component_id: str | type[Service]):
         if self.manager is None:
             raise RuntimeError("attempted to wait for some components without a manager.")
         components = [self.manager.get_component(id) for id in component_id]

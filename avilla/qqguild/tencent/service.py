@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING, Set
 
 from avilla.qqguild.tencent.connection.base import QQGuildNetworking
 from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientNetworking
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 if TYPE_CHECKING:
     from .protocol import QQGuildProtocol
 
 
-class QQGuildService(Launchable):
+class QQGuildService(Service):
     id = "qqguild/tencent.service"
 
     protocol: QQGuildProtocol

@@ -12,7 +12,7 @@ from starlette.websockets import WebSocket
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
 from graia.amnesia.builtins.asgi import UvicornASGIService
-from launart import Launchable
+from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 
@@ -73,7 +73,7 @@ class OneBot11WsServerConnection(OneBot11Networking["OneBot11WsServerConnection"
                 del avilla.accounts[n]
 
 
-class OneBot11WsServerNetworking(Launchable):
+class OneBot11WsServerNetworking(Service):
     id = "onebot/v11/connection/websocket/server"
     required: set[str] = {"asgi.service/uvicorn"}
     stages: set[str] = {"preparing", "blocking", "cleanup"}

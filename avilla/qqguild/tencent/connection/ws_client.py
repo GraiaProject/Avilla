@@ -23,7 +23,7 @@ from avilla.standard.core.account import (
     AccountUnavailable,
     AccountUnregistered,
 )
-from launart import Launchable
+from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 
@@ -85,7 +85,7 @@ class QQGuildWsClientConfig:
         return f"Bot {self.id}.{self.token}"
 
 
-class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], Launchable):
+class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], Service):
     id = "qqguild/connection/client"
 
     required: set[str] = set()

@@ -6,7 +6,7 @@ import logging
 from loguru import logger
 from uvicorn import Config, Server
 
-from launart import Launart, Launchable
+from launart import Launart, Service
 from launart.utilles import any_completed
 
 from . import asgitypes
@@ -14,14 +14,14 @@ from .middleware import DispatcherMiddleware
 
 
 async def _empty_asgi_handler(scope, receive, send):
-    if scope['type'] == 'lifespan':
+    if scope["type"] == "lifespan":
         while True:
             message = await receive()
-            if message['type'] == 'lifespan.startup':
-                await send({'type': 'lifespan.startup.complete'})
+            if message["type"] == "lifespan.startup":
+                await send({"type": "lifespan.startup.complete"})
                 return
-            elif message['type'] == 'lifespan.shutdown':
-                await send({'type': 'lifespan.shutdown.complete'})
+            elif message["type"] == "lifespan.shutdown":
+                await send({"type": "lifespan.shutdown.complete"})
                 return
 
     await send(
@@ -32,6 +32,7 @@ async def _empty_asgi_handler(scope, receive, send):
         }
     )
     await send({"type": "http.response.body"})
+
 
 class LoguruHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
@@ -56,7 +57,7 @@ class WithoutSigHandlerServer(Server):
         pass
 
 
-class UvicornASGIService(Launchable):
+class UvicornASGIService(Service):
     id = "asgi.service/uvicorn"
 
     middleware: DispatcherMiddleware
@@ -92,9 +93,9 @@ class UvicornASGIService(Launchable):
             logging.basicConfig(handlers=[LoguruHandler()], level=level)
             PATCHES = ["uvicorn.error", "uvicorn.asgi", "uvicorn.access", ""]
             for name in PATCHES:
-               target = logging.getLogger(name)
-               target.handlers = [LoguruHandler(level=level)]
-               target.propagate = False
+                target = logging.getLogger(name)
+                target.handlers = [LoguruHandler(level=level)]
+                target.propagate = False
 
             serve_task = asyncio.create_task(self.server.serve())
 

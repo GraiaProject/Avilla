@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from avilla.core.ryanvk.isolate import Isolate
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 from .adapter import NoneBridgeAdapter
 from .driver import NoneBridgeDriver
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from avilla.core import Avilla
 
 
-class NoneBridgeService(Launchable):
+class NoneBridgeService(Service):
     id = "onebot11.service"
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}

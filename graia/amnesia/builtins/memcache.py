@@ -6,7 +6,7 @@ from heapq import heappop, heappush
 from time import time
 from typing import Any
 
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 
 class Memcache:
@@ -52,7 +52,7 @@ class Memcache:
         return list(self.cache.keys())
 
 
-class MemcacheService(Launchable):
+class MemcacheService(Service):
     id = "cache.client/memcache"
 
     interval: float

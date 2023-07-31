@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, TypeV
 from loguru import logger
 
 from launart._sideload import override
-from launart.component import Launchable
+from launart.component import Service
 from launart.status import ManagerStatus
 from launart.utilles import (
     FlexibleTaskGroup,
@@ -19,10 +19,11 @@ from launart.utilles import (
     resolve_requirements,
 )
 
-TL = TypeVar("TL", bound=Launchable)
+TL = TypeVar("TL", bound=Service)
+
 
 class Launart:
-    components: Dict[str, Launchable]
+    components: Dict[str, Service]
     status: ManagerStatus
     tasks: dict[str, asyncio.Task]
     task_group: Optional[FlexibleTaskGroup] = None
@@ -52,7 +53,7 @@ class Launart:
             main_task._loop.call_soon_threadsafe(lambda: None)
             logger.warning("Ctrl-C triggered by user.", style="dark_orange bold")
 
-    async def _sideload_tracker(self, component: Launchable) -> None:
+    async def _sideload_tracker(self, component: Service) -> None:
         if TYPE_CHECKING:
             assert self.task_group is not None
 
@@ -91,7 +92,7 @@ class Launart:
         del self.components[component.id]
         del self.task_group.sideload_trackers[component.id]
 
-    async def _sideload_prepare(self, component: Launchable) -> None:
+    async def _sideload_prepare(self, component: Service) -> None:
         if component.status.stage != "waiting-for-prepare":  # pragma: worst case
             logger.info(f"Waiting sideload {component.id} for prepare")
             await any_completed(
@@ -108,7 +109,7 @@ class Launart:
         )
         logger.info(f"Sideload {component.id}: preparation completed")
 
-    async def _sideload_blocking(self, component: Launchable) -> None:
+    async def _sideload_blocking(self, component: Service) -> None:
         logger.info(f"Sideload {component.id}: start blocking")
 
         await any_completed(
@@ -117,7 +118,7 @@ class Launart:
         )
         logger.info(f"Sideload {component.id}: blocking completed")
 
-    async def _sideload_cleanup(self, component: Launchable):
+    async def _sideload_cleanup(self, component: Service):
         if component.status.stage != "waiting-for-cleanup":  # pragma: worst case
             await any_completed(
                 self.tasks[component.id],
@@ -132,7 +133,7 @@ class Launart:
         )
         logger.info(f"Sideload {component.id}: cleanup completed.")
 
-    def _on_task_done(self, component: Launchable, t: asyncio.Task):
+    def _on_task_done(self, component: Service, t: asyncio.Task):
         try:
             exc = t.exception()
         except asyncio.CancelledError:
@@ -171,7 +172,7 @@ class Launart:
             alt=rf"[green]Component [magenta]{component.id}[/magenta] completed.",
         )
 
-    async def _component_prepare(self, task: asyncio.Task, component: Launchable):
+    async def _component_prepare(self, task: asyncio.Task, component: Service):
         if component.status.stage != "waiting-for-prepare":  # pragma: worst case
             logger.info(f"Wait component {component.id} into preparing.")
             await any_completed(task, component.status.wait_for("waiting-for-prepare"))
@@ -182,7 +183,7 @@ class Launart:
         await any_completed(task, component.status.wait_for("prepared"))
         logger.success(f"Component {component.id} is prepared.")
 
-    async def _component_cleanup(self, task: asyncio.Task, component: Launchable):
+    async def _component_cleanup(self, task: asyncio.Task, component: Service):
         if component.status.stage != "waiting-for-cleanup":
             logger.info(f"Wait component {component.id} into cleanup.")
             await any_completed(task, component.status.wait_for("waiting-for-cleanup"))
@@ -192,7 +193,7 @@ class Launart:
 
         await any_completed(task, component.status.wait_for("finished"))
 
-    def add_component(self, component: Launchable):
+    def add_component(self, component: Service):
         component.ensure_manager(self)
 
         if component.id in self.components:
@@ -210,11 +211,10 @@ class Launart:
         ...
 
     @overload
-    def get_component(self, target: str) -> Launchable:
+    def get_component(self, target: str) -> Service:
         ...
 
-
-    def get_component(self, target: str | type[TL]) -> TL | Launchable:
+    def get_component(self, target: str | type[TL]) -> TL | Service:
         if isinstance(target, str):
             if target not in self.components:
                 raise ValueError(f"Launchable {target} does not exists.")
@@ -228,10 +228,9 @@ class Launart:
         except StopIteration as e:
             raise ValueError(f"Launchable {target.__name__} does not exists.") from e
 
-
     def remove_component(
         self,
-        component: str | Launchable,
+        component: str | Service,
     ):
         if isinstance(component, str):
             if component not in self.components:

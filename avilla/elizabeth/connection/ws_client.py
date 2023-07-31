@@ -16,7 +16,7 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.connection.base import CallMethod
 from avilla.elizabeth.const import PLATFORM
-from launart import Launchable
+from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 
@@ -34,7 +34,7 @@ class ElizabethWsClientConfig:
     qq: int
 
 
-class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworking"], Launchable):
+class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworking"], Service):
     id = "elizabeth/connection/websocket/client"
 
     required: set[str] = set()

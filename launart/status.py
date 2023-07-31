@@ -99,7 +99,7 @@ class ManagerStatus(Statv):
             await self.wait_for_update()
 
 
-class ComponentStatus(Statv):
+class ServiceStatus(Statv):
     stage = Stats[Optional[U_Stage]]("stage", default=None)
 
     def __init__(self) -> None:

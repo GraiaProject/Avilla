@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Set
 
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 from .connection.base import ElizabethNetworking
 from .connection.ws_client import ElizabethWsClientNetworking
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .protocol import ElizabethProtocol
 
 
-class ElizabethService(Launchable):
+class ElizabethService(Service):
     id = "elizabeth.service"
 
     protocol: ElizabethProtocol

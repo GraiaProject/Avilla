@@ -21,7 +21,7 @@ from typing import (
 from loguru import logger
 
 if TYPE_CHECKING:
-    from launart.component import Launchable
+    from launart.component import Service
 
 T = TypeVar("T")
 H = TypeVar("H", bound=Hashable)
@@ -166,10 +166,10 @@ def cancel_alive_tasks(loop: asyncio.AbstractEventLoop):
                 logger.opt(exception=task.exception()).error(f"Unhandled exception when shutting down {task}:")
 
 
-def resolve_requirements(components: Iterable[Launchable], reverse: bool = False) -> List[Set[Launchable]]:
+def resolve_requirements(components: Iterable[Service], reverse: bool = False) -> List[Set[Service]]:
     resolved_id: Set[str] = set()
-    unresolved: Set[Launchable] = set(components)
-    result: List[Set[Launchable]] = []
+    unresolved: Set[Service] = set(components)
+    result: List[Set[Service]] = []
     while unresolved:
         layer = {component for component in unresolved if resolved_id >= component.required}
 

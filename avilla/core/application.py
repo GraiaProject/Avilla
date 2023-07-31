@@ -15,6 +15,12 @@ from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from graia.broadcast import Broadcast
 from launart import Launart
+from launart.component import Service
+
+try:
+    from creart import it
+except (ModuleNotFoundError, ImportError):
+    it = None
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsArtifacts
@@ -40,7 +46,7 @@ class Avilla:
         launch_manager: Launart | None = None,
         message_cache_size: int = 300,
     ):
-        self.broadcast = broadcast or Broadcast()
+        self.broadcast = broadcast or (it and it(Broadcast)) or Broadcast()
         self.launch_manager = launch_manager or Launart()
         self.protocols = []
         self._protocol_map = {}
@@ -107,6 +113,10 @@ class Avilla:
         decorators: list[Decorator] | None = None,
     ):
         return self.broadcast.receiver(event, priority, dispatchers, namespace, decorators)
+
+    def add_service(self, *services: Service):
+        for i in services:
+            self.launch_manager.add_component(i)
 
     def launch(
         self,

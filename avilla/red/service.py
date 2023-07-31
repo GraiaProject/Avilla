@@ -3,7 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Set
 
-from launart import Launart, Launchable
+from launart import Launart, Service
 
 from .net.ws_client import RedWsClientNetworking
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .protocol import RedProtocol
 
 
-class RedService(Launchable):
+class RedService(Service):
     id = "red.service"
 
     protocol: RedProtocol

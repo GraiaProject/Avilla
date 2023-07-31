@@ -13,7 +13,7 @@ from yarl import URL
 from avilla.red.account import RedAccount
 from avilla.red.net.base import RedNetworking
 from avilla.standard.core.account import AccountUnregistered
-from launart import Launchable
+from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 
@@ -35,7 +35,7 @@ class RedWsClientConfig:
             self.http_endpoint = _http_endpoint
 
 
-class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Launchable):
+class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
     id = "red/connection/websocket/client"
 
     required: set[str] = set()

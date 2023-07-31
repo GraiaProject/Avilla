@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING
 
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
 from avilla.onebot.v11.net.ws_server import OneBot11WsServerNetworking
-from launart import Launart, Launchable
+from launart import Launart, Service
 from launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from .protocol import OneBot11Protocol
 
 
-class OneBot11Service(Launchable):
+class OneBot11Service(Service):
     id = "onebot11.service"
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
