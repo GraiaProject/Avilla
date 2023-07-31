@@ -32,28 +32,21 @@ class Avilla:
 
     def __init__(
         self,
-        broadcast: Broadcast,
-        launch_manager: Launart,
-        protocols: list[BaseProtocol],
+        *,
+        broadcast: Broadcast | None = None,
+        launch_manager: Launart | None = None,
         message_cache_size: int = 300,
     ):
-        if len({type(i) for i in protocols}) != len(protocols):
-            raise ValueError("protocol must be unique, and the config should be passed by config.")
-
-        self.broadcast = broadcast
-        self.launch_manager = launch_manager
-        self.protocols = protocols
-        self._protocol_map = {type(i): i for i in protocols}
+        self.broadcast = broadcast or Broadcast()
+        self.launch_manager = launch_manager or Launart()
+        self.protocols = []
+        self._protocol_map = {}
         self.accounts = {}
+    
         self.service = AvillaService(self, message_cache_size)
         self.isolate = Isolate()
 
         self.launch_manager.add_component(self.service)
-
-        for protocol in self.protocols:
-            # Ensureable 用于注册各种东西，包括 Service, ResourceProvider 等。
-            protocol.ensure(self)
-
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
 
         self.__init_isolate__()
@@ -63,7 +56,7 @@ class Avilla:
             from avilla.core.message import Message
             from avilla.standard.core.message import MessageReceived
 
-            @broadcast.receiver(MessageReceived)
+            @self.broadcast.receiver(MessageReceived)
             async def message_cacher(context: Context, message: Message):
                 if context.account.info.enabled_message_cache:
                     self.service.message_cache[context.account.route].push(message)
@@ -76,6 +69,16 @@ class Avilla:
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
         return await Staff.focus(self).fetch_resource(resource)
+
+    def _update_protocol_map(self):
+        self._protocol_map = {type(i): i for i in self.protocols}
+
+    def apply_protocols(self, *protocols: BaseProtocol) -> None:
+        self.protocols.extend(protocols)
+        self._update_protocol_map()
+
+        for protocol in protocols:
+            protocol.ensure(self)
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform

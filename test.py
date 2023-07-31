@@ -43,9 +43,10 @@ conn1 = ElizabethWsClientNetworking(
 mah.service.connections.append(conn1)
 
 console_protocol = ConsoleProtocol()
-avilla = Avilla(broadcast, launart, [protocol], message_cache_size=0)
 
-protocol.avilla = avilla
+avilla = Avilla(launch_manager=launart, broadcast=broadcast, message_cache_size=0)
+
+avilla.apply_protocols(protocol)
 
 launart.add_component(UvicornASGIService("127.0.0.1", 9090))
 
