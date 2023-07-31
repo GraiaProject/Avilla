@@ -27,6 +27,10 @@ class Platform:
     def __str__(self):
         return f"<Platform {' '.join([str(i) for i in self.description.values()])}>"
 
+    @property
+    def land(self):
+        return self[Land]
+
 
 class Maintainer(TypedDict):
     name: str
