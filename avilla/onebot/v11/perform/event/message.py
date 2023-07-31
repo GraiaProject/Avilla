@@ -10,8 +10,7 @@ from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.onebot.v11.element import Reply
-from avilla.standard.core.message import MessageReceived
-from avilla.standard.core.message.event import MessageSent
+from avilla.standard.core.message import MessageReceived, MessageRevoked, MessageSent
 
 
 class OneBot11EventMessagePerform((m := ConnectionCollector())._):
@@ -211,3 +210,31 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
             account,
         )
+
+    @EventParse.collect(m, "notice.group_recall")
+    async def group_message_recall(self, raw_event: dict):
+        self_id = raw_event["self_id"]
+        account = self.connection.accounts.get(self_id)
+        if account is None:
+            logger.warning(f"Unknown account {self_id} sent message {raw_event}")
+            return
+
+        group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
+        sender = group.member(str(raw_event["user_id"]))
+        message = group.message(str(raw_event["message_id"]))
+        operator = group.message(str(raw_event["operator_id"]))
+        context = Context(account, operator, message, group, group.member(str(self_id)))
+        return MessageRevoked(context, message, operator, sender)
+
+    @EventParse.collect(m, "notice.friend_recall")
+    async def friend_message_recall(self, raw_event: dict):
+        self_id = raw_event["self_id"]
+        account = self.connection.accounts.get(self_id)
+        if account is None:
+            logger.warning(f"Unknown account {self_id} sent message {raw_event}")
+            return
+
+        friend = Selector().land(account.route["land"]).group(str(raw_event["friend_id"]))
+        message = friend.message(str(raw_event["message_id"]))
+        context = Context(account, friend, message, friend, account.route)
+        return MessageRevoked(context, message, friend, friend)

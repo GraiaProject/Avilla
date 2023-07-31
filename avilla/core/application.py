@@ -114,7 +114,7 @@ class Avilla:
     ):
         return self.broadcast.receiver(event, priority, dispatchers, namespace, decorators)
 
-    def add_service(self, *services: Service):
+    def apply_services(self, *services: Service):
         for i in services:
             self.launch_manager.add_component(i)
 

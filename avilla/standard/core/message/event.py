@@ -63,6 +63,7 @@ class MessageEdited(AvillaEvent):
 class MessageRevoked(AvillaEvent):
     message: Selector
     operator: Selector
+    sender: Selector | None = None
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @classmethod
