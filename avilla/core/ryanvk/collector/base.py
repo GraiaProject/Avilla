@@ -16,6 +16,7 @@ from typing import (
 from typing_extensions import ParamSpec, Self, Unpack
 
 from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS, processing_isolate
+from avilla.core.ryanvk.descriptor.base import OverridePerformEntity
 from avilla.core.ryanvk.descriptor.fetch import Fetch
 from avilla.core.ryanvk.endpoint import Endpoint
 from avilla.core.ryanvk.isolate import _merge_lookup_collection
@@ -38,15 +39,19 @@ class PerformTemplate:
     __collector__: ClassVar[BaseCollector]
     targets: ClassVar[Iterable[str]] = ()
     components: dict[str, Any]
-    dispatched_override: dict[tuple[type[PerformTemplate], str], Any]
+    dispatched_overrides: dict[tuple[type[PerformTemplate], str], Any]
 
-    def __init__(self, components: dict[str, Any]):
+    def __init__(self, components: dict[str, Any], dispatched_overrides: dict[tuple[type[PerformTemplate], str], Any]):
         self.components = components
-        self.dispatched_override = {}
+        self.dispatched_overrides = dispatched_overrides
 
     @classmethod
     def endpoints(cls):
         return [(k, v) for k, v in cls.__dict__.items() if isinstance(v, Endpoint)]
+
+    @classmethod
+    def overrides(cls):
+        return [(k, v) for k, v in cls.__dict__.items() if isinstance(v, OverridePerformEntity)]
 
     @asynccontextmanager
     async def run_with_lifespan(self):
@@ -62,7 +67,7 @@ class PerformTemplate:
     def __init_subclass__(cls, *, native: bool = False) -> None:
         if native:
             return
-        
+
         collector = cls.__collector__
         artifacts = collector.artifacts
 
@@ -73,16 +78,14 @@ class PerformTemplate:
 
         current_collection = None
         if "current_collection" in artifacts:
-            current_collection = artifacts.pop("current_collection")
+            current_collection = artifacts["current_collection"]
 
         for target in cls.targets:
             lookup_collection = {}
-            target_artifacts = ARTIFACT_COLLECTIONS.setdefault(target, {
-                "lookup_collections": [lookup_collection]
-            })
+            target_artifacts = ARTIFACT_COLLECTIONS.setdefault(target, {"lookup_collections": [lookup_collection]})
             if current_collection is not None:
                 _merge_lookup_collection(lookup_collection, current_collection)
-            target_artifacts.update(artifacts)
+            target_artifacts.update({k: v for k, v in artifacts if k != "current_collection"})
 
 
 class _ResultCollect(Protocol[R]):

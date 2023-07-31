@@ -81,7 +81,7 @@ class ContextSceneSelector(ContextSelector):
 
     def send_message(
         self,
-        message: MessageChain | Iterable[str | Element] | Element | str ,
+        message: MessageChain | Iterable[str | Element] | Element | str,
         *,
         reply: Message | Selector | str | None = None,
     ):

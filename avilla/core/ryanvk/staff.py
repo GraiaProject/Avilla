@@ -2,13 +2,25 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from functools import reduce
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, ChainMap, Generic, Literal, Protocol, overload
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    ChainMap,
+    Generic,
+    Literal,
+    Protocol,
+    overload,
+)
 
 from typing_extensions import Concatenate, ParamSpec, TypeVar, Unpack
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import MetadataRoute
-from avilla.core.ryanvk.descriptor.base import Fn
+from avilla.core.ryanvk.descriptor.base import Fn, OverridePerformEntity
+from avilla.core.ryanvk.isolate import _merge_lookup_collection
 from avilla.core.selector import FollowsPredicater, Selector, _FollowItem, _parse_follows
 from avilla.core.utilles import identity
 from graia.amnesia.message import Element, MessageChain
@@ -24,6 +36,7 @@ if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.core.metadata import Metadata
     from avilla.core.resource import Resource
+    from avilla.core.ryanvk.collector.base import PerformTemplate
 
     from .collector.base import BaseCollector
     from .descriptor.query import QueryHandler, QueryHandlerPerform
@@ -60,9 +73,12 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
     components: dict[str, SupportsArtifacts]
     artifacts: ChainMap[Any, Any]
 
+    dispatched_overrides: dict[tuple[type[PerformTemplate], str], Any]
+
     def __init__(self, components: dict[str, SupportsArtifacts], artifacts: ChainMap[Any, Any]):
         self.components = components
         self.artifacts = artifacts
+        self.dispatched_overrides = {}
 
     @asynccontextmanager
     async def use_artifact(
@@ -72,7 +88,7 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         **kwargs: P.kwargs,
     ) -> AsyncGenerator[Callable[P1, R], None]:
         collector, entity = schema.get_artifact_record(self.artifacts, *args, **kwargs)
-        async with collector.cls(self.components).run_with_lifespan() as instance:
+        async with collector.cls(self.components, self.dispatched_overrides).run_with_lifespan() as instance:
             yield schema.get_outbound_callable(instance, entity)
 
     @asynccontextmanager
@@ -81,7 +97,7 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         record: tuple[Co, Callable[Concatenate[Any, P], R]],
     ) -> AsyncGenerator[Callable[P, R], None]:
         collector, entity = record
-        async with collector.cls(self.components).run_with_lifespan() as instance:
+        async with collector.cls(self.components, self.dispatched_overrides).run_with_lifespan() as instance:
 
             def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
                 return entity(instance, *args, **kwargs)
@@ -100,14 +116,37 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         element_typer: Callable[[VnElementRaw], Any] | None = None,
     ):
         self = super().__new__(cls)
-        self.components = focus.get_staff_components()
-        self.artifacts = focus.get_staff_artifacts()
+        self.__init__(focus.get_staff_components(), focus.get_staff_artifacts())
         if element_typer is not None:
             self.get_element_type = element_typer  # type: ignore
         return self
 
     def x(self, components: dict[str, SupportsArtifacts]):
         return type(self)({**self.components, **components}, self.artifacts)
+
+    def inject(self, perform: type[PerformTemplate]):
+        overrides = perform.overrides()
+        for attr, value in overrides:
+
+            def factory(value: OverridePerformEntity, current_maps):
+                async def call_override_fn(_, *args, **kwargs):
+                    local_collector, entity = value.fn.get_artifact_record(ChainMap(*current_maps), *args, **kwargs)
+                    instance = local_collector.cls(self.components, self.dispatched_overrides)
+
+                    return await run_always_await(value.fn.get_outbound_callable(instance, entity), *args, **kwargs)
+
+                return call_override_fn
+
+            self.dispatched_overrides[(perform, attr)] = factory(value, self.artifacts.maps.copy())
+
+        artifacts = perform.__collector__.artifacts
+        local = {}
+        if "current_collection" in artifacts:
+            _merge_lookup_collection(local, artifacts["current_collection"])
+            artifacts = {k: v for k, v in artifacts.items() if k != "current_collection"}
+        self.artifacts = ChainMap({"lookup_collections": [local], **artifacts}, *self.artifacts.maps)
+
+    # [= Avilla-only =]
 
     def get_element_type(self, raw_element: VnElementRaw):
         return raw_element["type"]  # type: ignore
@@ -119,10 +158,10 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         self,
         event_type: str,
         data: VnEventRaw,
-    ) -> AvillaEvent | Literal['non-implemented'] | None:
+    ) -> AvillaEvent | Literal["non-implemented"] | None:
         sign = EventParserSign(event_type)
         if sign not in self.artifacts:
-            return 'non-implemented'
+            return "non-implemented"
 
         record: tuple[Any, Callable[[Any, VnEventRaw], Awaitable[AvillaEvent | None]]] = self.artifacts[sign]
 

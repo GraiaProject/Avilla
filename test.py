@@ -13,7 +13,7 @@ from avilla.elizabeth.protocol import ElizabethProtocol
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientConfig, OneBot11WsClientNetworking
 from avilla.onebot.v11.net.ws_server import OneBot11WsServerConfig, OneBot11WsServerNetworking
 from avilla.onebot.v11.protocol import OneBot11Protocol
-from avilla.standard.core.message.capability import MessageRevoke
+from avilla.standard.core.message.capability import MessageRevoke, MessageSend
 from graia.amnesia.builtins.asgi import UvicornASGIService
 
 # from graia.amnesia.builtins.aiohttp import AiohttpClientService
@@ -28,11 +28,11 @@ launart = Launart()
 protocol = OneBot11Protocol()
 service = protocol.service
 
-#config = OneBot11WsClientConfig(URL(A60_ENDPOINT), A60_SECRET)
-#conn = OneBot11WsClientNetworking(protocol, config)
-#service.connections.append(conn)
+# config = OneBot11WsClientConfig(URL(A60_ENDPOINT), A60_SECRET)
+# conn = OneBot11WsClientNetworking(protocol, config)
+# service.connections.append(conn)
 
-config = OneBot11WsServerConfig("/ob", A60_SECRET)
+config = OneBot11WsServerConfig("/ob", "dfawdfafergergeaar")
 net = OneBot11WsServerNetworking(protocol, config)
 service.connections.append(net)
 
@@ -43,18 +43,52 @@ conn1 = ElizabethWsClientNetworking(
 mah.service.connections.append(conn1)
 
 console_protocol = ConsoleProtocol()
-avilla = Avilla(broadcast, launart, [protocol, console_protocol], message_cache_size=0)
+avilla = Avilla(broadcast, launart, [protocol], message_cache_size=0)
 
 protocol.avilla = avilla
 
-launart.add_component(UvicornASGIService(
-    "127.0.0.1", 9090
-))
+launart.add_component(UvicornASGIService("127.0.0.1", 9090))
+
+import sys
+
+sys.setrecursionlimit(200)
+
+from avilla.core.ryanvk.collector.context import ContextCollector
+from avilla.core.ryanvk.descriptor.base import OverridePerformEntity
+from graia.amnesia.message import MessageChain
+from avilla.core.selector import Selector
+
+
+class TestPerform((m := ContextCollector())._):
+    @MessageSend.send.override(m, "::friend")
+    async def s2(
+        self,
+        target: Selector,
+        message: MessageChain,
+        *,
+        reply: Selector | None = None,
+    ) -> Selector:
+        return await self.s2.super(target, message + "2cefarfr444", reply=reply)
+
+
+class TestPerform1((n := ContextCollector())._):
+    @MessageSend.send.override(n, "::friend")
+    async def s2(
+        self,
+        target: Selector,
+        message: MessageChain,
+        *,
+        reply: Selector | None = None,
+    ) -> Selector:
+        return await self.s2.super(target, message + "2cefarfr444", reply=reply)
+
 
 @broadcast.receiver(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
-    #print(cx.endpoint, cx.scene, cx.client, cx.self, cx.account)
+    # print(cx.endpoint, cx.scene, cx.client, cx.self, cx.account)
+    cx.staff.inject(TestPerform)
+    cx.staff.inject(TestPerform1)
     if cx.client.follows("::group.member(1846913566)"):
         msg = await cx.scene.send_message(
             [
@@ -66,9 +100,10 @@ async def on_message_received(cx: Context, event: MessageReceived):
         await asyncio.sleep(3)
         # print(await conn1.call("get", "friendList"))
         await cx[MessageRevoke.revoke](msg)
-    elif cx.client.follows("::land(console).console(console_user)"):
+    elif cx.client.follows("::console(console_user)"):
         await cx.scene.send_message("Hello, Console User!")
-
+    elif cx.client.follows("::friend"):
+        await cx.scene.send_message("2222222222")
 
 
 async def log():
@@ -76,10 +111,11 @@ async def log():
         await asyncio.sleep(5)
         print("?")
         print(avilla.launch_manager.get_component("asgi.service/uvicorn").middleware.mounts)
-        
-#t = broadcast.loop.create_task(log())
+
+
+# t = broadcast.loop.create_task(log())
 
 from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS
 from devtools import debug
 
-avilla.launch_manager.launch_blocking()
+avilla.launch_manager.launch_blocking(loop=broadcast.loop)

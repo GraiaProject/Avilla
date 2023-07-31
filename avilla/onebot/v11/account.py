@@ -38,7 +38,7 @@ class OneBot11Account(BaseAccount):
 
     async def call(self, endpoint: str, params: dict):
         coros = set()
-        for connection in (self.websocket_client,self.websocket_server):
+        for connection in (self.websocket_client, self.websocket_server):
             if connection is None:
                 continue
             if connection.alive:
@@ -47,7 +47,7 @@ class OneBot11Account(BaseAccount):
 
         if coros:
             await any_completed(*coros)
-            for connection in (self.websocket_client,self.websocket_server):
+            for connection in (self.websocket_client, self.websocket_server):
                 if connection is None:
                     continue
                 if connection.alive:

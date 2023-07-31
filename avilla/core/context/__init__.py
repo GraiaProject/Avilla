@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import ChainMap
 from collections.abc import Callable
+from functools import cached_property
 from typing import TYPE_CHECKING, Any, Awaitable, TypedDict, TypeVar, cast, overload
 
 from typing_extensions import ParamSpec, Unpack
@@ -120,7 +121,7 @@ class Context:
     def get_staff_artifacts(self):
         return self.artifacts
 
-    @property
+    @cached_property
     def staff(self):
         return Staff.focus(self)
 

@@ -20,22 +20,23 @@ if TYPE_CHECKING:
     from avilla.onebot.v11.account import OneBot11Account
     from avilla.onebot.v11.protocol import OneBot11Protocol
 
+
 @dataclass
 class OneBot11WsServerConfig:
     endpoint: str
     access_token: str | None = None
 
 
-class OneBot11WsServerConnection(OneBot11Networking['OneBot11WsServerConnection']):
+class OneBot11WsServerConnection(OneBot11Networking["OneBot11WsServerConnection"]):
     connection: WebSocket
 
     def __init__(self, connection: WebSocket, protocol: OneBot11Protocol):
         self.connection = connection
         super().__init__(protocol)
-    
+
     @property
     def id(self):
-        return self.connection.headers['X-Self-ID']
+        return self.connection.headers["X-Self-ID"]
 
     @property
     def alive(self) -> bool:
@@ -46,7 +47,7 @@ class OneBot11WsServerConnection(OneBot11Networking['OneBot11WsServerConnection'
             yield self, msg
         else:
             await self.connection_closed()
-    
+
     async def wait_for_available(self):
         return
 
@@ -71,6 +72,7 @@ class OneBot11WsServerConnection(OneBot11Networking['OneBot11WsServerConnection'
             if n.follows("land(qq).account") and int(n["account"]) in self.accounts:
                 del avilla.accounts[n]
 
+
 class OneBot11WsServerNetworking(Launchable):
     id = "onebot/v11/connection/websocket/server"
     required: set[str] = {"asgi.service/uvicorn"}
@@ -88,20 +90,17 @@ class OneBot11WsServerNetworking(Launchable):
         super().__init__()
 
     async def websocket_server_handler(self, ws: WebSocket):
-        if ws.headers['Authorization'][6:] != self.config.access_token:
+        if ws.headers["Authorization"][6:] != self.config.access_token:
             return await ws.close()
-    
-        account_id = ws.headers['X-Self-ID']
+
+        account_id = ws.headers["X-Self-ID"]
 
         await ws.accept()
         connection = OneBot11WsServerConnection(ws, self.protocol)
         self.connections[account_id] = connection
-        
+
         try:
-            await any_completed(
-                connection.message_handle(),
-                connection.close_signal.wait()
-            )
+            await any_completed(connection.message_handle(), connection.close_signal.wait())
         finally:
             await connection.unregister_account()
             del self.connections[account_id]
@@ -109,10 +108,8 @@ class OneBot11WsServerNetworking(Launchable):
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
             asgi_service = manager.get_component(UvicornASGIService)
-            app = Starlette(routes=[
-                WebSocketRoute("/onebot/v11/ws/universal", self.websocket_server_handler)
-            ])
-            asgi_service.middleware.mounts[self.config.endpoint.rstrip('/')] = app  # type: ignore
+            app = Starlette(routes=[WebSocketRoute("/onebot/v11/ws/universal", self.websocket_server_handler)])
+            asgi_service.middleware.mounts[self.config.endpoint.rstrip("/")] = app  # type: ignore
 
         async with self.stage("blocking"):
             await manager.status.wait_for_sigexit()

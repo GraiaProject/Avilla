@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from nonechat.app import Frontend
 from nonechat.setting import ConsoleSetting
 from textual.color import Color
+
 from avilla.standard.core.account import AccountUnavailable
 from launart import Launart, Launchable
 
@@ -34,7 +35,7 @@ class ConsoleService(Launchable):
                 bg_color=Color(40, 44, 52, 1),
                 header_color=Color(90, 99, 108, 0.6),
                 user_avatar="😃",
-            )
+            ),
         )
         self.app.backend.set_service(self)
         self.protocol = protocol

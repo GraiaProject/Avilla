@@ -16,7 +16,7 @@
             "request": "launch",
             "program": "test.py",
             "console": "integratedTerminal",
-            "justMyCode": false
+            "justMyCode": true
         }
     ]
 }

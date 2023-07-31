@@ -99,7 +99,8 @@ class TargetFn(
 
         return branch
 
-    def collect(self: TargetFn[P, R], collector: BaseCollector, pattern: str, **kwargs: FollowsPredicater
+    def collect(
+        self: TargetFn[P, R], collector: BaseCollector, pattern: str, **kwargs: FollowsPredicater
     ) -> Callable[[Callable[Concatenate[HQ, Selector, P], R]], Callable[Concatenate[HQ, Selector, P], R]]:
         def receive(entity):
             branch = self.get_collect_layout(collector, pattern, **kwargs)

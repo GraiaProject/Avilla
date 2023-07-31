@@ -6,11 +6,10 @@ from typing import TYPE_CHECKING, Any, Callable, Generic, Protocol, overload
 
 from typing_extensions import Concatenate, ParamSpec, Self, TypeVar
 
-from avilla.core.ryanvk.collector.base import BaseCollector
-
 if TYPE_CHECKING:
     from avilla.core.ryanvk.capability import Capability
-    from avilla.core.ryanvk.collector.base import PerformTemplate
+    from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
+    from avilla.core.ryanvk.protocol import SupportsCollect
 
 
 class _Callable(Protocol):
@@ -19,9 +18,12 @@ class _Callable(Protocol):
 
 T = TypeVar("T")
 P = ParamSpec("P")
+P1 = ParamSpec("P1")
 R = TypeVar("R", covariant=True)
+Q = TypeVar("Q", contravariant=True)
 VnCallable = TypeVar("VnCallable", bound="_Callable", covariant=True)
 HQ = TypeVar("HQ", bound="PerformTemplate", contravariant=True)
+WrapperCallable = Callable[[Q], Q]
 
 
 @dataclass(unsafe_hash=True)
@@ -67,20 +69,51 @@ class Fn(Generic[VnCallable]):
 
         return wrapper
 
+    def override(
+        self: SupportsCollect[Any, P1, WrapperCallable[Callable[Concatenate[Any, P], R]]],
+        collector: BaseCollector,
+        *args: P1.args,
+        **kwargs: P1.kwargs,
+    ):
+        def wrapper(entity: Callable[Concatenate[Any, P], R]) -> OverridePerformEntity[P, R]:
+            self.collect(collector, *args, **kwargs)(entity)
+            return OverridePerformEntity(collector, self, entity)  # type: ignore
 
-class OverridePerformEntity(Generic[VnCallable]):
+        return wrapper
+
+
+class OverridePerformEntity(Generic[P, R]):
     collector: BaseCollector
-    fn: Fn[VnCallable]
-    entity: VnCallable
+    fn: Fn[Callable[P, R]]
+    entity: Callable[Concatenate[Any, P], R]
 
     origin_perform: type[PerformTemplate]
     name: str
 
-    def __init__(self, collector: BaseCollector, fn: Fn[VnCallable], entity: VnCallable) -> None:
+    def __init__(
+        self,
+        collector: BaseCollector,
+        fn: Fn[Callable[P, R]],
+        entity: Callable[Concatenate[Any, P], R],
+    ) -> None:
         self.collector = collector
         self.fn = fn
         self.entity = entity
-    
+
+    @classmethod
+    def collect(
+        cls,
+        collector: BaseCollector,
+        fn: SupportsCollect[Any, P1, WrapperCallable[Callable[Concatenate[Any, P], R]]],
+        *args: P1.args,
+        **kwargs: P1.kwargs,
+    ):
+        def wrapper(entity: Callable[Concatenate[Any, P], R]) -> OverridePerformEntity[P, R]:
+            fn.collect(collector, *args, **kwargs)(entity)
+            return cls(collector, fn, entity)  # type: ignore
+
+        return wrapper
+
     def __set_name__(self, owner: type[PerformTemplate], name: str):
         self.origin_perform = owner
         self.name = name
@@ -94,26 +127,28 @@ class OverridePerformEntity(Generic[VnCallable]):
         ...
 
     @overload
-    def __get__(self, instance: PerformTemplate, owner: type[PerformTemplate]) -> OverridePerformAgent[VnCallable]:
+    def __get__(self, instance: PerformTemplate, owner: type[PerformTemplate]) -> OverridePerformAgent[P, R]:
         ...
-    
+
     def __get__(self, instance: Any, owner: type):
         if instance is None:
             return self
-    
+
         return OverridePerformAgent(self, instance)
 
-class OverridePerformAgent(Generic[VnCallable]):
-    perform_entity: OverridePerformEntity[VnCallable]
+
+class OverridePerformAgent(Generic[P, R]):
+    perform_entity: OverridePerformEntity[P, R]
     instance: PerformTemplate
 
-    def __init__(self, perform_entity: OverridePerformEntity[VnCallable], instance: PerformTemplate) -> None:
+    def __init__(self, perform_entity: OverridePerformEntity[P, R], instance: PerformTemplate) -> None:
         self.perform_entity = perform_entity
         self.instance = instance
-    
-    def __call__(self: OverridePerformAgent[Callable[P, R]], *args: P.args, **kwds: P.kwargs) -> R:
-        return self.perform_entity.entity(*args, **kwds)
-    
-    def super(self: OverridePerformAgent[Callable[P, R]], *args: P.args, **kwds: P.kwargs) -> R:
-        # 这里还存有疑问。
-        return self.instance.dispatched_override[(type(self.instance), self.perform_entity.name)](*args, **kwds)
+
+    def __call__(self, *args: P.args, **kwds: P.kwargs) -> R:
+        return self.perform_entity.entity(self.instance, *args, **kwds)
+
+    def super(self, *args: P.args, **kwds: P.kwargs) -> R:
+        return self.instance.dispatched_overrides[(type(self.instance), self.perform_entity.name)](
+            self.instance, *args, **kwds
+        )

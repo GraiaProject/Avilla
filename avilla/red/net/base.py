@@ -46,7 +46,7 @@ class RedNetworking(Generic[T]):
             async def event_parse_task(data: dict):
                 event_type = data["type"]
                 event = await Staff.focus(connection).parse_event(event_type, data["payload"])
-                if event == 'non-implemented':
+                if event == "non-implemented":
                     logger.warning(f"received unsupported event {event_type}: {data}")
                     return
                 elif event is not None:

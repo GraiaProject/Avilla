@@ -67,16 +67,12 @@ class Avilla:
             async def message_cacher(context: Context, message: Message):
                 if context.account.info.enabled_message_cache:
                     self.service.message_cache[context.account.route].push(message)
-            
-            message_cacher.__annotations__ = {
-                "context": Context,
-                "message": Message
-            }
+
+            message_cacher.__annotations__ = {"context": Context, "message": Message}
 
     @classmethod
     def current(cls) -> "Avilla":
         return get_current_avilla()
-
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
         return await Staff.focus(self).fetch_resource(resource)
