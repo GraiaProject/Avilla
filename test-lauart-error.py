@@ -1,9 +1,15 @@
 import asyncio
 
 from launart import Launart, Service
+from launart.utilles import any_completed
 
 art = Launart()
 
+async def _raise(manager: Launart):
+    while not manager.status.exiting:
+        await asyncio.sleep(1)
+        print(1)
+        raise ValueError(1)
 
 
 class TestSrv(Service):
@@ -15,20 +21,22 @@ class TestSrv(Service):
 
     @property
     def stages(self) -> set[str]:
-        return {"preparing"}
+        return {"blocking", "cleanup"}
 
     async def launch(self, manager: Launart):
-        async with self.stage("preparing"):
-            print("TestSrv: prepared TestInterface")
+        async with self.stage("blocking"):
+            print("TestSrv: blocking TestInterface")
+            await _raise(manager)
 
-async def _raise():
-    await asyncio.sleep(0.1)
-    print(1)
-    raise RuntimeError(1)
+
+        async with self.stage("cleanup"):
+            print("TestSrv: cleaned")
+            await asyncio.sleep(0.1)
 
 
 class TestService(Service):
     id = "test"
+    srv = TestSrv()
 
     @property
     def required(self):
@@ -43,10 +51,9 @@ class TestService(Service):
             print("prepare")
             await asyncio.sleep(3)
         async with self.stage("blocking"):
-            print("blocking")
-            await _raise()
-            await asyncio.sleep(3)
-            print("unblocking 1")
+            await any_completed(
+                manager.status.wait_for_sigexit(), self.srv.status.wait_for("blocking-completed")
+            )
         async with self.stage("cleanup"):
             print("cleanup")
             await asyncio.sleep(3)
