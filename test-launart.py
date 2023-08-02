@@ -1,7 +1,3 @@
-import richuru
-
-richuru.install()
-
 import asyncio
 
 from launart import Launart, Service

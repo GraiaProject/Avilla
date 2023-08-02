@@ -95,7 +95,7 @@ async def on_message_received(cx: Context, event: MessageReceived):
             [
                 "Hello, Avilla!",
                 Notice(cx.scene.member("1846913566")),
-                Picture(LocalFileResource("D:/kaf.webp")),
+                Picture("D:/kaf.webp"),
             ]
         )
         await asyncio.sleep(3)

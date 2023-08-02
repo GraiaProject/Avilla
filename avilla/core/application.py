@@ -96,7 +96,7 @@ class Avilla:
         ...
 
     @classmethod
-    def current(cls) -> "Avilla":
+    def current(cls):
         return get_current_avilla()
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
