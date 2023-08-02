@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:04eaada6e45bb7f3ed4ee368d222c6ffd8de6d375eb256e1ea8a879d8bdc61aa"
+content_hash = "sha256:e0d54fe3fda90a49d2b2c55e8907b22b590a926ed294887835ac6d40e0757a6b"
 
 [[package]]
 name = "aiohttp"
@@ -568,12 +568,12 @@ files = [
 
 [[package]]
 name = "graia-broadcast"
-version = "0.22.0"
+version = "0.22.1"
 requires_python = ">=3.7,<4.0"
 summary = "a highly customizable, elegantly designed event system based on asyncio"
 files = [
-    {file = "graia-broadcast-0.22.0.tar.gz", hash = "sha256:3b2e439db47f4b88b6282f8a04ec81c3b00cbe53ea393f98ab3230fe791ed6ff"},
-    {file = "graia_broadcast-0.22.0-py3-none-any.whl", hash = "sha256:93657c4bd267433e9af3d1bd943bc5406371404a06c71aaed6867ff5070ccf3a"},
+    {file = "graia-broadcast-0.22.1.tar.gz", hash = "sha256:5385aa3a5855bc29ffcbe1e6a32d9b051e18ff1cfef77f39c6e449472738e722"},
+    {file = "graia_broadcast-0.22.1-py3-none-any.whl", hash = "sha256:365dc75f84c765904dd2955b4f265d0f94214d29c0adf985adffdd898c17a3eb"},
 ]
 
 [[package]]

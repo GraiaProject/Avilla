@@ -13,6 +13,7 @@ from avilla.core.ryanvk import Isolate
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
+from avilla.core.utilles import identity
 from graia.broadcast import Broadcast
 from launart import Launart
 from launart.component import Service
@@ -29,6 +30,7 @@ if TYPE_CHECKING:
     from .resource import Resource
 
 T = TypeVar("T")
+TP = TypeVar("TP", bound=BaseProtocol)
 
 
 class Avilla:
@@ -70,7 +72,7 @@ class Avilla:
             async def message_cacher(context: Context, message: Message):
                 if context.account.info.enabled_message_cache:
                     self.service.message_cache[context.account.route].push(message)
-            
+
             @self.broadcast.receiver(AccountUnregistered)
             async def clear_cache(event: AccountUnregistered):
                 if event.account.route in self.service.message_cache:
@@ -85,7 +87,6 @@ class Avilla:
         self.isolate.apply(CoreResourceFetchPerform)
 
     def get_staff_components(self) -> dict[str, SupportsArtifacts]:
-        # 我确信这是个 pyright 的 bug, 把这个 return_type 去掉就来了。
         return {"avilla": self}
 
     def get_staff_artifacts(self):
@@ -110,6 +111,12 @@ class Avilla:
 
         for protocol in protocols:
             protocol.ensure(self)
+
+    def get_protocol(self, protocol_type: type[TP]) -> TP:
+        if protocol_type not in self._protocol_map:
+            raise ValueError(f"{identity(protocol_type)} is unregistered on this Avilla instance")
+
+        return self._protocol_map[protocol_type]  # type: ignore
 
     def apply_services(self, *services: Service):
         for i in services:
