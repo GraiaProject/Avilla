@@ -70,7 +70,7 @@ class Fn(Generic[VnCallable]):
         return wrapper
 
     def override(
-        self: SupportsCollect[Any, P1, WrapperCallable[Callable[Concatenate[Any, P], R]]],
+        self: SupportsCollect[Any, P1, WrapperCallable[Callable[Concatenate[Any, P], R]]],  # pyright: ignore
         collector: BaseCollector,
         *args: P1.args,
         **kwargs: P1.kwargs,

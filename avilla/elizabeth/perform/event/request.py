@@ -32,7 +32,7 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
         request = Request(
             f"{raw_event['eventId']}/{raw_event['fromId']}",
             LAND,
-            group,  #
+            group,
             sender,
             account,
             datetime.now(),

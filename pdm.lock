@@ -568,12 +568,12 @@ files = [
 
 [[package]]
 name = "graia-broadcast"
-version = "0.21.1"
+version = "0.22.0"
 requires_python = ">=3.7,<4.0"
 summary = "a highly customizable, elegantly designed event system based on asyncio"
 files = [
-    {file = "graia-broadcast-0.21.1.tar.gz", hash = "sha256:d84788e810d5a545a5550c0e63f1b9558abdcbf7f6ec3c6f434e9b7498fb03b1"},
-    {file = "graia_broadcast-0.21.1-py3-none-any.whl", hash = "sha256:3220eaf06b076249d9744416a129dfdbc33bcf8ba92de28f4bea3c1aaeb303a1"},
+    {file = "graia-broadcast-0.22.0.tar.gz", hash = "sha256:3b2e439db47f4b88b6282f8a04ec81c3b00cbe53ea393f98ab3230fe791ed6ff"},
+    {file = "graia_broadcast-0.22.0-py3-none-any.whl", hash = "sha256:93657c4bd267433e9af3d1bd943bc5406371404a06c71aaed6867ff5070ccf3a"},
 ]
 
 [[package]]
