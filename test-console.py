@@ -62,4 +62,4 @@ launart.launch_blocking(loop=broadcast.loop)
     else:
         await ctx.scene.send_message("Hello, Avilla!")
 
-avilla.launch(loop=avilla.broadcast.loop)
+avilla.launch()

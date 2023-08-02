@@ -349,7 +349,7 @@ class Launart:
         import functools
         import threading
 
-        loop = loop or asyncio.new_event_loop()
+        loop = loop or asyncio.get_event_loop()
 
         launch_task = loop.create_task(self.launch(), name="amnesia-launch")
         handled_signals: Dict[signal.Signals, Any] = {}

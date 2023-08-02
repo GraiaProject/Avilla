@@ -35,4 +35,4 @@ async def on_message_received(cx: Context, event: MessageReceived):
         )
 
 
-avilla.launch(loop=avilla.broadcast.loop)
+avilla.launch()

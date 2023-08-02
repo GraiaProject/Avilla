@@ -56,4 +56,4 @@ async def on_message_received(cx: Context, event: MessageReceived):
         print(await cx.pull(Privilege, cx.client))
         print(await cx.pull(Privilege, cx.self))
 
-avilla.launch(loop=avilla.broadcast.loop)
+avilla.launch()
