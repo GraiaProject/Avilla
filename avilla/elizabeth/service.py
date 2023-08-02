@@ -4,6 +4,7 @@ import asyncio
 from typing import TYPE_CHECKING, Set
 
 from launart import Launart, Service
+from launart.utilles import any_completed
 
 from .connection.base import ElizabethNetworking
 from .connection.ws_client import ElizabethWsClientNetworking
@@ -37,7 +38,7 @@ class ElizabethService(Service):
                 manager.add_component(i)
 
         async with self.stage("blocking"):
-            await asyncio.gather(
+            await any_completed(
                 manager.status.wait_for_sigexit(), *(i.status.wait_for("blocking-completed") for i in self.connections)
             )
 

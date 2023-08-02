@@ -46,7 +46,7 @@ class ConsoleService(Service):
             ...
 
         async with self.stage("blocking"):
-            task = asyncio.create_task(self.app.run_async())
+            task = asyncio.get_running_loop().create_task(self.app.run_async())
             await manager.status.wait_for_sigexit()
         async with self.stage("cleanup"):
             self.app.exit()
