@@ -63,14 +63,21 @@ class Avilla:
         if message_cache_size > 0:
             from avilla.core.context import Context
             from avilla.core.message import Message
+            from avilla.standard.core.account import AccountUnregistered
             from avilla.standard.core.message import MessageReceived
 
             @self.broadcast.receiver(MessageReceived)
             async def message_cacher(context: Context, message: Message):
                 if context.account.info.enabled_message_cache:
                     self.service.message_cache[context.account.route].push(message)
+            
+            @self.broadcast.receiver(AccountUnregistered)
+            async def clear_cache(event: AccountUnregistered):
+                if event.account.route in self.service.message_cache:
+                    del self.service.message_cache[event.account.route]
 
             message_cacher.__annotations__ = {"context": Context, "message": Message}
+            clear_cache.__annotations__ = {"event": AccountUnregistered}
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
@@ -104,6 +111,10 @@ class Avilla:
         for protocol in protocols:
             protocol.ensure(self)
 
+    def apply_services(self, *services: Service):
+        for i in services:
+            self.launch_manager.add_component(i)
+
     def listen(
         self,
         event: type[Dispatchable],
@@ -113,10 +124,6 @@ class Avilla:
         decorators: list[Decorator] | None = None,
     ):
         return self.broadcast.receiver(event, priority, dispatchers, namespace, decorators)
-
-    def apply_services(self, *services: Service):
-        for i in services:
-            self.launch_manager.add_component(i)
 
     def launch(
         self,
