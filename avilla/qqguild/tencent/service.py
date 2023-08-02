@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Set
 from avilla.qqguild.tencent.connection.base import QQGuildNetworking
 from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientNetworking
 from launart import Launart, Service
+from launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from .protocol import QQGuildProtocol
@@ -36,7 +37,7 @@ class QQGuildService(Service):
                 manager.add_component(i)
 
         async with self.stage("blocking"):
-            await asyncio.gather(
+            await any_completed(
                 manager.status.wait_for_sigexit(), *(i.status.wait_for("blocking-completed") for i in self.connections)
             )
 

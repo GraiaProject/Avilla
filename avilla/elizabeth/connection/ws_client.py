@@ -123,54 +123,64 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
 
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         while not manager.status.exiting:
-            async with session.ws_connect(
-                self.config.base_url / "all", params={"verifyKey": self.config.access_token, "qq": str(self.config.qq)}
-            ) as self.connection:
-                logger.info(f"{self} Websocket client connected")
+            ctx = session.ws_connect(
+                self.config.base_url / "all",
+                params={"verifyKey": self.config.access_token, "qq": str(self.config.qq)}
+            )
+            try:
+                self.connection = await ctx.__aenter__()
+            except Exception as e:
+                logger.error(e)
+                logger.debug("Retrying after 5s ...")
+                with suppress(AttributeError):
+                    await ctx.__aexit__(None, None, None)
+                await asyncio.sleep(5)
+                continue
+            logger.info(f"{self} Websocket client connected")
 
-                account_route = Selector().land("qq").account(str(self.config.qq))
-                if account_route in self.protocol.avilla.accounts:
-                    account = cast(ElizabethAccount, self.protocol.avilla.accounts[account_route].account)
-                else:
-                    account = ElizabethAccount(account_route, self.protocol.avilla, self.protocol)
-                    self.protocol.avilla.accounts[account_route] = AccountInfo(
-                        account_route,
-                        account,
-                        self.protocol,
-                        PLATFORM,
-                    )
-
-                self.protocol.service.account_map[self.config.qq] = self
-
-                self.close_signal.clear()
-                close_task = asyncio.create_task(self.close_signal.wait())
-                receiver_task = asyncio.create_task(self.message_handle())
-                sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
-
-                done, pending = await any_completed(
-                    sigexit_task,
-                    close_task,
-                    receiver_task,
+            account_route = Selector().land("qq").account(str(self.config.qq))
+            if account_route in self.protocol.avilla.accounts:
+                account = cast(ElizabethAccount, self.protocol.avilla.accounts[account_route].account)
+            else:
+                account = ElizabethAccount(account_route, self.protocol.avilla, self.protocol)
+                self.protocol.avilla.accounts[account_route] = AccountInfo(
+                    account_route,
+                    account,
+                    self.protocol,
+                    PLATFORM,
                 )
-                if sigexit_task in done:
-                    logger.info(f"{self} Websocket client exiting...")
-                    await self.connection.close()
-                    self.close_signal.set()
-                    self.connection = None
-                    with suppress(KeyError):
-                        del self.protocol.service.account_map[self.config.qq]
-                        del self.protocol.avilla.accounts[account_route]
-                    return
-                if close_task in done:
-                    receiver_task.cancel()
-                    logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
 
-                    with suppress(KeyError):
-                        del self.protocol.service.account_map[self.config.qq]
-                        del self.protocol.avilla.accounts[account_route]
-                    await asyncio.sleep(5)
-                    logger.info(f"{self} Reconnecting...")
-                    continue
+            self.protocol.service.account_map[self.config.qq] = self
+
+            self.close_signal.clear()
+            close_task = asyncio.create_task(self.close_signal.wait())
+            receiver_task = asyncio.create_task(self.message_handle())
+            sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
+
+            done, pending = await any_completed(
+                sigexit_task,
+                close_task,
+                receiver_task,
+            )
+            if sigexit_task in done:
+                logger.info(f"{self} Websocket client exiting...")
+                await self.connection.close()
+                self.close_signal.set()
+                self.connection = None
+                with suppress(KeyError):
+                    del self.protocol.service.account_map[self.config.qq]
+                    del self.protocol.avilla.accounts[account_route]
+                return
+            if close_task in done:
+                receiver_task.cancel()
+                logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
+
+                with suppress(KeyError):
+                    del self.protocol.service.account_map[self.config.qq]
+                    del self.protocol.avilla.accounts[account_route]
+                await asyncio.sleep(5)
+                logger.info(f"{self} Reconnecting...")
+                continue
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
