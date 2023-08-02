@@ -19,7 +19,7 @@ from launart.component import Service
 
 try:
     from creart import it
-except (ModuleNotFoundError, ImportError):
+except ImportError:
     it = None
 
 if TYPE_CHECKING:

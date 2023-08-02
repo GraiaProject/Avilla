@@ -1,20 +1,13 @@
-from creart import create
-from launart import Launart
-from graia.broadcast import Broadcast
-
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.console.protocol import ConsoleProtocol
 from avilla.console.element import Markdown, Emoji
 
-broadcast = create(Broadcast)
-launart = Launart()
-avilla = Avilla(launch_manager=launart)
+avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
 
-import rich.text
 
 
-@broadcast.receiver(MessageReceived)
+@avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context, event: MessageReceived):
     msg = str(event.message.content)
     if msg == "/help":
@@ -69,4 +62,4 @@ launart.launch_blocking(loop=broadcast.loop)
     else:
         await ctx.scene.send_message("Hello, Avilla!")
 
-launart.launch_blocking(loop=broadcast.loop)
+avilla.launch(loop=avilla.broadcast.loop)

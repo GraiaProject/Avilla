@@ -1,4 +1,3 @@
-from creart import create
 from yarl import URL
 
 from avilla.core import Avilla, Context, MessageReceived
@@ -7,14 +6,7 @@ from avilla.elizabeth.connection.ws_client import ElizabethWsClientConfig, Eliza
 from avilla.elizabeth.protocol import ElizabethProtocol
 from avilla.standard.core.privilege import Privilege
 
-# from graia.amnesia.builtins.aiohttp import AiohttpClientService
-from graia.broadcast import Broadcast
-from launart import Launart
 
-#richuru1.install()
-
-broadcast = create(Broadcast)
-launart = Launart()
 protocol = ElizabethProtocol()
 service = protocol.service
 config = ElizabethWsClientConfig(
@@ -25,20 +17,13 @@ config = ElizabethWsClientConfig(
 conn = ElizabethWsClientNetworking(protocol, config)
 service.connections.append(conn)
 
-#console_protocol = ConsoleProtocol()
-avilla = Avilla(broadcast, launart, [protocol], message_cache_size=0)
+avilla = Avilla(message_cache_size=0)
+avilla.apply_protocols(protocol)
 
 protocol.avilla = avilla
 
 
-
-#debug(protocol.isolate.artifacts)
-# exit()
-
-# TODO(Networking): 自动注册 Account
-
-
-@broadcast.receiver(MessageReceived)
+@avilla.listen(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
     print(cx.endpoint, cx.client)
@@ -70,4 +55,5 @@ async def on_message_received(cx: Context, event: MessageReceived):
         print(await cx.pull(Privilege, cx.scene))
         print(await cx.pull(Privilege, cx.client))
         print(await cx.pull(Privilege, cx.self))
-avilla.launch_manager.launch_blocking(loop=broadcast.loop)
+
+avilla.launch(loop=avilla.broadcast.loop)

@@ -1,6 +1,5 @@
 import os
 
-from creart import create
 
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.builtins.capability import CoreCapability
@@ -10,16 +9,8 @@ from avilla.qqguild.tencent.element import Reference
 from avilla.qqguild.tencent.protocol import QQGuildProtocol
 from avilla.standard.core.privilege import Privilege
 
-# from graia.amnesia.builtins.aiohttp import AiohttpClientService
-from graia.broadcast import Broadcast
-from launart import Launart
 
-#from avilla.console.protocol import ConsoleProtocol
 
-#richuru1.install()
-
-broadcast = create(Broadcast)
-launart = Launart()
 protocol = QQGuildProtocol()
 service = protocol.service
 config = QQGuildWsClientConfig(
@@ -33,19 +24,14 @@ conn = QQGuildWsClientNetworking(protocol, config)
 service.connections.append(conn)
 
 #console_protocol = ConsoleProtocol()
-avilla = Avilla(broadcast, launart, [protocol], message_cache_size=0)
+avilla = Avilla(message_cache_size=0)
+avilla.apply_protocols(protocol)
 
 protocol.avilla = avilla
 
 
 
-#debug(protocol.isolate.artifacts)
-# exit()
-
-# TODO(Networking): 自动注册 Account
-
-
-@broadcast.receiver(MessageReceived)
+@avilla.listen(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
     print(cx.endpoint, cx.client)
@@ -74,5 +60,4 @@ async def on_message_received(cx: Context, event: MessageReceived):
         await cx[CoreCapability.pull](cx.self, Privilege)
     )
 
-
-avilla.launch_manager.launch_blocking(loop=broadcast.loop)
+avilla.launch(loop=avilla.broadcast.loop)

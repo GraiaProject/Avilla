@@ -3,7 +3,7 @@
 # See https://www.python.org/dev/peps/pep-0621/
 name = "avilla-workspace"
 dependencies = [
-    "graia-broadcast>=0.17.5",
+    "graia-broadcast>=0.21.0",
     #"graia-amnesia>=0.5.2",
     #"launart>=0.6.0,<1.0.0",
     "loguru>=0.6.0",
