@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import contextvars
+from itertools import chain
 import signal
 from contextvars import ContextVar
 from functools import partial
-from typing import TYPE_CHECKING, Any, ClassVar, Dict, Iterable, Optional, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Coroutine, ClassVar, Dict, Iterable, Optional, TypeVar, cast, overload
 
 from loguru import logger
 
@@ -38,20 +40,6 @@ class Launart:
     @classmethod
     def current(cls) -> Launart:
         return cls._context.get()
-
-    def _on_sys_signal(self, _, __, main_task: asyncio.Task):
-        self.status.exiting = True
-
-        if self.task_group is not None:
-            self.task_group.stop = True
-            if self.task_group.blocking_task is not None:  # pragma: worst case
-                self.task_group.blocking_task.cancel()
-
-        if not main_task.done():
-            main_task.cancel()
-            # wakeup loop if it is blocked by select() with long timeout
-            main_task._loop.call_soon_threadsafe(lambda: None)
-            logger.warning("Ctrl-C triggered by user.", style="dark_orange bold")
 
     async def _sideload_tracker(self, component: Service) -> None:
         if TYPE_CHECKING:
@@ -180,7 +168,14 @@ class Launart:
         logger.info(f"Component {component.id} is preparing.")
         component.status.stage = "preparing"
 
-        await any_completed(task, component.status.wait_for("prepared"))
+        loop = asyncio.get_running_loop()
+        listener_task = loop.create_task(component.status.wait_for("prepared"))
+        done, pending = await any_completed(task, listener_task)
+        if listener_task in pending:
+            exc = task.exception()
+            if exc is not None:
+                task.result()
+
         logger.success(f"Component {component.id} is prepared.")
 
     async def _component_cleanup(self, task: asyncio.Task, component: Service):
@@ -194,6 +189,9 @@ class Launart:
         await any_completed(task, component.status.wait_for("finished"))
 
     def add_component(self, component: Service):
+        if self.task_group is not None:
+            resolve_requirements([*self.components.values(), component])
+
         component.ensure_manager(self)
 
         if component.id in self.components:
@@ -237,14 +235,19 @@ class Launart:
                 if self.task_group and component in self.task_group.sideload_trackers:
                     # sideload tracking, cannot gracefully remove (into exiting phase)
                     return
-                raise ValueError(f"Service {id} does not exist.")
+                raise ValueError(f"Service {component} does not exist.")
             target = self.components[component]
         else:
+            if component not in self.components.values():
+                raise ValueError(f"Service {component.id} does not exist.")
+
             target = component
 
         if self.task_group is None:
             del self.components[target.id]
             return
+
+        resolve_requirements([service for service in self.components.values() if service.id != target.id])
 
         if target.id not in self.task_group.sideload_trackers:
             raise RuntimeError("Only sideload tasks can be removed at runtime!")
@@ -260,18 +263,47 @@ class Launart:
 
         tracker.cancel()  # trigger cancel, and the tracker will start clean up
 
+    async def _lifespan_finale(self, token: contextvars.Token):
+        finale_tasks = [i for i in self.tasks.values() if not i.done()]
+        if finale_tasks:
+            await asyncio.wait(finale_tasks)
+
+        self.task_group = None
+        self._context.reset(token)
+        self.status = ManagerStatus()
+
+    async def _tasks_controler(self, tasks: list[Coroutine]):
+        # 返回指示符。
+        loop = asyncio.get_running_loop()
+        done, pending = await asyncio.wait(map(loop.create_task, tasks), return_when=asyncio.FIRST_EXCEPTION)
+        for i in done:
+            if i.exception() is not None:
+                return "exception-thrown", pending
+
+        return "it-looks-good", done
+
+    async def _fatal_cancel(self, token: contextvars.Token):
+        for task_to_cancel in self.tasks.values():
+            task_to_cancel.cancel()
+
+        await self._lifespan_finale(token)
+        return
+
     async def launch(self):
-        _token = self._context.set(self)
         if self.status.stage is not None:
             logger.error("Incorrect ownership, launart is already running.")
             return
-        self.tasks = {}
+
+        _token = self._context.set(self)
+
         loop = asyncio.get_running_loop()
+        post = loop.create_task
+
+        self.tasks = {}
         self.task_group = FlexibleTaskGroup()
-        into = loop.create_task
 
         for _id, component in self.components.items():
-            t = into(component.launch(self))
+            t = post(component.launch(self))
             t.add_done_callback(partial(self._on_task_done, component))
             self.tasks[_id] = t
             # self.task_group.add(self.tasks[k])
@@ -279,14 +311,36 @@ class Launart:
 
         self.status.stage = "preparing"
 
-        for components in resolve_requirements(self.components.values()):
-            preparing_tasks = [
-                self._component_prepare(self.tasks[component.id], component)
-                for component in components
-                if "preparing" in component.stages
-            ]
-            if preparing_tasks:
-                await asyncio.gather(*preparing_tasks)
+        try:
+            prepared_tasks = []
+            
+            fatal_flag = False
+            for components in resolve_requirements(self.components.values()):
+                preparing_tasks = [
+                    self._component_prepare(self.tasks[component.id], component)
+                    for component in components
+                    if "preparing" in component.stages
+                ]
+                if fatal_flag:
+                    for component in components:
+                        self.tasks[component.id].cancel()
+
+                if preparing_tasks:
+                    sym, tasks = await self._tasks_controler(preparing_tasks)
+                    if sym == "exception-thrown":
+                        for task_to_cancel in chain(tasks, prepared_tasks):
+                            task_to_cancel.cancel()
+                        fatal_flag = True
+
+                    prepared_tasks.extend(tasks)
+
+            if fatal_flag:
+                await self._lifespan_finale(_token)
+                return
+
+        except asyncio.CancelledError:
+            await self._fatal_cancel(_token)
+            return
 
         self.status.stage = "blocking"
 
@@ -304,38 +358,46 @@ class Launart:
             self.status.exiting = True
 
             logger.info("Entering cleanup phase.", style="yellow bold")
-            # cleanup the dangling sideload tasks first.
-            if self.task_group.sideload_trackers:
-                for tracker in self.task_group.sideload_trackers.values():
-                    tracker.cancel()
-                await asyncio.wait(self.task_group.sideload_trackers.values())
 
-            self.status.stage = "cleaning"
-            for idt, component in self.components.items():
-                if "cleanup" in component.stages and component.status.stage != "waiting-for-cleanup":
-                    await any_completed(
-                        self.tasks[idt],
-                        component.status.wait_for("waiting-for-cleanup"),
-                    )
+            try:
+                # cleanup the dangling sideload tasks first.
+                if self.task_group.sideload_trackers:
+                    for tracker in self.task_group.sideload_trackers.values():
+                        tracker.cancel()
+                    await asyncio.wait(self.task_group.sideload_trackers.values())
 
-            for components in resolve_requirements(self.components.values(), reverse=True):
-                cleanup_tasks = [
-                    self._component_cleanup(self.tasks[component.id], component)
-                    for component in components
-                    if "cleanup" in component.stages
-                ]
-                if cleanup_tasks:
-                    await asyncio.gather(*cleanup_tasks)
+                self.status.stage = "cleaning"
+                for idt, component in self.components.items():
+                    if "cleanup" in component.stages and component.status.stage != "waiting-for-cleanup":
+                        await any_completed(
+                            self.tasks[idt],
+                            component.status.wait_for("waiting-for-cleanup"),
+                        )
+
+                exceptional_tasks = []
+                for components in resolve_requirements(self.components.values(), reverse=True):
+                    cleanup_tasks = [
+                        self._component_cleanup(self.tasks[component.id], component)
+                        for component in components
+                        if "cleanup" in component.stages
+                    ]
+                    if cleanup_tasks:
+                        sym, tasks = await self._tasks_controler(cleanup_tasks)
+                        if sym == "it-looks-good":
+                            continue
+
+                        exceptional_tasks.extend(exceptional_tasks)
+            except asyncio.CancelledError:
+                await self._fatal_cancel(_token)
+                return
 
         self.status.stage = "finished"
+
+        for task in exceptional_tasks:
+            ...
+
         logger.success("Lifespan finished, waiting for finalization.", style="green bold")
-
-        finale_tasks = [i for i in self.tasks.values() if not i.done()]
-        if finale_tasks:
-            await asyncio.wait(finale_tasks)
-
-        self.task_group = None
-        self._context.reset(_token)
+        await self._lifespan_finale(_token)
 
         logger.success("Launart finished.", style="green bold")
 
@@ -378,3 +440,17 @@ class Launart:
                 loop.run_until_complete(loop.shutdown_default_executor())
         finally:
             logger.success("Lifespan completed.", style="green bold")
+
+    def _on_sys_signal(self, _, __, main_task: asyncio.Task):
+        self.status.exiting = True
+
+        if self.task_group is not None:
+            self.task_group.stop = True
+            if self.task_group.blocking_task is not None:  # pragma: worst case
+                self.task_group.blocking_task.cancel()
+
+        if not main_task.done():
+            main_task.cancel()
+            # wakeup loop if it is blocked by select() with long timeout
+            main_task._loop.call_soon_threadsafe(lambda: None)
+            logger.warning("Ctrl-C triggered by user.", style="dark_orange bold")

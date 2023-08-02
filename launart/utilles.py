@@ -26,18 +26,6 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 H = TypeVar("H", bound=Hashable)
 
-PriorityType = Union[
-    Set[T],
-    Dict[T, float],
-    Tuple[
-        Union[
-            Set[T],
-            Dict[T, float],
-        ],
-        ...,
-    ],
-]
-
 
 class _Unmarked(enum.Enum):
     UNMARKED = object()
@@ -78,54 +66,6 @@ class FlexibleTaskGroup:
         if self.blocking_task is not None:
             self.blocking_task.cancel()
         self.tasks.extend(tasks)
-
-
-def priority_strategy(
-    items: List[T],
-    getter: Callable[
-        [T],
-        PriorityType[H],
-    ],
-) -> Dict[H, T]:
-    result: Dict[H, T] = {}
-    _priority_mem: Dict[H, float | Literal[UNMARKED]] = {}
-
-    def _handle(pattern: PriorityType[H]) -> None:
-        """Handle an actual pattern."""
-        if isinstance(pattern, set):
-            # Pattern has unknown priorities.
-            for content in pattern:
-                if content in _priority_mem:
-                    raise ValueError(f"{content} conflicts with {result[content]}")
-                _priority_mem[content] = UNMARKED
-                result[content] = item
-
-        elif isinstance(pattern, dict):
-            for content, priority in pattern.items():
-                if content in _priority_mem:
-                    current_priority: float | Literal[_Unmarked.UNMARKED] = _priority_mem[content]
-                    if current_priority is UNMARKED or priority is UNMARKED:
-                        raise ValueError(f"Unable to determine priority order: {content}, {result[content]}.")
-                    if current_priority < priority:
-                        _priority_mem[content] = priority
-                        result[content] = item
-                else:
-                    _priority_mem[content] = priority
-                    result[content] = item
-
-        else:
-            raise TypeError(f"{pattern} is not a valid pattern.")
-
-    for item in items:
-        pattern: PriorityType[H] = getter(item)
-        if isinstance(pattern, (dict, set)):
-            _handle(pattern)
-        elif isinstance(pattern, tuple):
-            for sub_pattern in pattern:
-                _handle(sub_pattern)
-        else:
-            raise TypeError(f"{pattern} is not a valid pattern.")
-    return result
 
 
 async def wait_fut(
