@@ -112,9 +112,6 @@ class Launart:
                 self.tasks[component.id],
                 component.status.wait_for("waiting-for-cleanup"),
             )
-            if component.status.stage != "waiting-for-cleanup":
-                return
-
         if component.status.stage != "waiting-for-cleanup":
             return
 

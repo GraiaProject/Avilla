@@ -3,8 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, Set
 
-from launart import Launart, Service
-from launart.utilles import any_completed
+from launart import Launart, Service, any_completed
 
 from .net.ws_client import RedWsClientNetworking
 

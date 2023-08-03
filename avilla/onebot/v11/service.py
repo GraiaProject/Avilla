@@ -4,8 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking
 from avilla.onebot.v11.net.ws_server import OneBot11WsServerNetworking
-from launart import Launart, Service
-from launart.utilles import any_completed
+from launart import Launart, Service, any_completed
 
 if TYPE_CHECKING:
     from .protocol import OneBot11Protocol
