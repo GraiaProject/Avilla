@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
@@ -49,6 +50,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                 }
             },
         )
+        file = Path(resp["ntFilePath"])
         return {
             "elementType": 2,
             "picElement": {
@@ -57,6 +59,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                 "picWidth": resp["imageInfo"]["width"],
                 "picHeight": resp["imageInfo"]["height"],
                 "fileSize": resp["fileSize"],
+                "fileName": file.name,
                 "sourcePath": resp["ntFilePath"],
             },
         }
