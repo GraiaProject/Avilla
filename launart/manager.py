@@ -9,6 +9,7 @@ from contextvars import ContextVar
 from functools import partial
 from typing import TYPE_CHECKING, Any, Coroutine, ClassVar, Dict, Iterable, Optional, TypeVar, cast, overload
 
+from creart import it
 from loguru import logger
 
 from launart._sideload import override
@@ -21,6 +22,7 @@ from launart.utilles import (
     resolve_requirements,
 )
 
+T = TypeVar("T")
 TL = TypeVar("TL", bound=Service)
 
 
@@ -31,15 +33,22 @@ class Launart:
     task_group: Optional[FlexibleTaskGroup] = None
 
     _context: ClassVar[ContextVar[Launart]] = ContextVar("launart._context")
+    _default_isolate: dict[Any, Any]
 
     def __init__(self):
         self.components = {}
         self.tasks = {}
         self.status = ManagerStatus()
+        self._default_isolate = {
+            "interface_provide": {}
+        }
 
     @classmethod
     def current(cls) -> Launart:
         return cls._context.get()
+
+    def export_interface(self, interface: type, service: Service):
+        self._default_isolate['interface_provide'][interface] = service
 
     async def _sideload_tracker(self, component: Service) -> None:
         if TYPE_CHECKING:
@@ -112,8 +121,6 @@ class Launart:
                 self.tasks[component.id],
                 component.status.wait_for("waiting-for-cleanup"),
             )
-        if component.status.stage != "waiting-for-cleanup":
-            return
 
         component.status.stage = "cleanup"
 
@@ -162,6 +169,12 @@ class Launart:
             alt=rf"[green]Component [magenta]{component.id}[/magenta] completed.",
         )
 
+        # clean interface
+
+        for k, v in list(self._default_isolate['interface_provide']):
+            if v is component:
+                del self._default_isolate['interface_provide'][k]
+
     async def _component_prepare(self, task: asyncio.Task, component: Service):
         if component.status.stage != "waiting-for-prepare":  # pragma: worst case
             logger.info(f"Wait component {component.id} into preparing.")
@@ -205,6 +218,12 @@ class Launart:
             self.task_group.add(tracker)  # flush the waiter tasks
 
         self.components[component.id] = component
+
+        get_interface = getattr(component, 'get_interface', None)
+        supported_interface_types = getattr(component, 'supported_interface_types', None)
+        if get_interface is not None and supported_interface_types is not None:
+            for interface_type in supported_interface_types:
+                self.export_interface(interface_type, component)
 
     @overload
     def get_component(self, target: type[TL]) -> TL:
@@ -265,6 +284,13 @@ class Launart:
 
         tracker.cancel()  # trigger cancel, and the tracker will start clean up
 
+    def get_interface(self, interface_type: type[T]) -> T:
+        provider_map = self._default_isolate['interface_provide']
+        service = provider_map.get(interface_type)
+        if service is None:
+            raise ValueError(f"{interface_type} is not supported.")
+        return service.get_interface(interface_type)
+
     async def _lifespan_finale(self, token: contextvars.Token):
         finale_tasks = [i for i in self.tasks.values() if not i.done()]
         if finale_tasks:
@@ -315,7 +341,7 @@ class Launart:
 
         try:
             prepared_tasks = []
-            
+
             fatal_flag = False
             for components in resolve_requirements(self.components.values()):
                 preparing_tasks = [
@@ -413,7 +439,18 @@ class Launart:
         import functools
         import threading
 
-        loop = loop or asyncio.get_event_loop()
+        if loop is not None:
+            from warnings import warn
+
+            warn(
+                "The loop argument is deprecated since launart 0.6.4, " "and scheduled for removal in launart 0.7.0.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        loop = it(asyncio.AbstractEventLoop)
+
+        logger.info("Starting launart main task...", style="green bold")
 
         launch_task = loop.create_task(self.launch(), name="amnesia-launch")
         handled_signals: Dict[signal.Signals, Any] = {}
@@ -439,9 +476,10 @@ class Launart:
             loop.run_until_complete(loop.shutdown_asyncgens())
             with contextlib.suppress(RuntimeError, AttributeError):
                 # LINK: https://docs.python.org/3.10/library/asyncio-eventloop.html#asyncio.loop.shutdown_default_executor
-                loop.run_until_complete(loop.shutdown_default_executor())
+                loop.run_until_complete(loop.shutdown_default_executor())  # type: ignore
         finally:
-            logger.success("Lifespan completed.", style="green bold")
+            asyncio.set_event_loop(None)
+            logger.success("asyncio shutdown complete.", style="green bold")
 
     def _on_sys_signal(self, _, __, main_task: asyncio.Task):
         self.status.exiting = True
