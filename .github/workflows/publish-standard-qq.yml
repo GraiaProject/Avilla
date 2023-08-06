@@ -1,5 +1,6 @@
 name: publish standard/qq
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - "standard/qq-*.*.*"

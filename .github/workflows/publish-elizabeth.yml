@@ -1,5 +1,6 @@
 name: publish elizabeth
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - "elizabeth-*.*.*"

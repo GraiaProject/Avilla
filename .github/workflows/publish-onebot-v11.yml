@@ -1,5 +1,6 @@
 name: publish onebot/v11
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - "onebot/v11-*.*.*"

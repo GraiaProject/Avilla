@@ -1,5 +1,6 @@
 name: publish qqguild/tencent
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - "qqguild/tencent-*.*.*"

@@ -1,5 +1,6 @@
 name: publish core
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - "core-*.*.*"

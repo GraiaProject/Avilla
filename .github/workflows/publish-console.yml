@@ -1,5 +1,6 @@
 name: publish console
 on:
+  workflow_dispatch: {}
   push:
     tags:
       - "console-*.*.*"
