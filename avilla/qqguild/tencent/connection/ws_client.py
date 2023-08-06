@@ -23,9 +23,9 @@ from avilla.standard.core.account import (
     AccountUnavailable,
     AccountUnregistered,
 )
-from avilla.core._vendor.launart import Service
-from avilla.core._vendor.launart.manager import Launart
-from avilla.core._vendor.launart.utilles import any_completed
+from launart import Service
+from launart.manager import Launart
+from launart.utilles import any_completed
 
 from .base import CallMethod, QQGuildNetworking
 from .util import Opcode, Payload, validate_response

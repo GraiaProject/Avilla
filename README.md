@@ -39,7 +39,7 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 
 ```py
 from creart import create
-from avilla.core._vendor.launart import Launart
+from launart import Launart
 from graia.broadcast import Broadcast
 
 from avilla.core import Avilla, Context, MessageReceived

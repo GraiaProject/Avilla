@@ -4,11 +4,11 @@ from abc import ABCMeta, abstractmethod
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Literal, Optional, Set
 
-from avilla.core._vendor.launart.status import STAGE_STAT, STATS, Phase, ServiceStatus, U_Stage
-from avilla.core._vendor.launart.utilles import any_completed
+from launart.status import STAGE_STAT, STATS, Phase, ServiceStatus, U_Stage
+from launart.utilles import any_completed
 
 if TYPE_CHECKING:
-    from avilla.core._vendor.launart.manager import Launart
+    from launart.manager import Launart
 
 
 class Service(metaclass=ABCMeta):

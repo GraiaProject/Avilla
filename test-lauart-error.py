@@ -1,10 +1,9 @@
 import asyncio
 
-from avilla.core._vendor.launart import Launart, Service
-from avilla.core._vendor.launart.utilles import any_completed
+from launart import Launart, Service
+from launart.utilles import any_completed
 
 art = Launart()
-
 
 async def _raise(manager: Launart):
     while not manager.status.exiting:
@@ -29,6 +28,7 @@ class TestSrv(Service):
             print("TestSrv: blocking TestInterface")
             await _raise(manager)
 
+
         async with self.stage("cleanup"):
             print("TestSrv: cleaned")
             await asyncio.sleep(0.1)
@@ -51,10 +51,13 @@ class TestService(Service):
             print("prepare")
             await asyncio.sleep(3)
         async with self.stage("blocking"):
-            await any_completed(manager.status.wait_for_sigexit(), self.srv.status.wait_for("blocking-completed"))
+            await any_completed(
+                manager.status.wait_for_sigexit(), self.srv.status.wait_for("blocking-completed")
+            )
         async with self.stage("cleanup"):
             print("cleanup")
             await asyncio.sleep(3)
+
 
 
 art.add_component(TestSrv())

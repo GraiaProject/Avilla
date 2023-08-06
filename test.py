@@ -1,15 +1,10 @@
 import asyncio
 
 from creart import create
-
-# from avilla.core._vendor.graia.amnesia.builtins.aiohttp import AiohttpClientService
-from graia.broadcast import Broadcast
 from yarl import URL
 
 from avilla.console.protocol import ConsoleProtocol
 from avilla.core import Avilla, Context, MessageReceived
-from avilla.core._vendor.graia.amnesia.builtins.asgi import UvicornASGIService
-from avilla.core._vendor.launart import Launart
 from avilla.core.elements import Notice, Picture
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
@@ -19,6 +14,11 @@ from avilla.onebot.v11.net.ws_client import OneBot11WsClientConfig, OneBot11WsCl
 from avilla.onebot.v11.net.ws_server import OneBot11WsServerConfig, OneBot11WsServerNetworking
 from avilla.onebot.v11.protocol import OneBot11Protocol
 from avilla.standard.core.message.capability import MessageRevoke, MessageSend
+from graia.amnesia.builtins.asgi import UvicornASGIService
+
+# from graia.amnesia.builtins.aiohttp import AiohttpClientService
+from graia.broadcast import Broadcast
+from launart import Launart
 from test_env import A60_ENDPOINT, A60_MAH_ACCOUNT, A60_MAH_SECRET, A60_SECRET
 
 # richuru1.install()
@@ -54,9 +54,9 @@ import sys
 
 sys.setrecursionlimit(200)
 
-from avilla.core._vendor.graia.amnesia.message import MessageChain
 from avilla.core.ryanvk.collector.context import ContextCollector
 from avilla.core.ryanvk.descriptor.base import OverridePerformEntity
+from graia.amnesia.message import MessageChain
 from avilla.core.selector import Selector
 
 
@@ -116,8 +116,7 @@ async def log():
 
 # t = broadcast.loop.create_task(log())
 
+from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS
 from devtools import debug
 
-from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS
-
-avilla.launch_manager.launch_blocking()
+avilla.launch_manager.launch_blocking(loop=broadcast.loop)

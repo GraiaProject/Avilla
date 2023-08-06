@@ -3,14 +3,15 @@
 # See https://www.python.org/dev/peps/pep-0621/
 name = "avilla-workspace"
 dependencies = [
-    "graia-broadcast>=0.23.0",
+    "graia-broadcast>=0.22.0",
     #"graia-amnesia>=0.5.2",
     #"launart>=0.6.0,<1.0.0",
     "loguru>=0.6.0",
     "yarl>=1.7.2",
     "statv>=0.2.2",
     "aiohttp>=3.8.1",
-    "creart>=0.3.0",
+    "creart>=0.2.1",
+    "creart-graia>=0.1.5",
     "graia-saya>=0.0.17",
     "nonebot2>=2.0.1",
     "wsproto>=1.2.0",

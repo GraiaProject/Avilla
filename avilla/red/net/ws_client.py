@@ -13,9 +13,9 @@ from yarl import URL
 from avilla.red.account import RedAccount
 from avilla.red.net.base import RedNetworking
 from avilla.standard.core.account import AccountUnregistered
-from avilla.core._vendor.launart import Service
-from avilla.core._vendor.launart.manager import Launart
-from avilla.core._vendor.launart.utilles import any_completed
+from launart import Service
+from launart.manager import Launart
+from launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from avilla.red.protocol import RedProtocol

@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from avilla.core._vendor.graia.amnesia.message import Element
-from avilla.core._vendor.graia.amnesia.message import Text as Text
 from avilla.core.resource import LocalFileResource, Resource
 from avilla.core.selector import Selector
+from graia.amnesia.message import Element
+from graia.amnesia.message import Text as Text
 
 
 class Notice(Element):

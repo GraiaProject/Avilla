@@ -13,9 +13,9 @@ from yarl import URL
 from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
-from avilla.core._vendor.launart import Service
-from avilla.core._vendor.launart.manager import Launart
-from avilla.core._vendor.launart.utilles import any_completed
+from launart import Service
+from launart.manager import Launart
+from launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from avilla.onebot.v11.protocol import OneBot11Protocol

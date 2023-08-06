@@ -6,7 +6,7 @@ from rich.emoji import EmojiVariant
 from rich.style import Style
 from rich.text import Text as RichText
 
-from avilla.core._vendor.graia.amnesia.message.element import Element
+from graia.amnesia.message.element import Element
 
 
 class Emoji(Element):

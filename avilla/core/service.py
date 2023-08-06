@@ -12,7 +12,7 @@ from avilla.standard.core.application import (
     ApplicationPreparing,
     ApplicationReady,
 )
-from avilla.core._vendor.launart import Launart, Service
+from launart import Launart, Service
 
 from .graia import AVILLA_ASCII_LOGO, AVILLA_ASCII_RAW_LOGO, log_telemetry
 

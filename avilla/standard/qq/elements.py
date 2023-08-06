@@ -4,9 +4,9 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 
-from avilla.core._vendor.graia.amnesia.message.element import Element
 from avilla.core.elements import Picture
 from avilla.core.selector import Selector
+from graia.amnesia.message.element import Element
 
 
 class FlashImage(Picture):

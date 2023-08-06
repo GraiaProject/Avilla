@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Set
 
-from avilla.core._vendor.launart import Launart, Service, any_completed
+from launart import Launart, Service, any_completed
 
 from .connection.base import ElizabethNetworking
 from .connection.ws_client import ElizabethWsClientNetworking

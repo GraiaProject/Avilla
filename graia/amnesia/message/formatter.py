@@ -4,8 +4,8 @@ import re
 from collections.abc import Sequence
 from typing import ClassVar
 
-from avilla.core._vendor.graia.amnesia.message import MessageChain
-from avilla.core._vendor.graia.amnesia.message.element import Element
+from graia.amnesia.message import MessageChain
+from graia.amnesia.message.element import Element
 
 
 class Formatter:

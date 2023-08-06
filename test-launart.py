@@ -1,8 +1,9 @@
 import asyncio
 
-from avilla.core._vendor.launart import Launart, Service
+from launart import Launart, Service
 
 art = Launart()
+
 
 
 class TestSrv(Service):

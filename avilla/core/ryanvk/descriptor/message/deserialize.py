@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, TypeVar
 
 if TYPE_CHECKING:
-    from avilla.core._vendor.graia.amnesia.message.element import Element
     from avilla.core.ryanvk.collector.base import BaseCollector
+    from graia.amnesia.message.element import Element
 
 T = TypeVar("T")
 

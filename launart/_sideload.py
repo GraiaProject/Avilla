@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Dict, TypeVar, cast
 
 if TYPE_CHECKING:
-    from avilla.core._vendor.launart.status import U_ManagerStage
+    from launart.status import U_ManagerStage
 
 
 class Override:

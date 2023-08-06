@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import contextlib
 
-from avilla.core._vendor.graia.amnesia.builtins.memcache import MemcacheService
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
+from graia.amnesia.builtins.memcache import MemcacheService
 
 from .service import RedService
 

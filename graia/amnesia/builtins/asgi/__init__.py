@@ -6,8 +6,8 @@ import logging
 from loguru import logger
 from uvicorn import Config, Server
 
-from avilla.core._vendor.launart import Launart, Service
-from avilla.core._vendor.launart.utilles import any_completed
+from launart import Launart, Service
+from launart.utilles import any_completed
 
 from . import asgitypes
 from .middleware import DispatcherMiddleware

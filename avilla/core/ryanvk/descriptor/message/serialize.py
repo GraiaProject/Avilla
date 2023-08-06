@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable, Callable, Generic, TypeVar
 
 if TYPE_CHECKING:
-    from avilla.core._vendor.graia.amnesia.message.element import Element
     from avilla.core.ryanvk.collector.account import (
         AccountBasedPerformTemplate,
         AccountCollector,
     )
+    from graia.amnesia.message.element import Element
 
 PBPT = TypeVar("PBPT", bound="AccountBasedPerformTemplate", contravariant=True)
 E = TypeVar("E", bound="Element")

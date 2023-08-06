@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING, Any, Coroutine, ClassVar, Dict, Iterable, Opti
 from creart import it
 from loguru import logger
 
-from avilla.core._vendor.launart._sideload import override
-from avilla.core._vendor.launart.component import Service
-from avilla.core._vendor.launart.status import ManagerStatus
-from avilla.core._vendor.launart.utilles import (
+from launart._sideload import override
+from launart.component import Service
+from launart.status import ManagerStatus
+from launart.utilles import (
     FlexibleTaskGroup,
     any_completed,
     cancel_alive_tasks,
@@ -39,14 +39,16 @@ class Launart:
         self.components = {}
         self.tasks = {}
         self.status = ManagerStatus()
-        self._default_isolate = {"interface_provide": {}}
+        self._default_isolate = {
+            "interface_provide": {}
+        }
 
     @classmethod
     def current(cls) -> Launart:
         return cls._context.get()
 
     def export_interface(self, interface: type, service: Service):
-        self._default_isolate["interface_provide"][interface] = service
+        self._default_isolate['interface_provide'][interface] = service
 
     async def _sideload_tracker(self, component: Service) -> None:
         if TYPE_CHECKING:
@@ -169,9 +171,9 @@ class Launart:
 
         # clean interface
 
-        for k, v in list(self._default_isolate["interface_provide"]):
+        for k, v in list(self._default_isolate['interface_provide']):
             if v is component:
-                del self._default_isolate["interface_provide"][k]
+                del self._default_isolate['interface_provide'][k]
 
     async def _component_prepare(self, task: asyncio.Task, component: Service):
         if component.status.stage != "waiting-for-prepare":  # pragma: worst case
@@ -217,8 +219,8 @@ class Launart:
 
         self.components[component.id] = component
 
-        get_interface = getattr(component, "get_interface", None)
-        supported_interface_types = getattr(component, "supported_interface_types", None)
+        get_interface = getattr(component, 'get_interface', None)
+        supported_interface_types = getattr(component, 'supported_interface_types', None)
         if get_interface is not None and supported_interface_types is not None:
             for interface_type in supported_interface_types:
                 self.export_interface(interface_type, component)
@@ -283,7 +285,7 @@ class Launart:
         tracker.cancel()  # trigger cancel, and the tracker will start clean up
 
     def get_interface(self, interface_type: type[T]) -> T:
-        provider_map = self._default_isolate["interface_provide"]
+        provider_map = self._default_isolate['interface_provide']
         service = provider_map.get(interface_type)
         if service is None:
             raise ValueError(f"{interface_type} is not supported.")
