@@ -5,7 +5,6 @@ name = "avilla-workspace"
 dependencies = [
     "graia-broadcast>=0.22.0",
     #"graia-amnesia>=0.5.2",
-    #"launart>=0.6.0,<1.0.0",
     "loguru>=0.6.0",
     "yarl>=1.7.2",
     "statv>=0.2.2",

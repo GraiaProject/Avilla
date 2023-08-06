@@ -4,16 +4,12 @@ import asyncio
 import enum
 from typing import (
     TYPE_CHECKING,
-    Callable,
     Coroutine,
-    Dict,
     Hashable,
     Iterable,
     List,
-    Literal,
     Optional,
     Set,
-    Tuple,
     TypeVar,
     Union,
 )
@@ -21,7 +17,7 @@ from typing import (
 from loguru import logger
 
 if TYPE_CHECKING:
-    from launart.component import Service
+    from launart.service import Service
 
 T = TypeVar("T")
 H = TypeVar("H", bound=Hashable)

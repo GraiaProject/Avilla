@@ -16,7 +16,7 @@ from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
 from graia.broadcast import Broadcast
 from launart import Launart
-from launart.component import Service
+from launart.service import Service
 
 try:
     from creart import it

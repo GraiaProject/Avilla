@@ -1,8 +1,8 @@
 from contextlib import suppress as _suppress
 
-from .component import Service as Service
-from .component import U_Stage as U_Stage
 from .manager import Launart as Launart
+from .service import Service as Service
+from .service import U_Stage as U_Stage
 from .status import ServiceStatus as ServiceStatus
 from .utilles import RequirementResolveFailed as RequirementResolveFailed
 from .utilles import any_completed as any_completed

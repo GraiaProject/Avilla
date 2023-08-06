@@ -3,17 +3,17 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import contextvars
-from itertools import chain
 import signal
 from contextvars import ContextVar
 from functools import partial
-from typing import TYPE_CHECKING, Any, Coroutine, ClassVar, Dict, Iterable, Optional, TypeVar, cast, overload
+from itertools import chain
+from typing import TYPE_CHECKING, Any, ClassVar, Coroutine, Dict, Iterable, Optional, TypeVar, cast, overload
 
 from creart import it
 from loguru import logger
 
 from launart._sideload import override
-from launart.component import Service
+from launart.service import Service
 from launart.status import ManagerStatus
 from launart.utilles import (
     FlexibleTaskGroup,
