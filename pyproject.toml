@@ -10,13 +10,12 @@ dependencies = [
     "launart>=0.7.0",
 
     "loguru>=0.6.0",
-    "yarl>=1.7.2",
     "aiohttp>=3.8.1",
     "nonebot2>=2.0.1",
     "wsproto>=1.2.0",
     "starlette>=0.30.0",
     "uvicorn>=0.23.1",
-    "nonechat>=0.2.0",
+    "nonechat<1.0.0,>=0.2.0",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -40,7 +39,7 @@ target-version = ['py39']
 profile = "black"
 
 [tool.mina.packages.core]
-includes = ["avilla/core", "avilla/core/py.typed", "avilla/spec/core"]
+includes = ["avilla/core", "avilla/core/py.typed", "avilla/standard/core"]
 
 [tool.mina.packages.core.project]
 name = "avilla-core"
@@ -70,17 +69,19 @@ repository = "https://github.com/GraiaProject/Avilla"
 [tool.mina.packages.elizabeth]
 includes = ["avilla/elizabeth"]
 raw-dependencies = [
-  "avilla-core >= 1.0.0-alpha.5",
-  "avilla-spec-qq >= 1.0.0-alpha.5"
+  "avilla-core >= 1.0.0-alpha.6",
+  "avilla-standard-qq >= 1.0.0-alpha.6"
 ]
 
 [tool.mina.packages.elizabeth.project]
 name = "avilla-elizabeth"
-version = "1.0.0-alpha.5" # WIP for release.
+version = "1.0.0-alpha.6" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
-dependencies = []
+dependencies = [
+  "aiohttp"
+]
 description = ""
 license = {text = "MIT"}
 readme = "README.md"
@@ -90,12 +91,35 @@ requires-python = ">=3.9"
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
 
+[tool.mina.packages."onebot/v11"]
+includes = ["avilla/onebot/v11"]
+raw-dependencies = [
+  "avilla-core >= 1.0.0-alpha.6",
+  "avilla-standard-qq >= 1.0.0-alpha.6"
+]
+
+[tool.mina.packages."onebot/v11".project]
+name = "avilla-onebot-v11"
+version = "1.0.0-alpha.6" # WIP for release.
+authors = [
+  {name = "GreyElaina", email = "GreyElaina@outlook.com"},
+]
+dependencies = [
+  "aiohttp", "starlette", "wsproto"
+]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.mina.packages."onebot/v11".project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
 
 [tool.mina.packages.console]
 includes = ["avilla/console"]
 raw-dependencies = [
-  "avilla-core >= 1.0.0-alpha.5",
-  "nonechat<1.0.0,>=0.2.0",
+  "avilla-core >= 1.0.0-alpha.6",
 ]
 
 [tool.mina.packages.console.project]
@@ -104,7 +128,9 @@ version = "0.2.0" # WIP for release.
 authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]
-dependencies = []
+dependencies = [
+  "nonechat"
+]
 description = "Avilla Console Protocol"
 license = {text = "AGPL-3.0"}
 readme = "README.md"
@@ -114,15 +140,15 @@ requires-python = ">=3.9"
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
 
-[tool.mina.packages."spec/qq"]
-includes = ["avilla/spec/qq"]
+[tool.mina.packages."standard/qq"]
+includes = ["avilla/standard/qq"]
 raw_dependencies = [
-  "avilla-core >= 1.0.0-alpha.5",
+  "avilla-core >= 1.0.0-alpha.6",
 ]
 
-[tool.mina.packages."spec/qq".project]
-name = "avilla-spec-qq"
-version = "1.0.0-alpha.5"
+[tool.mina.packages."standard/qq".project]
+name = "avilla-standard-qq"
+version = "1.0.0-alpha.6"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
@@ -135,29 +161,55 @@ license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
 
-[tool.mina.packages."spec/qq".project.urls]
+[tool.mina.packages."standard/qq".project.urls]
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
 
 [tool.mina.packages."qqguild/tencent"]
 includes = ["avilla/qqguild/tencent"]
 raw_dependencies = [
-  "avilla-core >= 1.0.0-alpha.5",
+  "avilla-core >= 1.0.0-alpha.6",
 ]
 
 [tool.mina.packages."qqguild/tencent".project]
-name = "avilla-qqguild"
-version = "1.0.0-alpha.5"
+name = "avilla-qqguild-tencent"
+version = "1.0.0-alpha.6"
 authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
-dependencies = []
+dependencies = [
+  "aiohttp"
+]
 description = ""
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
 
 [tool.mina.packages."qqguild/tencent".project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
+
+[tool.mina.packages.chronocat]
+includes = ["avilla/red"]
+raw_dependencies = [
+  "avilla-core >= 1.0.0-alpha.6",
+]
+
+[tool.mina.packages.chronocat.project]
+name = "avilla-qqguild-tencent"
+version = "1.0.0-alpha.6"
+authors = [
+  {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
+]
+dependencies = [
+  "aiohttp"
+]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.mina.packages.chronocat.project.urls]
 homepage = "https://github.com/GraiaProject/Avilla"
 repository = "https://github.com/GraiaProject/Avilla"
 
