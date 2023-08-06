@@ -3,20 +3,20 @@
 # See https://www.python.org/dev/peps/pep-0621/
 name = "avilla-workspace"
 dependencies = [
-    "graia-broadcast>=0.23.0",
-    #"graia-amnesia>=0.5.2",
+    "graia-broadcast>=0.23.1",
+    "graia-amnesia>=0.8.1",
+    "creart>=0.3.0",
+    "graia-saya>=0.0.18",
+    "launart>=0.7.0",
+
     "loguru>=0.6.0",
     "yarl>=1.7.2",
-    "statv>=0.2.2",
     "aiohttp>=3.8.1",
-    "creart>=0.3.0",
-    "graia-saya>=0.0.17",
     "nonebot2>=2.0.1",
     "wsproto>=1.2.0",
     "starlette>=0.30.0",
     "uvicorn>=0.23.1",
     "nonechat>=0.2.0",
-    "launart>=0.7.0",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -26,7 +26,7 @@ requires = ["mina-build", "editables"]
 build-backend = "mina.backend"
 
 [tool.pdm.build]
-includes = ["avilla/", "graia/", "launart/"]
+includes = ["avilla/"]
 
 [tool.mina]
 enabled = false
@@ -44,7 +44,7 @@ includes = ["avilla/core", "avilla/core/py.typed", "avilla/spec/core"]
 
 [tool.mina.packages.core.project]
 name = "avilla-core"
-version = "1.0.0-alpha.5"
+version = "1.0.0-alpha.6"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
@@ -55,7 +55,6 @@ dependencies = [
     "graia-broadcast",
     "graia-amnesia",
     "loguru",
-    "yarl",
     "launart",
     "creart"
 ]
@@ -172,4 +171,5 @@ dev = [
     "devtools>=0.11",
     "ipykernel>=6.23.2",
     "pip>=23.2.1",
+    "pdm-mina>=0.2.2",
 ]
