@@ -5,6 +5,10 @@ import signal
 from collections import ChainMap
 from typing import TYPE_CHECKING, Iterable, TypeVar
 
+from creart import it
+from launart import Launart
+from launart.service import Service
+
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AccountInfo
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
@@ -15,13 +19,6 @@ from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
 from graia.broadcast import Broadcast
-from launart import Launart
-from launart.service import Service
-
-try:
-    from creart import it
-except ImportError:
-    it = None
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsArtifacts
@@ -48,7 +45,7 @@ class Avilla:
         launch_manager: Launart | None = None,
         message_cache_size: int = 300,
     ):
-        self.broadcast = broadcast or (it and it(Broadcast)) or Broadcast()
+        self.broadcast = broadcast or it(Broadcast)
         self.launch_manager = launch_manager or Launart()
         self.protocols = []
         self._protocol_map = {}
