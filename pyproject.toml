@@ -9,14 +9,14 @@ dependencies = [
     "yarl>=1.7.2",
     "statv>=0.2.2",
     "aiohttp>=3.8.1",
-    "creart>=0.2.1",
-    "creart-graia>=0.1.5",
+    "creart>=0.3.0",
     "graia-saya>=0.0.17",
     "nonebot2>=2.0.1",
     "wsproto>=1.2.0",
     "starlette>=0.30.0",
     "uvicorn>=0.23.1",
     "nonechat>=0.2.0",
+    "launart>=0.7.0",
 ]
 version = "0"
 requires-python = ">=3.9"
@@ -56,7 +56,8 @@ dependencies = [
     "graia-amnesia",
     "loguru",
     "yarl",
-    "launart"
+    "launart",
+    "creart"
 ]
 description = ""
 license = {text = "MIT"}
@@ -164,8 +165,7 @@ repository = "https://github.com/GraiaProject/Avilla"
 [tool.pdm.dev-dependencies]
 dev = [
     "black>=23.7.0",
-    "graia-scheduler>=0.0.8",
-    "mina-build>=0.2.6",
+    "mina-build>=0.4.0",
     "richuru>=0.1.1",
     "ruff>=0.0.272",
     "uvicorn>=0.22.0",
