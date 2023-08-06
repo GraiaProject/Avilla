@@ -2,7 +2,7 @@ name: Python package
 on:
   push:
     tags:
-      - "standard/qq-*.*.*"
+      - "qqguild/tencent-*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -11,14 +11,14 @@ jobs:
       - uses: actions/setup-python@v3
         name: Ensure Python Runtime
         with:
-          python-version: '3.x'
-          architecture: 'x64'
+          python-version: "3.x"
+          architecture: "x64"
       - name: Ensure PDM & twine
         run: |
           python3 -m pip install pdm twine pdm-mina mina-build
       - name: Build Package
         run: |
-          pdm mina build standard/qq
+          pdm mina build qqguild/tencent
       - name: Publish to PyPI
         run: |
           twine upload dist/* --non-interactive -u __token__ -p ${{ secrets.PYPI_TOKEN }}
