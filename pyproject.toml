@@ -169,6 +169,7 @@ repository = "https://github.com/GraiaProject/Avilla"
 includes = ["avilla/qqguild/tencent"]
 raw_dependencies = [
   "avilla-core >= 1.0.0-alpha.6",
+  "avilla-standard-qq >= 1.0.0-alpha.6"
 ]
 
 [tool.mina.packages."qqguild/tencent".project]
@@ -193,6 +194,7 @@ repository = "https://github.com/GraiaProject/Avilla"
 includes = ["avilla/red"]
 raw_dependencies = [
   "avilla-core >= 1.0.0-alpha.6",
+  "avilla-standard-qq >= 1.0.0-alpha.6"
 ]
 
 [tool.mina.packages.chronocat.project]
