@@ -1,4 +1,4 @@
-name: Python package
+name: publish qqguild/tencent
 on:
   push:
     tags:
