@@ -1,4 +1,4 @@
-name: publish-standard-qq
+name: publish standard/qq
 on:
   push:
     tags:
