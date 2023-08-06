@@ -5,7 +5,7 @@ from typing import Literal, Optional, Union
 
 from statv import Stats, Statv
 
-from launart._sideload import FutureMark
+from avilla.core._vendor.launart._sideload import FutureMark
 
 U_ManagerStage = Literal["preparing", "blocking", "cleaning", "finished"]
 U_Stage = Union[

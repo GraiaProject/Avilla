@@ -6,7 +6,7 @@ from heapq import heappop, heappush
 from time import time
 from typing import Any
 
-from launart import Launart, Service
+from avilla.core._vendor.launart import Launart, Service
 
 
 class Memcache:

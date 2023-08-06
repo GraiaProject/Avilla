@@ -7,7 +7,7 @@ from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.selector import Selector
 from avilla.onebot.v11.net.ws_server import OneBot11WsServerConnection
 from avilla.standard.core.account import AccountAvailable, AccountUnavailable
-from launart.utilles import any_completed
+from avilla.core._vendor.launart.utilles import any_completed
 
 if TYPE_CHECKING:
     from .net.ws_client import OneBot11WsClientNetworking

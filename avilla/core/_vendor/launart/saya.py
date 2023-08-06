@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from graia.saya.behaviour import Behaviour
 from graia.saya.cube import Cube
 from graia.saya.schema import BaseSchema
-from launart import Launart, Service
+from avilla.core._vendor.launart import Launart, Service
 
 
 @dataclass

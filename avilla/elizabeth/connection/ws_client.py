@@ -16,9 +16,9 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.connection.base import CallMethod
 from avilla.elizabeth.const import PLATFORM
-from launart import Service
-from launart.manager import Launart
-from launart.utilles import any_completed
+from avilla.core._vendor.launart import Service
+from avilla.core._vendor.launart.manager import Launart
+from avilla.core._vendor.launart.utilles import any_completed
 
 from .base import ElizabethNetworking
 from .util import validate_response
@@ -124,8 +124,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         while not manager.status.exiting:
             ctx = session.ws_connect(
-                self.config.base_url / "all",
-                params={"verifyKey": self.config.access_token, "qq": str(self.config.qq)}
+                self.config.base_url / "all", params={"verifyKey": self.config.access_token, "qq": str(self.config.qq)}
             )
             try:
                 self.connection = await ctx.__aenter__()

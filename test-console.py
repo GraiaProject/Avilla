@@ -6,25 +6,30 @@ avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
 
 
-
 @avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context, event: MessageReceived):
     msg = str(event.message.content)
     if msg == "/help":
         await ctx.scene.send_message(
-            [Markdown("""\
+            [
+                Markdown(
+                    """\
 ## 菜单
 - /help
 - /echo
 - /md
 - /emoji
 """
-            )])
+                )
+            ]
+        )
     elif msg.startswith("/echo"):
         await ctx.scene.send_message(event.message.content.removeprefix("/echo "))
     elif msg == "/md":
         await ctx.scene.send_message(
-            [Markdown("""\
+            [
+                Markdown(
+                    """\
 # Avilla-Console
 
 `avilla` 的 `Console` 适配，使用 `Textual`
@@ -35,7 +40,7 @@ async def on_message_received(ctx: Context, event: MessageReceived):
 
 ```python
 from creart import create
-from launart import Launart
+from avilla.core._vendor.launart import Launart
 from graia.broadcast import Broadcast
 
 from avilla.core import Avilla, Context, MessageReceived
@@ -55,11 +60,13 @@ launart.launch_blocking(loop=broadcast.loop)
 
 ```
 """
-            )]
+                )
+            ]
         )
     elif msg == "/emoji":
         await ctx.scene.send_message([Emoji("art"), " | this is apple -> ", Emoji("apple")])
     else:
         await ctx.scene.send_message("Hello, Avilla!")
+
 
 avilla.launch()

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar
 
 from avilla.core.ryanvk.isolate import Isolate
-from launart import Launart, Service
+from avilla.core._vendor.launart import Launart, Service
 
 from .adapter import NoneBridgeAdapter
 from .driver import NoneBridgeDriver

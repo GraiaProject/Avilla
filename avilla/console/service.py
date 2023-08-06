@@ -8,7 +8,7 @@ from nonechat.setting import ConsoleSetting
 from textual.color import Color
 
 from avilla.standard.core.account import AccountUnavailable
-from launart import Launart, Service
+from avilla.core._vendor.launart import Launart, Service
 
 from .backend import AvillaConsoleBackend
 
