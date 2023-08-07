@@ -6,6 +6,7 @@ from collections import ChainMap
 from typing import TYPE_CHECKING, Iterable, TypeVar
 
 from creart import it
+from graia.broadcast import Broadcast
 from launart import Launart
 from launart.service import Service
 
@@ -18,11 +19,11 @@ from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
-from graia.broadcast import Broadcast
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsArtifacts
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
+
+    from avilla.core.ryanvk.protocol import SupportsArtifacts
 
     from .resource import Resource
 

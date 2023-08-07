@@ -1,3 +1,2 @@
 line-length = 120
 extend-select = ["I", "F401"]
-extend-exclude = ["avilla/core/_vendor/dataclasses.pyi"]

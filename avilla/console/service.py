@@ -3,12 +3,12 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING
 
+from launart import Launart, Service
 from nonechat.app import Frontend
 from nonechat.setting import ConsoleSetting
 from textual.color import Color
 
 from avilla.standard.core.account import AccountUnavailable
-from launart import Launart, Service
 
 from .backend import AvillaConsoleBackend
 

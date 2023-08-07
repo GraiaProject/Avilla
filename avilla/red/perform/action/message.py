@@ -2,13 +2,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+from graia.amnesia.message import MessageChain
 from loguru import logger
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageRevoke, MessageSend
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
-from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa

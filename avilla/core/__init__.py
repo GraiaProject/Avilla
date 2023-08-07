@@ -1,3 +1,5 @@
+from graia.amnesia.message import MessageChain as MessageChain
+
 from avilla.core.account import BaseAccount as BaseAccount
 from avilla.core.application import Avilla as Avilla
 from avilla.core.builtins.capability import CoreCapability as CoreCapability
@@ -95,4 +97,3 @@ from avilla.standard.core.resource import FileUploaded as FileUploaded
 from avilla.standard.core.resource import ResourceAvailable as ResourceAvailable
 from avilla.standard.core.resource import ResourceEvent as ResourceEvent
 from avilla.standard.core.resource import ResourceUnavailable as ResourceUnavailable
-from graia.amnesia.message import MessageChain as MessageChain

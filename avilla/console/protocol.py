@@ -14,20 +14,20 @@ class ConsoleProtocol(BaseProtocol):
         self.name = name
 
     @classmethod
-    def __init_isolate__(cls):  # ruff: noqa: F401
+    def __init_isolate__(cls):
         # isort: off
 
         # :: Message
-        from .perform.message.deserialize import ConsoleMessageDeserializePerform
-        from .perform.message.serialize import ConsoleMessageSerializePerform
+        from .perform.message.deserialize import ConsoleMessageDeserializePerform  # noqa: F401
+        from .perform.message.serialize import ConsoleMessageSerializePerform  # noqa: F401
 
         # :: Action
-        from .perform.action.message import ConsoleMessageActionPerform
-        from .perform.action.activity import ConsoleActivityActionPerform
-        from .perform.action.profile import ConsoleProfileActionPerform
+        from .perform.action.message import ConsoleMessageActionPerform  # noqa: F401
+        from .perform.action.activity import ConsoleActivityActionPerform  # noqa: F401
+        from .perform.action.profile import ConsoleProfileActionPerform  # noqa: F401
 
         # :: Event
-        from .perform.event.message import ConsoleEventMessagePerform
+        from .perform.event.message import ConsoleEventMessagePerform  # noqa: F401
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla

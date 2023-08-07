@@ -4,6 +4,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar, overload
 
+from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import Concatenate, ParamSpec, Self, Unpack
 
 from avilla.core.message import Message
@@ -13,7 +14,6 @@ from avilla.core.selector import EMPTY_MAP, Selector
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.relation import SceneCapability
 from avilla.standard.core.request import RequestCapability
-from graia.amnesia.message import Element, MessageChain, Text
 
 if TYPE_CHECKING:
     from . import Context

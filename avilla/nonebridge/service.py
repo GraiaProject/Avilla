@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar
 
-from avilla.core.ryanvk.isolate import Isolate
 from launart import Launart, Service
+
+from avilla.core.ryanvk.isolate import Isolate
 
 from .adapter import NoneBridgeAdapter
 from .driver import NoneBridgeDriver
@@ -41,8 +42,8 @@ class NoneBridgeService(Service):
             ...
 
 
-def _import_ryanvk_performs():  # ruff: noqa: F401
+def _import_ryanvk_performs():
     # isort: off
 
     with NoneBridgeService.isolate.imports():
-        from avilla.onebot.v11.perform.message.deserialize import OneBot11MessageDeserializePerform
+        from avilla.onebot.v11.perform.message.deserialize import OneBot11MessageDeserializePerform  # noqa: F401

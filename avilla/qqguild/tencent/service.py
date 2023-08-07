@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-import asyncio
+import asyncio  # noqa: F401
 from typing import TYPE_CHECKING, Set
+
+from launart import Launart, Service, any_completed
 
 from avilla.qqguild.tencent.connection.base import QQGuildNetworking
 from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientNetworking
-from launart import Launart, Service, any_completed
 
 if TYPE_CHECKING:
     from .protocol import QQGuildProtocol
