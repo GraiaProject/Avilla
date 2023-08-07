@@ -46,7 +46,7 @@ console_protocol = ConsoleProtocol()
 
 avilla = Avilla(launch_manager=launart, broadcast=broadcast, message_cache_size=0)
 
-avilla.apply_protocols(protocol)
+avilla.apply_protocols(console_protocol)
 
 launart.add_component(UvicornASGIService("127.0.0.1", 9090))
 
@@ -118,5 +118,15 @@ async def log():
 
 from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS
 from devtools import debug
+
+from graia.saya import Saya
+from creart import it
+
+saya = it(Saya)
+
+with saya.module_context():
+    saya.require("avilla.plugins.hello")
+    saya.require("avilla.plugins.echo")
+
 
 avilla.launch_manager.launch_blocking(loop=broadcast.loop)

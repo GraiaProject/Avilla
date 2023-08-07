@@ -8,7 +8,6 @@ dependencies = [
     "creart>=0.3.0",
     "graia-saya>=0.0.18",
     "launart>=0.7.0",
-
     "loguru>=0.6.0",
     "aiohttp>=3.8.1",
     "nonebot2>=2.0.1",

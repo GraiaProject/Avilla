@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:c3617dbaf3533baa36ad847c7115635e5b249376b8b0cee1352f6d581e558840"
+content_hash = "sha256:fabf2fc1e04686d6fa71de1ef468d4af5a47d32031b9277a05cd2b45adc339ae"
 
 [[package]]
 name = "aiohttp"
@@ -528,7 +528,7 @@ files = [
 
 [[package]]
 name = "graia-amnesia"
-version = "0.8.1"
+version = "0.8.2"
 requires_python = "<4.0,>=3.8"
 summary = "a collection of shared components for graia"
 dependencies = [
@@ -537,8 +537,8 @@ dependencies = [
     "uvicorn>=0.23.2",
 ]
 files = [
-    {file = "graia_amnesia-0.8.1-py3-none-any.whl", hash = "sha256:4298396f56a7bb6a09a644342d3d0b1753e8369ea65c053094316f35c6c362ae"},
-    {file = "graia_amnesia-0.8.1.tar.gz", hash = "sha256:29be3750165ae6bcfbd1aa32c7f3c539c423ddf6bb9f7f487b09bbf1415928d8"},
+    {file = "graia_amnesia-0.8.2-py3-none-any.whl", hash = "sha256:e9f882e98f02295e82678c9d422dcdb30612c2adb1a19f972627e0da83a41485"},
+    {file = "graia_amnesia-0.8.2.tar.gz", hash = "sha256:1b6c253c02dfa874ff6fcdba1e6700804c852ad3cadca4e9e76a33033b2c0438"},
 ]
 
 [[package]]
