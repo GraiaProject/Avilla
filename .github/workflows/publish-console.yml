@@ -1,4 +1,4 @@
-name: publish console
+name: "PyPI Publish: Console"
 on:
   workflow_dispatch: {}
   push:

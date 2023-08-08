@@ -1,4 +1,4 @@
-name: publish qqguild/tencent
+name: "PyPI Publish: QQGuild (Tencent)"
 on:
   workflow_dispatch: {}
   push:

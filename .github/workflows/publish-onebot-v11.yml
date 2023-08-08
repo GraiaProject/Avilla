@@ -1,4 +1,4 @@
-name: publish onebot/v11
+name: "PyPI Publish: OneBot v11"
 on:
   workflow_dispatch: {}
   push:

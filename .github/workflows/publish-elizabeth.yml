@@ -1,4 +1,4 @@
-name: publish elizabeth
+name: "PyPI Publish: Elizabeth"
 on:
   workflow_dispatch: {}
   push:

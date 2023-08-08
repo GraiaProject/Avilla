@@ -1,4 +1,4 @@
-name: publish standard/qq
+name: "PyPI Publish: Standard QQ"
 on:
   workflow_dispatch: {}
   push:

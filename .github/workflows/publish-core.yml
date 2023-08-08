@@ -1,4 +1,4 @@
-name: publish core
+name: "PyPI Publish: Core"
 on:
   workflow_dispatch: {}
   push:
