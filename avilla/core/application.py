@@ -47,7 +47,7 @@ class Avilla:
         message_cache_size: int = 300,
     ):
         self.broadcast = broadcast or it(Broadcast)
-        self.launch_manager = launch_manager or Launart()
+        self.launch_manager = launch_manager or it(Launart)
         self.protocols = []
         self._protocol_map = {}
         self.accounts = {}
