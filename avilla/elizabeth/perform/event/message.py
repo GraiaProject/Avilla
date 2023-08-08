@@ -117,10 +117,10 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             member = group.member(str(operator["id"]))
         else:
             member = group.member(account_route["account"])
-        message = (
+        message = ( 
             Selector()
             .land("qq")
-            .group(str(raw_event["groupId"]))
+            .group(str(raw_event["group"]["id"]))
             .member(str(raw_event["authorId"]))
             .message(str(raw_event["messageId"]))
         )
