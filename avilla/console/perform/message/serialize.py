@@ -26,18 +26,18 @@ class ConsoleMessageSerializePerform((m := AccountCollector["ConsoleProtocol", "
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @ConsoleMessageSerialize.collect(m, Text)
+    @m.entity(ConsoleMessageSerialize, Text)
     async def text(self, element: Text) -> Element:
         return CslText(element.text)
 
-    @ConsoleMessageSerialize.collect(m, Emoji)
+    @m.entity(ConsoleMessageSerialize, Emoji)
     async def emoji(self, element: Emoji) -> Element:
         return CslEmoji(element.name)
 
-    @ConsoleMessageSerialize.collect(m, Markup)
+    @m.entity(ConsoleMessageSerialize, Markup)
     async def markup(self, element: Markup) -> Element:
         return CslMarkup(**asdict(element))
 
-    @ConsoleMessageSerialize.collect(m, Markdown)
+    @m.entity(ConsoleMessageSerialize, Markdown)
     async def markdown(self, element: Markdown) -> Element:
         return CslMarkdown(**asdict(element))

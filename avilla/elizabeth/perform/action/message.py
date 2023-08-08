@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @MessageSend.send.collect(m, "land.group")
+    @m.entity(MessageSend.send, "land.group")
     async def send_group_message(
         self,
         target: Selector,
@@ -39,7 +39,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             raise RuntimeError(f"Failed to send message to {target.pattern['group']}: {message}")
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["messageId"])
 
-    @MessageSend.send.collect(m, "land.friend")
+    @m.entity(MessageSend.send, "land.friend")
     async def send_friend_message(
         self,
         target: Selector,
@@ -60,7 +60,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {message}")
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["messageId"])
 
-    @MessageRevoke.revoke.collect(m, "land.group.message")
+    @m.entity(MessageRevoke.revoke, "land.group.message")
     async def revoke_group_message(self, message: Selector):
         await self.account.connection.call(
             "update",
@@ -71,7 +71,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @MessageRevoke.revoke.collect(m, "land.friend.message")
+    @m.entity(MessageRevoke.revoke, "land.friend.message")
     async def revoke_friend_message(self, message: Selector):
         await self.account.connection.call(
             "update",
@@ -82,7 +82,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @CoreCapability.pull.collect(m, "land.group.message", Message)
+    @m.entity(CoreCapability.pull, "land.group.message", Message)
     async def get_group_message(self, message: Selector) -> Message:
         result = await self.account.connection.call(
             "fetch",
@@ -99,7 +99,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             assert isinstance(event, MessageReceived)  # noqa
         return event.message
 
-    @CoreCapability.pull.collect(m, "land.friend.message", Message)
+    @m.entity(CoreCapability.pull, "land.friend.message", Message)
     async def get_friend_message(self, message: Selector) -> Message:
         result = await self.account.connection.call(
             "fetch",

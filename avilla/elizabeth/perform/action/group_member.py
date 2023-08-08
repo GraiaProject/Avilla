@@ -44,7 +44,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
         )
         return Nick(result1["nickname"], result["memberName"], result.get("specialTitle"))
 
-    @NickCapability.set_nickname.collect(m, "land.group.member")
+    @m.entity(NickCapability.set_nickname, "land.group.member")
     async def set_group_member_nick(self, target: Selector, nickname: str):
         privilege_info = await self.get_group_member_privilege(target)
         if not privilege_info.available:
@@ -68,7 +68,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             },
         )
 
-    @NickCapability.set_badge.collect(m, "land.group.member")
+    @m.entity(NickCapability.set_badge, "land.group.member")
     async def set_group_member_badge(self, target: Selector, badge: str):
         privilege_info = await self.get_group_member_privilege_privilege(target)
         if not privilege_info.available:
@@ -106,7 +106,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             None,
         )
 
-    @MuteCapability.mute.collect(m, "land.group.member")
+    @m.entity(MuteCapability.mute, "land.group.member")
     async def group_member_mute(self, target: Selector, duration: timedelta):
         privilege_info = await self.get_group_member_privilege(target)
         if not privilege_info.effective:
@@ -129,7 +129,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             },
         )
 
-    @MuteCapability.unmute.collect(m, "land.group.member")
+    @m.entity(MuteCapability.unmute, "land.group.member")
     async def group_member_unmute(self, target: Selector):
         privilege_info = await self.get_group_member_privilege(target)
         if not privilege_info.effective:
@@ -226,7 +226,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             "to be noticed that is only group owner could do this.",
         ).infers(Privilege >> Privilege >> Summary)
 
-    @PrivilegeCapability.upgrade.collect(m, "land.group.member")
+    @m.entity(PrivilegeCapability.upgrade, "land.group.member")
     async def group_member_upgrade(self, target: Selector, dest: str | None = None):
         if not (await self.get_group_member_privilege_privilege(target)).available:
             self_privilege_info = await self.get_group_member_privilege_summary(
@@ -245,7 +245,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             },
         )
 
-    @PrivilegeCapability.downgrade.collect(m, "land.group.member")
+    @m.entity(PrivilegeCapability.downgrade, "land.group.member")
     async def group_member_downgrade(self, target: Selector, dest: str | None = None):
         if not (await self.get_group_member_privilege_privilege(target)).available:
             self_privilege_info = await self.get_group_member_privilege_summary(
@@ -266,7 +266,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
             },
         )
 
-    @SceneCapability.remove_member.collect(m, "land.group.member")
+    @m.entity(SceneCapability.remove_member, "land.group.member")
     async def group_member_remove(self, target: Selector, reason: str | None = None):
         if not (await self.get_group_member_privilege(target)).effective:
             self_privilege_info = await self.get_group_member_privilege_summary(

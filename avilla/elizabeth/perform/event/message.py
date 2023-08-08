@@ -5,10 +5,11 @@ from typing import Any, TypedDict, cast
 
 from avilla.core.context import Context
 from avilla.core.message import Message, MessageChain
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.standard.core.message import MessageReceived, MessageRevoked
+
+from . import ElizabethEventParse
 
 
 class MessageDeserializeResult(TypedDict):
@@ -38,7 +39,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         result["content"] = await account.staff.x({"context": context}).deserialize_message(raw_elements[1:])
         return cast(MessageDeserializeResult, result)
 
-    @EventParse.collect(m, "FriendMessage")
+    @m.entity(ElizabethEventParse, "FriendMessage")
     async def friend(self, raw_event: dict):
         account = Selector().land("qq").account(str(self.connection.account_id))
         friend = Selector().land(account["land"]).friend(str(raw_event["sender"]["id"]))
@@ -63,7 +64,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "GroupMessage")
+    @m.entity(ElizabethEventParse, "GroupMessage")
     async def group(self, raw_event: dict):
         account = Selector().land("qq").account(str(self.connection.account_id))
         group = Selector().land(account["land"]).group(str(raw_event["sender"]["group"]["id"]))
@@ -88,7 +89,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "FriendRecallEvent")
+    @m.entity(ElizabethEventParse, "FriendRecallEvent")
     async def friend_recall(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -107,7 +108,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             friend,
         )
 
-    @EventParse.collect(m, "GroupRecallEvent")
+    @m.entity(ElizabethEventParse, "GroupRecallEvent")
     async def group_recall(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

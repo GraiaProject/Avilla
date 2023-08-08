@@ -22,7 +22,7 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
     m.post_applying = True
     targets = ["land.user"]
 
-    @MessageSend.send.collect(m, "land.user")
+    @m.entity(MessageSend.send, "land.user")
     async def send_console_message(
         self,
         target: Selector,

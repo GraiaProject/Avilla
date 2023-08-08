@@ -24,7 +24,7 @@ ConsoleEventParse = EventParse[Event]
 class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
 
-    @ConsoleEventParse.collect(m, "console.message")
+    @m.entity(ConsoleEventParse, "console.message")
     async def console_message(self, raw_event: Event):
         if TYPE_CHECKING:
             assert isinstance(raw_event, MessageEvent)

@@ -39,49 +39,49 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @ElizabethMessageDeserialize.collect(m, "Plain")
+    @m.entity(ElizabethMessageDeserialize, "Plain")
     async def text(self, raw_element: dict) -> Text:
         return Text(raw_element["text"])
 
-    @ElizabethMessageDeserialize.collect(m, "At")
+    @m.entity(ElizabethMessageDeserialize, "At")
     async def at(self, raw_element: dict) -> Notice:
         if self.context:
             return Notice(self.context.scene.member(raw_element["target"]))
         return Notice(Selector().land("qq").member(raw_element["target"]))
 
-    @ElizabethMessageDeserialize.collect(m, "AtAll")
+    @m.entity(ElizabethMessageDeserialize, "AtAll")
     async def at_all(self, raw_element: dict) -> NoticeAll:
         return NoticeAll()
 
-    @ElizabethMessageDeserialize.collect(m, "Face")
+    @m.entity(ElizabethMessageDeserialize, "Face")
     async def face(self, raw_element: dict) -> Face:
         return Face(raw_element["faceId"], raw_element["name"])
 
-    @ElizabethMessageDeserialize.collect(m, "MarketFace")
+    @m.entity(ElizabethMessageDeserialize, "MarketFace")
     async def market_face(self, raw_element: dict) -> MarketFace:
         return MarketFace(raw_element["id"], raw_element["name"])
 
-    @ElizabethMessageDeserialize.collect(m, "Xml")
+    @m.entity(ElizabethMessageDeserialize, "Xml")
     async def xml(self, raw_element: dict) -> Xml:
         return Xml(raw_element["xml"])
 
-    @ElizabethMessageDeserialize.collect(m, "Json")
+    @m.entity(ElizabethMessageDeserialize, "Json")
     async def json(self, raw_element: dict) -> Json:
         return Json(raw_element["json"])
 
-    @ElizabethMessageDeserialize.collect(m, "App")
+    @m.entity(ElizabethMessageDeserialize, "App")
     async def app(self, raw_element: dict) -> App:
         return App(raw_element["content"])
 
-    @ElizabethMessageDeserialize.collect(m, "Poke")
+    @m.entity(ElizabethMessageDeserialize, "Poke")
     async def poke(self, raw_element: dict) -> Poke:
         return Poke(PokeKind(raw_element["name"]))
 
-    @ElizabethMessageDeserialize.collect(m, "Dice")
+    @m.entity(ElizabethMessageDeserialize, "Dice")
     async def dice(self, raw_element: dict) -> Dice:
         return Dice(int(raw_element["value"]))
 
-    @ElizabethMessageDeserialize.collect(m, "MusicShare")
+    @m.entity(ElizabethMessageDeserialize, "MusicShare")
     async def music_share(self, raw_element: dict) -> MusicShare:
         return MusicShare(
             MusicShareKind(raw_element["kind"]),
@@ -93,7 +93,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["brief"],
         )
 
-    @ElizabethMessageDeserialize.collect(m, "File")
+    @m.entity(ElizabethMessageDeserialize, "File")
     async def file(self, raw_element: dict) -> File:
         return File(
             ElizabethFileResource(
@@ -105,7 +105,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             )
         )
 
-    @ElizabethMessageDeserialize.collect(m, "Image")
+    @m.entity(ElizabethMessageDeserialize, "Image")
     async def image(self, raw_element: dict) -> Picture:
         resource = ElizabethImageResource(
             Selector().land("qq").picture(raw_element["imageId"]),
@@ -114,7 +114,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         )
         return Picture(resource)
 
-    @ElizabethMessageDeserialize.collect(m, "FlashImage")
+    @m.entity(ElizabethMessageDeserialize, "FlashImage")
     async def flash_image(self, raw_element: dict) -> FlashImage:
         resource = ElizabethImageResource(
             Selector().land("qq").picture(raw_element["imageId"]),
@@ -123,7 +123,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         )
         return FlashImage(resource)
 
-    @ElizabethMessageDeserialize.collect(m, "Voice")
+    @m.entity(ElizabethMessageDeserialize, "Voice")
     async def voice(self, raw_element: dict) -> Audio:
         resource = ElizabethVoiceResource(
             Selector().land("qq").voice(raw_element["voiceId"]),

@@ -4,17 +4,18 @@ from datetime import datetime
 
 from avilla.core.context import Context
 from avilla.core.request import Request
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import LAND
 from avilla.standard.core.request import RequestReceived
 
+from . import ElizabethEventParse
+
 
 class ElizabethEventRequestPerform((m := ConnectionCollector())._):
     m.post_applying = True
 
-    @EventParse.collect(m, "MemberJoinRequestEvent")
+    @m.entity(ElizabethEventParse, "MemberJoinRequestEvent")
     async def member_join_request(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -40,7 +41,7 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
         )
         return RequestReceived(context, request)
 
-    @EventParse.collect(m, "NewFriendRequestEvent")
+    @m.entity(ElizabethEventParse, "NewFriendRequestEvent")
     async def new_friend_request(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -65,7 +66,7 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
         )
         return RequestReceived(context, request)
 
-    @EventParse.collect(m, "BotInvitedJoinGroupRequestEvent")
+    @m.entity(ElizabethEventParse, "BotInvitedJoinGroupRequestEvent")
     async def bot_invited_join_group_request(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

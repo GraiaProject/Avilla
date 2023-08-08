@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class ElizabethActivityActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @ActivityTrigger.trigger.collect(m, "land.friend.activity(nudge)")
+    @m.entity(ActivityTrigger.trigger, "land.friend.activity(nudge)")
     async def friend_nudge(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -26,7 +26,7 @@ class ElizabethActivityActionPerform((m := AccountCollector["ElizabethProtocol",
             },
         )
 
-    @ActivityTrigger.trigger.collect(m, "land.group.member.activity(nudge)")
+    @m.entity(ActivityTrigger.trigger, "land.group.member.activity(nudge)")
     async def group_nudge(self, target: Selector):
         await self.account.connection.call(
             "update",

@@ -30,7 +30,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
         )
         return Summary(result["name"], None)
 
-    @MuteAllCapability.mute_all.collect(m, "land.group")
+    @m.entity(MuteAllCapability.mute_all, "land.group")
     async def group_mute_all(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -40,7 +40,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @MuteAllCapability.unmute_all.collect(m, "land.group")
+    @m.entity(MuteAllCapability.unmute_all, "land.group")
     async def group_unmute_all(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -50,7 +50,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @SceneCapability.leave.collect(m, "land.group")
+    @m.entity(SceneCapability.leave, "land.group")
     async def group_leave(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -60,7 +60,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @SummaryCapability.set_name.collect(m, "land.group", Summary)
+    @m.entity(SummaryCapability.set_name, "land.group", Summary)
     async def group_set_name(self, target: Selector, t: ..., name: str):
         privilege_info = await self.account.staff.pull_metadata(target, Privilege)
         if not privilege_info.available:
@@ -83,7 +83,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @CoreCapability.pull.collect(m, "land.group", Privilege)
+    @m.entity(CoreCapability.pull, "land.group", Privilege)
     async def group_get_privilege_info(self, target: Selector) -> Privilege:
         self_info = await self.account.connection.call(
             "fetch",

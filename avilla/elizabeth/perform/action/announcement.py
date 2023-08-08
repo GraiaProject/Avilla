@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @CoreCapability.pull.collect(m, "land.group.announcement", Announcement)
+    @m.entity(CoreCapability.pull, "land.group.announcement", Announcement)
     async def get_announcement(self, target: Selector) -> Announcement:
         group = Selector().land(self.account.route["land"]).group(target.pattern["group"])
         for data in await self.account.connection.call(
@@ -41,7 +41,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
                 )
         raise KeyError(f"Announcement {target.pattern['announcement']} not found")
 
-    @AnnouncementPublish.publish.collect(m, "land.group")
+    @m.entity(AnnouncementPublish.publish, "land.group")
     async def publish_announcement(
         self,
         target: Selector,
@@ -75,7 +75,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         result = await self.account.connection.call("update", "anno_publish", data)
         return target.announcement(str(result["fid"]))
 
-    @AnnouncementDelete.delete.collect(m, "land.group.announcement")
+    @m.entity(AnnouncementDelete.delete, "land.group.announcement")
     async def delete_announcement(self, target: Selector):
         await self.account.connection.call(
             "update",

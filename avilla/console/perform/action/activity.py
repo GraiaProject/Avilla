@@ -14,6 +14,6 @@ if TYPE_CHECKING:
 class ConsoleActivityActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.post_applying = True
 
-    @ActivityTrigger.trigger.collect(m, "land.user.activity(bell)")
+    @m.entity(ActivityTrigger.trigger, "land.user.activity(bell)")
     async def bell(self, target: Selector | None = None):
         await self.account.client.call("bell", {})

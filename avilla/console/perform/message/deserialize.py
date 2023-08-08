@@ -22,25 +22,25 @@ class ConsoleMessageDeserializePerform((m := ApplicationCollector())._):
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @ConsoleMessageDeserialize.collect(m, "Text")
+    @m.entity(ConsoleMessageDeserialize, "Text")
     async def text(self, element: Element) -> Text:
         if TYPE_CHECKING:
             assert isinstance(element, CslText)
         return Text(element.text)
 
-    @ConsoleMessageDeserialize.collect(m, "Emoji")
+    @m.entity(ConsoleMessageDeserialize, "Emoji")
     async def emoji(self, element: Element) -> Emoji:
         if TYPE_CHECKING:
             assert isinstance(element, CslEmoji)
         return Emoji(element.name)
 
-    @ConsoleMessageDeserialize.collect(m, "Markup")
+    @m.entity(ConsoleMessageDeserialize, "Markup")
     async def markup(self, element: Element) -> Markup:
         if TYPE_CHECKING:
             assert isinstance(element, CslMarkup)
         return Markup(**asdict(element))
 
-    @ConsoleMessageDeserialize.collect(m, "Markdown")
+    @m.entity(ConsoleMessageDeserialize, "Markdown")
     async def markdown(self, element: Element) -> Markdown:
         if TYPE_CHECKING:
             assert isinstance(element, CslMarkdown)

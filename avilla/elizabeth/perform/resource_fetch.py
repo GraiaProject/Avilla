@@ -21,9 +21,9 @@ class ElizabethResourceFetchPerform((m := ProtocolCollector["ElizabethProtocol"]
     m.post_applying = True
 
     # TODO: FileResource
-    @Fetch.collect(m, ElizabethResource)
-    @Fetch.collect(m, ElizabethImageResource)
-    @Fetch.collect(m, ElizabethVoiceResource)
+    @m.entity(Fetch, ElizabethResource)
+    @m.entity(Fetch, ElizabethImageResource)
+    @m.entity(Fetch, ElizabethVoiceResource)
     async def fetch_resource(self, resource: ElizabethResource) -> bytes:
         if resource.url is None:
             raise UnknownTarget
