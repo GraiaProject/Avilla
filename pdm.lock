@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:a42be0e069e8fdb5bdca608687ab7dfe3dc6a1e13378a0bca50aa455ba1f19b5"
+content_hash = "sha256:d10974e74d98bf562168f5e4aeb64b78252aa3ae83f600cab72b932bd10021aa"
 
 [[package]]
 name = "aiohttp"
@@ -110,17 +110,17 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.14"
+version = "1.7.15"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
-    "nepattern<0.6.0,>=0.5.8",
+    "nepattern<0.6.0,>=0.5.13",
     "tarina>=0.3.3",
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.14-py3-none-any.whl", hash = "sha256:439558389a6411fd7bf3de428b084cdb0f3ce9ea8ba60cccce57687356f18f47"},
-    {file = "arclet_alconna-1.7.14.tar.gz", hash = "sha256:14b39f6714f0f50851a4ceb2443b79db4f1331b9025aec179d23384e0de75296"},
+    {file = "arclet_alconna-1.7.15-py3-none-any.whl", hash = "sha256:d88c6d15ccd7c5d98857ac45eaa6be4ea584b601bc83122f1294774a45ba3a5e"},
+    {file = "arclet_alconna-1.7.15.tar.gz", hash = "sha256:19566416500a17263f96dc99f696927ce45e0a84482edb30cb63fe92914ff545"},
 ]
 
 [[package]]
@@ -446,6 +446,16 @@ files = [
 ]
 
 [[package]]
+name = "editables"
+version = "0.5"
+requires_python = ">=3.7"
+summary = "Editable installations"
+files = [
+    {file = "editables-0.5-py3-none-any.whl", hash = "sha256:61e5ffa82629e0d8bfe09bc44a07db3c1ab8ed1ce78a6980732870f19b5e7d4c"},
+    {file = "editables-0.5.tar.gz", hash = "sha256:309627d9b5c4adc0e668d8c6fa7bac1ba7c8c5d415c2d27f60f081f8e80d1de2"},
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.1.2"
 requires_python = ">=3.7"
@@ -558,15 +568,15 @@ files = [
 
 [[package]]
 name = "graia-broadcast"
-version = "0.23.1"
+version = "0.23.2"
 requires_python = "<4.0,>=3.8"
 summary = "a highly customizable, elegantly designed event system based on asyncio"
 dependencies = [
     "creart~=0.3.0",
 ]
 files = [
-    {file = "graia_broadcast-0.23.1-py3-none-any.whl", hash = "sha256:cbc18dd335e1679f94f726e04039611e86d688b72c42db3f97854f50f6ec0768"},
-    {file = "graia_broadcast-0.23.1.tar.gz", hash = "sha256:ed5293761ec3a496a90029de8fe60124dfed29a25ca06bb56dcb1f9a50c6a22d"},
+    {file = "graia_broadcast-0.23.2-py3-none-any.whl", hash = "sha256:3a8706fd78972b01a49bdec974effa17e7b038de8060964939b8a561016d8e01"},
+    {file = "graia_broadcast-0.23.2.tar.gz", hash = "sha256:443089be2cbacbe03d593150b6589c06f33bbd8208d33020cd6b8c832fcb8233"},
 ]
 
 [[package]]
@@ -628,7 +638,7 @@ files = [
 
 [[package]]
 name = "ipykernel"
-version = "6.25.0"
+version = "6.25.1"
 requires_python = ">=3.8"
 summary = "IPython Kernel for Jupyter"
 dependencies = [
@@ -647,8 +657,8 @@ dependencies = [
     "traitlets>=5.4.0",
 ]
 files = [
-    {file = "ipykernel-6.25.0-py3-none-any.whl", hash = "sha256:f0042e867ac3f6bca1679e6a88cbd6a58ed93a44f9d0866aecde6efe8de76659"},
-    {file = "ipykernel-6.25.0.tar.gz", hash = "sha256:e342ce84712861be4b248c4a73472be4702c1b0dd77448bfd6bcfb3af9d5ddf9"},
+    {file = "ipykernel-6.25.1-py3-none-any.whl", hash = "sha256:c8a2430b357073b37c76c21c52184db42f6b4b0e438e1eb7df3c4440d120497c"},
+    {file = "ipykernel-6.25.1.tar.gz", hash = "sha256:050391364c0977e768e354bdb60cbbfbee7cbb943b1af1618382021136ffd42f"},
 ]
 
 [[package]]
@@ -831,16 +841,17 @@ files = [
 
 [[package]]
 name = "mina-build"
-version = "0.4.0"
+version = "0.5.1"
 requires_python = ">=3.9"
 summary = "build backend for Mina Package Structure"
 dependencies = [
+    "editables>=0.5",
     "pdm-backend>=2.1.0",
     "tomli>=1.1.0; python_version < \"3.11\"",
 ]
 files = [
-    {file = "mina-build-0.4.0.tar.gz", hash = "sha256:8a4e308c17ee4da2a3e6b60721afc43f757f1526bae9536e2ab889fb690c8488"},
-    {file = "mina_build-0.4.0-py3-none-any.whl", hash = "sha256:de2277ce643df82fe729af2bee3a2a4a090248cbfaa427bbc66defc87f4dbe61"},
+    {file = "mina_build-0.5.1-py3-none-any.whl", hash = "sha256:8a84274a28091a19a83c599761205fb051911dca4ba7b0e18fd2582e6a36567f"},
+    {file = "mina_build-0.5.1.tar.gz", hash = "sha256:a92afdcd7c17fd177cda7336d58abcaabb4c918403baf92511d84ed4346e32f6"},
 ]
 
 [[package]]
@@ -950,7 +961,7 @@ files = [
 
 [[package]]
 name = "nepattern"
-version = "0.5.12"
+version = "0.5.13"
 requires_python = ">=3.8"
 summary = "a complex pattern, support typing"
 dependencies = [
@@ -958,8 +969,8 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "nepattern-0.5.12-py3-none-any.whl", hash = "sha256:a381e6dd8a310125cefb033e37c5df3b1c6dc40ced5fd9486c3685744cec1b16"},
-    {file = "nepattern-0.5.12.tar.gz", hash = "sha256:d8ca534ecc94444e1fa2d060e6394cf1c8d52044ea12add506556c19d66fb0e7"},
+    {file = "nepattern-0.5.13-py3-none-any.whl", hash = "sha256:cbd536df2119f1552e416baa11f4bc50627fb97308c84f8a31405eda2c5ba97e"},
+    {file = "nepattern-0.5.13.tar.gz", hash = "sha256:1d0c6d7f7f122037c2342c7160aa3a4350cfa7c4726da39216cb823a07261720"},
 ]
 
 [[package]]
