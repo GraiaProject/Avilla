@@ -37,7 +37,7 @@ argv_config(
     BaseMessageChainArgv,
     filter_out=[],
     checker=lambda x: isinstance(x, MessageChain),
-    to_text=lambda x: x.text if isinstance(x, Text) else None,
+    to_text=lambda x: x.text if x.__class__ is Text else None,
     converter=lambda x: MessageChain(x if isinstance(x, list) else [Text(x)]),
 )
 
