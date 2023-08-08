@@ -1,17 +1,22 @@
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar, Union, overload
 
 from arclet.alconna import (
+    Arg,
+    Args,
     Alconna,
     ArgsStub,
     Arparma,
+    CommandMeta,
     Duplication,
     OptionStub,
     SubcommandStub,
     command_manager,
     output_manager,
 )
+from arclet.alconna.args import TAValue
 from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
 from arclet.alconna.builtin import generate_duplication
+from arclet.alconna.tools.construct import AlconnaFormat
 from creart import it
 from pygtrie import CharTrie
 from tarina import generic_issubclass, split_once
@@ -21,8 +26,11 @@ from avilla.core import MessageReceived
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Text
 from graia.broadcast import Broadcast
+from graia.broadcast.entities.exectarget import ExecTarget
 from graia.broadcast.entities.dispatcher import BaseDispatcher
+from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from graia.broadcast.typing import T_Dispatcher
 
 
 class BaseMessageChainArgv(Argv[MessageChain]):
@@ -94,23 +102,57 @@ class AvillaCommands:
                     await self.execute(target[0], target[1], event)
                     break
 
-    def on(self, command: Alconna):
-        if command.prefixes and not all(isinstance(i, str) for i in command.prefixes):
-            raise TypeError("Command prefixes must be a list of string.")
-        if not isinstance(command.command, str):
-            raise TypeError("Command name must be a string.")
+    @overload
+    def on(
+        self,
+        command: Alconna,
+        dispatchers: Optional[list[T_Dispatcher]] = None,
+        decorators: Optional[list[Decorator]] = None,
+    ):
+        ...
+
+    @overload
+    def on(
+        self,
+        command: str,
+        dispatchers: Optional[list[T_Dispatcher]] = None,
+        decorators: Optional[list[Decorator]] = None,
+        *,
+        args: Optional[dict[str, Union[TAValue, Args, Arg]]] = None,
+        meta: Optional[CommandMeta] = None,
+    ):
+        ...
+
+    def on(
+        self,
+        command: Union[Alconna, str],
+        dispatchers: Optional[list[T_Dispatcher]] = None,
+        decorators: Optional[list[Decorator]] = None,
+        *,
+        args: Optional[dict[str, Union[TAValue, Args, Arg]]] = None,
+        meta: Optional[CommandMeta] = None,
+    ):
+        if isinstance(command, str):
+            _command = AlconnaFormat(command, args, meta)
+        else:
+            if command.prefixes and not all(isinstance(i, str) for i in command.prefixes):
+                raise TypeError("Command prefixes must be a list of string.")
+            if not isinstance(command.command, str):
+                raise TypeError("Command name must be a string.")
+            _command = command
 
         def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
-            if command.prefixes:
+            target = ExecTarget(func, dispatchers, decorators)
+            if _command.prefixes:
                 for prefix in command.prefixes:
-                    self.trie[prefix + command.name] = (command, func)
+                    self.trie[prefix + command.name] = (command, target)
             else:
-                self.trie[command.name] = (command, func)
+                self.trie[command.name] = (command, target)
             return func
 
         return wrapper
 
-    async def execute(self, command: Alconna, func: Callable[..., Any], event: MessageReceived):
+    async def execute(self, command: Alconna, target: ExecTarget, event: MessageReceived):
         with output_manager.capture(command.name) as cap:
             output_manager.set_action(lambda x: x, command.name)
             try:
@@ -119,7 +161,7 @@ class AvillaCommands:
                 _res = Arparma(command.path, event.message.content, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
         if _res.matched:
-            await self.broadcast.Executor(func, [event.Dispatcher, AlconnaDispatcher(command, _res)])
+            await self.broadcast.Executor(target, [event.Dispatcher, AlconnaDispatcher(command, _res)])
         elif may_help_text:
             await event.context.scene.send_message(may_help_text)
 
