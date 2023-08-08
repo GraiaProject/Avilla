@@ -38,24 +38,19 @@ Avilla 是 `Graia Project` 的 "下一代" 框架实现,
 ## Quick Start
 
 ```py
-from creart import create
-from launart import Launart
-from graia.broadcast import Broadcast
-
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.console.protocol import ConsoleProtocol
 
-broadcast = create(Broadcast)
-launart = Launart()
-avilla = Avilla(broadcast, launart, [ConsoleProtocol()])
+avilla = Avilla()
+avilla.apply_protocols(ConsoleProtocol())
 
 
-@broadcast.receiver(MessageReceived)
+@avilla.listen(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     await cx.scene.send_message("Hello, Avilla!")
 
 
-launart.launch_blocking(loop=broadcast.loop)
+avilla.launch()
 ```
 
 ## 部件发布情况
