@@ -19,7 +19,7 @@ jobs:
           python3 -m pip install pdm twine pdm-mina mina-build
       - name: Build Package
         run: |
-          pdm mina build qqguild/tencent
+          pdm mina build qqguild-tencent
       - name: Publish to PyPI
         run: |
           twine upload dist/* --non-interactive -u __token__ -p ${{ secrets.PYPI_TOKEN }}

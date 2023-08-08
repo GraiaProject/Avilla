@@ -1,0 +1,23 @@
+includes = ["avilla/red"]
+raw_dependencies = [
+  "avilla-core >= 1.0.0-alpha.6",
+  "avilla-standard-qq >= 1.0.0-alpha.6"
+]
+
+[project]
+name = "avilla-qqguild-tencent"
+version = "1.0.0-alpha.6"
+authors = [
+  {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
+]
+dependencies = [
+  "aiohttp"
+]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"

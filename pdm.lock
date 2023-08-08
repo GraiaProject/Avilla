@@ -1049,7 +1049,7 @@ files = [
 
 [[package]]
 name = "pdm-mina"
-version = "0.2.2"
+version = "0.3.0"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -1058,8 +1058,8 @@ dependencies = [
     "tomli>=1.1.0; python_version < \"3.11\"",
 ]
 files = [
-    {file = "pdm_mina-0.2.2-py3-none-any.whl", hash = "sha256:974c0018ac5e75ae9bcfb0626577965f44aa97a90161928e4ce1714274785180"},
-    {file = "pdm_mina-0.2.2.tar.gz", hash = "sha256:f39aff4f58ca2ae82c26cdd2b23842d0b4903058037fc9add93737aad2c2ecbd"},
+    {file = "pdm_mina-0.3.0-py3-none-any.whl", hash = "sha256:18560352de9917357bd62c56b3877247f14c9c7b83afd8080ae7c104cb4be09c"},
+    {file = "pdm_mina-0.3.0.tar.gz", hash = "sha256:34dadd5918100998683dcf1406b90ea1a3f31b9a13edc7bb682c5c0c3c24b741"},
 ]
 
 [[package]]

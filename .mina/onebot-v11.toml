@@ -1,0 +1,23 @@
+includes = ["avilla/onebot/v11"]
+raw-dependencies = [
+  "avilla-core >= 1.0.0-alpha.6",
+  "avilla-standard-qq >= 1.0.0-alpha.6"
+]
+
+[project]
+name = "avilla-onebot-v11"
+version = "1.0.0-alpha.6" # WIP for release.
+authors = [
+  {name = "GreyElaina", email = "GreyElaina@outlook.com"},
+]
+dependencies = [
+  "aiohttp", "starlette", "wsproto"
+]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
