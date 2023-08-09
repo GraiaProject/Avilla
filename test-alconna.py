@@ -20,7 +20,7 @@ avilla.apply_protocols(ConsoleProtocol())
 cmd = AvillaCommands()
 
 @cmd.on("ping")
-async def test(ctx: Context):
+async def ping(ctx: Context):
     await ctx.scene.send_message("pong")
 
 @cmd.on(alc)

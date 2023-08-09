@@ -39,8 +39,8 @@ from graia.broadcast.entities.exectarget import ExecTarget
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.typing import T_Dispatcher
 from pygtrie import CharTrie
-from tarina import generic_issubclass, split_once
-from tarina.generic import generic_isinstance, get_origin
+from tarina.string import split_once
+from tarina.generic import generic_isinstance, generic_issubclass, get_origin
 
 from avilla.core import MessageReceived
 
@@ -137,7 +137,7 @@ class AvillaCommands:
         command: Alconna,
         dispatchers: Optional[list[T_Dispatcher]] = None,
         decorators: Optional[list[Decorator]] = None,
-    ):
+    ) -> Callable[[TCallable], TCallable]:
         ...
 
     @overload
@@ -149,7 +149,7 @@ class AvillaCommands:
         *,
         args: Optional[dict[str, Union[TAValue, Args, Arg]]] = None,
         meta: Optional[CommandMeta] = None,
-    ):
+    ) -> Callable[[TCallable], TCallable]:
         ...
 
     def on(
@@ -160,7 +160,7 @@ class AvillaCommands:
         *,
         args: Optional[dict[str, Union[TAValue, Args, Arg]]] = None,
         meta: Optional[CommandMeta] = None,
-    ):
+    ) -> Callable[[TCallable], TCallable]:
         if isinstance(command, str):
             _command = alconna_from_format(command, args, meta)
         else:
@@ -170,7 +170,7 @@ class AvillaCommands:
                 raise TypeError("Command name must be a string.")
             _command = command
 
-        def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapper(func: TCallable) -> TCallable:
             target = ExecTarget(func, dispatchers, decorators)
             if _command.prefixes:
                 for prefix in cast(list[str], _command.prefixes):
