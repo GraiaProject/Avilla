@@ -58,13 +58,13 @@ avilla.launch()
 |代号|协议|开发进度|PyPI|维护者|开源协议|
 |:-:|:-:|:-:|:-:|:-:|:-:|
 |[Core](avilla/core)|-|**Alpha**|[![image](https://img.shields.io/pypi/v/avilla-core)](https://pypi.org/project/avilla-core)|Official|MIT|
+|[Console](avilla/console)|`Console`|**Alpha**|[![image](https://img.shields.io/pypi/v/avilla-console)](https://pypi.org/project/avilla-console)|Official|MIT|
 |[Elizabeth](avilla/elizabeth)|`mirai-api-http`|**WIP**|[![image](https://img.shields.io/pypi/v/avilla-elizabeth)](https://pypi.org/project/avilla-elizabeth)|Official|AGPLv3|
 |[Onebot 11](avilla/onebot/v11)|`OneBot v11`|**WIP**|[![image](https://img.shields.io/pypi/v/avilla-onebot-v11)](https://pypi.org/project/avilla-onebot-v11)|Official|-|
-|[Telegram](avilla/telegram)|`Telegram`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-telegram)](https://pypi.org/project/avilla-telegram)|-|-|
-|[Nightcord](avilla/nightcord)|`Discord Bots`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-nightcord)](https://pypi.org/project/avilla-nightcord)|-|-|
-|[Console](avilla/console)|`Console`|**Alpha**|[![image](https://img.shields.io/pypi/v/avilla-console)](https://pypi.org/project/avilla-console)|Official|MIT|
 |[QQ Guild (Tencent)](avilla/qqguild/tencent)|`QQGuild Official API`|**WIP**|[![image](https://img.shields.io/pypi/v/avilla-qqguild)](https://pypi.org/project/avilla-qqguild)|Official|MIT|
 |[Red](avilla/red)|`Red Protocol`|**WIP**|[![image](https://img.shields.io/pypi/v/avilla-red)](https://pypi.org/project/avilla-red)|Official|MIT|
+|[Telegram](avilla/telegram)|`Telegram`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-telegram)](https://pypi.org/project/avilla-telegram)|-|-|
+|[Nightcord](avilla/nightcord)|`Discord Bots`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-nightcord)](https://pypi.org/project/avilla-nightcord)|-|-|
 |[Kook](avilla/kook)|`Kook Official API`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-kook)](https://pypi.org/project/avilla-kook)|-|-|
 |[OneBot 12](avilla/onebot/v12)|`OneBot v12`|**Planned**|-|-|-|
 ## 我们的愿景
