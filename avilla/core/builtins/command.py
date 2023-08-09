@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, TypeVar, Union, overload
+from typing import Any, Callable, Optional, TypeVar, Union, cast, overload
 
 from arclet.alconna import (
     Arg,
@@ -93,14 +93,13 @@ class AvillaCommands:
             if target := self.trie.longest_prefix(head):
                 await self.execute(target.value[0], target.value[1], event)  # type: ignore
             # shortcut
-            for cmd in command_manager.get_commands():
+            for cmd, target in self.trie.values():
                 try:
                     command_manager.find_shortcut(cmd, head)
                 except ValueError:
                     continue
-                if target := self.trie.get(cmd.name):
-                    await self.execute(target[0], target[1], event)
-                    break
+                await self.execute(cmd, target, event)
+                break
 
     @overload
     def on(
@@ -144,10 +143,10 @@ class AvillaCommands:
         def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
             target = ExecTarget(func, dispatchers, decorators)
             if _command.prefixes:
-                for prefix in command.prefixes:
-                    self.trie[prefix + command.name] = (command, target)
+                for prefix in cast(list[str], _command.prefixes):
+                    self.trie[prefix + _command.name] = (_command, target)
             else:
-                self.trie[command.name] = (command, target)
+                self.trie[_command.name] = (_command, target)
             return func
 
         return wrapper
