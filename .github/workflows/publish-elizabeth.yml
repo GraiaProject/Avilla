@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   push:
     tags:
-      - "elizabeth-*.*.*"
+      - "elizabeth-v*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest

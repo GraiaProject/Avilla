@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   push:
     tags:
-      - "standard/qq-*.*.*"
+      - "standard/qq-v*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest

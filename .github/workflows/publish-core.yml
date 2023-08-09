@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   push:
     tags:
-      - "core-*.*.*"
+      - "core-v*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest

@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   push:
     tags:
-      - "qqguild/tencent-*.*.*"
+      - "qqguild/tencent-v*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest

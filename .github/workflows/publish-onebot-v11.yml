@@ -3,7 +3,7 @@ on:
   workflow_dispatch: {}
   push:
     tags:
-      - "onebot/v11-*.*.*"
+      - "onebot/v11-v*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest
