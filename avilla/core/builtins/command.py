@@ -1,4 +1,15 @@
-from typing import Any, Callable, Optional, TypeVar, Union, cast, overload
+from dataclasses import dataclass
+from typing import (
+    Any,
+    Callable,
+    Generic,
+    Optional,
+    TypeVar,
+    Union,
+    cast,
+    get_args,
+    overload,
+)
 
 from arclet.alconna import (
     Alconna,
@@ -8,6 +19,7 @@ from arclet.alconna import (
     Arparma,
     CommandMeta,
     Duplication,
+    Empty,
     OptionStub,
     SubcommandStub,
     command_manager,
@@ -32,31 +44,43 @@ from tarina.generic import generic_isinstance, get_origin
 
 from avilla.core import MessageReceived
 
+T = TypeVar("T")
+TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 
-class BaseMessageChainArgv(Argv[MessageChain]):
+@dataclass
+class Match(Generic[T]):
+    """
+    匹配项，表示参数是否存在于 `all_matched_args` 内
+
+    result (T): 匹配结果
+
+    available (bool): 匹配状态
+    """
+    result: T
+    available: bool
+
+
+class MessageChainArgv(Argv[MessageChain]):
     @staticmethod
     def generate_token(data: list) -> int:
         return hash("".join(i.__repr__() for i in data))
 
 
-set_default_argv_type(BaseMessageChainArgv)
+set_default_argv_type(MessageChainArgv)
 
 argv_config(
-    BaseMessageChainArgv,
+    MessageChainArgv,
     filter_out=[],
     checker=lambda x: isinstance(x, MessageChain),
     to_text=lambda x: x.text if x.__class__ is Text else None,
     converter=lambda x: MessageChain(x if isinstance(x, list) else [Text(x)]),
 )
 
-TCallable = TypeVar("TCallable", bound=Callable[..., Any])
 
-
+@dataclass
 class AlconnaDispatcher(BaseDispatcher):
-    def __init__(self, cmd: Alconna, arp: Arparma):
-        super().__init__()
-        self.cmd = cmd
-        self.arp = arp
+    cmd: Alconna
+    arp: Arparma
 
     async def catch(self, interface: DispatcherInterface):
         default_duplication = generate_duplication(self.cmd)(self.arp)
@@ -76,6 +100,12 @@ class AlconnaDispatcher(BaseDispatcher):
             return self.arp
         if generic_issubclass(interface.annotation, Alconna):
             return self.cmd
+        if interface.annotation is Match:
+            r = self.arp.all_matched_args.get(interface.name, Empty)
+            return Match(r, r != Empty)
+        if get_origin(interface.annotation) is Match:
+            r = self.arp.all_matched_args.get(interface.name, Empty)
+            return Match(r, generic_isinstance(r, get_args(interface.annotation)[0]))
         if interface.name in self.arp.all_matched_args:
             if generic_isinstance(self.arp.all_matched_args[interface.name], interface.annotation):
                 return self.arp.all_matched_args[interface.name]
@@ -165,4 +195,4 @@ class AvillaCommands:
             await event.context.scene.send_message(may_help_text)
 
 
-__all__ = ["AvillaCommands"]
+__all__ = ["AvillaCommands", "Match"]

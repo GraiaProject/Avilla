@@ -1,7 +1,7 @@
 from arclet.alconna import Alconna, Args, Option, Subcommand, count
 from avilla.console.protocol import ConsoleProtocol
 from avilla.core import Avilla, Context
-from avilla.core.builtins.command import AvillaCommands
+from avilla.core.builtins.command import AvillaCommands, Match
 
 alc = Alconna(
     "pip",
@@ -19,12 +19,12 @@ avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
 cmd = AvillaCommands()
 
-@cmd.on(Alconna("ping"))
+@cmd.on("ping")
 async def test(ctx: Context):
     await ctx.scene.send_message("pong")
 
 @cmd.on(alc)
-async def test(package: str, ctx: Context):
-    await ctx.scene.send_message(f"installing {package}")
+async def test(package: Match[str], ctx: Context):
+    await ctx.scene.send_message(f"installing {package.result}")
 
 avilla.launch()
