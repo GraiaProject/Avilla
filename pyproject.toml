@@ -15,7 +15,9 @@ dependencies = [
     "starlette>=0.30.0",
     "uvicorn>=0.23.1",
     "nonechat<1.0.0,>=0.2.0",
-    "arclet-alconna>=1.7.14",
+    "arclet-alconna>=1.7.15",
+    "pygtrie>=2.5.0",
+    "arclet-alconna-tools>=0.6.4",
 ]
 version = "0"
 requires-python = ">=3.9"
