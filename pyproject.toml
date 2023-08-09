@@ -7,7 +7,7 @@ dependencies = [
     "graia-amnesia>=0.8.1",
     "creart>=0.3.0",
     "graia-saya>=0.0.18",
-    "launart>=0.7.0",
+    "launart>=0.8.1",
     "loguru>=0.6.0",
     "aiohttp>=3.8.1",
     "nonebot2>=2.0.1",
@@ -16,8 +16,8 @@ dependencies = [
     "uvicorn>=0.23.1",
     "nonechat<1.0.0,>=0.2.0",
     "arclet-alconna>=1.7.16",
-    "pygtrie>=2.5.0",
     "arclet-alconna-tools>=0.6.5",
+    "pygtrie>=2.5.0",
 ]
 version = "0"
 requires-python = ">=3.9"

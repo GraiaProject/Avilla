@@ -2,7 +2,7 @@ includes = ["avilla/core", "avilla/core/py.typed", "avilla/standard/core"]
 
 [project]
 name = "avilla-core"
-version = "1.0.0-alpha.6"
+version = "1.0.0-alpha.7"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
