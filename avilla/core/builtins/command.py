@@ -1,3 +1,4 @@
+import asyncio
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -38,14 +39,16 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.exectarget import ExecTarget
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.typing import T_Dispatcher
+from nepattern import DirectPattern
 from pygtrie import CharTrie
-from tarina.string import split_once
 from tarina.generic import generic_isinstance, generic_issubclass, get_origin
+from tarina.string import split_once
 
 from avilla.core import MessageReceived
 
 T = TypeVar("T")
 TCallable = TypeVar("TCallable", bound=Callable[..., Any])
+
 
 @dataclass
 class Match(Generic[T]):
@@ -56,6 +59,7 @@ class Match(Generic[T]):
 
     available (bool): 匹配状态
     """
+
     result: T
     available: bool
 
@@ -119,17 +123,18 @@ class AvillaCommands:
 
         @self.broadcast.receiver(MessageReceived)
         async def listener(event: MessageReceived):
-            head, _ = split_once(str(event.message.content), (" ",))
-            if target := self.trie.longest_prefix(head):
-                await self.execute(target.value[0], target.value[1], event)  # type: ignore
+            msg = str(event.message.content)
+            if matches := list(self.trie.prefixes(msg)):
+                await asyncio.gather(*(self.execute(res.value[0], res.value[1], event) for res in matches if res.value))
+                return
             # shortcut
+            head, _ = split_once(msg, (" ",))
             for cmd, target in self.trie.values():
                 try:
                     command_manager.find_shortcut(cmd, head)
                 except ValueError:
                     continue
                 await self.execute(cmd, target, event)
-                break
 
     @overload
     def on(
@@ -161,22 +166,26 @@ class AvillaCommands:
         args: Optional[dict[str, Union[TAValue, Args, Arg]]] = None,
         meta: Optional[CommandMeta] = None,
     ) -> Callable[[TCallable], TCallable]:
-        if isinstance(command, str):
-            _command = alconna_from_format(command, args, meta)
-        else:
-            if command.prefixes and not all(isinstance(i, str) for i in command.prefixes):
-                raise TypeError("Command prefixes must be a list of string.")
-            if not isinstance(command.command, str):
-                raise TypeError("Command name must be a string.")
-            _command = command
-
         def wrapper(func: TCallable) -> TCallable:
             target = ExecTarget(func, dispatchers, decorators)
-            if _command.prefixes:
-                for prefix in cast(list[str], _command.prefixes):
-                    self.trie[prefix + _command.name] = (_command, target)
+            if isinstance(command, str):
+                mapping = {arg.name: arg.value for arg in Args.from_callable(func)[0]}
+                mapping.update(args or {})
+                _command = alconna_from_format(command, mapping, meta)
+                key = _command.name + "".join(
+                    f" {arg.value.target}" for arg in _command.args if isinstance(arg.value, DirectPattern)
+                )
+                self.trie[key] = (_command, target)
             else:
-                self.trie[_command.name] = (_command, target)
+                if not isinstance(command.command, str):
+                    raise TypeError("Command name must be a string.")
+                if not command.prefixes:
+                    self.trie[command.command] = (command, target)
+                elif not all(isinstance(i, str) for i in command.prefixes):
+                    raise TypeError("Command prefixes must be a list of string.")
+                else:
+                    for prefix in cast(list[str], command.prefixes):
+                        self.trie[prefix + command.command] = (command, target)
             return func
 
         return wrapper

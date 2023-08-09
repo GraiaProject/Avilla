@@ -27,6 +27,10 @@ async def ping(ctx: Context):
 async def test(package: Match[str], ctx: Context):
     await ctx.scene.send_message(f"installing {package.result}")
 
+@cmd.on("add test {a:int} {b:int}")
+async def add_test(ctx: Context, a: int, b: int):
+    await ctx.scene.send_message(f"test {a} + {b} = {a + b}")
+
 @cmd.on("add {a:int} {b:int}")
 async def add(ctx: Context, a: int, b: int):
     await ctx.scene.send_message(f"{a} + {b} = {a + b}")
