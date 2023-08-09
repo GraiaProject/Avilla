@@ -110,7 +110,7 @@ files = [
 
 [[package]]
 name = "arclet-alconna"
-version = "1.7.15"
+version = "1.7.16"
 requires_python = ">=3.8"
 summary = "A High-performance, Generality, Humane Command Line Arguments Parser Library."
 dependencies = [
@@ -119,22 +119,22 @@ dependencies = [
     "typing-extensions>=4.5.0",
 ]
 files = [
-    {file = "arclet_alconna-1.7.15-py3-none-any.whl", hash = "sha256:d88c6d15ccd7c5d98857ac45eaa6be4ea584b601bc83122f1294774a45ba3a5e"},
-    {file = "arclet_alconna-1.7.15.tar.gz", hash = "sha256:19566416500a17263f96dc99f696927ce45e0a84482edb30cb63fe92914ff545"},
+    {file = "arclet_alconna-1.7.16-py3-none-any.whl", hash = "sha256:02a98193a6ed68ec59eb771a2cd54b315782ec864e393ec743fa8c1289d8e605"},
+    {file = "arclet_alconna-1.7.16.tar.gz", hash = "sha256:9db70a4aefac05f4af6ce792e54acd8a02bf3381ff06c4599b21464e96afb409"},
 ]
 
 [[package]]
 name = "arclet-alconna-tools"
-version = "0.6.4"
+version = "0.6.5"
 requires_python = ">=3.8"
 summary = "Builtin Tools for Alconna"
 dependencies = [
-    "arclet-alconna<2.0,>=1.7.14",
-    "nepattern<0.6.0,>=0.5.8",
+    "arclet-alconna<2.0,>=1.7.15",
+    "nepattern<0.6.0,>=0.5.13",
 ]
 files = [
-    {file = "arclet-alconna-tools-0.6.4.tar.gz", hash = "sha256:bd7e92d8586bc3d71f81735e6558388c3e1b3739642eb5068aa6833b1169c668"},
-    {file = "arclet_alconna_tools-0.6.4-py3-none-any.whl", hash = "sha256:ffc4a70f49b2cb4e335c5222228d7b859e0c01cef30a6b4e573c85937bdcabd0"},
+    {file = "arclet-alconna-tools-0.6.5.tar.gz", hash = "sha256:11e22e533a27a7b458a26afe30e1345da09492b53e034218966901ac9aded141"},
+    {file = "arclet_alconna_tools-0.6.5-py3-none-any.whl", hash = "sha256:dcfa3529ca13d4f7496f588de1a98015ba5703e0ea586918e2d538477a8bec2b"},
 ]
 
 [[package]]
@@ -748,7 +748,7 @@ files = [
 
 [[package]]
 name = "launart"
-version = "0.8.0"
+version = "0.8.1"
 requires_python = ">=3.8"
 summary = "Component lifetime manager for runtime."
 dependencies = [
@@ -757,8 +757,8 @@ dependencies = [
     "statv>=0.2.2",
 ]
 files = [
-    {file = "launart-0.8.0-py3-none-any.whl", hash = "sha256:f1330d8e52562c88e909fa923ef4736f38d5641b3426dadb728926a96851ff75"},
-    {file = "launart-0.8.0.tar.gz", hash = "sha256:af36b4131fd7929c5fc740b32e6caf8700f2e71ba689e198a4daa8f83d13672c"},
+    {file = "launart-0.8.1-py3-none-any.whl", hash = "sha256:192a1fbae0d489e4c10e3e861901024ad55a76d4cdf7218f2f34e942b5645b77"},
+    {file = "launart-0.8.1.tar.gz", hash = "sha256:82c8d457e098abd654ab93f071ec5c3779b99b6eaa7a4575e733d39a3acca4b4"},
 ]
 
 [[package]]
