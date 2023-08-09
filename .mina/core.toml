@@ -28,6 +28,6 @@ repository = "https://github.com/GraiaProject/Avilla"
 [project.optional-dependencies]
 alconna = [
     "arclet-alconna<2.0,>=1.7.15",
-    "arclet-alconna-tools>=0.6.4",
+    "arclet-alconna-tools>=0.6.5",
     "pygtrie"
 ]
