@@ -29,7 +29,7 @@ from arclet.alconna import (
 from arclet.alconna.args import TAValue
 from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
 from arclet.alconna.builtin import generate_duplication
-from arclet.alconna.tools.construct import _from_format as alconna_from_format
+from arclet.alconna.tools.construct import alconna_from_format
 from creart import it
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Text
@@ -171,7 +171,7 @@ class AvillaCommands:
             if isinstance(command, str):
                 mapping = {arg.name: arg.value for arg in Args.from_callable(func)[0]}
                 mapping.update(args or {})
-                _command = alconna_from_format(command, mapping, meta)
+                _command = alconna_from_format(command, mapping, meta, union=False)
                 key = _command.name + "".join(
                     f" {arg.value.target}" for arg in _command.args if isinstance(arg.value, DirectPattern)
                 )
