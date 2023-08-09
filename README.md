@@ -65,7 +65,7 @@ avilla.launch()
 |[Red](avilla/red)|Tencent QQ|`Red Protocol`|**WIP**|[![image](https://img.shields.io/pypi/v/avilla-red)](https://pypi.org/project/avilla-red)|Official|MIT|
 |[Telegram](avilla/telegram)|Telegram|`Telegram`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-telegram)](https://pypi.org/project/avilla-telegram)|-|-|
 |[Nightcord](avilla/nightcord)|Discord|`Discord Bots`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-nightcord)](https://pypi.org/project/avilla-nightcord)|-|-|
-|[Kook](avilla/kook)|`Kook`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-kook)](https://pypi.org/project/avilla-kook)|-|-|
+|[Kook](avilla/kook)|Kook|`Kook`|**Draft**|[![image](https://img.shields.io/pypi/v/avilla-kook)](https://pypi.org/project/avilla-kook)|-|-|
 |[OneBot 12](avilla/onebot/v12)|*多平台支持*|`OneBot v12`|**Planned**|-|-|-|
 
 ## 我们的愿景
