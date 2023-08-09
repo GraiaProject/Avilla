@@ -124,8 +124,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         while not manager.status.exiting:
             ctx = session.ws_connect(
-                self.config.base_url / "all",
-                params={"verifyKey": self.config.access_token, "qq": str(self.config.qq)}
+                self.config.base_url / "all", params={"verifyKey": self.config.access_token, "qq": str(self.config.qq)}
             )
             try:
                 self.connection = await ctx.__aenter__()

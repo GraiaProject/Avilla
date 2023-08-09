@@ -1,9 +1,9 @@
-from typing import Any, Callable, Optional, TypeVar, Union, overload
+from typing import Any, Callable, Optional, TypeVar, Union, cast, overload
 
 from arclet.alconna import (
+    Alconna,
     Arg,
     Args,
-    Alconna,
     ArgsStub,
     Arparma,
     CommandMeta,
@@ -16,21 +16,21 @@ from arclet.alconna import (
 from arclet.alconna.args import TAValue
 from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
 from arclet.alconna.builtin import generate_duplication
-from arclet.alconna.tools.construct import AlconnaFormat
+from arclet.alconna.tools.construct import _from_format as alconna_from_format
 from creart import it
+from graia.amnesia.message import MessageChain
+from graia.amnesia.message.element import Text
+from graia.broadcast import Broadcast
+from graia.broadcast.entities.decorator import Decorator
+from graia.broadcast.entities.dispatcher import BaseDispatcher
+from graia.broadcast.entities.exectarget import ExecTarget
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from graia.broadcast.typing import T_Dispatcher
 from pygtrie import CharTrie
 from tarina import generic_issubclass, split_once
 from tarina.generic import generic_isinstance, get_origin
 
 from avilla.core import MessageReceived
-from graia.amnesia.message import MessageChain
-from graia.amnesia.message.element import Text
-from graia.broadcast import Broadcast
-from graia.broadcast.entities.exectarget import ExecTarget
-from graia.broadcast.entities.dispatcher import BaseDispatcher
-from graia.broadcast.entities.decorator import Decorator
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from graia.broadcast.typing import T_Dispatcher
 
 
 class BaseMessageChainArgv(Argv[MessageChain]):
@@ -133,7 +133,7 @@ class AvillaCommands:
         meta: Optional[CommandMeta] = None,
     ):
         if isinstance(command, str):
-            _command = AlconnaFormat(command, args, meta)
+            _command = alconna_from_format(command, args, meta)
         else:
             if command.prefixes and not all(isinstance(i, str) for i in command.prefixes):
                 raise TypeError("Command prefixes must be a list of string.")
@@ -144,10 +144,11 @@ class AvillaCommands:
         def wrapper(func: Callable[..., Any]) -> Callable[..., Any]:
             target = ExecTarget(func, dispatchers, decorators)
             if _command.prefixes:
-                for prefix in command.prefixes:
-                    self.trie[prefix + command.name] = (command, target)
+                for prefix in _command.prefixes:
+                    prefix = cast(str, prefix)
+                    self.trie[prefix + _command.name] = (command, target)
             else:
-                self.trie[command.name] = (command, target)
+                self.trie[_command.name] = (command, target)
             return func
 
         return wrapper
