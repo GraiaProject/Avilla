@@ -1,4 +1,3 @@
-import asyncio
 from dataclasses import dataclass
 from typing import (
     Any,
@@ -124,8 +123,8 @@ class AvillaCommands:
         @self.broadcast.receiver(MessageReceived)
         async def listener(event: MessageReceived):
             msg = str(event.message.content)
-            if matches := list(self.trie.prefixes(msg)):
-                await asyncio.gather(*(self.execute(res.value[0], res.value[1], event) for res in matches if res.value))
+            if matches := self.trie.longest_prefix(msg):
+                await self.execute(matches.value[0], matches.value[1], event)
                 return
             # shortcut
             head, _ = split_once(msg, (" ",))
