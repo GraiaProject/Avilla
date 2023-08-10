@@ -87,6 +87,9 @@ class PerformTemplate:
                 _merge_lookup_collection(lookup_collection, current_collection)
             target_artifacts.update({k: v for k, v in artifacts if k != "current_collection"})
 
+    def __init_inject__(self):
+        ...
+
 
 class _ResultCollect(Protocol[R]):
     @property

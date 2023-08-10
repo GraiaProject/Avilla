@@ -67,6 +67,10 @@ class ArtifactSchema(Protocol[P, T, P1]):
         ...
 
 
+class InjectPerform(Protocol[P]):
+    def __init__(self, *args: P.args, **kwargs: P.kwargs) -> None:
+        ...
+
 class Staff(Generic[VnElementRaw, VnEventRaw]):
     """手杖与核心工艺 (Staff & Focus Craft)."""
 
@@ -124,20 +128,28 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
     def x(self, components: dict[str, SupportsArtifacts]):
         return type(self)({**self.components, **components}, self.artifacts)
 
-    def inject(self, perform: type[PerformTemplate]):
+    @overload
+    def inject(self, perform: type[InjectPerform[P]], *args: P.args, **kwargs: P.kwargs):
+        ...
+    
+    @overload
+    def inject(self, perform: type[PerformTemplate]) -> None:
+        ...
+
+    def inject(self, perform: type[PerformTemplate] | Any, *iiargs, **iikwargs):
         overrides = perform.overrides()
         for attr, value in overrides:
 
-            def factory(value: OverridePerformEntity, current_maps):
+            def factory(value: OverridePerformEntity, current_maps, *iargs, **ikwargs):
                 async def call_override_fn(_, *args, **kwargs):
                     local_collector, entity = value.fn.get_artifact_record(ChainMap(*current_maps), *args, **kwargs)
                     instance = local_collector.cls(self.components, self.dispatched_overrides)
-
+                    instance.__init_inject__(*iargs, **ikwargs)
                     return await run_always_await(value.fn.get_outbound_callable(instance, entity), *args, **kwargs)
 
                 return call_override_fn
 
-            self.dispatched_overrides[(perform, attr)] = factory(value, self.artifacts.maps.copy())
+            self.dispatched_overrides[(perform, attr)] = factory(value, self.artifacts.maps.copy(), *iiargs, **iikwargs)
 
         artifacts = perform.__collector__.artifacts
         local = {}

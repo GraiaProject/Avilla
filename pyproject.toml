@@ -23,14 +23,14 @@ version = "0"
 requires-python = ">=3.9"
 
 [build-system]
-requires = ["mina-build", "editables"]
+requires = ["mina-build>=0.5.1"]
 build-backend = "mina.backend"
 
 [tool.pdm.build]
 includes = ["avilla/"]
 
 [tool.mina]
-enabled = false
+enabled = true
 
 [tool.black]
 include = '\.pyi?$'
@@ -50,5 +50,5 @@ dev = [
     "devtools>=0.11",
     "ipykernel>=6.23.2",
     "pip>=23.2.1",
-    "pdm-mina>=0.2.2",
+    "pdm-mina>=0.3.1",
 ]

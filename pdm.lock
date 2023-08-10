@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:0491425a980342f5f502153b4c957f5af16890b9c75fc956ad900d2ebc87bfdc"
+content_hash = "sha256:3b21d2fcb85836fb0f9ceaeff728467c3b99d78982f686656749c9a4c72831d9"
 
 [[package]]
 name = "aiohttp"
@@ -1103,7 +1103,7 @@ files = [
 
 [[package]]
 name = "pdm-mina"
-version = "0.3.0"
+version = "0.3.1"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
@@ -1112,8 +1112,8 @@ dependencies = [
     "tomli>=1.1.0; python_version < \"3.11\"",
 ]
 files = [
-    {file = "pdm_mina-0.3.0-py3-none-any.whl", hash = "sha256:18560352de9917357bd62c56b3877247f14c9c7b83afd8080ae7c104cb4be09c"},
-    {file = "pdm_mina-0.3.0.tar.gz", hash = "sha256:34dadd5918100998683dcf1406b90ea1a3f31b9a13edc7bb682c5c0c3c24b741"},
+    {file = "pdm_mina-0.3.1-py3-none-any.whl", hash = "sha256:bccdbe929407a136117989797b06ad805088161bec24ecd83d3f4f3fd4c94755"},
+    {file = "pdm_mina-0.3.1.tar.gz", hash = "sha256:c9d978f0d29d85245665ebd7d50d41ed25ff5c8a946ab3d59000b9e251aaf321"},
 ]
 
 [[package]]
