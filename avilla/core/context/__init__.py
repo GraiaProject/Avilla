@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections import ChainMap
 from collections.abc import Callable
-from functools import cached_property
 from typing import TYPE_CHECKING, Any, Awaitable, TypedDict, TypeVar, cast, overload
 
 from typing_extensions import ParamSpec, Unpack
@@ -69,6 +68,7 @@ class Context:
             account.info.protocol.isolate.artifacts,
             account.avilla.isolate.artifacts,
         ).copy()
+        self.staff = Staff.focus(self)
         # 这里是为了能在 Context 层级进行修改
 
         self.account = account
@@ -120,10 +120,6 @@ class Context:
 
     def get_staff_artifacts(self):
         return self.artifacts
-
-    @cached_property
-    def staff(self):
-        return Staff.focus(self)
 
     def query(self, pattern: str, **predicators: FollowsPredicater):
         return self.staff.query_entities(pattern, **predicators)

@@ -71,6 +71,7 @@ class InjectPerform(Protocol[P]):
     def __init__(self, *args: P.args, **kwargs: P.kwargs) -> None:
         ...
 
+
 class Staff(Generic[VnElementRaw, VnEventRaw]):
     """手杖与核心工艺 (Staff & Focus Craft)."""
 
@@ -131,7 +132,7 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
     @overload
     def inject(self, perform: type[InjectPerform[P]], *args: P.args, **kwargs: P.kwargs):
         ...
-    
+
     @overload
     def inject(self, perform: type[PerformTemplate]) -> None:
         ...
@@ -145,7 +146,7 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
                     local_collector, entity = value.fn.get_artifact_record(ChainMap(*current_maps), *args, **kwargs)
                     instance = local_collector.cls(self.components, self.dispatched_overrides)
                     instance.__init_inject__(*iargs, **ikwargs)
-                    return await run_always_await(value.fn.get_outbound_callable(instance, entity), *args, **kwargs)
+                    return await run_always_await(value.fn.get_outbound_callable(instance, entity), *args, **kwargs)  # type: ignore  # noqa: E501
 
                 return call_override_fn
 
