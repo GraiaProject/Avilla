@@ -14,8 +14,8 @@ class BaseCollector:
     artifacts: dict[Any, Any]
     collected_callbacks: list[Callable[[type[BasePerform]], Any]]
 
-    def __init__(self) -> None:
-        self.artifacts = {}
+    def __init__(self, artifacts: dict[Any, Any] | None = None) -> None:
+        self.artifacts = artifacts or {}
         self.collected_callbacks = [self.__post_collected__]
 
     def __post_collected__(self, cls: type[BasePerform]):
@@ -27,11 +27,28 @@ class BaseCollector:
 
         return LocalPerformTemplate
 
+    @classmethod
+    def get_forks_name(cls) -> str | None:
+        ...
+
     def collect(self, signature: Any, artifact: Any):
         self.artifacts[signature] = artifact
 
     def on_collected(self, func: Callable[[type], Any]):
         self.collected_callbacks.append(func)
+
+    def forks(self, collector: BaseCollector):
+        maybe_name = collector.get_forks_name()
+        if maybe_name is None:
+            raise TypeError(f"{type(collector)} doesn't support fork")
+        collector.artifacts = self.artifacts.setdefault(maybe_name, {})
+        collector.collected_callbacks = self.collected_callbacks
+        return collector
+
+    def attachs(self, collector: BaseCollector):
+        collector.artifacts = self.artifacts
+        collector.collected_callbacks = self.collected_callbacks
+        return collector
 
     def using(self, context_manager: AbstractContextManager[T]) -> T:
         self.on_collected(lambda _: context_manager.__exit__(None, None, None))

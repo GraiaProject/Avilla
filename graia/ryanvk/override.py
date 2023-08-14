@@ -86,8 +86,10 @@ class OverridePerformAgent(Generic[P, R]):
         return self.perform_entity.entity(self.instance, *args, **kwds)
 
     def super(self, *args: P.args, **kwds: P.kwargs) -> R:
-        collections = self.instance.staff.artifact_collections[1:]
-        staff_type = type(self.instance.staff)
-        staff = staff_type(collections, self.instance.staff.components)
-        staff.store.instances.update(self.instance.staff.store.instances)
-        return staff.call_fn(self.instance, self.perform_entity.fn, *args, **kwds)
+        origin = self.instance.staff
+        collections = origin.artifact_collections[1:]
+        staff_type = type(origin)
+        staff = staff_type(collections, origin.components)
+        staff.instances.update(origin.instances)
+        staff.exit_stack = origin.exit_stack
+        return staff.call_fn(self.perform_entity.fn, *args, **kwds)
