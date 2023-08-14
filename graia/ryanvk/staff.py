@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, asynccontextmanager
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from .fn import Fn, P, R
     from .perform import BasePerform
+    from .typing import P1, C, OutboundCompatible
 
 
 class Staff:
@@ -20,13 +21,24 @@ class Staff:
         self.exit_stack = AsyncExitStack()
         self.instances = {}
 
-    def call_fn(self, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-        collector, entity = fn.get_artifact_record(self.artifact_collections, *args, **kwargs)
+    def extract_record(self, record: tuple[C, Any]):
+        collector, entity = record
         instance = self.instances.get(collector.cls)
         if instance is None:
             raise TypeError(f"instance not found for {collector.cls}")
+        return instance, entity
 
-        outbound = fn.get_outbound_callable(instance, entity)
+    def extract_outbound(
+        self,
+        schema: OutboundCompatible[P, R, P1],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> Callable[P1, R]:
+        instance, entity = self.extract_record(schema.get_artifact_record(self.artifact_collections, *args, **kwargs))
+        return schema.get_outbound_callable(instance, entity)
+
+    def call_fn(self, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+        outbound = self.extract_outbound(fn, *args, **kwargs)
         return outbound(*args, **kwargs)
 
     def inject(self, perform: BasePerform):
