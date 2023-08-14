@@ -3,6 +3,8 @@ from __future__ import annotations
 from contextlib import AbstractContextManager
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
+from typing_extensions import Self
+
 if TYPE_CHECKING:
     from .perform import BasePerform
     from .typing import P, R, SupportsCollect
@@ -57,5 +59,5 @@ class BaseCollector:
     def post_merge(self, origin: dict):
         self.on_collected(lambda _: origin.update(self.artifacts))
 
-    def entity(self, signature: SupportsCollect[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
+    def entity(self, signature: SupportsCollect[P, R, Self], *args: P.args, **kwargs: P.kwargs) -> R:
         return signature.collect(self, *args, **kwargs)
