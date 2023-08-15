@@ -138,10 +138,11 @@ class Context:
 
         cached = self.cache["meta"].get(target)
         if cached is not None and route in cached:
+            meta = cached[route]
             if flush:
                 del cached[route]
-            elif not route.has_params():
-                return cast("_MetadataT", cached[route])
+            if not route.has_params():
+                return cast("_MetadataT", meta)
 
         return await self.staff.pull_metadata(target, route)
 

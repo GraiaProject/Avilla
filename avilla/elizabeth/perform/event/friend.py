@@ -5,7 +5,7 @@ from avilla.core.event import MetadataModified, ModifyDetail
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.standard.core.inputting import InputtingStatus
-from avilla.standard.core.profile import Nick
+from avilla.standard.core.profile import Nick, Summary
 
 from . import ElizabethEventParse
 
@@ -25,6 +25,12 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
             friend,
             friend,
             account_route,
+        )
+        sender = raw_event["friend"]
+        context._collect_metadatas(
+            friend,
+            Nick(sender["nickname"], sender["remark"] or sender["nickname"], None),
+            Summary(sender["nickname"], "a friend contact assigned to this account"),
         )
         return MetadataModified(
             context,
@@ -51,6 +57,12 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
             friend,
             friend,
             account_route,
+        )
+        sender = raw_event["friend"]
+        context._collect_metadatas(
+            friend,
+            Nick(sender["nickname"], sender["remark"] or sender["nickname"], None),
+            Summary(sender["nickname"], "a friend contact assigned to this account"),
         )
         return MetadataModified(
             context,

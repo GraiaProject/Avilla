@@ -1,9 +1,14 @@
 from __future__ import annotations
 
+from datetime import timedelta
+
 from avilla.core.context import Context
 from avilla.core.event import RelationshipCreated, RelationshipDestroyed
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
+from avilla.elizabeth.const import PRIVILEGE_LEVEL
+from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.privilege import Privilege, MuteInfo
 
 from . import ElizabethEventParse
 
@@ -16,8 +21,10 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
-        member = group.member(str(raw_event["member"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         inviter = group.member(str(raw_event["inviter"]["id"])) if raw_event.get("inviter") else None
         context = Context(
             account,
@@ -26,6 +33,43 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             group,
             group.member(account_route["account"]),
             mediums=[inviter] if inviter else None,
+        )
+        if inviter_data := raw_event.get("inviter"):
+            context._collect_metadatas(
+                group.member(str(inviter_data["id"])),
+                Nick(inviter_data["memberName"], inviter_data["memberName"], inviter_data.get("specialTitle")),
+                Summary(inviter_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    inviter_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=inviter_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[inviter_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[inviter_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return RelationshipCreated(context)
 
@@ -34,8 +78,10 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
-        member = group.member(str(raw_event["member"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
         context = Context(
             account,
@@ -44,6 +90,43 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             group,
             group.member(account_route["account"]),
         )
+        if operator_data := raw_event.get("operator"):
+            context._collect_metadatas(
+                group.member(str(operator_data["id"])),
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+                Summary(operator_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
         return RelationshipDestroyed(context, active=False)
 
     @m.entity(ElizabethEventParse, "MemberLeaveEventQuit")
@@ -51,14 +134,38 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
-        member = group.member(str(raw_event["member"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         context = Context(
             account,
             member,
             member,
             group,
             group.member(account_route["account"]),
+        )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return RelationshipDestroyed(context, active=True)
 
@@ -67,7 +174,8 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["group"]["id"]))
+        group_data = raw_event["group"]
+        group = land.group(str(group_data["id"]))
         inviter = group.member(str(raw_event["inviter"]["id"])) if raw_event.get("inviter") else None
         context = Context(
             account,
@@ -77,6 +185,29 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             group.member(account_route["account"]),
             mediums=[inviter] if inviter else None,
         )
+        if inviter_data := raw_event.get("inviter"):
+            context._collect_metadatas(
+                group.member(str(inviter_data["id"])),
+                Nick(inviter_data["memberName"], inviter_data["memberName"], inviter_data.get("specialTitle")),
+                Summary(inviter_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    inviter_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=inviter_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[inviter_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[inviter_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
         return RelationshipCreated(context)
 
     @m.entity(ElizabethEventParse, "BotLeaveEventActive")
@@ -84,6 +215,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
+        group_data = raw_event["group"]
         group = land.group(str(raw_event["group"]["id"]))
         context = Context(
             account,
@@ -92,6 +224,14 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             group,
             group.member(account_route["account"]),
         )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
         return RelationshipDestroyed(context, active=True)
 
     @m.entity(ElizabethEventParse, "BotLeaveEventKick")
@@ -99,6 +239,8 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
+        group_data = raw_event["group"]
+        operator_data = raw_event["operator"]
         group = land.group(str(raw_event["group"]["id"]))
         operator = group.member(str(raw_event["operator"]["id"]))
         context = Context(
@@ -108,6 +250,28 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             group,
             group.member(account_route["account"]),
         )
+        context._collect_metadatas(
+            operator,
+            Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+            Summary(operator_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                operator_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
         return RelationshipDestroyed(context, active=False)
 
     @m.entity(ElizabethEventParse, "BotLeaveEventDisband")
@@ -115,6 +279,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
+        group_data = raw_event["group"]
         group = land.group(str(raw_event["group"]["id"]))
         operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
         context = Context(
@@ -123,5 +288,28 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             group,
             group,
             group.member(account_route["account"]),
+        )
+        if operator_data := raw_event.get("operator"):
+            context._collect_metadatas(
+                group.member(str(operator_data["id"])),
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+                Summary(operator_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return RelationshipDestroyed(context, active=False, indirect=True)

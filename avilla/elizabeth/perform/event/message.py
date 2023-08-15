@@ -1,13 +1,16 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, TypedDict, cast
 
 from avilla.core.context import Context
 from avilla.core.message import Message, MessageChain
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
+from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.message import MessageReceived, MessageRevoked
+from avilla.standard.core.profile import Summary, Nick
+from avilla.standard.core.privilege import Privilege, MuteInfo
 
 from . import ElizabethEventParse
 
@@ -51,7 +54,12 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             account,
         )
         message_result = await self._deserialize_message(context, raw_event["messageChain"])
-
+        sender = raw_event["sender"]
+        context._collect_metadatas(
+            friend, 
+            Nick(sender["nickname"], sender["remark"] or sender["nickname"], None),
+            Summary(sender["nickname"], "a friend contact assigned to this account")
+        )
         return MessageReceived(
             context,
             Message(
@@ -67,14 +75,38 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(ElizabethEventParse, "GroupMessage")
     async def group(self, raw_event: dict):
         account = Selector().land("qq").account(str(self.connection.account_id))
-        group = Selector().land(account["land"]).group(str(raw_event["sender"]["group"]["id"]))
-        member = group.member(str(raw_event["sender"]["id"]))
+        sender = raw_event["sender"]
+        group_data = sender["group"]
+        group = Selector().land(account["land"]).group(str(group_data["id"]))
+        member = group.member(str(sender["id"]))
         context = Context(
             self.protocol.avilla.accounts[account].account,
             member,
             group,
             group,
             group.member(str(account["account"])),
+        )
+        context._collect_metadatas(
+            member, 
+            Nick(sender["memberName"], sender["memberName"], sender.get("specialTitle")), 
+            Summary(sender["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                sender.get("mutetimeRemaining") is not None,
+                timedelta(seconds=sender.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[sender["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[sender["permission"]],
+            )
+        )
+        context._collect_metadatas(
+            group, 
+            Summary(group_data["name"], None), 
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         message_result = await self._deserialize_message(context, raw_event["messageChain"])
         return MessageReceived(
@@ -130,6 +162,30 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             group,
             group,
             group.member(account_route["account"]),
+        )
+        group_data = raw_event["group"]
+        if operator:
+            context._collect_metadatas(
+                member, 
+                Nick(operator["memberName"], operator["memberName"], operator.get("specialTitle")), 
+                Summary(operator["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member, 
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return MessageRevoked(
             context,
