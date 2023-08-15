@@ -42,8 +42,8 @@ class BaseAccount:
     def available(self) -> bool:
         return True
 
-    async def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
-        return await self.staff.get_context(target, via=via)
+    def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
+        return self.staff.get_context(target, via=via)
 
     def get_self_context(self):
         from avilla.core.context import Context
