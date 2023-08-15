@@ -90,7 +90,7 @@ class OneBot11WsServerNetworking(Service):
     @property
     def id(self):
         return f"onebot/v11/connection/websocket/server#{id(self)}"
-    
+
     async def websocket_server_handler(self, ws: WebSocket):
         if ws.headers["Authorization"][6:] != self.config.access_token:
             return await ws.close()

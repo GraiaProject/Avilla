@@ -105,11 +105,12 @@ class File(Element):
     def __repr__(self) -> str:
         return f"[$File:resource={self.resource.to_selector()}]"
 
+
 @dataclass(frozen=True, eq=True)
 class Reference(Element):
     message: Selector
     slice: tuple[int, int] | None = None
-    
+
 
 class Unknown(Element):
     type: str

@@ -19,14 +19,14 @@ from avilla.core.selector import (
 )
 from avilla.core.utilles import classproperty
 
-from ._selector import (
+from ._roles import (
     ContextClientSelector,
     ContextEndpointSelector,
     ContextMedium,
     ContextRequestSelector,
     ContextSceneSelector,
-    ContextSelector,
 )
+from ._selector import ContextSelector
 
 if TYPE_CHECKING:
     pass

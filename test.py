@@ -95,7 +95,7 @@ class TestPerform1((n := ContextCollector())._):
 @broadcast.receiver(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
-    # print(cx.endpoint, cx.scene, cx.client, cx.self, cx.account)
+    print(cx.endpoint, cx.scene, cx.client, cx.self, cx.account)
     cx.staff.inject(TestPerform)
     cx.staff.inject(TestPerform1)
     if cx.client.follows("::group.member(1846913566)"):
@@ -109,7 +109,7 @@ async def on_message_received(cx: Context, event: MessageReceived):
         await asyncio.sleep(3)
         # print(await conn1.call("get", "friendList"))
         await cx[MessageRevoke.revoke](msg)
-    elif cx.client.follows("::console(console_user)"):
+    elif cx.client.follows("::user(console)"):
         await cx.scene.send_message("Hello, Console User!")
     elif cx.client.follows("::friend"):
         await cx.scene.send_message("2222222222")
