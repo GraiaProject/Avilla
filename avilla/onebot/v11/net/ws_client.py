@@ -27,8 +27,6 @@ class OneBot11WsClientConfig:
 
 
 class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"], Service):
-    id = "onebot/v11/connection/websocket/client"
-
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -38,6 +36,10 @@ class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"
     def __init__(self, protocol: OneBot11Protocol, config: OneBot11WsClientConfig) -> None:
         super().__init__(protocol)
         self.config = config
+
+    @property
+    def id(self):
+        return f"onebot/v11/connection/websocket/client#{id(self)}"
 
     async def message_receive(self):
         if self.connection is None:

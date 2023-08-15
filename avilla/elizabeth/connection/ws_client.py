@@ -34,8 +34,6 @@ class ElizabethWsClientConfig:
 
 
 class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworking"], Service):
-    id = "elizabeth/connection/websocket/client"
-
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -50,6 +48,10 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
     @property
     def account_id(self):
         return self.config.qq
+
+    @property
+    def id(self):
+        return f"elizabeth/connection/websocket/client#{self.account_id}"
 
     async def message_receive(self):
         if self.connection is None:

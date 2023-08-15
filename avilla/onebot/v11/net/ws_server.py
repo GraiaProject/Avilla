@@ -73,7 +73,6 @@ class OneBot11WsServerConnection(OneBot11Networking["OneBot11WsServerConnection"
 
 
 class OneBot11WsServerNetworking(Service):
-    id = "onebot/v11/connection/websocket/server"
     required: set[str] = {"asgi.service/uvicorn"}
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -88,6 +87,10 @@ class OneBot11WsServerNetworking(Service):
         self.connections = {}
         super().__init__()
 
+    @property
+    def id(self):
+        return f"onebot/v11/connection/websocket/server#{id(self)}"
+    
     async def websocket_server_handler(self, ws: WebSocket):
         if ws.headers["Authorization"][6:] != self.config.access_token:
             return await ws.close()
