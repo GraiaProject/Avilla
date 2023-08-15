@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from avilla.core.resource import Resource
 from avilla.core.ryanvk import Capability, TargetFn, TargetMetadataUnitedFn
 
 
@@ -44,4 +45,6 @@ class NickCapability(Capability):
 
 
 class AvatarFetch(Capability):
-    ...
+    @TargetFn
+    def get_avatar(self) -> Resource[bytes]:
+        ...
