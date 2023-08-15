@@ -78,8 +78,8 @@ class Staff(BaseStaff, Generic[VnElementRaw, VnEventRaw]):
     def get_element_type(self, raw_element: VnElementRaw):
         return raw_element["type"]  # type: ignore
 
-    def get_context(self, target: Selector, *, via: Selector | None = None):
-        return self.call_fn(CoreCapability.get_context, target, via=via)
+    def get_context(self, endpoint: Selector, *, via: Selector | None = None):
+        return self.call_fn(CoreCapability.get_context, endpoint, via=via)
 
     async def parse_event(
         self,
