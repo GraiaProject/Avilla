@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, ChainMap, Generic, T
 from typing_extensions import ParamSpec, TypeAlias, Unpack
 
 from avilla.core.metadata import Metadata, MetadataRoute
-from avilla.core.ryanvk.collector.base import BaseCollector
-from avilla.core.ryanvk.descriptor.target import HQ, LookupBranch, TargetArtifactStore, TargetFn
+from avilla.core.ryanvk.descriptor.target import LookupBranch, TargetArtifactStore, TargetFn
 from avilla.core.selector import FollowsPredicater, Selectable, Selector
+from graia.ryanvk import BaseCollector
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
@@ -36,7 +36,7 @@ class PullFn(
         pattern: str,
         route: type[M],
         **kwargs: FollowsPredicater,
-    ) -> Callable[[Callable[[HQ, Selector], Awaitable[M]]], Callable[[HQ, Selector], Awaitable[M]]]:
+    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
         ...
 
     @overload
@@ -46,7 +46,7 @@ class PullFn(
         pattern: str,
         route: MetadataRoute[Unpack[tuple[Any, ...]], M],
         **kwargs: FollowsPredicater,
-    ) -> Callable[[Callable[[HQ, Selector], Awaitable[M]]], Callable[[HQ, Selector], Awaitable[M]],]:
+    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]],]:
         ...
 
     def collect(
@@ -56,7 +56,7 @@ class PullFn(
         route: ...,
         **kwargs: FollowsPredicater,
     ) -> ...:
-        def receive(entity: Callable[[HQ, Selector], Awaitable[M]]):
+        def receive(entity: Callable[[Any, Selector], Awaitable[M]]):
             branch = self.get_collect_layout(collector, pattern, **kwargs)
             branch = cast("LookupBranch[Callable[[Any, Selector], Awaitable[M]]]", branch)
             signature = PullImplement(route)

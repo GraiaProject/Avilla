@@ -3,10 +3,10 @@ from __future__ import annotations
 from contextlib import AbstractContextManager
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
-from typing_extensions import Self
+from ._runtime import processing_artifact_heap
+from .perform import BasePerform
 
 if TYPE_CHECKING:
-    from .perform import BasePerform
     from .typing import P, R, SupportsCollect
 
 T = TypeVar("T")
@@ -23,6 +23,7 @@ class BaseCollector:
     def __post_collected__(self, cls: type[BasePerform]):
         self.cls = cls
 
+    @property
     def _(self):
         class LocalPerformTemplate(BasePerform, native=True):
             __collector__ = self
@@ -59,5 +60,12 @@ class BaseCollector:
     def post_merge(self, origin: dict):
         self.on_collected(lambda _: origin.update(self.artifacts))
 
-    def entity(self, signature: SupportsCollect[P, R, Self], *args: P.args, **kwargs: P.kwargs) -> R:
+    def entity(self, signature: SupportsCollect[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
         return signature.collect(self, *args, **kwargs)
+
+    def apply_soon(self, map: dict[Any, Any] | None = None):
+        map = map or processing_artifact_heap.get()
+
+        @self.on_collected
+        def applier(cls: type[BasePerform]):
+            map.update(cls.__collector__.artifacts)

@@ -3,9 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar
 
+from graia.ryanvk import BaseCollector, RecordTwin
+
 if TYPE_CHECKING:
     from avilla.core.resource import Resource
-    from avilla.core.ryanvk.collector.base import BaseCollector
 
 
 T = TypeVar("T")
@@ -26,7 +27,7 @@ class Fetch:
         resource_type: type[Resource[T]],
     ) -> Callable[[Callable[[Any, R], Awaitable[T]]], Callable[[Any, R], Awaitable[T]]]:
         def receive(entity: Callable[[Any, R], Awaitable[T]]):  # to accept all resource type
-            collector.artifacts[FetchImplement(resource_type)] = (collector, entity)
+            collector.artifacts[FetchImplement(resource_type)] = RecordTwin(collector, entity)
             return entity
 
         return receive

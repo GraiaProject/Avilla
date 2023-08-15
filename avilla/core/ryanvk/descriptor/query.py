@@ -2,13 +2,10 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Callable, Container, Protocol, overload
-from typing import NoReturn as Never
+from typing import Any, AsyncGenerator, Callable, Container, Protocol, overload
 
 from avilla.core.selector import Selector, _FollowItem
-
-if TYPE_CHECKING:
-    from avilla.core.ryanvk.collector.base import BaseCollector
+from graia.ryanvk import BaseCollector, RecordTwin
 
 
 @dataclass(unsafe_hash=True)
@@ -21,21 +18,21 @@ class QueryRecord:
 
 class QueryHandlerPerform(Protocol):
     def __call__(
-        self, _p0: Never, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None
+        self, _p0: Any, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None
     ) -> AsyncGenerator[Selector, None]:
         ...
 
 
 class QueryHandlerPerformNoPrev(Protocol):
     def __call__(
-        self, _p0: Never, predicate: Callable[[str, str], bool] | str, previous: None
+        self, _p0: Any, predicate: Callable[[str, str], bool] | str, previous: None
     ) -> AsyncGenerator[Selector, None]:
         ...
 
 
 class QueryHandlerPerformPrev(Protocol):
     def __call__(
-        self, _p0: Never, predicate: Callable[[str, str], bool] | str, previous: Selector
+        self, _p0: Any, predicate: Callable[[str, str], bool] | str, previous: Selector
     ) -> AsyncGenerator[Selector, None]:
         ...
 
@@ -55,7 +52,7 @@ class QuerySchema:
 
     def collect(self, collector: BaseCollector, target: str, previous: ... = None) -> ...:
         def receive(entity: QueryHandlerPerform):
-            collector.artifacts[QueryRecord(previous, target)] = (collector, entity)
+            collector.artifacts[QueryRecord(previous, target)] = RecordTwin(collector, entity)
             return entity
 
         return receive

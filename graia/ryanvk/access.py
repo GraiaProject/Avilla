@@ -5,15 +5,15 @@ from typing import TYPE_CHECKING, TypeVar, Union
 from .endpoint import Endpoint
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.collector.base import PerformTemplate
+    from .perform import BasePerform
 
 
 T = TypeVar("T")
 
 
 class Access(Endpoint[T]):
-    def evaluate(self, instance: PerformTemplate) -> T:
-        return instance.components[self.name]
+    def evaluate(self, instance: BasePerform) -> T:
+        return instance.staff.components[self.name]
 
     @staticmethod
     def optional():
@@ -21,5 +21,5 @@ class Access(Endpoint[T]):
 
 
 class OptionalAccess(Endpoint[Union[T, None]]):
-    def evaluate(self, instance: PerformTemplate) -> T | None:
-        return instance.components.get(self.name)
+    def evaluate(self, instance: BasePerform) -> T | None:
+        return instance.staff.components.get(self.name)

@@ -16,7 +16,7 @@ P1 = ParamSpec("P1")
 Q = TypeVar("Q", contravariant=True)
 
 WrapperCallable = Callable[[Q], Q]
-FnRecord = tuple[BaseCollector, Callable]
+FnRecord = tuple["BaseCollector", Callable]
 
 
 class OverridePerformEntity(Generic[P, R]):

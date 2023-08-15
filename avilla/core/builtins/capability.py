@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.ryanvk.capability import Capability
 from avilla.core.ryanvk.descriptor.pull import PullFn
 from avilla.core.ryanvk.descriptor.query import QuerySchema
 from avilla.core.ryanvk.descriptor.target import TargetFn
+from graia.ryanvk.capability import Capability
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

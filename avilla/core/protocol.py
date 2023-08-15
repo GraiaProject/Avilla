@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from avilla.core._runtime import cx_avilla, cx_context, cx_protocol
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS, processing_isolate
-from avilla.core.ryanvk.isolate import Isolate
+from graia.ryanvk._runtime import processing_artifact_heap
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
@@ -15,19 +14,16 @@ if TYPE_CHECKING:
 
 class BaseProtocol:
     avilla: Avilla
-    isolate: ClassVar[Isolate]
+    artifacts: ClassVar[dict[Any, Any]]
 
     def __init_subclass__(cls) -> None:
-        cls.isolate = Isolate()
-        cls.isolate.artifacts = ARTIFACT_COLLECTIONS.setdefault(
-            f"{cls.__module__}:{cls.__name__}", {"lookup_collections": [{}]}
-        )
+        cls.artifacts = {}
 
-        token = processing_isolate.set(cls.isolate)
+        token = processing_artifact_heap.set(cls.artifacts)
         try:
             cls.__init_isolate__()
         finally:
-            processing_isolate.reset(token)
+            processing_artifact_heap.reset(token)
 
     @classmethod
     def __init_isolate__(cls):

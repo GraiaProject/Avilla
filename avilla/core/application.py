@@ -2,11 +2,9 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from collections import ChainMap
-from typing import TYPE_CHECKING, Iterable, TypeVar
+from typing import TYPE_CHECKING, Any, Iterable, TypeVar
 
 from creart import it
-from graia.broadcast import Broadcast
 from launart import Launart
 from launart.service import Service
 
@@ -14,16 +12,15 @@ from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AccountInfo
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.protocol import BaseProtocol
-from avilla.core.ryanvk import Isolate
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
+from graia.broadcast import Broadcast
 
 if TYPE_CHECKING:
-    from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
-
     from avilla.core.ryanvk.protocol import SupportsArtifacts
+    from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
 
     from .resource import Resource
 
@@ -37,7 +34,7 @@ class Avilla:
     protocols: list[BaseProtocol]
     accounts: dict[Selector, AccountInfo]
     service: AvillaService
-    isolate: Isolate
+    global_artifacts: dict[Any, Any]
 
     def __init__(
         self,
@@ -53,7 +50,7 @@ class Avilla:
         self.accounts = {}
 
         self.service = AvillaService(self, message_cache_size)
-        self.isolate = Isolate()
+        self.global_artifacts = {}
 
         self.launch_manager.add_component(self.service)
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
@@ -82,13 +79,13 @@ class Avilla:
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
 
-        self.isolate.apply(CoreResourceFetchPerform)
+        CoreResourceFetchPerform.apply_to(self.global_artifacts)
 
     def get_staff_components(self) -> dict[str, SupportsArtifacts]:
         return {"avilla": self}
 
     def get_staff_artifacts(self):
-        return ChainMap(self.isolate.artifacts)
+        return [self.global_artifacts]
 
     def __staff_generic__(self, element_type: dict, event_type: dict):
         ...

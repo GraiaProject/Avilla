@@ -3,13 +3,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Awaitable, Callable, Generic, TypeVar
 
-if TYPE_CHECKING:
-    from graia.amnesia.message.element import Element
+from graia.ryanvk import RecordTwin
 
+if TYPE_CHECKING:
     from avilla.core.ryanvk.collector.account import (
         AccountBasedPerformTemplate,
         AccountCollector,
     )
+    from graia.amnesia.message.element import Element
 
 PBPT = TypeVar("PBPT", bound="AccountBasedPerformTemplate", contravariant=True)
 E = TypeVar("E", bound="Element")
@@ -25,7 +26,7 @@ class MessageSerialize(Generic[T]):
     @classmethod
     def collect(cls: type[MessageSerialize[T]], collector: AccountCollector, element_type: type[E]):
         def receiver(entity: Callable[[PBPT, E], Awaitable[T]]) -> Callable[[PBPT, E], Awaitable[T]]:
-            collector.artifacts[MessageSerializeSign(element_type)] = (collector, entity)
+            collector.artifacts[MessageSerializeSign(element_type)] = RecordTwin(collector, entity)
             return entity
 
         return receiver

@@ -2,10 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-
 from avilla.core.event import AvillaEvent
 from avilla.core.request import Request
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 @dataclass

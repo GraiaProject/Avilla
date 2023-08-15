@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections import ChainMap
 from dataclasses import InitVar, dataclass, field
 from typing import TYPE_CHECKING, Literal, cast
 
@@ -114,7 +113,7 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
         ...
 
     def get_staff_artifacts(self):
-        return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
     @property
     def alive(self):

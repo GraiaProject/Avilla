@@ -21,6 +21,8 @@ from graia.broadcast import Broadcast
 from launart import Launart
 from test_env import A60_ENDPOINT, A60_MAH_ACCOUNT, A60_MAH_SECRET, A60_SECRET
 
+from devtools import debug
+
 # richuru1.install()
 
 broadcast = create(Broadcast)
@@ -47,18 +49,24 @@ console_protocol = ConsoleProtocol()
 avilla = Avilla(launch_manager=launart, broadcast=broadcast, message_cache_size=0)
 
 avilla.apply_protocols(console_protocol)
+debug(protocol.artifacts)
+#avilla.apply_protocols(protocol)
 
 launart.add_component(UvicornASGIService("127.0.0.1", 9090))
 
 import sys
 
-sys.setrecursionlimit(200)
+#sys.setrecursionlimit(200)
 
 from avilla.core.ryanvk.collector.context import ContextCollector
-from avilla.core.ryanvk.descriptor.base import OverridePerformEntity
+from graia.ryanvk import OverridePerformEntity, SupportsCollect
 from graia.amnesia.message import MessageChain
 from avilla.core.selector import Selector
 
+from graia.ryanvk.typing import P, R
+
+def x(a: SupportsCollect[P, R]) -> SupportsCollect[P, R]:
+    return a
 
 class TestPerform((m := ContextCollector())._):
     @MessageSend.send.override(m, "::friend")
@@ -111,12 +119,11 @@ async def log():
     while True:
         await asyncio.sleep(5)
         print("?")
-        print(avilla.launch_manager.get_component("asgi.service/uvicorn").middleware.mounts)
+        print(avilla.launch_manager.get_component(UvicornASGIService).middleware.mounts)
 
 
 # t = broadcast.loop.create_task(log())
 
-from avilla.core.ryanvk._runtime import ARTIFACT_COLLECTIONS
 from devtools import debug
 
 from graia.saya import Saya

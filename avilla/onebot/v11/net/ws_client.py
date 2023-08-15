@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections import ChainMap
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
@@ -70,7 +69,7 @@ class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"
         ...
 
     def get_staff_artifacts(self):
-        return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
     @property
     def alive(self):

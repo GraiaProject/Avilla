@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
-from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
-from avilla.core.ryanvk.endpoint import Access
+from graia.ryanvk import Access, BasePerform
+
+from .base import AvillaBaseCollector
 
 if TYPE_CHECKING:
     from avilla.core.account import BaseAccount
@@ -20,14 +21,14 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class AccountBasedPerformTemplate(PerformTemplate, native=True):
+class AccountBasedPerformTemplate(BasePerform, native=True):
     __collector__: ClassVar[AccountCollector]
 
     protocol: Access[BaseProtocol] = Access()
     account: Access[BaseAccount] = Access()
 
 
-class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
+class AccountCollector(AvillaBaseCollector, Generic[TProtocol, TAccount]):
     post_applying: bool = False
 
     def __init__(self):
@@ -35,7 +36,7 @@ class AccountCollector(BaseCollector, Generic[TProtocol, TAccount]):
 
     @property
     def _(self):
-        upper = super().get_collect_template()
+        upper = super()._
 
         class LocalPerformTemplate(
             Generic[TProtocol1, TAccount1],

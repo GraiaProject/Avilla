@@ -7,8 +7,8 @@ from aiohttp import ClientSession
 from avilla.core import Context
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.ryanvk.descriptor.fetch import Fetch
-from avilla.core.ryanvk.endpoint import OptionalAccess
 from avilla.red.resource import RedImageResource
+from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
     from ..account import RedAccount  # noqa

@@ -3,11 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 
-from graia.amnesia.message import MessageChain
-
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
 from avilla.standard.core.message.capability import MessageRevoke
+from graia.amnesia.message import MessageChain
 
 from ._runtime import cx_context
 from .metadata import Metadata

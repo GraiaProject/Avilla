@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from statv import Stats, Statv
 
-from avilla.core.ryanvk import Isolate
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 
@@ -23,7 +21,7 @@ class AccountInfo:
     account: BaseAccount
     protocol: BaseProtocol
     platform: Platform
-    isolate: Isolate = field(default_factory=Isolate)
+    artifacts: dict[Any, Any] = field(default_factory=dict)
     enabled_message_cache: bool = False
 
 
@@ -62,11 +60,11 @@ class BaseAccount:
         return {"account": self, "protocol": self.info.protocol, "avilla": self.avilla}
 
     def get_staff_artifacts(self):
-        return ChainMap(
-            self.info.isolate.artifacts,
-            self.info.protocol.isolate.artifacts,
-            self.avilla.isolate.artifacts,
-        )
+        return [
+            self.info.artifacts,
+            self.info.protocol.artifacts,
+            self.avilla.global_artifacts,
+        ]
 
     def __staff_generic__(self, element_type: dict, event_type: dict):
         ...

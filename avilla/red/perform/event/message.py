@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 
 from avilla.core.context import Context
@@ -13,6 +12,7 @@ from avilla.core.selector import Selector
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.red.utils import pre_deserialize
 from avilla.standard.core.message import MessageReceived
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     ...

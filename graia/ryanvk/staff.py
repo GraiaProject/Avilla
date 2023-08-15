@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
+
+from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
-    from .fn import Fn, P, R
+    from .fn import Fn
     from .perform import BasePerform
-    from .typing import P1, C, OutboundCompatible
+    from .typing import P1, OutboundCompatible
+
+P = ParamSpec("P")
+R = TypeVar("R", covariant=True)
 
 
 class Staff:
@@ -21,28 +26,34 @@ class Staff:
         self.exit_stack = AsyncExitStack()
         self.instances = {}
 
-    def extract_record(self, record: tuple[C, Any]):
-        collector, entity = record
-        instance = self.instances.get(collector.cls)
-        if instance is None:
-            raise TypeError(f"instance not found for {collector.cls}")
-        return instance, entity
-
-    def extract_outbound(
+    def get_outbound(
         self,
         schema: OutboundCompatible[P, R, P1],
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Callable[P1, R]:
-        instance, entity = self.extract_record(schema.get_artifact_record(self.artifact_collections, *args, **kwargs))
+        instance, entity = schema.get_artifact_record(self.artifact_collections, *args, **kwargs).unwrap(self)
         return schema.get_outbound_callable(instance, entity)
 
     def call_fn(self, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-        outbound = self.extract_outbound(fn, *args, **kwargs)
+        outbound = self.get_outbound(fn, *args, **kwargs)
         return outbound(*args, **kwargs)
 
-    def inject(self, perform: BasePerform):
-        perform.__init_staff__(self)
+    class PostInitShape(Protocol[P]):
+        def __post_init__(self, *args: P.args, **kwargs: P.kwargs) -> Any:
+            ...
+
+    @overload
+    def inject(self, perform_type: type[PostInitShape[P]], *args: P.args, **kwargs: P.kwargs) -> None:
+        ...
+
+    @overload
+    def inject(self, perform_type: type[BasePerform]) -> None:
+        ...
+
+    def inject(self, perform_type: ..., *args, **kwargs):
+        perform = perform_type(self)
+        perform.__post_init__(*args, **kwargs)
         self.artifact_collections.insert(0, perform.__collector__.artifacts)
 
     async def maintain(self, perform: BasePerform):

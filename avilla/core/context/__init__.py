@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Awaitable, TypedDict, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
 
 from typing_extensions import ParamSpec, Unpack
 
@@ -11,7 +10,7 @@ from avilla.core.account import BaseAccount
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
-from avilla.core.ryanvk.descriptor.base import Fn
+from avilla.core.ryanvk import Fn
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import (
     FollowsPredicater,
@@ -63,12 +62,11 @@ class Context:
         mediums: list[Selector] | None = None,
         prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
-        self.artifacts = ChainMap(
-            account.info.isolate.artifacts,
-            account.info.protocol.isolate.artifacts,
-            account.avilla.isolate.artifacts,
-        ).copy()
-        self.staff = Staff.focus(self)
+        self.artifacts = [
+            account.info.artifacts,
+            account.info.protocol.artifacts,
+            account.avilla.global_artifacts,
+        ]
         # 这里是为了能在 Context 层级进行修改
 
         self.account = account
@@ -80,6 +78,7 @@ class Context:
         self.mediums = [ContextMedium(ContextSelector.from_selector(self, medium)) for medium in mediums or []]
 
         self.cache = {"meta": prelude_metadatas or {}}
+        self.staff = Staff.focus(self)
 
     @property
     def protocol(self):
@@ -151,15 +150,15 @@ class Context:
         ...
 
     @overload
-    def __getitem__(self, closure: Fn[Callable[P, Awaitable[R]]]) -> Callable[P, Awaitable[R]]:
+    def __getitem__(self, closure: Fn[P, R]) -> Callable[P, R]:
         ...
 
-    def __getitem__(self, closure: Selector | Fn[Callable[P, Awaitable[Any]]]) -> Any:
+    def __getitem__(self, closure: Selector | Fn[P, Any]) -> Any:
         if isinstance(closure, Selector):
             return ContextSelector(self, closure.pattern)
 
-        async def run(*args: P.args, **kwargs: P.kwargs):
-            return await self.staff.call_fn(closure, *args, **kwargs)
+        def run(*args: P.args, **kwargs: P.kwargs):
+            return self.staff.call_fn(closure, *args, **kwargs)
 
         return run
 

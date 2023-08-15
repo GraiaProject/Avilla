@@ -7,6 +7,7 @@ from avilla.core.ryanvk.descriptor.fetch import Fetch
 
 class CoreResourceFetchPerform((m := ApplicationCollector())._):
     @m.entity(Fetch, LocalFileResource)
+    @Fetch.collect(m, LocalFileResource)
     async def fetch_localfile(self, res: LocalFileResource):
         return res.file.read_bytes()
 

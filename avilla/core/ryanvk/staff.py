@@ -1,30 +1,26 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
 from functools import reduce
 from typing import (
     TYPE_CHECKING,
     Any,
-    AsyncGenerator,
     Awaitable,
     Callable,
     ChainMap,
     Generic,
     Literal,
-    Protocol,
     overload,
 )
 
-from graia.amnesia.message import Element, MessageChain
-from graia.broadcast.utilles import run_always_await
-from typing_extensions import Concatenate, ParamSpec, TypeVar, Unpack
+from typing_extensions import ParamSpec, TypeVar, Unpack
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import MetadataRoute
-from avilla.core.ryanvk.descriptor.base import Fn, OverridePerformEntity
-from avilla.core.ryanvk.isolate import _merge_lookup_collection
 from avilla.core.selector import FollowsPredicater, Selector, _FollowItem, _parse_follows
 from avilla.core.utilles import identity
+from graia.amnesia.message import Element, MessageChain
+from graia.ryanvk import BaseCollector, RecordTwin
+from graia.ryanvk import Staff as BaseStaff
 
 from .descriptor.event import EventParserSign
 from .descriptor.fetch import FetchImplement
@@ -36,11 +32,9 @@ if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.core.metadata import Metadata
     from avilla.core.resource import Resource
-    from avilla.core.ryanvk.collector.base import PerformTemplate
 
-    from .collector.base import BaseCollector
     from .descriptor.query import QueryHandler, QueryHandlerPerform
-    from .protocol import SupportsArtifacts, SupportsStaff
+    from .protocol import SupportsStaff
 
 
 T = TypeVar("T")
@@ -54,64 +48,8 @@ VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
 VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
 
 
-class ArtifactSchema(Protocol[P, T, P1]):
-    def get_artifact_record(
-        self,
-        collection: ChainMap[Any, Any],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> tuple[Any, Callable[Concatenate[Any, P], T]]:
-        ...
-
-    def get_outbound_callable(self, instance: Any, entity: Callable[Concatenate[Any, P], T]) -> Callable[P1, T]:
-        ...
-
-
-class InjectPerform(Protocol[P]):
-    def __init__(self, *args: P.args, **kwargs: P.kwargs) -> None:
-        ...
-
-
-class Staff(Generic[VnElementRaw, VnEventRaw]):
+class Staff(BaseStaff, Generic[VnElementRaw, VnEventRaw]):
     """手杖与核心工艺 (Staff & Focus Craft)."""
-
-    components: dict[str, SupportsArtifacts]
-    artifacts: ChainMap[Any, Any]
-
-    dispatched_overrides: dict[tuple[type[PerformTemplate], str], Any]
-
-    def __init__(self, components: dict[str, SupportsArtifacts], artifacts: ChainMap[Any, Any]):
-        self.components = components
-        self.artifacts = artifacts
-        self.dispatched_overrides = {}
-
-    @asynccontextmanager
-    async def use_artifact(
-        self,
-        schema: ArtifactSchema[P, R, P1],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> AsyncGenerator[Callable[P1, R], None]:
-        collector, entity = schema.get_artifact_record(self.artifacts, *args, **kwargs)
-        async with collector.cls(self.components, self.dispatched_overrides).run_with_lifespan() as instance:
-            yield schema.get_outbound_callable(instance, entity)
-
-    @asynccontextmanager
-    async def use_record(
-        self,
-        record: tuple[Co, Callable[Concatenate[Any, P], R]],
-    ) -> AsyncGenerator[Callable[P, R], None]:
-        collector, entity = record
-        async with collector.cls(self.components, self.dispatched_overrides).run_with_lifespan() as instance:
-
-            def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-                return entity(instance, *args, **kwargs)
-
-            yield wrapper
-
-    async def call_fn(self, fn: Fn[Callable[P, Awaitable[R]]], *args: P.args, **kwargs: P.kwargs) -> R:
-        async with self.use_artifact(fn, *args, **kwargs) as entity:
-            return await run_always_await(entity, *args, **kwargs)
 
     @classmethod
     def focus(
@@ -121,43 +59,19 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         element_typer: Callable[[VnElementRaw], Any] | None = None,
     ):
         self = super().__new__(cls)
-        self.__init__(focus.get_staff_components(), focus.get_staff_artifacts())
+        self.__init__(
+            focus.get_staff_artifacts(),
+            focus.get_staff_components(),
+        )
         if element_typer is not None:
             self.get_element_type = element_typer  # type: ignore
         return self
 
-    def x(self, components: dict[str, SupportsArtifacts]):
-        return type(self)({**self.components, **components}, self.artifacts)
-
-    @overload
-    def inject(self, perform: type[InjectPerform[P]], *args: P.args, **kwargs: P.kwargs):
-        ...
-
-    @overload
-    def inject(self, perform: type[PerformTemplate]) -> None:
-        ...
-
-    def inject(self, perform: type[PerformTemplate] | Any, *iiargs, **iikwargs):
-        overrides = perform.overrides()
-        for attr, value in overrides:
-
-            def factory(value: OverridePerformEntity, current_maps, *iargs, **ikwargs):
-                async def call_override_fn(_, *args, **kwargs):
-                    local_collector, entity = value.fn.get_artifact_record(ChainMap(*current_maps), *args, **kwargs)
-                    instance = local_collector.cls(self.components, self.dispatched_overrides)
-                    instance.__init_inject__(*iargs, **ikwargs)
-                    return await run_always_await(value.fn.get_outbound_callable(instance, entity), *args, **kwargs)  # type: ignore  # noqa: E501
-
-                return call_override_fn
-
-            self.dispatched_overrides[(perform, attr)] = factory(value, self.artifacts.maps.copy(), *iiargs, **iikwargs)
-
-        artifacts = perform.__collector__.artifacts
-        local = {}
-        if "current_collection" in artifacts:
-            _merge_lookup_collection(local, artifacts["current_collection"])
-            artifacts = {k: v for k, v in artifacts.items() if k != "current_collection"}
-        self.artifacts = ChainMap({"lookup_collections": [local], **artifacts}, *self.artifacts.maps)
+    def x(self, components: dict[str, Any]):
+        instance = type(self)(self.artifact_collections, {**self.components, **components})
+        instance.instances = self.instances
+        instance.exit_stack = self.exit_stack
+        return instance
 
     # [= Avilla-only =]
 
@@ -173,46 +87,55 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
         data: VnEventRaw,
     ) -> AvillaEvent | Literal["non-implemented"] | None:
         sign = EventParserSign(event_type)
-        if sign not in self.artifacts:
+        artifact_map = ChainMap(*self.artifact_collections)
+        if sign not in artifact_map:
             return "non-implemented"
 
-        record: tuple[Any, Callable[[Any, VnEventRaw], Awaitable[AvillaEvent | None]]] = self.artifacts[sign]
+        record: RecordTwin[Any, Callable[[Any, VnEventRaw], Awaitable[AvillaEvent | None]]] = artifact_map[sign]
 
-        async with self.use_record(record) as entity:
-            return await entity(data)
+        instance, entity = record.unwrap(self)
+        return await entity(instance, data)
 
     async def serialize_message(self, message: MessageChain) -> list[VnElementRaw]:
         result: list[VnElementRaw] = []
+        artifact_map = ChainMap(*self.artifact_collections)
         for element in message.content:
             element_type = type(element)
             sign = MessageSerializeSign(element_type)
-            if sign not in self.artifacts:
+            if sign not in artifact_map:
                 raise NotImplementedError(f"Element {element_type} serialize is not supported")
 
-            async with self.use_record(self.artifacts[sign]) as entity:
-                result.append(await entity(element))
+            record = artifact_map[sign]
+            instance, entity = record.unwrap(self)
+            result.append(await entity(instance, element))
+
         return result
 
     async def deserialize_message(self, raw_elements: list[VnElementRaw]) -> MessageChain:
         result: list[Element] = []
+        artifact_map = ChainMap(*self.artifact_collections)
         for raw_element in raw_elements:
             element_type = self.get_element_type(raw_element)
             sign = MessageDeserializeSign(element_type)
-            if sign not in self.artifacts:
+            if sign not in artifact_map:
                 raise NotImplementedError(f"Element {element_type} descrialize is not supported: {raw_element}")
 
-            async with self.use_record(self.artifacts[sign]) as entity:
-                result.append(await entity(raw_element))
+            record = artifact_map[sign]
+            instance, entity = record.unwrap(self)
+            result.append(await entity(instance, raw_element))
+
         return MessageChain(result)
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
         sign = FetchImplement(type(resource))
-        if sign not in self.artifacts:
+        artifact_map = ChainMap(*self.artifact_collections)
+        if sign not in artifact_map:
             raise NotImplementedError(f"Resource {identity(resource)} fetch is not supported")
 
-        record: tuple[Any, Callable[[Any, Resource[T]], Awaitable[T]]] = self.artifacts[sign]
-        async with self.use_record(record) as entity:
-            return await entity(resource)
+        record: RecordTwin[Any, Callable[[Any, Resource[T]], Awaitable[T]]] = artifact_map[sign]
+
+        instance, entity = record.unwrap(self)
+        return await entity(instance, resource)
 
     @overload
     async def pull_metadata(
@@ -239,16 +162,17 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
 
     async def query_entities(self, pattern: str, **predicators: FollowsPredicater):
         items = _parse_follows(pattern, **predicators)
-        steps = find_querier_steps(self.artifacts, items)
+        artifact_map = ChainMap(*self.artifact_collections)
+        steps = find_querier_steps(artifact_map, items)
 
         if steps is None:
             return
 
-        def build_handler(artifact: tuple[BaseCollector, QueryHandlerPerform]) -> QueryHandler:
+        def build_handler(artifact: RecordTwin[BaseCollector, QueryHandlerPerform]) -> QueryHandler:
             async def handler(predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):
-                async with self.use_record(artifact) as entity:
-                    async for i in entity(predicate, previous):
-                        yield i
+                instance, entity = artifact.unwrap(self)
+                async for i in entity(instance, predicate, previous):
+                    yield i
 
             return handler
 
@@ -269,7 +193,7 @@ class Staff(Generic[VnElementRaw, VnEventRaw]):
 
         handlers = []
         for follow_item, query_record in steps:
-            handlers.append((follow_item, build_handler(self.artifacts[query_record])))
+            handlers.append((follow_item, build_handler(artifact_map[query_record])))
 
         r = reduce(
             lambda previous, current: query_depth_generator(current[1], build_predicate(current[0]), previous),

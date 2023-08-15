@@ -5,11 +5,11 @@ from typing import TYPE_CHECKING
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
-from avilla.core.ryanvk.endpoint import OptionalAccess
 from avilla.core.selector import Selector
 from avilla.qqguild.tencent.element import Ark, ArkKv, Embed, Reference
 from avilla.qqguild.tencent.resource import QQGuildImageResource
 from avilla.standard.qq.elements import Face
+from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

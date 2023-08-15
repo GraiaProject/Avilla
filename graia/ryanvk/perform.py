@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, asynccontextmanager
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 from .endpoint import Endpoint
 
@@ -16,11 +16,15 @@ class BasePerform:
 
     staff: Staff
 
-    def __init__(self) -> None:
+    def __init__(self, staff: Staff) -> None:
+        self.staff = staff
+
+    def __post_init__(self):
         ...
 
-    def __init_staff__(self, staff: Staff):
-        self.staff = staff
+    @classmethod
+    def apply_to(cls, map: dict[Any, Any]):
+        map.update(cls.__collector__.artifacts)
 
     @classmethod
     def endpoints(cls):

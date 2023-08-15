@@ -3,18 +3,16 @@ from __future__ import annotations
 from inspect import isclass
 from typing import TYPE_CHECKING
 
-from graia.broadcast.entities.dispatcher import BaseDispatcher
-
 from avilla.core._runtime import cx_protocol
 from avilla.core.account import BaseAccount
 from avilla.core.context import Context
 from avilla.core.event import AvillaEvent
 from avilla.core.protocol import BaseProtocol
+from graia.broadcast.entities.dispatcher import BaseDispatcher
 
 if TYPE_CHECKING:
-    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-
     from avilla.core.application import Avilla
+    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 class AvillaBuiltinDispatcher(BaseDispatcher):

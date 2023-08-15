@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
-from avilla.core.ryanvk.endpoint import OptionalAccess
 from avilla.core.selector import Selector
 from avilla.elizabeth.resource import (
     ElizabethFileResource,
@@ -25,6 +24,7 @@ from avilla.standard.qq.elements import (
     PokeKind,
     Xml,
 )
+from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
     from avilla.core.context import Context

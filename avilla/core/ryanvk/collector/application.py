@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
-from avilla.core.ryanvk.endpoint import Access
+from graia.ryanvk import Access, BasePerform
+
+from .base import AvillaBaseCollector
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
@@ -13,13 +14,13 @@ T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ApplicationBasedPerformTemplate(PerformTemplate, native=True):
+class ApplicationBasedPerformTemplate(BasePerform, native=True):
     __collector__: ClassVar[ApplicationCollector]
 
     avilla: Access[Avilla] = Access()
 
 
-class ApplicationCollector(BaseCollector):
+class ApplicationCollector(AvillaBaseCollector):
     post_applying: bool = False
 
     def __init__(self):
@@ -27,7 +28,7 @@ class ApplicationCollector(BaseCollector):
 
     @property
     def _(self):
-        upper = super().get_collect_template()
+        upper = super()._
 
         class LocalPerformTemplate(
             ApplicationBasedPerformTemplate,

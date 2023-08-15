@@ -41,3 +41,7 @@ class NickCapability(Capability):
     @TargetFn
     async def unset_badge(self) -> None:
         ...
+
+
+class AvatarFetch(Capability):
+    ...

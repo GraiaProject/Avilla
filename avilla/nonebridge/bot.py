@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from typing import TYPE_CHECKING, Any
 
 from nonebot.adapters import Bot as BaseBot
@@ -40,11 +39,11 @@ class NoneBridgeBot(BaseBot):
             message = Message([message])
 
         staff = Staff(
+            [self.service.artifacts],
             {
                 "avilla": self.service.avilla,
                 # TODO
             },
-            ChainMap(self.service.isolate.artifacts),
         )
         translated_message = await staff.deserialize_message([{"type": i.type, "data": i.data} for i in message])
 

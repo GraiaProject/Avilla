@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from collections import ChainMap
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
@@ -112,7 +111,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
         return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
 
     def get_staff_artifacts(self):
-        return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
     def __staff_generic__(self, element_type: dict, event_type: dict):
         ...

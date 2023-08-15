@@ -14,14 +14,13 @@ from typing import (
 
 from typing_extensions import Concatenate, ParamSpec
 
-from avilla.core.ryanvk.collector.base import BaseCollector, PerformTemplate
 from avilla.core.ryanvk.descriptor.target import TargetArtifactStore, TargetFn
 from avilla.core.selector import FollowsPredicater, Selectable
 from avilla.core.utilles import identity
+from graia.ryanvk import BaseCollector, BasePerform, Capability
 
 if TYPE_CHECKING:
     from avilla.core.metadata import Metadata, MetadataRoute
-    from avilla.core.ryanvk.capability import Capability
     from avilla.core.selector import Selector
 
 
@@ -30,8 +29,7 @@ P1 = ParamSpec("P1")
 R = TypeVar("R", covariant=True)
 R1 = TypeVar("R1", covariant=True)
 R2 = TypeVar("R2", covariant=True)
-C = TypeVar("C", bound="Capability")
-HQ = TypeVar("HQ", bound="PerformTemplate", contravariant=True)
+HQ = TypeVar("HQ", bound="BasePerform", contravariant=True)
 
 
 class UnitedFnPerformBranch(Protocol[P, R1, R2]):
@@ -53,13 +51,13 @@ class UnitedFnPerformBranch(Protocol[P, R1, R2]):
 
 @dataclass(unsafe_hash=True)
 class UnitedFnImplement:
-    capability: type[Capability]
+    capability: type[BasePerform | Capability]
     name: str
     metadata: type[Metadata] | MetadataRoute | None = None
 
 
 class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRoute", P], R]):
-    def __init__(self, template: Callable[Concatenate[C, P], R]) -> None:
+    def __init__(self, template: Callable[Concatenate[Any, P], R]) -> None:
         self.template = template
 
     def get_collect_signature(
@@ -69,7 +67,7 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
         route: type[Metadata] | MetadataRoute,
         **kwargs: FollowsPredicater,
     ):
-        return UnitedFnImplement(self.capability, self.name, route)
+        return UnitedFnImplement(self.owner, self.name, route)
 
     def collect(
         self,
@@ -95,9 +93,9 @@ class TargetMetadataUnitedFn(TargetFn[Concatenate["type[Metadata] | MetadataRout
         *args: P.args,
         **kwargs: P.kwargs,
     ) -> Any:
-        return UnitedFnImplement(self.capability, self.name, route)
+        return UnitedFnImplement(self.owner, self.name, route)
 
     def __repr__(self) -> str:
-        return f"<Fn#target {identity(self.capability)}::{self.name} {inspect.Signature.from_callable(self.template)}>"
+        return f"<Fn#target {identity(self.owner)}::{self.name} {inspect.Signature.from_callable(self.template)}>"
 
     __str__ = __repr__

@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from contextlib import suppress
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
-from graia.amnesia.builtins.asgi import UvicornASGIService
 from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
@@ -15,6 +13,7 @@ from starlette.websockets import WebSocket
 
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
+from graia.amnesia.builtins.asgi import UvicornASGIService
 
 if TYPE_CHECKING:
     from avilla.onebot.v11.account import OneBot11Account
@@ -58,7 +57,7 @@ class OneBot11WsServerConnection(OneBot11Networking["OneBot11WsServerConnection"
         ...
 
     def get_staff_artifacts(self):
-        return ChainMap(self.protocol.isolate.artifacts, self.protocol.avilla.isolate.artifacts)
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
     async def send(self, payload: dict) -> None:
         return await self.connection.send_json(payload)

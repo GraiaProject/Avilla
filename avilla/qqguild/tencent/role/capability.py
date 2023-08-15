@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from avilla.core.ryanvk.capability import Capability
 from avilla.core.ryanvk.descriptor.metadata import TargetFn
 from avilla.core.selector import Selector
+from graia.ryanvk.capability import Capability
 
 
 class RoleCreate(Capability):

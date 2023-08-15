@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Generic, TypeVar
 
+from graia.ryanvk import BaseCollector, RecordTwin
+
 if TYPE_CHECKING:
     from graia.amnesia.message.element import Element
-
-    from avilla.core.ryanvk.collector.base import BaseCollector
 
 T = TypeVar("T")
 
@@ -20,7 +20,7 @@ class MessageDeserialize(Generic[T]):
     @classmethod
     def collect(cls: type[MessageDeserialize[T]], collector: BaseCollector, element_type: str):
         def receiver(entity: Callable[[Any, T], Awaitable[Element]]):
-            collector.artifacts[MessageDeserializeSign(element_type)] = (collector, entity)
+            collector.artifacts[MessageDeserializeSign(element_type)] = RecordTwin(collector, entity)
             return entity
 
         return receiver

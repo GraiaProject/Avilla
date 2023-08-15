@@ -1,27 +1,15 @@
-from typing import TYPE_CHECKING, Any, ChainMap, Protocol
+from __future__ import annotations
 
-from typing_extensions import ParamSpec, TypeVar
+from typing import Any, Protocol
 
-if TYPE_CHECKING:
-    from .collector.base import BaseCollector
-
-P = ParamSpec("P")
-C = TypeVar("C", contravariant=True, bound="BaseCollector")
-C1 = TypeVar("C1", bound="BaseCollector")
-R = TypeVar("R", covariant=True)
-T = TypeVar("T")
+from typing_extensions import TypeVar
 
 VnEventRaw = TypeVar("VnEventRaw", default=dict, infer_variance=True)
 VnElementRaw = TypeVar("VnElementRaw", default=dict, infer_variance=True)
 
 
-class SupportsCollect(Protocol[C, P, R]):
-    def collect(self, collector: C, *args: P.args, **kwargs: P.kwargs) -> R:
-        ...
-
-
 class SupportsArtifacts(Protocol):
-    def get_staff_artifacts(self) -> ChainMap[Any, Any]:
+    def get_staff_artifacts(self) -> list[dict[Any, Any]]:
         ...
 
 
