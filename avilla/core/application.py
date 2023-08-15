@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from typing import TYPE_CHECKING, Any, Iterable, TypeVar
+from typing import TYPE_CHECKING, Any, Iterable, TypeVar, overload
 
 from creart import it
 from launart import Launart
 from launart.service import Service
 
 from avilla.core._runtime import get_current_avilla
-from avilla.core.account import AccountInfo
+from avilla.core.account import AccountInfo, BaseAccount
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.protocol import BaseProtocol
 from avilla.core.ryanvk.staff import Staff
@@ -96,6 +96,43 @@ class Avilla:
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
         return await Staff.focus(self).fetch_resource(resource)
+
+    def get_account(self, target: Selector) -> AccountInfo:
+        return self.accounts[target]
+
+    @overload
+    def get_accounts(self, *, land: str) -> list[AccountInfo]:
+        ...
+
+    @overload
+    def get_accounts(self, *, pattern: str) -> list[AccountInfo]:
+        ...
+
+    @overload
+    def get_accounts(self, *, protocol_type: type[BaseProtocol]) -> list[AccountInfo]:
+        ...
+
+    @overload
+    def get_accounts(self, *, account_type: type[BaseAccount]) -> list[AccountInfo]:
+        ...
+
+    def get_accounts(
+        self,
+        *,
+        land: str | None = None,
+        pattern: str | None = None,
+        protocol_type: type[BaseProtocol] | None = None,
+        account_type: type[BaseAccount] | None = None
+    ) -> list[AccountInfo]:
+        if land:
+            return [account for account in self.accounts.values() if account.platform.land.name == land]
+        if pattern:
+            return [account for selector, account in self.accounts.items() if selector.follows(pattern)]
+        if protocol_type:
+            return [account for account in self.accounts.values() if isinstance(account.protocol, protocol_type)]
+        if account_type:
+            return [account for account in self.accounts.values() if isinstance(account.account, account_type)]
+        raise ValueError("No filter is specified")
 
     def _update_protocol_map(self):
         self._protocol_map = {type(i): i for i in self.protocols}
