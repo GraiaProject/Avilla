@@ -17,5 +17,5 @@ class CoreCapability(Capability):
     query = QuerySchema()
 
     @TargetFn
-    async def get_context(self, *, via: Selector | None = None) -> Context:
+    def get_context(self, *, via: Selector | None = None) -> Context:
         ...
