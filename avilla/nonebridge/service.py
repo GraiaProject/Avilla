@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 class NoneBridgeService(Service):
-    id = "onebot11.service"
+    id = "nonebridge.service"
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -41,7 +41,7 @@ class NoneBridgeService(Service):
     bots: dict[str, NoneBridgeBot]  # key 是 Selector.pattern 的 json
     queuer: AllEventQueue[AvillaEvent]
 
-    artifacts: ClassVar[dict[Any, Any]] = {"onebot_message_parse": {}}
+    artifacts: ClassVar[dict[Any, Any]] = {"ob_message_deserde": {}, "ob_message_serde": {}}
 
     def __init__(self, avilla: Avilla) -> None:
         super().__init__()
@@ -52,16 +52,20 @@ class NoneBridgeService(Service):
         self.bots = {}
         self.queuer = AllEventQueue()
 
+        avilla.broadcast.receiver(AccountRegistered)(self.on_account_registered)
+        avilla.broadcast.receiver(AccountUnregistered)(self.on_account_unregistered)
+        avilla.broadcast.prelude_dispatchers.append(self.queuer)
+
     def _init_nonebot(self):
         self.driver._adapters[self.adapter.get_name()] = self.adapter
         nonebot._driver = self.driver
 
     async def on_account_registered(self, event: AccountRegistered):
-        key = json.dumps(event.account.route.pattern)
+        key = json.dumps({**event.account.route.pattern})
         self.bots[key] = NoneBridgeBot(self, event.account)
 
     async def on_account_unregistered(self, event: AccountUnregistered):
-        key = json.dumps(event.account.route.pattern)
+        key = json.dumps({**event.account.route.pattern})
         if key not in self.bots:
             logger.warning(f"nonebridge cannot unregister account {event.account.route}")
         del self.bots[key]
@@ -70,7 +74,7 @@ class NoneBridgeService(Service):
     on_account_unregistered.__annotations__ = {"event": AccountUnregistered}
 
     def get_mapped_bot(self, account: BaseAccount) -> NoneBridgeBot:
-        return self.bots[json.dumps(account.route.pattern)]
+        return self.bots[json.dumps({**account.route.pattern})]
 
     async def event_translater(self):
         assert self.manager is not None
@@ -98,11 +102,6 @@ class NoneBridgeService(Service):
         async with self.stage("preparing"):
             # 这部分实现 nonebot.init 的部分, 同时也会对 nonebot 模块进行 bootstrap dirty hacking.
             # 目标是对 nonebot.adapters.onebot.v11 的完全运行时 hack.
-            self.avilla.broadcast.receiver(AccountRegistered)(self.on_account_registered)
-            self.avilla.broadcast.receiver(AccountUnregistered)(self.on_account_unregistered)
-
-            self.avilla.broadcast.prelude_dispatchers.append(self.queuer)
-
             for i in self.driver.lifespan_agent._startup_funcs:
                 await run_always_await(i)
 
@@ -117,8 +116,19 @@ class NoneBridgeService(Service):
 def _import_ryanvk_performs():
     # isort: off
 
-    token = processing_artifact_heap.set(NoneBridgeService.artifacts["onebot_message_parse"])
+    token = processing_artifact_heap.set(NoneBridgeService.artifacts["ob_message_deserde"])
+    from avilla.onebot.v11.perform.message.deserialize import OneBot11MessageDeserializePerform  # noqa
+
     processing_artifact_heap.reset(token)
+
+    token = processing_artifact_heap.set(NoneBridgeService.artifacts["ob_message_serde"])
+    from avilla.onebot.v11.perform.message.serialize import OneBot11MessageSerializePerform  # noqa
+
+    processing_artifact_heap.reset(token)
+
+    from .perform.event.message import MessageEventTranslater
+
+    MessageEventTranslater.apply_to(NoneBridgeService.artifacts)
 
 
 _import_ryanvk_performs()

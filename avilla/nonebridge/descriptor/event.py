@@ -23,7 +23,7 @@ class NoneEventTranslateSign:
 class NoneEventTranslate:
     @classmethod
     def collect(cls, collector: BaseCollector, event: type[E]):
-        def wrapper(entity: Callable[[Any, E], Coroutine[Event, None, None]]):
+        def wrapper(entity: Callable[[Any, E], Coroutine[None, None, Event | None]]):
             collector.artifacts[NoneEventTranslateSign(event)] = RecordTwin(collector, entity)
             return entity
 

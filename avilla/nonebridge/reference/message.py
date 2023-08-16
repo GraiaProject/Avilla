@@ -229,6 +229,9 @@ class MessageSegment(BaseMessageSegment["Message"]):
     def xml(cls, data: str) -> Self:
         return cls("xml", {"data": data})
 
+    def __str__(self) -> str:
+        return f'NonebotMessageSegment(type={self.type}, data={self.data})'
+
 
 class Message(BaseMessage[MessageSegment]):
     """OneBot v11 协议 Message 适配。"""

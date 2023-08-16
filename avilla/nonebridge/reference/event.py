@@ -29,7 +29,10 @@ class Event(BaseEvent):
     [OneBot 文档]: https://github.com/botuniverse/onebot-11/blob/master/README.md
     """
 
-    origin_event: AvillaEvent
+    if TYPE_CHECKING:
+        origin_event: AvillaEvent
+    else:
+        origin_event: Any
 
     time: int
     self_id: int

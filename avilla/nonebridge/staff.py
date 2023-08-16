@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any
 from avilla.core.elements import Element
 from avilla.core.event import AvillaEvent
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserializeSign
+from avilla.core.ryanvk.descriptor.message.serialize import MessageSerializeSign
 from graia.amnesia.message import MessageChain
 from graia.ryanvk import RecordTwin, Staff
 
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 class NoneBridgeStaff(Staff):
     async def deserialize_onebot_message(self, raw_elements: Message) -> MessageChain:
         result: list[Element] = []
-        artifact_map = ChainMap(*self.artifact_collections)["onebot_message_parse"]
+        artifact_map = ChainMap(*self.artifact_collections)["ob_message_deserde"]
 
         for raw_element in raw_elements:
             element_type = raw_element.type
@@ -50,3 +51,18 @@ class NoneBridgeStaff(Staff):
 
         instance, entity = record.unwrap(self)
         return await entity(instance, event)
+
+    async def serialize_onebot_message(self, message: MessageChain) -> list[dict]:
+        result: list[dict] = []
+        artifact_map = ChainMap(*self.artifact_collections)['ob_message_serde']
+        for element in message.content:
+            element_type = type(element)
+            sign = MessageSerializeSign(element_type)
+            if sign not in artifact_map:
+                raise NotImplementedError(f"Element {element_type} serialize is not supported")
+
+            record = artifact_map[sign]
+            instance, entity = record.unwrap(self)
+            result.append(await entity(instance, element))
+
+        return result

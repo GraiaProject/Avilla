@@ -9,8 +9,8 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.message import MessageReceived, MessageRevoked
-from avilla.standard.core.profile import Summary, Nick
-from avilla.standard.core.privilege import Privilege, MuteInfo
+from avilla.standard.core.privilege import MuteInfo, Privilege
+from avilla.standard.core.profile import Nick, Summary
 
 from . import ElizabethEventParse
 

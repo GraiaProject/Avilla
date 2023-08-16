@@ -7,8 +7,8 @@ from avilla.core.event import RelationshipCreated, RelationshipDestroyed
 from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
+from avilla.standard.core.privilege import MuteInfo, Privilege
 from avilla.standard.core.profile import Nick, Summary
-from avilla.standard.core.privilege import Privilege, MuteInfo
 
 from . import ElizabethEventParse
 

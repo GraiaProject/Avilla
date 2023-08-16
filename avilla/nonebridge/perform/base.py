@@ -5,21 +5,14 @@ from typing import TYPE_CHECKING
 from graia.ryanvk import Access, BasePerform
 
 if TYPE_CHECKING:
-    from ..service import NoneBridgeService
+    from ..service import NoneBridgeService  # noqa
 
 
-def service():
-    instance = Access[NoneBridgeService]()
+class ServiceAccess(Access['NoneBridgeService']):
+    name = "nonebridge.service"
 
-    instance.__set_name__ = lambda owner, name: None
-    instance.name = "nonebridge.service"
+    def __set_name__(self, owner: type, name: str):
+        return
 
-    return instance
-
-
-if TYPE_CHECKING:
-    ...
-
-
-class NoneBridgePerform(BasePerform):
-    service = service()
+class NoneBridgePerform(BasePerform, native=True):
+    service = ServiceAccess()

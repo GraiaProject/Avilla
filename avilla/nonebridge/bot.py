@@ -52,4 +52,4 @@ class NoneBridgeBot(BaseBot):
             translated_message.content = [Notice(context.client), *translated_message.content]
 
         sent_message = await context.scene.send_message(translated_message, reply=reply)
-        return {"message_id": json.dumps(sent_message.pattern)}
+        return {"message_id": json.dumps({**sent_message.pattern})}
