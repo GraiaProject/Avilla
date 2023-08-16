@@ -112,7 +112,7 @@ class Staff(BaseStaff, Generic[VnElementRaw, VnEventRaw]):
             element_type = self.get_element_type(raw_element)
             sign = MessageDeserializeSign(element_type)
             if sign not in artifact_map:
-                raise NotImplementedError(f"Element {element_type} descrialize is not supported: {raw_element}")
+                raise NotImplementedError(f"Element {element_type} deserialize is not supported: {raw_element}")
 
             record = artifact_map[sign]
             instance, entity = record.unwrap(self)

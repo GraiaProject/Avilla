@@ -39,6 +39,24 @@ class MessageEventTranslater((m := ContextCollector())._, NoneBridgePerform):
                     user_id=int(event.context.client["member"]),
                 ),
             )
+        elif event.context.scene.follows("land(qq).friend"):
+            return PrivateMessageEvent(
+                origin_event=event,
+                time=int(event.time.timestamp()),
+                self_id=int(event.context.account.route["account"]),
+                post_type="message",
+                message_type="private",
+                sub_type="normal",
+                message_id=int(event.message.id),
+                message=message,
+                user_id=int(event.context.client["friend"]),
+                original_message=message,
+                raw_message=str(event.message.content),
+                font=0,
+                sender=NonebotSender(
+                    user_id=int(event.context.client["friend"]),
+                ),
+            )
         elif event.context.scene.follows("land(console).user(console)"):
             return PrivateMessageEvent(
                 origin_event=event,

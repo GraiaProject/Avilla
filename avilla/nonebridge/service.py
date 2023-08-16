@@ -118,6 +118,8 @@ class NoneBridgeService(Service):
 def _import_ryanvk_performs():
     # isort: off
 
+    # 这部分会造成干扰
+
     token = processing_artifact_heap.set(NoneBridgeService.artifacts["ob_message_deserde"])
     from avilla.onebot.v11.perform.message.deserialize import OneBot11MessageDeserializePerform  # noqa
 
