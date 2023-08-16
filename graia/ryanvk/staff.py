@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import AsyncExitStack, asynccontextmanager
+from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
 
 from typing_extensions import ParamSpec
@@ -63,3 +64,8 @@ class Staff:
     async def lifespan(self):
         async with self.exit_stack:
             yield self
+
+    def ext(self, components: dict[str, Any]):
+        instance = copy(self)
+        instance.components.update(components)
+        return instance

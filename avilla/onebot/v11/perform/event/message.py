@@ -31,7 +31,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             friend,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
-        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
+        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = friend.message(i[0].id)
@@ -66,7 +66,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             member,
             group.member(str(raw_event["self_id"])),
         )
-        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
+        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = member.message(i[0].id)
@@ -100,7 +100,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(str(raw_event["self_id"])),
         )
-        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
+        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = group.message(i[0].id)
@@ -132,7 +132,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             stranger,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
-        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
+        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = stranger.message(i[0].id)
@@ -165,7 +165,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(str(raw_event["self_id"])),
         )
-        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
+        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = group.message(i[0].id)
@@ -193,7 +193,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         member = group.member(str(raw_event["user_id"]))
         context = Context(account, member, group, group, member)
-        message = await account.staff.x({"context": context}).deserialize_message(raw_event["message"])
+        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
         reply = None
         if i := message.get(Reply):
             reply = member.message(i[0].id)

@@ -67,12 +67,6 @@ class Staff(BaseStaff, Generic[VnElementRaw, VnEventRaw]):
             self.get_element_type = element_typer  # type: ignore
         return self
 
-    def x(self, components: dict[str, Any]):
-        instance = type(self)(self.artifact_collections, {**self.components, **components})
-        instance.instances = self.instances
-        instance.exit_stack = self.exit_stack
-        return instance
-
     # [= Avilla-only =]
 
     def get_element_type(self, raw_element: VnElementRaw):

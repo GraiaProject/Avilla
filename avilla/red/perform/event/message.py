@@ -44,7 +44,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             if elements[0]["type"] == "reply":
                 reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
-            message = await account.staff.x({"context": context}).deserialize_message(elements)
+            message = await account.staff.ext({"context": context}).deserialize_message(elements)
             msg = Message(
                 id=f'{payload["msgId"]}',
                 scene=group,
@@ -74,7 +74,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             if elements[0]["type"] == "reply":
                 reply = friend.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
-            message = await account.staff.x({"context": context}).deserialize_message(elements)
+            message = await account.staff.ext({"context": context}).deserialize_message(elements)
             msg = Message(
                 id=f'{payload["msgId"]}',
                 scene=friend,

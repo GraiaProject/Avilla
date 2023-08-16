@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import json
 from typing import TYPE_CHECKING, Any
 
 from nonebot.adapters import Bot as BaseBot
 
 from avilla.core.account import BaseAccount
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.elements import Notice
 from avilla.standard.core.message import MessageReceived
 
 from .reference.event import Event
@@ -38,18 +39,17 @@ class NoneBridgeBot(BaseBot):
         elif isinstance(message, MessageSegment):
             message = Message([message])
 
-        staff = Staff(
-            [self.service.artifacts],
-            {
-                "avilla": self.service.avilla,
-                # TODO
-            },
-        )
-        translated_message = await staff.deserialize_message([{"type": i.type, "data": i.data} for i in message])
+        context = event.origin_event.context
+        staff = self.service.staff.ext(context.get_staff_components())
+        translated_message = await staff.deserialize_onebot_message(message)
 
         if reply_message and isinstance(event.origin_event, MessageReceived):
             reply = event.origin_event.message.sender
         else:
             reply = None
-        sent_message = await event.origin_event.context.scene.send_message(translated_message, reply=reply)
-        return {"message_id": sent_message["message"]}
+
+        if at_sender:
+            translated_message.content = [Notice(context.client), *translated_message.content]
+
+        sent_message = await context.scene.send_message(translated_message, reply=reply)
+        return {"message_id": json.dumps(sent_message.pattern)}

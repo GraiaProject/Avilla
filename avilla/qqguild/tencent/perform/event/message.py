@@ -41,7 +41,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
             channel,
             channel.member(account_route["account"]),
         )
-        message = await account.staff.x({"context": context}).deserialize_message(pre_deserialize(raw_event))
+        message = await account.staff.ext({"context": context}).deserialize_message(pre_deserialize(raw_event))
         reply = None
         if i := message.get(Reference):
             reply = channel.message(i[0].message_id)
@@ -75,7 +75,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
             author,
             account_route,
         )
-        message = await account.staff.x({"context": context}).deserialize_message(pre_deserialize(raw_event))
+        message = await account.staff.ext({"context": context}).deserialize_message(pre_deserialize(raw_event))
         reply = None
         if i := message.get(Reference):
             reply = guild.message(i[0].message_id)

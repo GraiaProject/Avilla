@@ -2,9 +2,12 @@ from avilla.core import Avilla, Context, MessageReceived
 from avilla.console.protocol import ConsoleProtocol
 from avilla.console.element import Markdown, Emoji
 
+from avilla.nonebridge.service import NoneBridgeService
+
 avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
 
+avilla.launch_manager.add_component(NoneBridgeService(avilla))
 
 
 @avilla.listen(MessageReceived)

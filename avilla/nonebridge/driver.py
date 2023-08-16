@@ -15,11 +15,13 @@ class NoneBridgeDriver(BaseDriver):
     def __init__(self, service: NoneBridgeService):
         self.service = service
         self.lifespan_agent = Lifespan()
+        # TODO: 直接与 Kayaku 对接
         self.config = Config(
             driver="avilla.nonebot.driver",
-            superusers=set(),  # TODO
+            superusers=set(),
             nickname=set(),
         )
+        self.env = "prod"
 
     @property
     def type(self) -> str:
@@ -31,12 +33,11 @@ class NoneBridgeDriver(BaseDriver):
 
     @property
     def bots(self):
-        # TODO: fetch from service/ avilla instance
-        return {}
+        return self.service.bots
 
     def run(self, *args, **kwargs):
         # 这里已经由 launart 接管, 理应不会被调用.
-        return super().run(*args, **kwargs)
+        raise NotImplementedError
 
     def on_startup(self, func: Callable[..., Any]) -> Callable[..., Any]:
         return self.lifespan_agent.on_startup(func)

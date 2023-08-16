@@ -36,7 +36,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 break
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        result["content"] = await account.staff.x({"context": context}).deserialize_message(raw_elements[1:])
+        result["content"] = await account.staff.ext({"context": context}).deserialize_message(raw_elements[1:])
         return cast(MessageDeserializeResult, result)
 
     @m.entity(ElizabethEventParse, "FriendMessage")

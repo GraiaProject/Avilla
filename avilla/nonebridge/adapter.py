@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING, Any
 
 from nonebot.adapters import Adapter as BaseAdapter
 
+from avilla.core._runtime import cx_context
+
 from .bot import NoneBridgeBot
 
 if TYPE_CHECKING:
@@ -16,12 +18,10 @@ class NoneBridgeAdapter(BaseAdapter):
 
     @property
     def bots(self):
-        # TODO: 和 driver 的一样.
-        return {}
+        return self.service.bots
 
     @classmethod
     def get_name(cls) -> str:
-        # 我的目的是 mocking ob11 adapter.
         return "OneBot V11"
 
     @property
@@ -29,5 +29,10 @@ class NoneBridgeAdapter(BaseAdapter):
         return self.service.driver
 
     async def _call_api(self, bot: NoneBridgeBot, api: str, **data: Any):
-        ...
-        # TODO: Ryanvk staff.
+        staff = bot.service.staff
+        maybe_cx = cx_context.get(None)
+        if maybe_cx is not None:
+            staff = staff.ext(maybe_cx.get_staff_components())
+        else:
+            staff = staff.ext(bot.account.get_staff_components())
+        return staff.call_endpoint_api(api, **data)
