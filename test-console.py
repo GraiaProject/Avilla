@@ -4,11 +4,13 @@ from avilla.console.element import Markdown, Emoji
 
 from avilla.nonebridge.service import NoneBridgeService
 
+import nonebot
+
 avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
 
 avilla.launch_manager.add_component(NoneBridgeService(avilla))
-
+nonebot.load_plugin("nonebot_world")
 
 @avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context, event: MessageReceived):
@@ -23,8 +25,6 @@ async def on_message_received(ctx: Context, event: MessageReceived):
 - /emoji
 """
             )])
-    elif msg.startswith("/echo"):
-        await ctx.scene.send_message(event.message.content.removeprefix("/echo "))
     elif msg == "/md":
         await ctx.scene.send_message(
             [Markdown("""\

@@ -52,10 +52,11 @@ class MessageEventTranslater((m := ContextCollector())._, NoneBridgePerform):
                 message=message,
                 user_id=114514,
                 original_message=message,
-                raw_message=str(message),
+                raw_message=str(event.message.content),
                 font=0,
                 sender=NonebotSender(
                     user_id=114514,
                 ),
             )
+
         return

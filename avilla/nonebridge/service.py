@@ -56,6 +56,8 @@ class NoneBridgeService(Service):
         avilla.broadcast.receiver(AccountUnregistered)(self.on_account_unregistered)
         avilla.broadcast.prelude_dispatchers.append(self.queuer)
 
+        self._init_nonebot()
+
     def _init_nonebot(self):
         self.driver._adapters[self.adapter.get_name()] = self.adapter
         nonebot._driver = self.driver
