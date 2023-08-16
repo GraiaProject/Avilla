@@ -84,7 +84,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             )
         await cache.set(f"qq/red:{payload['msgId']}", payload, timedelta(minutes=5))
-        context.cache["meta"][msg.to_selector()] = {Message: msg}  # type: ignore
+        context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(
             context,
             msg,

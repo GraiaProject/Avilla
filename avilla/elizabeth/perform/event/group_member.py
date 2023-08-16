@@ -9,7 +9,7 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteInfo, Privilege
-from avilla.standard.core.profile import Nick
+from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.qq.honor import Honor
 
 from . import ElizabethEventParse
@@ -23,8 +23,10 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
-        member = group.member(str(raw_event["member"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
         context = Context(
             account,
@@ -32,6 +34,43 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             member,
             group,
             group.member(account_route["account"]),
+        )
+        if operator_data := raw_event.get("operator"):
+            context._collect_metadatas(
+                group.member(str(operator_data["id"])),
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+                Summary(operator_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return MetadataModified(
             context,
@@ -47,18 +86,57 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
-        member = group.member(str(raw_event["member"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         members = await self.connection.call("fetch", "memberList", {"target": raw_event["group"]["id"]})
-        members = cast("list[dict]", members)
-        operator_id = next((d["id"] for d in members if d["permission"] == "OWNER"), None)
-        operator = group.member(str(operator_id)) if operator_id else group
+        members = cast(list[dict], members)
+        operator_data = next((d for d in members if d["id"] == raw_event["operator"]["id"]), None)
+        operator = group.member(str(operator_data["id"])) if operator_data else group
         context = Context(
             account,
             operator,
             member,
             group,
             group.member(account_route["account"]),
+        )
+        if operator_data:
+            context._collect_metadatas(
+                operator,
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+                Summary(operator_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return MetadataModified(
             context,
@@ -74,18 +152,57 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
-        member = group.member(str(raw_event["member"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         members = await self.connection.call("fetch", "memberList", {"target": raw_event["group"]["id"]})
-        members = cast("list[dict]", members)
-        operator_id = next((d["id"] for d in members if d["permission"] == "OWNER"), None)
-        operator = group.member(str(operator_id)) if operator_id else group
+        members = cast(list[dict], members)
+        operator_data = next((d for d in members if d["id"] == raw_event["operator"]["id"]), None)
+        operator = group.member(str(operator_data["id"])) if operator_data else group
         context = Context(
             account,
             operator,
             member,
             group,
             group.member(account_route["account"]),
+        )
+        if operator_data:
+            context._collect_metadatas(
+                operator,
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+                Summary(operator_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         available = PRIVILEGE_LEVEL[raw_event["current"]] > PRIVILEGE_LEVEL[raw_event["origin"]]
         return MetadataModified(
@@ -105,15 +222,54 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
-        member = group.member(str(raw_event["member"]["id"]))
         context = Context(
             account,
             operator or group.member(account_route["account"]),  # bot self if no operator
             member,
             group,
             group.member(account_route["account"]),
+        )
+        if operator_data := raw_event.get("operator"):
+            context._collect_metadatas(
+                group.member(str(operator_data["id"])),
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+                Summary(operator_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return MetadataModified(
             context,
@@ -134,15 +290,54 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         operator = group.member(str(raw_event["operator"]["id"])) if raw_event.get("operator") else None
-        member = group.member(str(raw_event["member"]["id"]))
         context = Context(
             account,
             operator or group.member(account_route["account"]),  # bot self if no operator
             member,
             group,
             group.member(account_route["account"]),
+        )
+        if operator_data := raw_event.get("operator"):
+            context._collect_metadatas(
+                group.member(str(operator_data["id"])),
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+                Summary(operator_data["memberName"], "a group member assigned to this account"),
+                MuteInfo(
+                    operator_data.get("mutetimeRemaining") is not None,
+                    timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                    None,
+                ),
+                Privilege(
+                    PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+                )
+            )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return MetadataModified(
             context,
@@ -161,14 +356,38 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
-        group = land.group(str(raw_event["member"]["group"]["id"]))
-        member = group.member(str(raw_event["member"]["id"]))
+        member_data = raw_event["member"]
+        group_data = member_data["group"]
+        group = land.group(str(group_data["id"]))
+        member = group.member(str(member_data["id"]))
         context = Context(
             account,
             group,
             member,
             group,
             group.member(account_route["account"]),
+        )
+        context._collect_metadatas(
+            member,
+            Nick(member_data["memberName"], member_data["memberName"], member_data.get("specialTitle")),
+            Summary(member_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                member_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=member_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
+        )
+        context._collect_metadatas(
+            group,
+            Summary(group_data["name"], None),
+            Privilege(
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > 0,
+            )
         )
         return MetadataModified(
             context,

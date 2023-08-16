@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.relation.capability import RelationshipTerminate
 
 if TYPE_CHECKING:
     from ...account import ElizabethAccount  # noqa
@@ -36,4 +37,12 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
         )
         return Summary(result["nickname"], "a friend contact assigned to this account")
 
-    # TODO: delete friend
+    @RelationshipTerminate.terminate.collect(m, "land.friend")
+    async def friend_terminate(self, target: Selector):
+        await self.account.connection.call(
+            "update",
+            "deleteFriend",
+            {
+                "target": int(target.pattern["friend"]),
+            },
+        )
