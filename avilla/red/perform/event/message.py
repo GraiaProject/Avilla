@@ -65,7 +65,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             context = Context(
                 account,
                 friend,
-                friend,
+                account.route,
                 friend,
                 account.route,
             )

@@ -49,7 +49,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         context = Context(
             self.protocol.avilla.accounts[account].account,
             friend,
-            friend,
+            account,
             friend,
             account,
         )

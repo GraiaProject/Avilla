@@ -71,7 +71,7 @@ class QQGuildEventMessagePerform((m := ConnectionCollector())._):
         context = Context(
             account,
             author,
-            author,
+            account_route,
             author,
             account_route,
         )
