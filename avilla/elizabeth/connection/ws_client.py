@@ -18,6 +18,7 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.connection.base import CallMethod
 from avilla.elizabeth.const import PLATFORM
+from avilla.standard.core.account import AccountRegistered, AccountUnregistered, AccountAvailable, AccountUnavailable
 
 from .base import ElizabethNetworking
 from .util import validate_response
@@ -149,9 +150,14 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                     self.protocol,
                     PLATFORM,
                 )
+                self.protocol.avilla.broadcast.postEvent(AccountRegistered(
+                    self.protocol.avilla, account
+                ))
 
             self.protocol.service.account_map[self.config.qq] = self
-
+            self.protocol.avilla.broadcast.postEvent(AccountAvailable(
+                self.protocol.avilla, account
+            ))
             self.close_signal.clear()
             close_task = asyncio.create_task(self.close_signal.wait())
             receiver_task = asyncio.create_task(self.message_handle())
@@ -168,6 +174,9 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 self.close_signal.set()
                 self.connection = None
                 with suppress(KeyError):
+                    self.protocol.avilla.broadcast.postEvent(AccountUnavailable(
+                        self.protocol.avilla, account
+                    ))
                     del self.protocol.service.account_map[self.config.qq]
                     del self.protocol.avilla.accounts[account_route]
                 return
@@ -176,6 +185,9 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
 
                 with suppress(KeyError):
+                    self.protocol.avilla.broadcast.postEvent(AccountUnavailable(
+                        self.protocol.avilla, account
+                    ))
                     del self.protocol.service.account_map[self.config.qq]
                     del self.protocol.avilla.accounts[account_route]
                 await asyncio.sleep(5)
