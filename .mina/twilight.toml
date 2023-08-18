@@ -1,11 +1,11 @@
-includes = ["avilla/console"]
+includes = ["avilla/twilight"]
 raw-dependencies = [
   "avilla-core >= 1.0.0-alpha.6",
 ]
 
 [project]
 name = "avilla-twilight"
-version = "0.1.0" # WIP for release.
+version = "0.1.1" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
