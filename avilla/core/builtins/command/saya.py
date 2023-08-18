@@ -21,7 +21,7 @@ class Command(AlconnaString, BaseSchema):
         command: str,
         help_text: Optional[str] = None,
         dispatchers: Optional[List[BaseDispatcher]] = None,
-        decorators: Optional[List[Decorator]] = None
+        decorators: Optional[List[Decorator]] = None,
     ):
         super().__init__(command, help_text)
         self.dispatchers = dispatchers or []
@@ -35,6 +35,7 @@ class Command(AlconnaString, BaseSchema):
             cmd (AvillaCommands): 命令对象
         """
         cmd.on(self.build(), self.dispatchers, self.decorators)(func)  # type: ignore
+
 
 @dataclass
 class On(BaseSchema):

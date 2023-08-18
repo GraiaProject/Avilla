@@ -54,7 +54,7 @@ class NoneBridgeStaff(Staff):
 
     async def serialize_onebot_message(self, message: MessageChain) -> list[dict]:
         result: list[dict] = []
-        artifact_map = ChainMap(*self.artifact_collections)['ob_message_serde']
+        artifact_map = ChainMap(*self.artifact_collections)["ob_message_serde"]
         for element in message.content:
             element_type = type(element)
             sign = MessageSerializeSign(element_type)

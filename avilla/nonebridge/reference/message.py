@@ -230,7 +230,7 @@ class MessageSegment(BaseMessageSegment["Message"]):
         return cls("xml", {"data": data})
 
     def __str__(self) -> str:
-        return f'NonebotMessageSegment(type={self.type}, data={self.data})'
+        return f"NonebotMessageSegment(type={self.type}, data={self.data})"
 
 
 class Message(BaseMessage[MessageSegment]):

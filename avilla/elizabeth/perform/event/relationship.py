@@ -47,7 +47,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[inviter_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[inviter_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             member,
@@ -61,7 +61,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -69,7 +69,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return RelationshipCreated(context)
 
@@ -103,7 +103,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             member,
@@ -117,7 +117,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -125,7 +125,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return RelationshipDestroyed(context, active=False)
 
@@ -157,7 +157,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -165,7 +165,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return RelationshipDestroyed(context, active=True)
 
@@ -198,7 +198,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[inviter_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[inviter_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             group,
@@ -206,7 +206,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return RelationshipCreated(context)
 
@@ -230,7 +230,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return RelationshipDestroyed(context, active=True)
 
@@ -262,7 +262,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -270,7 +270,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return RelationshipDestroyed(context, active=False)
 
@@ -302,7 +302,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             group,
@@ -310,6 +310,6 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return RelationshipDestroyed(context, active=False, indirect=True)

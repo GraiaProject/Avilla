@@ -48,7 +48,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             member,
@@ -62,7 +62,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -70,7 +70,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -114,7 +114,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             member,
@@ -128,7 +128,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -136,7 +136,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -180,7 +180,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             member,
@@ -194,7 +194,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -202,7 +202,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         available = PRIVILEGE_LEVEL[raw_event["current"]] > PRIVILEGE_LEVEL[raw_event["origin"]]
         return MetadataModified(
@@ -247,7 +247,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             member,
@@ -261,7 +261,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -269,7 +269,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -315,7 +315,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             member,
@@ -329,7 +329,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -337,7 +337,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -379,7 +379,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -387,7 +387,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,

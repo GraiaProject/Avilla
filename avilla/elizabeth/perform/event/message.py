@@ -56,9 +56,9 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         message_result = await self._deserialize_message(context, raw_event["messageChain"])
         sender = raw_event["sender"]
         context._collect_metadatas(
-            friend, 
+            friend,
             Nick(sender["nickname"], sender["remark"] or sender["nickname"], None),
-            Summary(sender["nickname"], "a friend contact assigned to this account")
+            Summary(sender["nickname"], "a friend contact assigned to this account"),
         )
         return MessageReceived(
             context,
@@ -87,8 +87,8 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             group.member(str(account["account"])),
         )
         context._collect_metadatas(
-            member, 
-            Nick(sender["memberName"], sender["memberName"], sender.get("specialTitle")), 
+            member,
+            Nick(sender["memberName"], sender["memberName"], sender.get("specialTitle")),
             Summary(sender["memberName"], "a group member assigned to this account"),
             MuteInfo(
                 sender.get("mutetimeRemaining") is not None,
@@ -98,15 +98,15 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[sender["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[sender["permission"]],
-            )
+            ),
         )
         context._collect_metadatas(
-            group, 
-            Summary(group_data["name"], None), 
+            group,
+            Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         message_result = await self._deserialize_message(context, raw_event["messageChain"])
         return MessageReceived(
@@ -166,8 +166,8 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         group_data = raw_event["group"]
         if operator:
             context._collect_metadatas(
-                member, 
-                Nick(operator["memberName"], operator["memberName"], operator.get("specialTitle")), 
+                member,
+                Nick(operator["memberName"], operator["memberName"], operator.get("specialTitle")),
                 Summary(operator["memberName"], "a group member assigned to this account"),
                 MuteInfo(
                     operator.get("mutetimeRemaining") is not None,
@@ -177,15 +177,15 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
-            member, 
+            member,
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MessageRevoked(
             context,

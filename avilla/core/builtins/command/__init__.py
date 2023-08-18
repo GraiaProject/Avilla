@@ -24,14 +24,14 @@ from arclet.alconna import (
     Namespace,
     OptionStub,
     SubcommandStub,
-    config,
     command_manager,
+    config,
     output_manager,
 )
 from arclet.alconna.args import TAValue
 from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
 from arclet.alconna.builtin import generate_duplication
-from arclet.alconna.tools.construct import alconna_from_format, AlconnaString
+from arclet.alconna.tools.construct import AlconnaString, alconna_from_format
 from creart import it
 from nepattern import DirectPattern
 from pygtrie import CharTrie
@@ -81,6 +81,7 @@ argv_config(
     to_text=lambda x: x.text if x.__class__ is Text else None,
     converter=lambda x: MessageChain(x if isinstance(x, list) else [Text(x)]),
 )
+
 
 @dataclass
 class AlconnaDispatcher(BaseDispatcher):
@@ -168,12 +169,11 @@ class AvillaCommands:
         dispatchers: Optional[list[T_Dispatcher]] = None,
         decorators: Optional[list[Decorator]] = None,
     ):
-
         class Command(AlconnaString):
             def __call__(_cmd_self, func: TCallable) -> TCallable:
                 return self.on(_cmd_self.build(), dispatchers, decorators)(func)
 
-        return Command( command, help_text)
+        return Command(command, help_text)
 
     @overload
     def on(

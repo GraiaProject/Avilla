@@ -38,23 +38,23 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
         group_data = raw_event["group"]
         if operator_data:
             context._collect_metadatas(
-                operator, 
-                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")), 
+                operator,
+                Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
                 Summary(operator_data["memberName"], "a group member assigned to this account"),
                 MuteInfo(
                     operator_data.get("mutetimeRemaining") is not None,
                     timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
                     None,
                 ),
-                Privilege(True, False)
+                Privilege(True, False),
             )
         context._collect_metadatas(
-            group, 
-            Summary(group_data["name"], None), 
+            group,
+            Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         available = PRIVILEGE_LEVEL[raw_event["current"]] > PRIVILEGE_LEVEL[raw_event["origin"]]
         return MetadataModified(
@@ -97,7 +97,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -105,7 +105,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -147,7 +147,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-            )
+            ),
         )
         context._collect_metadatas(
             group,
@@ -155,7 +155,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -197,7 +197,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             group,
@@ -205,7 +205,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -244,7 +244,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             group,
@@ -252,7 +252,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,
@@ -293,7 +293,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
                 Privilege(
                     PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
                     PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
-                )
+                ),
             )
         context._collect_metadatas(
             group,
@@ -301,7 +301,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
-            )
+            ),
         )
         return MetadataModified(
             context,

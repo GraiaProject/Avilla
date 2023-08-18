@@ -122,7 +122,7 @@ class Avilla:
         land: str | None = None,
         pattern: str | None = None,
         protocol_type: type[BaseProtocol] | None = None,
-        account_type: type[BaseAccount] | None = None
+        account_type: type[BaseAccount] | None = None,
     ) -> list[AccountInfo]:
         if land:
             return [account for account in self.accounts.values() if account.platform.land.name == land]
