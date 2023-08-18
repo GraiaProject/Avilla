@@ -1,0 +1,22 @@
+includes = ["avilla/console"]
+raw-dependencies = [
+  "avilla-core >= 1.0.0-alpha.6",
+]
+
+[project]
+name = "avilla-twilight"
+version = "0.1.0" # WIP for release.
+authors = [
+  {name = "GreyElaina", email = "GreyElaina@outlook.com"},
+  {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
+  {name = "ProgramRipper", email = "programripper@foxmail.com"},
+  {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
+]
+dependencies = []
+description = "Twilight Message Parser for Avilla"
+license = {text = "AGPL-3.0"}
+requires-python = ">=3.9"
+
+[project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
