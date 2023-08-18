@@ -15,7 +15,6 @@ class AllEventQueue(BaseDispatcher, Generic[T]):
 
     def __init__(self, *, maxsize=20) -> None:
         self.queue = Queue(maxsize=maxsize)
-        self.set = {}
 
     async def beforeExecution(self, interface: DispatcherInterface[T]):
         if interface.event.__dict__.get('$queued'):
