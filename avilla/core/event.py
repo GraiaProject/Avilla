@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from abc import ABCMeta
-from contextlib import suppress
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal
@@ -29,8 +28,9 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
     class Dispatcher(BaseDispatcher):
         @staticmethod
         async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
-            interface.local_storage["avilla_context"] = interface.event.context
-            interface.local_storage["_context_token"] = cx_context.set(interface.event.context)
+            if interface.depth < 1:
+                interface.local_storage["avilla_context"] = interface.event.context
+                interface.local_storage["_context_token"] = cx_context.set(interface.event.context)
             await interface.event.context.staff.exit_stack.__aenter__()
 
         @staticmethod
@@ -42,8 +42,7 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 
         @staticmethod
         async def afterExecution(interface: DispatcherInterface[AvillaEvent], exc, tb):
-            # FIXME: wait solution of GraiaProject/BroadcastControl#61
-            with suppress(KeyError, RuntimeError):
+            if interface.depth < 1:
                 cx_context.reset(interface.local_storage["_context_token"])
             await interface.event.context.staff.exit_stack.__aexit__(type(exc), exc, tb)
 
@@ -52,21 +51,11 @@ class AvillaEvent(Dispatchable, metaclass=ABCMeta):
 class RelationshipCreated(AvillaEvent):
     ...
 
-    class Dispatcher(AvillaEvent.Dispatcher):
-        @staticmethod
-        async def catch(interface: DispatcherInterface["RelationshipCreated"]):
-            return await super().catch(interface)
-
 
 @dataclass
 class RelationshipDestroyed(AvillaEvent):
     active: bool
     indirect: bool = False
-
-    class Dispatcher(AvillaEvent.Dispatcher):
-        @staticmethod
-        async def catch(interface: DispatcherInterface["RelationshipDestroyed"]):
-            return await super().catch(interface)
 
 
 @dataclass
@@ -86,5 +75,11 @@ class MetadataModified(AvillaEvent):
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
-        async def catch(interface: DispatcherInterface["RelationshipDestroyed"]):
-            return await super().catch(interface)
+        async def catch(interface: DispatcherInterface["MetadataModified"]):
+            if interface.name == "route":
+                return interface.event.route
+            if interface.name == "details":
+                return interface.event.details
+            if interface.name == "operator":
+                return interface.event.operator
+            return await AvillaEvent.Dispatcher.catch(interface)

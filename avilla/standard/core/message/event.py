@@ -24,7 +24,7 @@ class MessageReceived(AvillaEvent):
                 return interface.event.message
             elif interface.annotation is MessageChain:
                 return interface.event.message.content
-            return await super().catch(interface)
+            return await AvillaEvent.Dispatcher.catch(interface)
 
 
 @dataclass
@@ -39,7 +39,7 @@ class MessageSent(AvillaEvent):
                 return interface.event.message
             elif interface.annotation is MessageChain:
                 return interface.event.message.content
-            return await super().catch(interface)
+            return await AvillaEvent.Dispatcher.catch(interface)
 
 
 @dataclass
@@ -56,7 +56,7 @@ class MessageEdited(AvillaEvent):
                 return interface.event.message
             elif interface.annotation is MessageChain:
                 return interface.event.current
-            return await super().catch(interface)
+            return await AvillaEvent.Dispatcher.catch(interface)
 
 
 @dataclass
@@ -68,4 +68,4 @@ class MessageRevoked(AvillaEvent):
     class Dispatcher(AvillaEvent.Dispatcher):
         @classmethod
         async def catch(cls, interface: DispatcherInterface[MessageRevoked]):
-            return await super().catch(interface)
+            return await AvillaEvent.Dispatcher.catch(interface)

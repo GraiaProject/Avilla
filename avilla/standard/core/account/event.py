@@ -25,6 +25,8 @@ class AccountStatusChanged(AvillaLifecycleEvent):
             if issubclass(interface.annotation, BaseAccount):
                 return interface.event.account
 
+            return await AvillaLifecycleEvent.Dispatcher.catch(interface)
+
 
 class AccountAvailable(AccountStatusChanged):
     """指示当前账号处于可用状态."""

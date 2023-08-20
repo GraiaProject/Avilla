@@ -22,7 +22,7 @@ class ResourceEvent(AvillaEvent):
         async def catch(interface: DispatcherInterface[ResourceEvent]):
             if issubclass((get_origin(interface.annotation)) or interface.annotation, Resource):
                 return interface.event.resource
-            return await super().catch(interface)
+            return await AvillaEvent.Dispatcher.catch(interface)
 
 
 class ResourceAvailable(ResourceEvent):
