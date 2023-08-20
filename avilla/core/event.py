@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABCMeta
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal
@@ -21,7 +20,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class AvillaEvent(Dispatchable, metaclass=ABCMeta):
+class AvillaEvent(Dispatchable):
     context: Context
     time: datetime = field(init=False, default_factory=datetime.now)
 
