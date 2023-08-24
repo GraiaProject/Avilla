@@ -27,7 +27,6 @@ from typing import (
     overload,
 )
 
-from pydantic.utils import Representation
 from typing_extensions import Self
 
 from avilla.core.elements import Element
@@ -54,6 +53,14 @@ from .util import (
     split,
     transform_regex,
 )
+
+if TYPE_CHECKING:
+    from pydantic.utils import Representation
+else:
+    try:
+        from pydantic.v1.utils import Representation
+    except ImportError:
+        from pydantic.utils import Representation
 
 
 class SpacePolicy(str, enum.Enum):
