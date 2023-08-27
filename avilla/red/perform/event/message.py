@@ -50,7 +50,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 scene=group,
                 sender=member,
                 content=message,
-                time=datetime.fromtimestamp(int(payload["msgTime"])),
+                time=datetime.fromtimestamp(int(payload["msgTime"]) * 1000),
                 reply=reply,
             )
         else:
@@ -80,7 +80,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 scene=friend,
                 sender=friend,
                 content=message,
-                time=datetime.fromtimestamp(int(payload["msgTime"])),
+                time=datetime.fromtimestamp(int(payload["msgTime"]) * 1000),
                 reply=reply,
             )
         await cache.set(f"qq/red:{payload['msgId']}", payload, timedelta(minutes=5))
