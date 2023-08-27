@@ -300,7 +300,7 @@ class Share(Element):
 @dataclass
 class Node(Element):
     """表示转发消息的节点消息元素"""
-    mid: str | None = None
+    mid: Selector | None = None
     name: str | None = None
     uid: str | None = None
     time: datetime | None = None
@@ -327,7 +327,7 @@ class DisplayStrategy:
 @dataclass
 class Forward(Element):
     """表示转发消息的消息元素"""
-    id: str | None = None
+    id: Selector | None = None
     nodes: list[Node] | None = None
     strategy: DisplayStrategy | None = None
 
