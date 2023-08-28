@@ -69,7 +69,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         data = []
         for node in forward.nodes:
             if node.mid:
-                data.append({"type": "node", "data": {"id": node.mid}})
+                data.append({"type": "node", "data": {"id": node.mid["message"]}})
             else:
                 data.append(
                     {
@@ -97,7 +97,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         data = []
         for node in forward.nodes:
             if node.mid:
-                data.append({"type": "node", "data": {"id": node.mid}})
+                data.append({"type": "node", "data": {"id": node.mid["message"]}})
             else:
                 data.append(
                     {

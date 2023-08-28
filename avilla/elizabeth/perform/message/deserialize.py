@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
@@ -16,6 +17,9 @@ from avilla.standard.qq.elements import (
     Dice,
     Face,
     FlashImage,
+    Forward,
+    Node,
+    DisplayStrategy,
     Json,
     MarketFace,
     MusicShare,
@@ -28,6 +32,7 @@ from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
+    from avilla.elizabeth.account import ElizabethAccount
 
 ElizabethMessageDeserialize = MessageDeserialize[dict]
 
@@ -36,6 +41,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
 
     context: OptionalAccess[Context] = OptionalAccess()
+    account: OptionalAccess[ElizabethAccount] = OptionalAccess()
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
@@ -132,3 +138,22 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["length"],
         )
         return Audio(resource)
+
+    @m.entity(ElizabethMessageDeserialize, "Forward")
+    async def forward(self, raw_element: dict) -> Forward:
+        elem = Forward()
+        if raw_element.get("display"):
+            elem.strategy = DisplayStrategy(**raw_element["display"])
+        for node in raw_element["nodeList"]:
+            elem.nodes.append(
+                Node(
+                    self.context.scene.message(str(node["messageId"])),
+                    node["senderName"],
+                    str(node["senderId"]),
+                    datetime.fromtimestamp(node["time"]),
+                    await self.account.staff.ext(
+                        {"context": self.context}
+                    ).deserialize_message(node["messageChain"])
+                )
+            )
+        return elem

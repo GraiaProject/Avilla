@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+from dataclasses import asdict
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text
@@ -12,6 +13,7 @@ from avilla.standard.qq.elements import (
     Dice,
     Face,
     FlashImage,
+    Forward,
     Json,
     MusicShare,
     Poke,
@@ -112,3 +114,21 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                 "type": "Voice",
                 "base64": base64.b64encode(await self.account.staff.fetch_resource(element.resource)).decode("utf-8"),
             }
+
+    @m.entity(ElizabethMessageSerialize, Forward)
+    async def forward(self, element: Forward):
+        display = asdict(element.strategy) if element.strategy else None
+        nodes = []
+        for node in element.nodes:
+            if node.mid:
+                nodes.append({"messageId": int(node.mid["message"])})
+            else:
+                nodes.append(
+                    {
+                        "senderId": int(node.uid),
+                        "senderName": node.name,
+                        "time": int(node.time.timestamp()),
+                        "messageChain":  await self.account.staff.serialize_message(node.content)
+                    }
+                )
+        return {"type": "Forward", "display": display, "nodes": nodes}
