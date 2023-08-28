@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
@@ -328,7 +328,7 @@ class DisplayStrategy:
 class Forward(Element):
     """表示转发消息的消息元素"""
     id: Selector | None = None
-    nodes: list[Node] | None = None
+    nodes: list[Node] = field(default_factory=list)
     strategy: DisplayStrategy | None = None
 
     def __str__(self) -> str:

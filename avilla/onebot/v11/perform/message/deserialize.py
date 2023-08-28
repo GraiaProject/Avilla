@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text
@@ -8,11 +9,12 @@ from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.onebot.v11.element import Reply
 from avilla.onebot.v11.resource import OneBot11ImageResource
-from avilla.standard.qq.elements import Dice, Face, FlashImage, Json, Poke, Share, Xml
+from avilla.standard.qq.elements import Dice, Face, FlashImage, Json, Poke, Share, Xml, Forward, Node
 from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
+    from avilla.onebot.v11.account import OneBot11Account
 
 OneBot11MessageDeserialize = MessageDeserialize[dict]
 
@@ -21,6 +23,7 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     m.post_applying = True
 
     context: OptionalAccess[Context] = OptionalAccess()
+    account: OptionalAccess[OneBot11Account] = OptionalAccess()
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
     @OneBot11MessageDeserialize.collect(m, "text")
@@ -73,5 +76,28 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["data"].get("content", None),
             raw_element["data"].get("image", None),
         )
+
+    @OneBot11MessageDeserialize.collect(m, "forward")
+    async def forward(self, raw_element: dict):
+        elem = Forward(raw_element["data"]["id"])
+        result = await self.account.call(
+            "get_forward_msg",
+            {
+                "message_id": raw_element["data"]["id"],
+            },
+        )
+        for msg in result["messages"]:
+            node = Node(
+                name=msg["sender"]["nickname"],
+                uid=str(msg["sender"]["user_id"]),
+                time=datetime.fromtimestamp(msg["time"]),
+                content=(
+                    await self.account.staff
+                    .ext({"context": self.context})
+                    .deserialize_message(msg["content"])
+                )
+            )
+            elem.nodes.append(node)
+        return elem
 
     # TODO
