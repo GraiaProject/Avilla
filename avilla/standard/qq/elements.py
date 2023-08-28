@@ -303,7 +303,7 @@ class Node(Element):
     mid: Selector | None = None
     name: str | None = None
     uid: str | None = None
-    time: datetime | None = None
+    time: datetime = field(default_factory=datetime.now)
     content: MessageChain | None = None
 
     def __str__(self) -> str:
@@ -316,7 +316,7 @@ class DisplayStrategy:
     """卡片顶部标题"""
     brief: str | None = None
     """消息列表预览"""
-    source: str | MessageChain = None
+    source: str | None = None
     """未知"""
     preview: list[str] | None = None
     """卡片消息预览 (只显示前 4 条)"""

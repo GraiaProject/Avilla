@@ -144,6 +144,8 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         elem = Forward()
         if raw_element.get("display"):
             elem.strategy = DisplayStrategy(**raw_element["display"])
+        if not self.account or not self.context:
+            return elem
         for node in raw_element["nodeList"]:
             elem.nodes.append(
                 Node(

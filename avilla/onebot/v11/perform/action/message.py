@@ -78,7 +78,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
                             "name": node.name,
                             "uin": node.uid,
                             "time": str(int(node.time.timestamp())),
-                            "content": await self.account.staff.serialize_message(node.content),
+                            "content": await self.account.staff.serialize_message(node.content),  # type: ignore
                         },
                     }
                 )
@@ -106,7 +106,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
                             "name": node.name,
                             "uin": node.uid,
                             "time": str(int(node.time.timestamp())),
-                            "content": await self.account.staff.serialize_message(node.content),
+                            "content": await self.account.staff.serialize_message(node.content),  # type: ignore
                         },
                     }
                 )

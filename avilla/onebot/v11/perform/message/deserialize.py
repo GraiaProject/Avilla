@@ -80,12 +80,16 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     @OneBot11MessageDeserialize.collect(m, "forward")
     async def forward(self, raw_element: dict):
         elem = Forward(raw_element["data"]["id"])
+        if not self.account:
+            return elem
         result = await self.account.call(
             "get_forward_msg",
             {
                 "message_id": raw_element["data"]["id"],
             },
         )
+        if result is None:
+            return elem
         for msg in result["messages"]:
             node = Node(
                 name=msg["sender"]["nickname"],
