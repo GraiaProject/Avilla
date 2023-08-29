@@ -63,7 +63,7 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
         effective = bool({"2", "4", "5"} & set(self_info["roles"]))
-        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permissions", {})
+        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":
                 result = await self.account.connection.call(
@@ -81,7 +81,7 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
 
     @m.pull("land.guild.role", Privilege >> Summary)
     async def get_privilege_summary(self, target: Selector) -> Summary:
-        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permissions", {})
+        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":
                 result = await self.account.connection.call(
@@ -99,7 +99,7 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
 
     @m.pull("land.guild.role", MuteInfo)
     async def get_mute_info(self, target: Selector) -> MuteInfo:
-        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permissions", {})
+        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":
                 result = await self.account.connection.call(

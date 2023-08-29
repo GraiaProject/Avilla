@@ -36,7 +36,7 @@ def pre_deserialize(message: dict) -> list[dict]:
         res.append({"type": "message_reference", **message_reference})
     if message.get("mention_everyone", False):
         res.append({"type": "mention_everyone"})
-    if message["content"]:
+    if "content" in message:
         res.extend(handle_text(message["content"]))
     if attachments := message.get("attachments"):
         res.extend({"type": "attachment", "url": i["url"]} for i in attachments if i["url"])

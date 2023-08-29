@@ -138,7 +138,6 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         await connection.send_json(payload)
 
     async def call(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
-        action = action.replace("_", "/")
         params = params or {}
         params = {k: v for k, v in params.items() if v is not None}
         if method in {"get", "fetch"}:

@@ -35,7 +35,7 @@ class QQGuildChannelActionPerform((m := AccountCollector["QQGuildProtocol", "QQG
 
     @SummaryCapability.set_name.collect(m, "land.guild.channel", Summary)
     async def set_name(self, target: Selector, t: ..., name: str):
-        result = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permissions", {})
+        result = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in result["apis"]:
             if api["path"] == "channels/{channel_id}" and api["method"] == "PATCH":
                 await self.account.connection.call("patch", f"channels/{target.pattern['channel']}", {"name": name})
