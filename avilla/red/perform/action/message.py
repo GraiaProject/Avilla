@@ -25,10 +25,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             return {
                 "elementType": 7,
                 "replyElement": {
-                    "sourceMsgIdInRecords": reply_msg["msgId"],
+                    # "sourceMsgIdInRecords": reply_msg["msgId"],
                     "replayMsgSeq": reply_msg["msgSeq"],
-                    "replyMsgTime": reply_msg["msgTime"],
-                    "senderUid": reply_msg["senderUid"],
+                    #"senderUid": reply_msg["senderUid"],
                 },
             }
         logger.warning(f"Unknown message {target.pattern['message']} for reply")
@@ -50,7 +49,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             {
                 "peer": {
                     "chatType": 2,
-                    "peerUid": target.pattern["group"],
+                    "peerUin": target.pattern["group"],
                     "guildId": None,
                 },
                 "elements": msg,
@@ -74,7 +73,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             {
                 "peer": {
                     "chatType": 1,
-                    "peerUid": target.pattern["friend"].split("|")[1],
+                    "peerUin": target.pattern["friend"].split("|")[1],
                     "guildId": None,
                 },
                 "elements": msg,
