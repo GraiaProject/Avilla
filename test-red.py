@@ -1,24 +1,11 @@
 import os
-from yarl import URL
-
 from avilla.core import Avilla, Context, MessageReceived
+from avilla.red.protocol import RedProtocol, RedConfig
 
-from avilla.red.net.ws_client import RedWsClientNetworking, RedWsClientConfig
-from avilla.red.protocol import RedProtocol
 
-protocol = RedProtocol()
-service = protocol.service
-config = RedWsClientConfig(
-    URL("ws://localhost:16530"),
-    os.getenv("QQNT_TOKEN")
-)
-conn = RedWsClientNetworking(protocol, config)
-service.connections.append(conn)
-
+config = RedConfig(os.getenv("QQNT_TOKEN"))
 avilla = Avilla( message_cache_size=0)
-avilla.apply_protocols(protocol)
-
-protocol.avilla = avilla
+avilla.apply_protocols(RedProtocol().configure(config))
 
 
 @avilla.listen(MessageReceived)

@@ -1,12 +1,31 @@
 from __future__ import annotations
 
 import contextlib
+from dataclasses import InitVar, dataclass, field
 
 from avilla.core.application import Avilla
-from avilla.core.protocol import BaseProtocol
+from avilla.core.protocol import BaseProtocol, ProtocolConfig
 from graia.amnesia.builtins.memcache import MemcacheService
+from yarl import URL
 
+from .net.ws_client import RedWsClientNetworking
 from .service import RedService
+
+
+@dataclass
+class RedConfig(ProtocolConfig):
+    access_token: str
+    host: str = field(default="localhost")
+    port: int = field(default=16530)
+    _http_host: InitVar[str | None] = None
+    endpoint: URL = field(init=False)
+    http_endpoint: URL = field(init=False)
+
+    def __post_init__(self, _http_host: str | None):
+        if not self.access_token:
+            raise ValueError("access_token must be set")
+        self.endpoint = URL.build(scheme="ws", host=self.host, port=self.port)
+        self.http_endpoint = URL.build(scheme="http", host=_http_host or self.host, port=self.port)
 
 
 class RedProtocol(BaseProtocol):
@@ -47,3 +66,9 @@ class RedProtocol(BaseProtocol):
         avilla.launch_manager.add_component(self.service)
         with contextlib.suppress(ValueError):
             avilla.launch_manager.add_component(MemcacheService())
+
+    def configure(self, config: RedConfig):
+        self.service.connections.append(
+            RedWsClientNetworking(self, config)
+        )
+        return self

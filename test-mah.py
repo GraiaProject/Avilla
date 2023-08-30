@@ -1,26 +1,17 @@
-from yarl import URL
-
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Text
-from avilla.elizabeth.connection.ws_client import ElizabethWsClientConfig, ElizabethWsClientNetworking
-from avilla.elizabeth.protocol import ElizabethProtocol
+from avilla.elizabeth.protocol import ElizabethProtocol, ElizabethConfig
 from avilla.standard.core.privilege import Privilege
 
 
-protocol = ElizabethProtocol()
-service = protocol.service
-config = ElizabethWsClientConfig(
-    URL("http://localhost:9080"),
+config = ElizabethConfig(
+3542928737,
+    "localhost",
+    9080,
     "INITKEYWylsVdbr",
-    3542928737
 )
-conn = ElizabethWsClientNetworking(protocol, config)
-service.connections.append(conn)
-
 avilla = Avilla(message_cache_size=0)
-avilla.apply_protocols(protocol)
-
-protocol.avilla = avilla
+avilla.apply_protocols(ElizabethProtocol().configure(config))
 
 
 @avilla.listen(MessageReceived)

@@ -62,3 +62,19 @@ class RedVoiceResource(RedResource):
     ):
         super().__init__(selector, id, size, name, elem, uuid)
         self.path = Path(path)
+
+
+
+class RedVideoResource(RedResource):
+    def __init__(
+        self,
+        selector: Selector,
+        id: str,
+        size: int,
+        name: str,
+        elem: str,
+        uuid: str,
+        path: str | Path,
+    ):
+        super().__init__(selector, id, size, name, elem, uuid)
+        self.path = Path(path)

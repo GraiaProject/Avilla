@@ -1,9 +1,23 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from avilla.core.application import Avilla
-from avilla.core.protocol import BaseProtocol
+from avilla.core.protocol import BaseProtocol, ProtocolConfig
+from yarl import URL
 
 from .service import ElizabethService
+from .connection.ws_client import ElizabethWsClientNetworking
+
+@dataclass
+class ElizabethConfig(ProtocolConfig):
+    qq: int
+    host: str
+    port: int
+    access_token: str
+    base_url: URL = field(init=False)
+
+    def __post_init__(self):
+        self.base_url = URL.build(scheme="http", host=self.host, port=self.port)
 
 
 class ElizabethProtocol(BaseProtocol):
@@ -53,3 +67,9 @@ class ElizabethProtocol(BaseProtocol):
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
+
+    def configure(self, config: ElizabethConfig):
+        self.service.connections.append(
+            ElizabethWsClientNetworking(self, config)
+        )
+        return self

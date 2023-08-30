@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import suppress
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 from launart import Service
@@ -17,13 +16,7 @@ from graia.amnesia.builtins.asgi import UvicornASGIService
 
 if TYPE_CHECKING:
     from avilla.onebot.v11.account import OneBot11Account
-    from avilla.onebot.v11.protocol import OneBot11Protocol
-
-
-@dataclass
-class OneBot11WsServerConfig:
-    endpoint: str
-    access_token: str | None = None
+    from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ReverseConfig
 
 
 class OneBot11WsServerConnection(OneBot11Networking["OneBot11WsServerConnection"]):
@@ -77,11 +70,11 @@ class OneBot11WsServerNetworking(Service):
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     protocol: OneBot11Protocol
-    config: OneBot11WsServerConfig
+    config: OneBot11ReverseConfig
 
     connections: dict[str, OneBot11WsServerConnection]
 
-    def __init__(self, protocol: OneBot11Protocol, config: OneBot11WsServerConfig) -> None:
+    def __init__(self, protocol: OneBot11Protocol, config: OneBot11ReverseConfig) -> None:
         self.protocol = protocol
         self.config = config
         self.connections = {}
