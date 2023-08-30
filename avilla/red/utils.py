@@ -38,6 +38,26 @@ def pre_deserialize(elements: list[dict]):
         text
     waveAmplitudes
     fileUuid
+5 ===> video
+    filePath
+    fileName
+    videoMd5
+    thumbMd5
+    fileTime
+    thumbSize
+    fileFormat
+    fileSize
+    thumbWidth
+    thumbHeight
+    busiType
+    subBusiType
+    thumbPath
+    transferStatus
+    progress
+    invalidState
+    fileUuid
+    fileSubId
+    fileBizId
 6 ===> face, poke
     faceIndex
     faceText {None: normal, '/xxx': sticker, '': poke}
