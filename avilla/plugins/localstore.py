@@ -1,3 +1,33 @@
+"""
+参考路径如下：
+
+## Cache path:
+    macOS: ~/Library/Caches/<AppName>
+
+    Unix: ~/.cache/<AppName> (XDG default)
+
+    Windows: C:\Users\<username>\AppData\Local\<AppName>\Cache
+
+## Data path:
+    macOS: ~/Library/Application Support/<AppName>
+
+    Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
+
+    Win XP (not roaming): C:\Documents and Settings\<username>\Application Data\<AppName>
+
+    Win 7 (not roaming): C:\Users\<username>\AppData\Local\<AppName>
+
+## Config path:
+    macOS: same as user_data_dir
+
+    Unix: ~/.config/<AppName>
+
+    Win XP (roaming): C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>
+
+    Win 7 (roaming): C:\Users\<username>\AppData\Roaming\<AppName>
+
+"""
+
 import os
 import sys
 from pathlib import Path
@@ -175,26 +205,76 @@ def _auto_create_dir(func: Callable[P, Path]) -> Callable[P, Path]:
 
 @_auto_create_dir
 def get_cache_dir(plugin_name: Optional[str]) -> Path:
+    """
+    macOS: ~/Library/Caches/<AppName>
+
+    Unix: ~/.cache/<AppName> (XDG default)
+
+    Windows: C:\Users\<username>\AppData\Local\<AppName>\Cache
+    """
     return BASE_CACHE_DIR / plugin_name if plugin_name else BASE_CACHE_DIR
 
 
 def get_cache_file(plugin_name: Optional[str], filename: str) -> Path:
+    """
+    macOS: ~/Library/Caches/<AppName>
+
+    Unix: ~/.cache/<AppName> (XDG default)
+
+    Windows: C:\Users\<username>\AppData\Local\<AppName>\Cache
+    """
     return get_cache_dir(plugin_name) / filename
 
 
 @_auto_create_dir
 def get_config_dir(plugin_name: Optional[str]) -> Path:
+    """
+    macOS: same as user_data_dir
+
+    Unix: ~/.config/<AppName>
+
+    Win XP (roaming): C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>
+
+    Win 7 (roaming): C:\Users\<username>\AppData\Roaming\<AppName>
+    """
     return BASE_CONFIG_DIR / plugin_name if plugin_name else BASE_CONFIG_DIR
 
 
 def get_config_file(plugin_name: Optional[str], filename: str) -> Path:
+    """
+    macOS: same as user_data_dir
+
+    Unix: ~/.config/<AppName>
+
+    Win XP (roaming): C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>
+
+    Win 7 (roaming): C:\Users\<username>\AppData\Roaming\<AppName>
+    """
     return get_config_dir(plugin_name) / filename
 
 
 @_auto_create_dir
 def get_data_dir(plugin_name: Optional[str]) -> Path:
+    """
+    macOS: ~/Library/Application Support/<AppName>
+
+    Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
+
+    Win XP (not roaming): C:\Documents and Settings\<username>\Application Data\<AppName>
+
+    Win 7 (not roaming): C:\Users\<username>\AppData\Local\<AppName>
+    """
     return BASE_DATA_DIR / plugin_name if plugin_name else BASE_DATA_DIR
 
 
 def get_data_file(plugin_name: Optional[str], filename: str) -> Path:
+    """
+    macOS: ~/Library/Application Support/<AppName>
+
+    Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
+
+    Win XP (not roaming): C:\Documents and Settings\<username>\Application Data\<AppName>
+
+    Win 7 (not roaming): C:\Users\<username>\AppData\Local\<AppName>
+    """
     return get_data_dir(plugin_name) / filename
