@@ -81,6 +81,7 @@ class QQGuildProtocol(BaseProtocol):
         from .perform.action.role import QQGuildRoleActionPerform  # noqa: F401
 
         ## :: Event
+        from .perform.event.audit import QQGuildEventAuditPerform  # noqa: F401
         from .perform.event.message import QQGuildEventMessagePerform  # noqa: F401
         from .perform.event.metadata import QQGuildEventMetadataPerform  # noqa: F401
         from .perform.event.relationship import QQGuildEventRelationshipPerform  # noqa: F401
