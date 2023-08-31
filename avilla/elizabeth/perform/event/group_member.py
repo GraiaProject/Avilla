@@ -345,7 +345,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", None, timedelta(0)),
+                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=0)),
             },
             operator=operator or group.member(account_route["account"]),
             scene=group,
