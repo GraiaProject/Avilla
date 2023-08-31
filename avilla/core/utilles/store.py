@@ -6,25 +6,25 @@
 
     Unix: ~/.cache/<AppName> (XDG default)
 
-    Windows: C:\Users\<username>\AppData\Local\<AppName>\Cache
+    Windows: C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
 
 ## Data path:
     macOS: ~/Library/Application Support/<AppName>
 
     Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
 
-    Win XP (not roaming): C:\Documents and Settings\<username>\Application Data\<AppName>
+    Win XP (not roaming): C:\\Documents and Settings\\<username>\\Application Data\\<AppName>
 
-    Win 7 (not roaming): C:\Users\<username>\AppData\Local\<AppName>
+    Win 7 (not roaming): C:\\Users\\<username>\\AppData\\Local\\<AppName>
 
 ## Config path:
     macOS: same as user_data_dir
 
     Unix: ~/.config/<AppName>
 
-    Win XP (roaming): C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>
+    Win XP (roaming): C:\\Documents and Settings\\<username>\\Local Settings\\Application Data\\<AppName>
 
-    Win 7 (roaming): C:\Users\<username>\AppData\Roaming\<AppName>
+    Win 7 (roaming): C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
 
 """
 
@@ -34,7 +34,6 @@ from pathlib import Path
 from typing import Callable, Literal, Optional
 
 from typing_extensions import ParamSpec
-
 
 WINDOWS = sys.platform.startswith("win") or (sys.platform == "cli" and os.name == "nt")
 
@@ -46,14 +45,14 @@ def user_cache_dir(appname: str) -> Path:
     Typical user cache directories are:
         macOS:      ~/Library/Caches/<AppName>
         Unix:       ~/.cache/<AppName> (XDG default)
-        Windows:    C:\Users\<username>\AppData\Local\<AppName>\Cache
+        Windows:    C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
     On Windows the only suggestion in the MSDN docs is that local settings go
     in the `CSIDL_LOCAL_APPDATA` directory. This is identical to the
     non-roaming app data dir (the default returned by `user_data_dir`). Apps
     typically put cache data somewhere *under* the given dir here. Some
     examples:
-        ...\Mozilla\Firefox\Profiles\<ProfileName>\Cache
-        ...\Acme\SuperApp\Cache\1.0
+        ...\\Mozilla\\Firefox\\Profiles\\<ProfileName>\\Cache
+        ...\\Acme\\SuperApp\\Cache\\1.0
     OPINION: This function appends "Cache" to the `CSIDL_LOCAL_APPDATA` value.
     """
     if WINDOWS:
@@ -79,12 +78,12 @@ def user_data_dir(appname: str, roaming: bool = False) -> Path:
         macOS:                  ~/Library/Application Support/<AppName>
         Unix:                   ~/.local/share/<AppName>    # or in
                                 $XDG_DATA_HOME, if defined
-        Win XP (not roaming):   C:\Documents and Settings\<username>\ ...
-                                ...Application Data\<AppName>
-        Win XP (roaming):       C:\Documents and Settings\<username>\Local ...
-                                ...Settings\Application Data\<AppName>
-        Win 7  (not roaming):   C:\Users\<username>\AppData\Local\<AppName>
-        Win 7  (roaming):       C:\Users\<username>\AppData\Roaming\<AppName>
+        Win XP (not roaming):   C:\\Documents and Settings\\<username>\\ ...
+                                ...Application Data\\<AppName>
+        Win XP (roaming):       C:\\Documents and Settings\\<username>\\Local ...
+                                ...Settings\\Application Data\\<AppName>
+        Win 7  (not roaming):   C:\\Users\\<username>\\AppData\\Local\\<AppName>
+        Win 7  (roaming):       C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
     For Unix, we follow the XDG spec and support $XDG_DATA_HOME.
     That means, by default "~/.local/share/<AppName>".
     """
@@ -141,7 +140,7 @@ def _get_win_folder_from_registry(
 
     key = winreg.OpenKey(
         winreg.HKEY_CURRENT_USER,
-        r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders",
+        r"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders",
     )
     directory, _type = winreg.QueryValueEx(key, shell_folder_name)
     return Path(directory)
@@ -210,7 +209,7 @@ def get_cache_dir(plugin_name: Optional[str]) -> Path:
 
     Unix: ~/.cache/<AppName> (XDG default)
 
-    Windows: C:\Users\<username>\AppData\Local\<AppName>\Cache
+    Windows: C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
     """
     return BASE_CACHE_DIR / plugin_name if plugin_name else BASE_CACHE_DIR
 
@@ -221,7 +220,7 @@ def get_cache_file(plugin_name: Optional[str], filename: str) -> Path:
 
     Unix: ~/.cache/<AppName> (XDG default)
 
-    Windows: C:\Users\<username>\AppData\Local\<AppName>\Cache
+    Windows: C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
     """
     return get_cache_dir(plugin_name) / filename
 
@@ -233,9 +232,9 @@ def get_config_dir(plugin_name: Optional[str]) -> Path:
 
     Unix: ~/.config/<AppName>
 
-    Win XP (roaming): C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>
+    Win XP (roaming): C:\\Documents and Settings\\<username>\\Local Settings\\Application Data\\<AppName>
 
-    Win 7 (roaming): C:\Users\<username>\AppData\Roaming\<AppName>
+    Win 7 (roaming): C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
     """
     return BASE_CONFIG_DIR / plugin_name if plugin_name else BASE_CONFIG_DIR
 
@@ -246,9 +245,9 @@ def get_config_file(plugin_name: Optional[str], filename: str) -> Path:
 
     Unix: ~/.config/<AppName>
 
-    Win XP (roaming): C:\Documents and Settings\<username>\Local Settings\Application Data\<AppName>
+    Win XP (roaming): C:\\Documents and Settings\\<username>\\Local Settings\\Application Data\\<AppName>
 
-    Win 7 (roaming): C:\Users\<username>\AppData\Roaming\<AppName>
+    Win 7 (roaming): C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
     """
     return get_config_dir(plugin_name) / filename
 
@@ -260,9 +259,9 @@ def get_data_dir(plugin_name: Optional[str]) -> Path:
 
     Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
 
-    Win XP (not roaming): C:\Documents and Settings\<username>\Application Data\<AppName>
+    Win XP (not roaming): C:\\Documents and Settings\\<username>\\Application Data\\<AppName>
 
-    Win 7 (not roaming): C:\Users\<username>\AppData\Local\<AppName>
+    Win 7 (not roaming): C:\\Users\\<username>\\AppData\\Local\\<AppName>
     """
     return BASE_DATA_DIR / plugin_name if plugin_name else BASE_DATA_DIR
 
@@ -273,8 +272,8 @@ def get_data_file(plugin_name: Optional[str], filename: str) -> Path:
 
     Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
 
-    Win XP (not roaming): C:\Documents and Settings\<username>\Application Data\<AppName>
+    Win XP (not roaming): C:\\Documents and Settings\\<username>\\Application Data\\<AppName>
 
-    Win 7 (not roaming): C:\Users\<username>\AppData\Local\<AppName>
+    Win 7 (not roaming): C:\\Users\\<username>\\AppData\\Local\\<AppName>
     """
     return get_data_dir(plugin_name) / filename
