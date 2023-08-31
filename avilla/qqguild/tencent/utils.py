@@ -82,10 +82,15 @@ def pro_serialize(message: list[dict]):
 def form_data(message: dict):
     if not (file_image := message.pop("file_image", None)):
         return "post", message
-    data_ = {"file_image": {"value": file_image, "content_type": None, "filename": "file_image"}}
+    files = {"file_image": {"value": file_image, "content_type": None, "filename": "file_image"}}
+    data_ = {}
     for key, value in message.items():
         if isinstance(value, (list, dict)):
-            data_[key] = {"value": json.dumps({key: value}).encode("utf-8"), "content_type": "application/json"}
+            files[key] = {
+                "value": json.dumps({key: value}).encode("utf-8"),
+                "content_type": "application/json",
+                "filename": f"{key}.json"
+            }
         else:
-            data_[key] = {"value": str(value).encode("utf-8"), "content_type": "text/plain"}
-    return "multipart", data_
+            data_[key] = value
+    return "multipart", {"files": files, "data": data_}

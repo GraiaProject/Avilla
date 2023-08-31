@@ -18,7 +18,7 @@ class Intents:
     guild_message_reactions: bool = True
     direct_message: bool = False
     """DIRECT_MESSAGES"""
-    message_audit: bool = False
+    message_audit: bool = True
     forum_event: bool = False
     audio_action: bool = False
     at_messages: bool = True
