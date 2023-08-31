@@ -213,8 +213,8 @@ class RegexGroup(Decorator):
         self.assign_target = target
 
     async def __call__(self, _, interface: DispatcherInterface[MessageReceived]):
-        _res: re.Match = interface.local_storage["__parser_regex_match_obj__"]
-        match_group: Tuple[str] = _res.groups()
+        _res: re.Match[str] = interface.local_storage["__parser_regex_match_obj__"]
+        match_group: Tuple[str, ...] = _res.groups()
         match_group_dict: Dict[str, str] = _res.groupdict()
         origin: Optional[str] = None
         if isinstance(self.assign_target, str) and self.assign_target in match_group_dict:
