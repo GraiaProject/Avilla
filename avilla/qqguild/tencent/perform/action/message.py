@@ -7,6 +7,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.qqguild.tencent.utils import form_data, pro_serialize
+from avilla.qqguild.tencent.exception import AuditException
 from avilla.standard.core.message import MessageRevoke, MessageSend
 from graia.amnesia.message import MessageChain
 
@@ -31,16 +32,22 @@ class QQGuildMessageActionPerform((m := AccountCollector["QQGuildProtocol", "QQG
         if reply:
             _data["msg_id"] = reply.pattern["message"]
         method, data = form_data(_data)
-        result = await self.account.connection.call(method, f"channels/{target.pattern['channel']}/messages", data)
-        if result is None:
-            raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
-        return (
-            Selector()
-            .land(self.account.route["land"])
-            .guild(target.pattern["guild"])
-            .channel(target.pattern["channel"])
-            .message(result["id"])
-        )
+        try:
+            result = await self.account.connection.call(method, f"channels/{target.pattern['channel']}/messages", data)
+            if result is None:
+                raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
+            return (
+                Selector()
+                .land(self.account.route["land"])
+                .guild(target.pattern["guild"])
+                .channel(target.pattern["channel"])
+                .message(result["id"])
+            )
+        except AuditException as e:
+            audit_res = await e.get_audit_result()
+            if not audit_res or not audit_res.audit.message:
+                raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
+            return audit_res.audit.message
 
     @MessageSend.send.collect(m, "land.guild.user")
     async def send_direct_msg(

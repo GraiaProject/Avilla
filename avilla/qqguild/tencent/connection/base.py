@@ -7,7 +7,9 @@ from loguru import logger
 
 from avilla.core.ryanvk.staff import Staff
 
+from ..audit import audit_result, MessageAudited
 from .util import Opcode, Payload
+
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
@@ -62,6 +64,8 @@ class QQGuildNetworking(Generic[T]):
                     logger.warning(f"received unsupported event {event_type.lower()}: {_data.data}")
                     return
                 elif event is not None:
+                    if isinstance(event, MessageAudited):
+                        audit_result.add_result(event)
                     await self.protocol.post_event(event)
 
             asyncio.create_task(event_parse_task(payload))
