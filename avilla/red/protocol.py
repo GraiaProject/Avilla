@@ -51,8 +51,11 @@ class RedProtocol(BaseProtocol):
         from .perform.action.message import RedMessageActionPerform  # noqa: F401
 
         ## :: Event
+        from .perform.event.group import RedEventGroupPerform  # noqa: F401
+        from .perform.event.group_member import RedEventGroupMemberPerform  # noqa: F401
         from .perform.event.message import RedEventMessagePerform  # noqa: F401
         from .perform.event.lifespan import RedEventLifespanPerform  # noqa: F401
+        from .perform.event.relationship import RedEventRelationshipPerform  # noqa: F401
 
         ## :: Query
         from .perform.query import RedQueryPerform  # noqa: F401
