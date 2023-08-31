@@ -140,10 +140,10 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 return result
 
         if method == "multipart":
-            data = aiohttp.FormData(quote_fields=False)
             if params is None:
                 raise TypeError("multipart requires params")
-            for k, v in params.items():
+            data = aiohttp.FormData(params["data"], quote_fields=False)
+            for k, v in params["files"].items():
                 if isinstance(v, dict):
                     data.add_field(k, v["value"], filename=v.get("filename"), content_type=v.get("content_type"))
                 else:
