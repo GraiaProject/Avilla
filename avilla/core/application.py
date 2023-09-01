@@ -17,6 +17,7 @@ from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
 from graia.broadcast import Broadcast
+from graia.amnesia.builtins.memcache import MemcacheService
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsArtifacts
@@ -52,6 +53,7 @@ class Avilla:
         self.service = AvillaService(self, message_cache_size)
         self.global_artifacts = {}
 
+        self.launch_manager.add_component(MemcacheService())
         self.launch_manager.add_component(self.service)
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
 

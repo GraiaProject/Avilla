@@ -10,6 +10,7 @@ from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
 from avilla.standard.core.profile import Summary, SummaryCapability
 from avilla.standard.core.relation import SceneCapability
+from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -21,6 +22,9 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
 
     @m.pull("land.group", Summary)
     async def get_summary(self, target: Selector) -> Summary:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"):
+            return Summary(raw["name"], None)
         result = await self.account.connection.call(
             "fetch",
             "groupConfig",

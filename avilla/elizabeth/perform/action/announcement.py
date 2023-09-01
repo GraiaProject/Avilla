@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import io
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.builtins.capability import CoreCapability
@@ -14,10 +14,11 @@ from avilla.standard.qq.announcement import (
     AnnouncementDelete,
     AnnouncementPublish,
 )
+from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
+    from avilla.elizabeth.account import ElizabethAccount  # noqa
+    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 
 class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
@@ -25,11 +26,25 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
 
     @m.entity(CoreCapability.pull, "land.group.announcement", Announcement)
     async def get_announcement(self, target: Selector) -> Announcement:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         group = Selector().land(self.account.route["land"]).group(target.pattern["group"])
+        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).announcement({target.pattern['announcement']})"):
+            return Announcement(
+                raw["fid"],
+                group,
+                group.member(raw["senderId"]),
+                content=raw["content"],
+                all_confirmed=raw["allConfirmed"],
+                confirmed_members=raw["confirmedMembersCount"],
+                time=datetime.fromtimestamp(raw["publicationTime"]),
+            )
         for data in await self.account.connection.call(
             "fetch", "anno_list", {"id": int(target.pattern["group"]), "offset": 0, "size": 100}
         ):
             if str(data["fid"]) == target.pattern["announcement"]:
+                await cache.set(
+                    f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).announcement({target.pattern['announcement']})", data, timedelta(minutes=5)
+                )
                 return Announcement(
                     data["fid"],
                     group,
