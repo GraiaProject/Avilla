@@ -44,13 +44,12 @@ class RedProtocol(BaseProtocol):
         # from .perform.action.contact import RedContactActionPerform
         from .perform.action.friend import RedFriendActionPerform  # noqa: F401
         from .perform.action.group import RedGroupActionPerform  # noqa: F401
-
-        # from .perform.action.group_member import RedGroupMemberActionPerform
+        from .perform.action.member import RedMemberActionPerform  # noqa: F401
         from .perform.action.message import RedMessageActionPerform  # noqa: F401
 
         ## :: Event
         from .perform.event.group import RedEventGroupPerform  # noqa: F401
-        from .perform.event.group_member import RedEventGroupMemberPerform  # noqa: F401
+        from .perform.event.member import RedEventGroupMemberPerform  # noqa: F401
         from .perform.event.message import RedEventMessagePerform  # noqa: F401
         from .perform.event.lifespan import RedEventLifespanPerform  # noqa: F401
         from .perform.event.relationship import RedEventRelationshipPerform  # noqa: F401
