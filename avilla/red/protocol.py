@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import contextlib
 from dataclasses import InitVar, dataclass, field
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from graia.amnesia.builtins.memcache import MemcacheService
 from yarl import URL
 
 from .net.ws_client import RedWsClientNetworking
@@ -67,8 +65,6 @@ class RedProtocol(BaseProtocol):
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
-        with contextlib.suppress(ValueError):
-            avilla.launch_manager.add_component(MemcacheService())
 
     def configure(self, config: RedConfig):
         self.service.connections.append(

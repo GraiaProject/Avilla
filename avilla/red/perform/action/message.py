@@ -20,7 +20,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
 
     async def handle_reply(self, target: Selector):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        reply_msg = await cache.get(f"red/{target!r}")
+        reply_msg = await cache.get(f"red/account({self.account.route['account']}).message({target.pattern['message']})")
         if reply_msg:
             return {
                 "elementType": 7,
