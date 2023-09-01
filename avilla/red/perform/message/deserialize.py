@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
-from avilla.red.resource import RedFileResource, RedImageResource, RedVoiceResource
-from avilla.standard.qq.elements import App, Face, MarketFace, Poke, PokeKind
+from avilla.red.resource import RedFileResource, RedImageResource, RedVoiceResource, RedVideoResource
+from avilla.standard.qq.elements import App, Face, MarketFace, Poke, PokeKind, Forward
 from graia.amnesia.message.element import Unknown
 from graia.ryanvk import OptionalAccess
 
@@ -94,3 +94,21 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     @RedMessageDeserialize.collect(m, "grayTip")
     async def gray_tip(self, raw_element: dict) -> Unknown:
         return Unknown("grayTip", raw_element)
+
+    @RedMessageDeserialize.collect(m, "multiForwardMsg")
+    async def forward(self, raw_element: dict) -> Forward:
+        return Forward(raw_element["resId"])
+
+    @RedMessageDeserialize.collect(m, "video")
+    async def video(self, raw_element: dict) -> Video:
+        return Video(
+            RedVideoResource(
+                Selector().land("qq").video(raw_element["videoMd5"]),
+                raw_element["videoMd5"],
+                raw_element["fileSize"],
+                raw_element["fileName"],
+                raw_element["elementId"],
+                raw_element["fileUuid"],
+                raw_element["filePath"],
+            )
+        )

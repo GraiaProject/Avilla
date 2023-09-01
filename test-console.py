@@ -1,32 +1,18 @@
 from avilla.core import Avilla, Context, MessageReceived
-from avilla.console.protocol import ConsoleProtocol
 from avilla.console.element import Markdown, Emoji
 
 from avilla.nonebridge.service import NoneBridgeService
-from avilla.onebot.v11.protocol import OneBot11Protocol
-from avilla.onebot.v11.net.ws_server import OneBot11WsServerConfig, OneBot11WsServerNetworking
+from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ReverseConfig
 
 from graia.amnesia.builtins.asgi import UvicornASGIService
 
 import nonebot
 
 avilla = Avilla()
-#avilla.apply_protocols(ConsoleProtocol())
 
 
-protocol = OneBot11Protocol()
-service = protocol.service
-
-# config = OneBot11WsClientConfig(URL(A60_ENDPOINT), A60_SECRET)
-# conn = OneBot11WsClientNetworking(protocol, config)
-# service.connections.append(conn)
-
-config = OneBot11WsServerConfig("/ob", "dfawdfafergergeaar")
-net = OneBot11WsServerNetworking(protocol, config)
-service.connections.append(net)
-
-avilla.apply_protocols(protocol)
-
+config = OneBot11ReverseConfig("/ob", "dfawdfafergergeaar")
+avilla.apply_protocols(OneBot11Protocol().configure(config))
 avilla.launch_manager.add_component(UvicornASGIService("127.0.0.1", 9090))
 avilla.launch_manager.add_component(NoneBridgeService(avilla))
 nonebot.load_plugin("nonebot_world")

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from dataclasses import InitVar, dataclass, field
 from typing import TYPE_CHECKING, Literal, cast
 
 import aiohttp
@@ -10,28 +9,13 @@ from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 from loguru import logger
-from yarl import URL
 
 from avilla.red.account import RedAccount
 from avilla.red.net.base import RedNetworking
 from avilla.standard.core.account import AccountUnregistered
 
 if TYPE_CHECKING:
-    from avilla.red.protocol import RedProtocol
-
-
-@dataclass
-class RedWsClientConfig:
-    endpoint: URL
-    access_token: str
-    _http_endpoint: InitVar[URL | None] = None
-    http_endpoint: URL = field(init=False)
-
-    def __post_init__(self, _http_endpoint: URL | None):
-        if _http_endpoint is None:
-            self.http_endpoint = URL(str(self.endpoint).replace("ws://", "http://").replace("wss://", "https://"))
-        else:
-            self.http_endpoint = _http_endpoint
+    from avilla.red.protocol import RedProtocol, RedConfig
 
 
 class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
@@ -40,11 +24,11 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    config: RedWsClientConfig
+    config: RedConfig
     connection: aiohttp.ClientWebSocketResponse | None = None
     session: aiohttp.ClientSession
 
-    def __init__(self, protocol: RedProtocol, config: RedWsClientConfig) -> None:
+    def __init__(self, protocol: RedProtocol, config: RedConfig) -> None:
         super().__init__(protocol)
         self.config = config
 

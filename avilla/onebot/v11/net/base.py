@@ -83,4 +83,4 @@ class OneBot11Networking(Generic[T]):
         if result["status"] != "ok":
             raise ActionFailed(f"{result['retcode']}: {result}")
 
-        return result["data"]
+        return result.get("data")

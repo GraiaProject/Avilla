@@ -113,7 +113,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", True, False),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(raw_event["durationSeconds"]), None),
+                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=raw_event["durationSeconds"]), None),
             },
             operator=operator,
             scene=group,
@@ -163,7 +163,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear", None, timedelta(0)),
+                MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear",  timedelta(seconds=0)),
             },
             operator=operator,
             scene=group,

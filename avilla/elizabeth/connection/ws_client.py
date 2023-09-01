@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import json
 from contextlib import suppress
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
@@ -11,7 +10,6 @@ from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 from loguru import logger
-from yarl import URL
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
@@ -24,25 +22,18 @@ from .base import ElizabethNetworking
 from .util import validate_response
 
 if TYPE_CHECKING:
-    from avilla.elizabeth.protocol import ElizabethProtocol
-
-
-@dataclass
-class ElizabethWsClientConfig:
-    base_url: URL
-    access_token: str
-    qq: int
+    from avilla.elizabeth.protocol import ElizabethProtocol, ElizabethConfig
 
 
 class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworking"], Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    config: ElizabethWsClientConfig
+    config: ElizabethConfig
     connection: aiohttp.ClientWebSocketResponse | None = None
     session: aiohttp.ClientSession
 
-    def __init__(self, protocol: ElizabethProtocol, config: ElizabethWsClientConfig) -> None:
+    def __init__(self, protocol: ElizabethProtocol, config: ElizabethConfig) -> None:
         super().__init__(protocol)
         self.config = config
 

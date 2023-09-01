@@ -1,18 +1,14 @@
 import asyncio
 
 from creart import create
-from yarl import URL
 
 from avilla.console.protocol import ConsoleProtocol
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Notice, Picture
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.resource import LocalFileResource
-from avilla.elizabeth.connection.ws_client import ElizabethWsClientConfig, ElizabethWsClientNetworking
-from avilla.elizabeth.protocol import ElizabethProtocol
-from avilla.onebot.v11.net.ws_client import OneBot11WsClientConfig, OneBot11WsClientNetworking
-from avilla.onebot.v11.net.ws_server import OneBot11WsServerConfig, OneBot11WsServerNetworking
-from avilla.onebot.v11.protocol import OneBot11Protocol
+from avilla.elizabeth.protocol import ElizabethProtocol, ElizabethConfig
+from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ReverseConfig
 from avilla.standard.core.message.capability import MessageRevoke, MessageSend
 from graia.amnesia.builtins.asgi import UvicornASGIService
 
@@ -27,30 +23,18 @@ from devtools import debug
 
 broadcast = create(Broadcast)
 launart = Launart()
-protocol = OneBot11Protocol()
-service = protocol.service
 
-# config = OneBot11WsClientConfig(URL(A60_ENDPOINT), A60_SECRET)
-# conn = OneBot11WsClientNetworking(protocol, config)
-# service.connections.append(conn)
 
-config = OneBot11WsServerConfig("/ob", "dfawdfafergergeaar")
-net = OneBot11WsServerNetworking(protocol, config)
-service.connections.append(net)
-
-mah = ElizabethProtocol()
-conn1 = ElizabethWsClientNetworking(
-    mah, ElizabethWsClientConfig(URL("http://localhost:8660/"), A60_MAH_SECRET, A60_MAH_ACCOUNT)
-)
-mah.service.connections.append(conn1)
-
+ob_config = OneBot11ReverseConfig("/ob", "dfawdfafergergeaar")
+ob = OneBot11Protocol().configure(ob_config)
+mah_config = ElizabethConfig(A60_MAH_ACCOUNT, "localhost", 8660, A60_MAH_SECRET)
+mah = ElizabethProtocol().configure(mah_config)
 console_protocol = ConsoleProtocol()
 
 avilla = Avilla(launch_manager=launart, broadcast=broadcast, message_cache_size=0)
 
 avilla.apply_protocols(console_protocol)
-debug(protocol.artifacts)
-#avilla.apply_protocols(protocol)
+debug(ob.artifacts)
 
 launart.add_component(UvicornASGIService("127.0.0.1", 9090))
 

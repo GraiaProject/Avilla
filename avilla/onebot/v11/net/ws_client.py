@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import asyncio
 import json
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
@@ -10,30 +9,23 @@ from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 from loguru import logger
-from yarl import URL
 
 from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
 
 if TYPE_CHECKING:
-    from avilla.onebot.v11.protocol import OneBot11Protocol
-
-
-@dataclass
-class OneBot11WsClientConfig:
-    endpoint: URL
-    access_token: str | None = None
+    from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ForwardConfig
 
 
 class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"], Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    config: OneBot11WsClientConfig
+    config: OneBot11ForwardConfig
     connection: aiohttp.ClientWebSocketResponse | None = None
 
-    def __init__(self, protocol: OneBot11Protocol, config: OneBot11WsClientConfig) -> None:
+    def __init__(self, protocol: OneBot11Protocol, config: OneBot11ForwardConfig) -> None:
         super().__init__(protocol)
         self.config = config
 

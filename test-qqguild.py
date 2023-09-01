@@ -1,33 +1,23 @@
 import os
 
-
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.elements import Text
-from avilla.qqguild.tencent.connection.ws_client import Intents, QQGuildWsClientConfig, QQGuildWsClientNetworking
 from avilla.qqguild.tencent.element import Reference
-from avilla.qqguild.tencent.protocol import QQGuildProtocol
+from avilla.qqguild.tencent.protocol import QQGuildProtocol, QQGuildConfig, Intents
 from avilla.standard.core.privilege import Privilege
 
 
-
-protocol = QQGuildProtocol()
-service = protocol.service
-config = QQGuildWsClientConfig(
+config = QQGuildConfig(
     os.getenv("QQGUILD_ID"),
     os.getenv("QQGUILD_TOKEN"),
     os.getenv("QQGUILD_SECRET"),
     is_sandbox=True,
     intent=Intents(guild_messages=True, at_messages=False, direct_message=True),
 )
-conn = QQGuildWsClientNetworking(protocol, config)
-service.connections.append(conn)
 
-#console_protocol = ConsoleProtocol()
 avilla = Avilla(message_cache_size=0)
-avilla.apply_protocols(protocol)
-
-protocol.avilla = avilla
+avilla.apply_protocols(QQGuildProtocol().configure(config))
 
 
 

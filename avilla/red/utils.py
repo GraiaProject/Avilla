@@ -1,3 +1,40 @@
+from enum import IntEnum
+from typing import TypedDict, Literal
+from dataclasses import dataclass
+
+class MsgType(IntEnum):
+    normal = 2
+    may_file = 3
+    system = 5
+    voice = 6
+    video = 7
+    value8 = 8
+    reply = 9
+    wallet = 10
+    ark = 11
+    may_market = 17
+
+class SubMsgTypes(TypedDict):
+    text: bool
+    image: bool
+    face: bool
+    link: bool
+    forward: bool
+    reply: bool
+    market_face: bool
+    file: bool
+
+@dataclass
+class MsgTypes:
+    chat: Literal["friend", "group"]
+    msg: MsgType
+    sub: SubMsgTypes
+    send: Literal["system", "normal"]
+
+    @property
+    def group(self):
+        return self.chat == "group"
+
 def pre_deserialize(elements: list[dict]):
     res = []
     for elem in elements:
@@ -12,6 +49,28 @@ def pre_deserialize(elements: list[dict]):
         res.append(slot)
     return res
 
+def get_msg_types(raw_event: dict) -> MsgTypes:
+    return MsgTypes(**{
+        "chat": "friend" if raw_event["chatType"] == 1 else "group",
+        "msg": MsgType(raw_event["msgType"]),
+        "sub": {
+            "text": bool(raw_event["subMsgType"] & (1 << 0)),
+            "image": bool(raw_event["subMsgType"] & (1 << 1)),
+            "face": bool(raw_event["subMsgType"] & (1 << 4)),
+            "link": bool(raw_event["subMsgType"] & (1 << 7)),
+            "forward": bool(raw_event["subMsgType"] & (1 << 3)),
+            "reply": (
+                raw_event["msgType"] == 9 and bool(raw_event["subMsgType"] & (1 << 5))
+            ),
+            "market_face": (
+                raw_event["msgType"] == 17 and bool(raw_event["subMsgType"] & (1 << 3))
+            ),
+            "file": (
+                raw_event["msgType"] == 3 and bool(raw_event["subMsgType"] & (1 << 9))
+            )
+        },
+        "send": "system" if raw_event["sendType"] == 3 else "normal",
+    })
 
 """\
 1 ===> text, at, ...
@@ -38,6 +97,26 @@ def pre_deserialize(elements: list[dict]):
         text
     waveAmplitudes
     fileUuid
+5 ===> video
+    filePath
+    fileName
+    videoMd5
+    thumbMd5
+    fileTime
+    thumbSize
+    fileFormat
+    fileSize
+    thumbWidth
+    thumbHeight
+    busiType
+    subBusiType
+    thumbPath
+    transferStatus
+    progress
+    invalidState
+    fileUuid
+    fileSubId
+    fileBizId
 6 ===> face, poke
     faceIndex
     faceText {None: normal, '/xxx': sticker, '': poke}
@@ -65,10 +144,10 @@ def pre_deserialize(elements: list[dict]):
 10 ===> app(ark) # 小程序，公告什么的
     bytesData (application/json)
 11 ===> marketFace
-    itemType == 6
-    faceInfo == 1
+    itemType
+    faceInfo
     emojiPackageId
-    subType == 3
+    subType
     faceName
     emojiId
     key

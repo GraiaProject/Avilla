@@ -18,6 +18,7 @@ dependencies = [
     "arclet-alconna>=1.7.16",
     "arclet-alconna-tools>=0.6.5",
     "pygtrie>=2.5.0",
+    "selectolax>=0.3.16",
     "python-telegram-bot>=20.4",
 ]
 version = "0"

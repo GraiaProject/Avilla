@@ -20,15 +20,14 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
 
     async def handle_reply(self, target: Selector):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        reply_msg = await cache.get(f"qq/red:{target.pattern['message']}")
+        reply_msg = await cache.get(f"red/{target!r}")
         if reply_msg:
             return {
                 "elementType": 7,
                 "replyElement": {
-                    "sourceMsgIdInRecords": reply_msg["msgId"],
+                    # "sourceMsgIdInRecords": reply_msg["msgId"],
                     "replayMsgSeq": reply_msg["msgSeq"],
-                    "replyMsgTime": reply_msg["msgTime"],
-                    "senderUid": reply_msg["senderUid"],
+                    #"senderUid": reply_msg["senderUid"],
                 },
             }
         logger.warning(f"Unknown message {target.pattern['message']} for reply")
@@ -50,7 +49,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             {
                 "peer": {
                     "chatType": 2,
-                    "peerUid": target.pattern["group"],
+                    "peerUin": target.pattern["group"],
                     "guildId": None,
                 },
                 "elements": msg,
@@ -74,7 +73,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             {
                 "peer": {
                     "chatType": 1,
-                    "peerUid": target.pattern["friend"].split("|")[1],
+                    "peerUin": target.pattern["friend"],
                     "guildId": None,
                 },
                 "elements": msg,
@@ -111,7 +110,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             {
                 "peer": {
                     "chatType": 1,
-                    "peerUid": target.pattern["friend"].split("|")[1],
+                    "peerUid": target.pattern["friend"],
                     "guildId": None,
                 },
                 "msgId": [target.pattern["message"]],

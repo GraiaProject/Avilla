@@ -4,7 +4,7 @@ import asyncio
 import json
 import sys
 from contextlib import suppress
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
@@ -12,7 +12,6 @@ from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 from loguru import logger
-from yarl import URL
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
@@ -30,58 +29,10 @@ from .base import CallMethod, QQGuildNetworking
 from .util import Opcode, Payload, validate_response
 
 if TYPE_CHECKING:
-    from avilla.qqguild.tencent.protocol import QQGuildProtocol
+    from avilla.qqguild.tencent.protocol import QQGuildProtocol, QQGuildConfig
 
 
-@dataclass
-class Intents:
-    guilds: bool = True
-    guild_members: bool = True
-    guild_messages: bool = False
-    """GUILD_MESSAGES"""
-    guild_message_reactions: bool = True
-    direct_message: bool = False
-    """DIRECT_MESSAGES"""
-    message_audit: bool = False
-    forum_event: bool = False
-    audio_action: bool = False
-    at_messages: bool = True
-    """PUBLIC_GUILD_MESSAGES"""
 
-    def __post_init__(self):
-        if self.at_messages and self.guild_messages:
-            logger.warning("at_messages and guild_messages are both enabled, which is not recommended.")
-
-    def to_int(self) -> int:
-        return (
-            self.guilds << 0
-            | self.guild_members << 1
-            | self.guild_messages << 9
-            | self.guild_message_reactions << 10
-            | self.direct_message << 12
-            | self.message_audit << 27
-            | self.forum_event << 28
-            | self.audio_action << 29
-            | self.at_messages << 30
-        )
-
-
-@dataclass
-class QQGuildWsClientConfig:
-    id: str
-    token: str
-    secret: str
-    shard: tuple[int, int] | None = None
-    intent: Intents = field(default_factory=Intents)
-    is_sandbox: bool = False
-    api_base: URL = URL("https://api.sgroup.qq.com/")
-    sandbox_api_base: URL = URL("https://sandbox.api.sgroup.qq.com")
-
-    def get_api_base(self) -> URL:
-        return URL(self.sandbox_api_base) if self.is_sandbox else URL(self.api_base)
-
-    def get_authorization(self) -> str:
-        return f"Bot {self.id}.{self.token}"
 
 
 class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], Service):
@@ -90,12 +41,12 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    config: QQGuildWsClientConfig
+    config: QQGuildConfig
     connections: dict[tuple[int, int], aiohttp.ClientWebSocketResponse]
     session: aiohttp.ClientSession
     sequence: int | None
 
-    def __init__(self, protocol: QQGuildProtocol, config: QQGuildWsClientConfig) -> None:
+    def __init__(self, protocol: QQGuildProtocol, config: QQGuildConfig) -> None:
         super().__init__(protocol)
         self.config = config
         if any([not config.id, not config.token, not config.secret]):
@@ -138,7 +89,6 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         await connection.send_json(payload)
 
     async def call(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
-        action = action.replace("_", "/")
         params = params or {}
         params = {k: v for k, v in params.items() if v is not None}
         if method in {"get", "fetch"}:
@@ -190,10 +140,10 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                 return result
 
         if method == "multipart":
-            data = aiohttp.FormData(quote_fields=False)
             if params is None:
                 raise TypeError("multipart requires params")
-            for k, v in params.items():
+            data = aiohttp.FormData(params["data"], quote_fields=False)
+            for k, v in params["files"].items():
                 if isinstance(v, dict):
                     data.add_field(k, v["value"], filename=v.get("filename"), content_type=v.get("content_type"))
                 else:
