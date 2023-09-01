@@ -13,7 +13,7 @@ dependencies = [
   "python-telegram-bot"
 ]
 description = "Avilla Telegram Protocol"
-license = {text = "AGPL-3.0"}
+license = {text = "GPL-3.0"}
 readme = "README.md"
 requires-python = ">=3.9"
 

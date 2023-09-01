@@ -17,13 +17,19 @@ class TelegramService(Service):
 
     protocol: TelegramProtocol
     instances: list[TelegramBot]
-    instance_map: dict[str, TelegramBot]  # TODO 还没写呢
+    instance_map: dict[str, TelegramBot]
 
     def __init__(self, protocol: TelegramProtocol) -> None:
         super().__init__()
         self.protocol = protocol
         self.instances = []
         self.instance_map = {}
+
+    def has_instance(self, account_id: str):
+        return int(account_id) in self.instance_map
+
+    def get_instance(self, account_id: str) -> TelegramBot:
+        return self.instance_map[account_id]
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
