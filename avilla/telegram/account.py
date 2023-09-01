@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from avilla.core.account import BaseAccount
 
 if TYPE_CHECKING:
-    from avilla.telegram.protocol import TelegramProtocol
     from avilla.telegram.bot import TelegramBot
+    from avilla.telegram.protocol import TelegramProtocol
 
 
 @dataclass

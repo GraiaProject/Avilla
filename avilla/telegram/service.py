@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING
 
 from launart import Launart, Service, any_completed
 
-
 if TYPE_CHECKING:
     from .bot import TelegramBot
     from .protocol import TelegramProtocol

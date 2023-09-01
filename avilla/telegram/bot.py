@@ -1,22 +1,21 @@
 from __future__ import annotations
-import asyncio
 
 from dataclasses import dataclass
-
 from typing import cast
-from launart import Service, Launart, any_completed
+
+from launart import Launart, Service, any_completed
 from loguru import logger
-from telegram.ext import ExtBot
 from telegram.error import InvalidToken as InvalidTokenOrigin
+from telegram.ext import ExtBot
 from yarl import URL
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
+from avilla.standard.core.account import AccountAvailable, AccountRegistered
 from avilla.telegram.account import TelegramAccount
-from avilla.elizabeth.const import PLATFORM
-from avilla.standard.core.account import AccountRegistered, AccountUnregistered, AccountAvailable, AccountUnavailable
-from avilla.telegram.protocol import TelegramProtocol
+from avilla.telegram.const import PLATFORM
 from avilla.telegram.exception import InvalidToken
+from avilla.telegram.protocol import TelegramProtocol
 
 
 @dataclass
@@ -77,14 +76,10 @@ class TelegramBot(Service):
                     self.protocol,
                     PLATFORM,
                 )
-                self.protocol.avilla.broadcast.postEvent(AccountRegistered(
-                    self.protocol.avilla, account
-                ))
+                self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
 
             self.protocol.service.instance_map[self.account_id] = self
-            self.protocol.avilla.broadcast.postEvent(AccountAvailable(
-                self.protocol.avilla, account
-            ))
+            self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
         except InvalidTokenOrigin as e:
             self.available = False
             raise InvalidToken(self.config.token) from e
@@ -102,6 +97,7 @@ class TelegramBot(Service):
             except InvalidToken:
                 logger.warning(f'Invalid token for "{self.id}"')
                 return
+
     async def launch(self, manager: Launart):
         async with self.stage("blocking"):
             await any_completed(manager.status.wait_for_sigexit(), self.daemon(manager))
