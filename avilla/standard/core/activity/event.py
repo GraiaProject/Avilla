@@ -4,13 +4,24 @@ from dataclasses import dataclass
 
 from avilla.core.event import AvillaEvent
 from avilla.core.selector import Selector
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 @dataclass
 class ActivityEvent(AvillaEvent):
-    id: Selector  # eg. [...].activity("button_clicked")
+    id: str
+    scene: Selector
     activity: Selector  # eg. [...].button("#1")
 
+    def to_selector(self): # eg. [...].activity("button_clicked")
+        return self.scene.activity(self.id)
+
+    class Dispatcher(AvillaEvent.Dispatcher):
+        @classmethod
+        async def catch(cls, interface: DispatcherInterface[ActivityEvent]):
+            if interface.name == "activity":
+                return interface.event.to_selector()
+            return await AvillaEvent.Dispatcher.catch(interface)
 
 @dataclass
 class ActivityAvailable(ActivityEvent):
@@ -25,4 +36,10 @@ class ActivityUnavailable(ActivityEvent):
 @dataclass
 class ActivityTrigged(ActivityEvent):
     trigger: Selector  # who trigged the activity
-    scene: Selector
+
+    class Dispatcher(ActivityEvent.Dispatcher):
+        @classmethod
+        async def catch(cls, interface: DispatcherInterface[ActivityTrigged]):
+            if interface.name == "trigger":
+                return interface.event.trigger
+            return await ActivityEvent.Dispatcher.catch(interface)
