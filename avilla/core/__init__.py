@@ -8,7 +8,7 @@ from avilla.core.elements import File as File
 from avilla.core.elements import Notice as Notice
 from avilla.core.elements import NoticeAll as NoticeAll
 from avilla.core.elements import Picture as Picture
-from avilla.core.elements import Text as Text
+from avilla.core.elements import Text as Text  # noqa: F401
 from avilla.core.elements import Unknown as Unknown
 from avilla.core.elements import Video as Video
 from avilla.core.exceptions import AccountDeleted as AccountDeleted
@@ -38,6 +38,7 @@ from avilla.core.platform import PlatformDescription as PlatformDescription
 from avilla.core.platform import Version as Version
 from avilla.core.protocol import BaseProtocol as BaseProtocol
 from avilla.core.resource import LocalFileResource as LocalFileResource
+from avilla.core.resource import RawResource as RawResource
 from avilla.core.resource import Resource as Resource
 from avilla.core.selector import Selectable as Selectable
 from avilla.core.selector import Selector as Selector

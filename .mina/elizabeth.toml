@@ -1,12 +1,12 @@
 includes = ["avilla/elizabeth"]
 raw-dependencies = [
-  "avilla-core >= 1.0.0-alpha.6",
-  "avilla-standard-qq >= 1.0.0-alpha.6"
+  "avilla-core >= 1.0.0-alpha.8",
+  "avilla-standard-qq >= 1.0.0-alpha.7"
 ]
 
 [project]
 name = "avilla-elizabeth"
-version = "1.0.0-alpha.6" # WIP for release.
+version = "1.0.0-alpha.7" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]

@@ -5,7 +5,7 @@ raw-dependencies = [
 
 [project]
 name = "avilla-console"
-version = "0.2.0" # WIP for release.
+version = "1.0.0-alpha.7" # WIP for release.
 authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"},
 ]

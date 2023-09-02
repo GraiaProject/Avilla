@@ -1,11 +1,11 @@
 includes = ["avilla/standard/qq"]
 raw_dependencies = [
-  "avilla-core >= 1.0.0-alpha.6",
+  "avilla-core >= 1.0.0-alpha.8",
 ]
 
 [project]
 name = "avilla-standard-qq"
-version = "1.0.0-alpha.6"
+version = "1.0.0-alpha.7"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
