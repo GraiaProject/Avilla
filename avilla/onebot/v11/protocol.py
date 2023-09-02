@@ -44,6 +44,9 @@ class OneBot11Protocol(BaseProtocol):
         from .perform.action.leave import OneBot11LeaveActionPerform  # noqa: F401
         from .perform.action.mute import OneBot11MuteActionPerform  # noqa: F401
 
+        # :: Context
+        from .perform.context import OneBot11ContextPerform  # noqa: F401
+
         # :: Event
         from .perform.event.message import OneBot11EventMessagePerform  # noqa: F401
         from .perform.event.lifespan import OneBot11EventLifespanPerform  # noqa: F401
