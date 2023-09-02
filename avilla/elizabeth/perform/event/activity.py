@@ -28,7 +28,7 @@ class ElizabethEventActivityPerform((m := ConnectionCollector())._):
                 group.member(account_route["account"]),
             )
             nudge = sender.activity("nudge")
-            activity = sender.nudge("nudge").action(raw_event["action"]).suffix(raw_event["suffix"])
+            activity = nudge.action(raw_event["action"]).suffix(raw_event["suffix"])
             return ActivityTrigged(context, nudge, activity, sender, group)
         else:
             friend = land.friend(str(raw_event["subject"]["id"]))
@@ -40,5 +40,5 @@ class ElizabethEventActivityPerform((m := ConnectionCollector())._):
                 account_route,
             )
             nudge = friend.activity("nudge")
-            activity = friend.nudge("nudge").action(raw_event["action"]).suffix(raw_event["suffix"])
+            activity = nudge.action(raw_event["action"]).suffix(raw_event["suffix"])
             return ActivityTrigged(context, nudge, activity, friend, friend)
