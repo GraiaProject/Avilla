@@ -20,3 +20,6 @@ class FnOverload:
 
     def get_entities(self, scope: dict[Any, Any], args: dict[str, Any]) -> set[Callable]:
         return scope["_"]
+
+    def merge_scopes(self, *scopes: dict[Any, Any]):
+        return scopes[-1]

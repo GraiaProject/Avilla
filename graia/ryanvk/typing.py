@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Generic, Protocol
+from typing import TYPE_CHECKING, Any, Generic, Protocol, Union, runtime_checkable
 
-from typing_extensions import Concatenate, ParamSpec, TypeVar
-
-from graia.ryanvk.aio import queue_task
+from typing_extensions import ParamSpec, TypeVar
 
 if TYPE_CHECKING:
     from .collector import BaseCollector  # noqa
-    from .staff import Staff
 
 P = ParamSpec("P")
 P1 = ParamSpec("P1")
@@ -40,3 +37,23 @@ class ClsIncluded(Protocol[T]):
 
 Cr = TypeVar("Cr", bound="BaseCollector", covariant=True)
 
+
+@runtime_checkable
+class SupportsMerge(Protocol):
+    def merge(self, *records: dict):
+        ...
+
+
+class LayoutProtocolProperty(Protocol):
+    @property
+    def get_artifact_layout(self) -> dict:
+        ...
+
+
+class LayoutProtocolAttr(Protocol):
+    @property
+    def get_artifact_layout(self) -> dict:
+        ...
+
+
+LayoutProtocol = Union[LayoutProtocolProperty, LayoutProtocolAttr]

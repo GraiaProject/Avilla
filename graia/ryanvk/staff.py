@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import ChainMap
 from contextlib import AsyncExitStack, asynccontextmanager
 from copy import copy
-from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
 from typing_extensions import ParamSpec
 
@@ -32,24 +32,24 @@ class Staff:
         self.instances = {}
 
     def call_fn(self, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-        artifact_record = self.artifact_map[FnImplement(fn.owner, fn.name)]
+        artifact_record = self.artifact_map[FnImplement(fn)]
 
         if fn.has_overload_capability:
             bound_args = fn.shape_signature.bind(*args, **kwargs)
             collections = None
 
-            for overload_item, required_args in fn.overload_map.items():
+            for overload_item, required_args in fn.overload_param_map.items():
                 scope = artifact_record["overload_scopes"][overload_item.identity]
                 entities = overload_item.get_entities(scope, {i: bound_args.arguments[i] for i in required_args})
-                collections = entities if collections is None else collections.intersection(entities) 
+                collections = entities if collections is None else collections.intersection(entities)
 
             if not collections:
                 raise NotImplementedError
-        
+
             return collections.pop()(*args, **kwargs)
 
         else:
-            return artifact_record['handler'](*args, **kwargs)
+            return artifact_record["handler"](*args, **kwargs)
 
     class PostInitShape(Protocol[P]):
         def __post_init__(self, *args: P.args, **kwargs: P.kwargs) -> Any:
