@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 from typing_extensions import ParamSpec
 
 from graia.ryanvk.fn import FnImplement
+from graia.ryanvk.aio import queue_task
 
 if TYPE_CHECKING:
     from .fn import Fn
@@ -48,10 +49,11 @@ class Staff:
                 raise NotImplementedError
 
             collector, entity = collections.pop()
-            instance = self.instances.get(collector.cls) or self.instances.setdefault(
-                collector.cls, collector.cls(self)
-            )
-            # TODO: lifespan support grateful
+            if collector.cls not in self.instances:
+                instance = self.instances[collector.cls] = collector.cls(self)
+                queue_task(self.exit_stack.enter_async_context(instance.lifespan()))
+            else:
+                instance = self.instances[collector.cls]
             return entity(instance, *args, **kwargs)
 
         else:
