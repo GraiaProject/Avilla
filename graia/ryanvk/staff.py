@@ -36,6 +36,7 @@ class Staff:
 
         if fn.has_overload_capability:
             bound_args = fn.shape_signature.bind(*args, **kwargs)
+            bound_args.apply_defaults()
             collections = None
 
             for overload_item, required_args in fn.overload_param_map.items():
