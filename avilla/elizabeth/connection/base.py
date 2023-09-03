@@ -9,6 +9,8 @@ from avilla.core.exceptions import InvalidAuthentication
 from avilla.core.ryanvk.staff import Staff
 
 from .util import validate_response
+from avilla.standard.core.account import AccountAvailable
+from ...core import Selector
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
@@ -61,6 +63,11 @@ class ElizabethNetworking(Generic[T]):
             if "session" in body:
                 self.session_key = body["session"]
                 logger.success("session key got.")
+                account_route = Selector().land("qq").account(str(self.account_id))
+                account = self.protocol.avilla.accounts[account_route].account
+                self.protocol.avilla.broadcast.postEvent(AccountAvailable(
+                    self.protocol.avilla, account
+                ))
                 continue
 
             if sync_id in self.response_waiters:

@@ -36,10 +36,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
     def __init__(self, protocol: ElizabethProtocol, config: ElizabethConfig) -> None:
         super().__init__(protocol)
         self.config = config
-
-    @property
-    def account_id(self):
-        return self.config.qq
+        self.account_id = self.config.qq
 
     @property
     def id(self):
@@ -146,9 +143,9 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
                 ))
 
             self.protocol.service.account_map[self.config.qq] = self
-            self.protocol.avilla.broadcast.postEvent(AccountAvailable(
-                self.protocol.avilla, account
-            ))
+            # self.protocol.avilla.broadcast.postEvent(AccountAvailable(
+            #     self.protocol.avilla, account
+            # ))
             self.close_signal.clear()
             close_task = asyncio.create_task(self.close_signal.wait())
             receiver_task = asyncio.create_task(self.message_handle())
