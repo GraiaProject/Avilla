@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-import contextlib
 from dataclasses import InitVar, dataclass, field
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from graia.amnesia.builtins.memcache import MemcacheService
 from yarl import URL
 
 from .net.ws_client import RedWsClientNetworking
@@ -43,16 +41,17 @@ class RedProtocol(BaseProtocol):
         from .perform.message.serialize import RedMessageSerializePerform  # noqa: F401
 
         ## :: Action
-        # from .perform.action.contact import RedContactActionPerform
         from .perform.action.friend import RedFriendActionPerform  # noqa: F401
         from .perform.action.group import RedGroupActionPerform  # noqa: F401
-
-        # from .perform.action.group_member import RedGroupMemberActionPerform
+        from .perform.action.member import RedMemberActionPerform  # noqa: F401
         from .perform.action.message import RedMessageActionPerform  # noqa: F401
+
+        ## :: Context
+        from .perform.context import RedContextPerform   # noqa: F401
 
         ## :: Event
         from .perform.event.group import RedEventGroupPerform  # noqa: F401
-        from .perform.event.group_member import RedEventGroupMemberPerform  # noqa: F401
+        from .perform.event.member import RedEventGroupMemberPerform  # noqa: F401
         from .perform.event.message import RedEventMessagePerform  # noqa: F401
         from .perform.event.lifespan import RedEventLifespanPerform  # noqa: F401
         from .perform.event.relationship import RedEventRelationshipPerform  # noqa: F401
@@ -67,8 +66,6 @@ class RedProtocol(BaseProtocol):
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
-        with contextlib.suppress(ValueError):
-            avilla.launch_manager.add_component(MemcacheService())
 
     def configure(self, config: RedConfig):
         self.service.connections.append(

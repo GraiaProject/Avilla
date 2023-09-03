@@ -6,10 +6,11 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.relation.capability import RelationshipTerminate
+from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
+    from avilla.elizabeth.account import ElizabethAccount  # noqa
+    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 
 class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
@@ -17,6 +18,9 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
 
     @m.pull("land.friend", Nick)
     async def get_contact_nick(self, target: Selector) -> Nick:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"):
+            return Nick(raw["nickname"], raw["remark"] or raw["nickname"], None)
         result = await self.account.connection.call(
             "fetch",
             "friendProfile",
@@ -24,10 +28,13 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
                 "target": int(target.pattern["friend"]),
             },
         )
-        return Nick(result["nickname"], result["remark"] or result["nickname"], None)
+        return Nick(result["nickname"], result["nickname"], None)
 
     @m.pull("land.friend", Summary)
     async def get_contact_summary(self, target: Selector) -> Summary:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"):
+            return Summary(raw["nickname"], "a friend contact assigned to this account")
         result = await self.account.connection.call(
             "fetch",
             "friendProfile",

@@ -75,7 +75,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 time=datetime.fromtimestamp(int(raw_event["msgTime"])),
                 reply=reply,
             )
-        await cache.set(f"red/{msg.to_selector()!r}", raw_event, timedelta(minutes=5))
+        await cache.set(f"red/account({account.route['account']}).message({msg.id})", raw_event, timedelta(minutes=5))
         context._collect_metadatas(
             msg.to_selector(),
             msg

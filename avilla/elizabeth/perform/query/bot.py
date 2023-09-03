@@ -7,8 +7,8 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
+    from avilla.elizabeth.account import ElizabethAccount  # noqa
+    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 
 class ElizabethBotQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):

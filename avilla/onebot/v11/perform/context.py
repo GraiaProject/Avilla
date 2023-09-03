@@ -8,11 +8,11 @@ from avilla.core.context import Context
 from avilla.core.builtins.capability import CoreCapability
 
 if TYPE_CHECKING:
-    from avilla.elizabeth.account import ElizabethAccount  # noqa
-    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
+    from avilla.onebot.v11.account import OneBot11Account  # noqa
+    from avilla.onebot.v11.protocol import OneBot11Protocol  # noqa
 
 
-class ElizabethContextPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+class OneBot11ContextPerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
     m.post_applying = True
 
     @CoreCapability.get_context.collect(m, "land.group")
@@ -26,6 +26,16 @@ class ElizabethContextPerform((m := AccountCollector["ElizabethProtocol", "Eliza
         )
 
     @CoreCapability.get_context.collect(m, "land.friend")
+    def get_context_from_friend(self, target: Selector, *, via: Selector | None = None):
+        return Context(
+            self.account,
+            target,
+            self.account.route,
+            target,
+            self.account.route
+        )
+
+    @CoreCapability.get_context.collect(m, "land.stranger")
     def get_context_from_friend(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
