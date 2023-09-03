@@ -18,7 +18,7 @@ class FnOverload:
     ) -> None:
         scope["_"] = {(collector, entity)}
 
-    def get_entities(self, scope: dict[Any, Any], args: dict[str, Any]) -> set[Callable]:
+    def get_entities(self, scope: dict[Any, Any], args: dict[str, Any]) -> set[tuple[BaseCollector, Callable]]:
         return scope["_"]
 
     def merge_scopes(self, *scopes: dict[Any, Any]):
