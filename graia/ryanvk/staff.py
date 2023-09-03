@@ -46,7 +46,12 @@ class Staff:
             if not collections:
                 raise NotImplementedError
 
-            return collections.pop()(*args, **kwargs)
+            collector, entity = collections.pop()
+            instance = self.instances.get(collector.cls) or self.instances.setdefault(
+                collector.cls, collector.cls(self)
+            )
+            # TODO: lifespan support grateful
+            return entity(instance, *args, **kwargs)
 
         else:
             return artifact_record["handler"](*args, **kwargs)
