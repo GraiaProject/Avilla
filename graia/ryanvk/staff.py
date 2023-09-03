@@ -1,15 +1,17 @@
 from __future__ import annotations
 
+from collections import ChainMap
 from contextlib import AsyncExitStack, asynccontextmanager
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
 
 from typing_extensions import ParamSpec
 
+from graia.ryanvk.fn import FnImplement
+
 if TYPE_CHECKING:
     from .fn import Fn
     from .perform import BasePerform
-    from .typing import P1, OutboundCompatible
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
@@ -17,28 +19,37 @@ R = TypeVar("R", covariant=True)
 
 class Staff:
     artifact_collections: list[dict[Any, Any]]
+    artifact_map: ChainMap[Any, Any]
     components: dict[str, Any]
     exit_stack: AsyncExitStack
     instances: dict[type, Any]
 
     def __init__(self, artifacts_collections: list[dict[Any, Any]], components: dict[str, Any]) -> None:
         self.artifact_collections = artifacts_collections
+        self.artifact_map = ChainMap(*artifacts_collections)
         self.components = components
         self.exit_stack = AsyncExitStack()
         self.instances = {}
 
-    def get_outbound(
-        self,
-        schema: OutboundCompatible[P, R, P1],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> Callable[P1, R]:
-        instance, entity = schema.get_artifact_record(self.artifact_collections, *args, **kwargs).unwrap(self)
-        return schema.get_outbound_callable(instance, entity)
-
     def call_fn(self, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-        outbound = self.get_outbound(fn, *args, **kwargs)
-        return outbound(*args, **kwargs)
+        artifact_record = self.artifact_map[FnImplement(fn.owner, fn.name)]
+
+        if fn.has_overload_capability:
+            bound_args = fn.shape_signature.bind(*args, **kwargs)
+            collections = None
+
+            for overload_item, required_args in fn.overload_map.items():
+                scope = artifact_record["overload_scopes"][overload_item.identity]
+                entities = overload_item.get_entities(scope, {i: bound_args.arguments[i] for i in required_args})
+                collections = entities if collections is None else collections.intersection(entities) 
+
+            if not collections:
+                raise NotImplementedError
+        
+            return collections.pop()(*args, **kwargs)
+
+        else:
+            return artifact_record['handler'](*args, **kwargs)
 
     class PostInitShape(Protocol[P]):
         def __post_init__(self, *args: P.args, **kwargs: P.kwargs) -> Any:

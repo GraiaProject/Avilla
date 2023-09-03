@@ -9,6 +9,4 @@ from .gateway import Gateway as Gateway
 from .override import OverridePerformEntity as OverridePerformEntity
 from .perform import BasePerform as BasePerform
 from .staff import Staff as Staff
-from .typing import OutboundCompatible as OutboundCompatible
-from .typing import RecordTwin as RecordTwin
 from .typing import SupportsCollect as SupportsCollect
