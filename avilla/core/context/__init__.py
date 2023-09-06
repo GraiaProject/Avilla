@@ -78,7 +78,7 @@ class Context:
         self.mediums = [ContextMedium(ContextSelector.from_selector(self, medium)) for medium in mediums or []]
 
         self.cache = {"meta": prelude_metadatas or {}}
-        self.staff = Staff.focus(self)
+        self.staff = Staff(self.get_staff_artifacts(), self.get_staff_components())
 
     @property
     def protocol(self):

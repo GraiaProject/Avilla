@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class ConsoleProfileActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/console::action/profile"
 
     @m.pull("lang.user", Nick)
     async def get_console_nick(self, target: Selector) -> Nick:

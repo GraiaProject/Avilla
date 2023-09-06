@@ -9,6 +9,8 @@ from .fn import Fn as Fn
 from .gateway import GLOBAL_GATEWAY as GLOBAL_GATEWAY
 from .gateway import Gateway as Gateway
 from .overload import FnOverload as FnOverload
+from .overload import SimpleOverload as SimpleOverload
+from .overload import TypeOverload as TypeOverload
 from .override import OverridePerformEntity as OverridePerformEntity
 from .perform import BasePerform as BasePerform
 from .staff import Staff as Staff

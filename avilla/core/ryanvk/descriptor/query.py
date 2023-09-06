@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, AsyncGenerator, Callable, Container, Protocol, overload
 
 from avilla.core.selector import Selector, _FollowItem
-from graia.ryanvk import BaseCollector, RecordTwin
+from graia.ryanvk import BaseCollector
 
 
 @dataclass(unsafe_hash=True)
@@ -52,7 +52,7 @@ class QuerySchema:
 
     def collect(self, collector: BaseCollector, target: str, previous: ... = None) -> ...:
         def receive(entity: QueryHandlerPerform):
-            collector.artifacts[QueryRecord(previous, target)] = RecordTwin(collector, entity)
+            collector.artifacts[QueryRecord(previous, target)] = (collector, entity)
             return entity
 
         return receive

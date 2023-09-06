@@ -16,11 +16,10 @@ from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
-from graia.broadcast import Broadcast
 from graia.amnesia.builtins.memcache import MemcacheService
+from graia.broadcast import Broadcast
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsArtifacts
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
 
     from .resource import Resource
@@ -83,7 +82,7 @@ class Avilla:
 
         CoreResourceFetchPerform.apply_to(self.global_artifacts)
 
-    def get_staff_components(self) -> dict[str, SupportsArtifacts]:
+    def get_staff_components(self):
         return {"avilla": self}
 
     def get_staff_artifacts(self):
@@ -97,7 +96,7 @@ class Avilla:
         return get_current_avilla()
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
-        return await Staff.focus(self).fetch_resource(resource)
+        return await Staff(self.get_staff_artifacts(), self.get_staff_components()).fetch_resource(resource)
 
     def get_account(self, target: Selector) -> AccountInfo:
         return self.accounts[target]

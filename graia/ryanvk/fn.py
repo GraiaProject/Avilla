@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import inspect
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Generic, TypedDict
+from typing import TYPE_CHECKING, Any, Callable, Generic, TypedDict, overload
 
-from typing_extensions import Concatenate, ParamSpec, TypeVar
+from typing_extensions import Concatenate, ParamSpec, Self, TypeVar
 
 from graia.ryanvk.override import OverridePerformEntity
 
@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
+R1 = TypeVar("R1", covariant=True)
 
 P1 = ParamSpec("P1")
 P2 = ParamSpec("P2")
@@ -85,10 +86,27 @@ class Fn(Generic[P, R]):
         self.owner = owner
         self.name = name
 
+    @overload
+    def __get__(self, instance: BasePerform, owner: type) -> Callable[P, R]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type) -> Self:
+        ...
+    
+    def __get__(self, instance: BasePerform | None, owner: type):
+        if not isinstance(instance, BasePerform):
+            return self
+
+        def wrapper(*args: P.args, **kwargs: P.kwargs):
+            return instance.staff.call_fn(self, *args, **kwargs)
+    
+        return wrapper
+
     @classmethod
     def with_overload(cls, overload_param_map: dict[FnOverload, list[str]]):
-        def wrapper(shape: Callable[Concatenate[Any, P], R]):
-            return cls(shape, overload_param_map=overload_param_map)
+        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[P1, R1]:
+            return cls(shape, overload_param_map=overload_param_map)  # type: ignore
 
         return wrapper
 
@@ -117,7 +135,7 @@ class Fn(Generic[P, R]):
                         collector,
                         scope,
                         entity,
-                        {param: overload_settings[param] for param in params},
+                        fn_overload.get_params_layout(params, overload_settings),
                     )
             else:
                 artifact["handler"] = (collector, entity)

@@ -7,13 +7,12 @@ from typing import (
     Callable,
 )
 
-from typing_extensions import TypeAlias, TypeVar
+from typing_extensions import TypeAlias
 
 from avilla.core.selector import FollowsPredicater, Selector, _parse_follows
 from graia.ryanvk.collector import BaseCollector
 from graia.ryanvk.overload import FnOverload
 
-T = TypeVar("T")
 
 @dataclass
 class LookupBranchMetadata:
@@ -30,20 +29,51 @@ class LookupBranch:
 LookupBranches: TypeAlias = "dict[str | FollowsPredicater | None, LookupBranch]"
 LookupCollection: TypeAlias = "dict[str, LookupBranches]"
 
+
+@dataclass
+class TargetOverloadConfig:
+    pattern: str
+    predicators: dict[str, FollowsPredicater]
+
+    def __init__(self, pattern: str, **predicators: FollowsPredicater):
+        self.pattern = pattern
+        self.predicators = predicators
+
+
+def _merge_lookup_collection(current: LookupCollection, other: LookupCollection):
+    for key, branches in current.items():
+        if (other_branches := other.pop(key, None)) is None:
+            continue
+
+        for header, branch in branches.items():
+            if (other_branch := other_branches.pop(header, None)) is None:
+                continue
+
+            _merge_lookup_collection(branch.levels, other_branch.levels)
+            branch.bind |= other_branch.bind
+
+        branches |= other_branches
+
+    current |= other
+
+
 class TargetOverload(FnOverload):
     def collect_entity(
         self,
         collector: BaseCollector,
         scope: dict[Any, Any],
         entity: Any,
-        params: dict[str, str],
+        params: dict[str, str | TargetOverloadConfig],
     ) -> None:
         record = (collector, entity)
 
-        for param, pattern_str in params.items():
+        for param, pattern in params.items():
             param_scope = scope.setdefault(param, {})
 
-            pattern_items = _parse_follows(pattern_str)
+            if isinstance(pattern, str):
+                pattern = TargetOverloadConfig(pattern)
+
+            pattern_items = _parse_follows(pattern.pattern, **pattern.predicators)
             if not pattern_items:
                 raise ValueError("invalid target pattern")
             
@@ -112,4 +142,16 @@ class TargetOverload(FnOverload):
         # scope layout: {
         #   <param_name: str>: LookupCollection
         # }
-        ...  # TODO
+        param_collections: dict[str, list[LookupCollection]] = {}
+        result = {}
+
+        for scope in scopes:
+            for param, collection in scope.items():
+                param_collections.setdefault(param, []).append(collection)
+        
+        for param, collections in param_collections.items():
+            result[param] = current = collections.pop(0)
+            for other in collections:
+                _merge_lookup_collection(current, other)
+
+        return result

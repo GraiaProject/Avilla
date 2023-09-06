@@ -19,10 +19,9 @@ if TYPE_CHECKING:
 
 
 class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
-    m.post_applying = True
-    targets = ["land.user"]
+    m.namespace = "avilla.protocol/console::action/message"
 
-    @m.entity(MessageSend.send, "land.user")
+    @m.entity(MessageSend.send, target="land.user")
     async def send_console_message(
         self,
         target: Selector,

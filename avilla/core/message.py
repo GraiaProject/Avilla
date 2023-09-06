@@ -29,4 +29,4 @@ class Message(Metadata):
         return self.scene.message(self.id)
 
     async def revoke(self):
-        await cx_context.get()[MessageRevoke.revoke](self)
+        await cx_context.get()[MessageRevoke.revoke](self.to_selector())
