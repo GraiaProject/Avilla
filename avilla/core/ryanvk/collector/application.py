@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
+from avilla.core.ryanvk.staff import Staff
 from graia.ryanvk import Access, BasePerform
 
 from .base import AvillaBaseCollector
@@ -18,6 +19,10 @@ class ApplicationBasedPerformTemplate(BasePerform, native=True):
     __collector__: ClassVar[ApplicationCollector]
 
     avilla: Access[Avilla] = Access()
+
+    @property
+    def staff(self):
+        return Staff(self.avilla.get_staff_artifacts(), self.avilla.get_staff_components())
 
 
 class ApplicationCollector(AvillaBaseCollector):

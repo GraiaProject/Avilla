@@ -37,6 +37,10 @@ class ContextBasedPerformTemplate(BasePerform, native=True):
     def account(self):
         return self.context.account
 
+    @property
+    def staff(self):
+        return self.context.staff
+
 
 class ContextCollector(AvillaBaseCollector, Generic[TProtocol, TAccount]):
     post_applying: bool = False

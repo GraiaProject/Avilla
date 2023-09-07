@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
 
+from avilla.core.ryanvk.staff import Staff
 from graia.ryanvk import Access, BasePerform
 
 from .base import AvillaBaseCollector
@@ -26,6 +27,10 @@ class AccountBasedPerformTemplate(BasePerform, native=True):
 
     protocol: Access[BaseProtocol] = Access()
     account: Access[BaseAccount] = Access()
+
+    @property
+    def staff(self):
+        return Staff(self.account.get_staff_artifacts(), self.account.get_staff_components())
 
 
 class AccountCollector(AvillaBaseCollector, Generic[TProtocol, TAccount]):
