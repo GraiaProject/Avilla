@@ -1,8 +1,11 @@
 import os
+from pathlib import Path
 
-from avilla.core import Avilla, Context, MessageReceived
-from avilla.telegram.bot import TelegramBotConfig, TelegramBot
-from avilla.telegram.protocol import TelegramProtocol
+from graia.amnesia.message import MessageChain
+
+from avilla.core import Avilla, Context, MessageReceived, Picture, Text
+from avilla.telegram.bot.bot import TelegramBot
+from avilla.telegram.protocol import TelegramProtocol, TelegramBotConfig
 
 protocol = TelegramProtocol()
 service = protocol.service
@@ -19,5 +22,7 @@ protocol.avilla = avilla
 @avilla.listen(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     print(repr(event))
+    await cx.scene.send_message(MessageChain([Text("Hello, Avilla!"), Picture(Path("test.png"))]))
+
 
 avilla.launch()
