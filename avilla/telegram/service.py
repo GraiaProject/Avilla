@@ -15,13 +15,11 @@ class TelegramService(Service):
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     protocol: TelegramProtocol
-    instances: list[TelegramBot]
     instance_map: dict[int, TelegramBot]
 
     def __init__(self, protocol: TelegramProtocol) -> None:
         super().__init__()
         self.protocol = protocol
-        self.instances = []
         self.instance_map = {}
 
     def has_instance(self, account_id: int):
@@ -32,12 +30,13 @@ class TelegramService(Service):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            for i in self.instances:
+            for i in self.instance_map.values():
                 manager.add_component(i)
 
         async with self.stage("blocking"):
             await any_completed(
-                manager.status.wait_for_sigexit(), *(i.status.wait_for("blocking-completed") for i in self.instances)
+                manager.status.wait_for_sigexit(),
+                *(i.status.wait_for("blocking-completed") for i in self.instance_map.values()),
             )
 
         async with self.stage("cleanup"):

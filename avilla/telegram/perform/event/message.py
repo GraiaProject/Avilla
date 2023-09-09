@@ -8,7 +8,7 @@ from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
 from avilla.telegram.collector.instance import InstanceCollector
-from avilla.telegram.elements import MessageFragment
+from avilla.telegram.fragments import MessageFragment
 
 
 class TelegramEventMessagePerform((m := InstanceCollector())._):

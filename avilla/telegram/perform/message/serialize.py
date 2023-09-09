@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, cast
 from avilla.core.elements import Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
-from avilla.telegram.elements import (
+from avilla.telegram.fragments import (
     MessageFragment,
     MessageFragmentPhoto,
     MessageFragmentText,

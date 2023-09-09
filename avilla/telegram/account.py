@@ -3,8 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from avilla.core.account import AccountStatus, BaseAccount
-from avilla.core.selector import Selector
+from avilla.core.account import BaseAccount
 
 if TYPE_CHECKING:
     from avilla.telegram.bot.bot import TelegramBot
@@ -14,12 +13,6 @@ if TYPE_CHECKING:
 @dataclass
 class TelegramAccount(BaseAccount):
     protocol: TelegramProtocol
-    status: AccountStatus
-
-    def __init__(self, route: Selector, protocol: TelegramProtocol):
-        super().__init__(route, protocol.avilla)
-        self.protocol = protocol
-        self.status = AccountStatus()
 
     @property
     def instance(self) -> TelegramBot:

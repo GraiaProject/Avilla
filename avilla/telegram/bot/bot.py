@@ -1,15 +1,14 @@
 from __future__ import annotations
 
 import asyncio
-from asyncio import Queue
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from launart import Launart, Service, any_completed
 from loguru import logger
 from telegram.constants import MessageType
 from telegram.error import InvalidToken as InvalidTokenOrigin
-from telegram.error import TimedOut
-from telegram.ext import ExtBot, Updater
+from telegram.error import NetworkError, TimedOut
+from telegram.ext import ExtBot
 
 from avilla.core import Selector
 from avilla.core.account import AccountInfo
@@ -21,9 +20,11 @@ from avilla.standard.core.account import (
 from avilla.telegram.account import TelegramAccount
 from avilla.telegram.bot.base import TelegramBase
 from avilla.telegram.const import PLATFORM
-from avilla.telegram.elements import MessageFragmentPhoto, MessageFragmentText
 from avilla.telegram.exception import InvalidToken
-from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
+from avilla.telegram.fragments import MessageFragmentPhoto, MessageFragmentText
+
+if TYPE_CHECKING:
+    from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
 
 
 class TelegramBot(TelegramBase["TelegranBot"], Service):
@@ -34,7 +35,6 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
     config: TelegramBotConfig
 
     bot: ExtBot
-    updater: Updater
     available: bool
     __offset: int | None
 
@@ -58,7 +58,6 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
             self.bot = ExtBot(
                 self.config.token, base_url=str(self.config.base_url), base_file_url=str(self.config.base_file_url)
             )
-            self.updater = Updater(self.bot, Queue())
             await self.bot.initialize()
             logger.info(f"{self.id} is available")
             self.available = True
@@ -66,7 +65,7 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
             if account_route in self.protocol.avilla.accounts:
                 account = cast(TelegramAccount, self.protocol.avilla.accounts[account_route].account)
             else:
-                account = TelegramAccount(account_route, self.protocol)
+                account = TelegramAccount(account_route, self.protocol.avilla, self.protocol)
                 self.protocol.avilla.accounts[account_route] = AccountInfo(
                     account_route,
                     account,
@@ -76,7 +75,6 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
                 self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
 
             self.account = account
-            self.protocol.service.instance_map[self.account_id] = self
             self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
         except InvalidTokenOrigin as e:
             self.available = False
@@ -97,10 +95,10 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
                 self.__offset = update[-1].update_id + 1
             except InvalidToken:
                 self.kill_switch.set()
-                return
-            except (TimedOut, TimeoutError):
+                break
+            except (TimedOut, TimeoutError, NetworkError):
                 self.timeout_signal.set()
-                return
+                break
 
     async def send(self, target, fragments):
         chat = int(target.pattern["chat"])
@@ -133,8 +131,6 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
         avilla = self.protocol.avilla
         for n in list(avilla.accounts.keys()):
             logger.debug(f"Unregistering telegram account {n}...")
-            account = cast("TelegramAccount", avilla.accounts[n].account)
-            account.status.enabled = False
             await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
             if n.follows("land(telegram).account") and n["account"] == str(self.account_id):
                 del avilla.accounts[n]
@@ -166,7 +162,6 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
             if timeout_task in done:
                 receiver_task.cancel()
                 logger.warning(f"Timeout for {self.id}, will reconnect in 5 seconds...")
-                await self.unregister()
                 await asyncio.sleep(5)
 
     async def launch(self, manager: Launart):

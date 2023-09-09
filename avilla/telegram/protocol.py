@@ -5,12 +5,13 @@ from dataclasses import dataclass
 from yarl import URL
 
 from avilla.core.application import Avilla
-from avilla.core.protocol import BaseProtocol
+from avilla.core.protocol import BaseProtocol, ProtocolConfig
+from avilla.telegram.bot import TelegramBot
 from avilla.telegram.service import TelegramService
 
 
 @dataclass
-class TelegramBotConfig:
+class TelegramBotConfig(ProtocolConfig):
     token: str
     base_url: URL = URL("https://api.telegram.org/bot")
     base_file_url: URL = URL("https://api.telegram.org/file/bot")
@@ -44,3 +45,8 @@ class TelegramProtocol(BaseProtocol):
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
+
+    def configure(self, config: TelegramBotConfig):
+        bot = TelegramBot(self, config)
+        self.service.instance_map[bot.account_id] = bot
+        return self

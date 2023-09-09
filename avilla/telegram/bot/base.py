@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
 from loguru import logger
 from telegram import Update
 
-from avilla.core import Context, Selector
+from avilla.core import Selector
 from avilla.core.ryanvk.staff import Staff
-from avilla.telegram.elements import MessageFragment
+from avilla.telegram.fragments import MessageFragment
 from avilla.telegram.utilities import telegram_event_type
 
 if TYPE_CHECKING:
@@ -53,7 +53,7 @@ class TelegramBase(Generic[T]):
                 event_type = telegram_event_type(_data)
                 event = await Staff.focus(instance).parse_event(event_type, _data)
                 if event == "non-implemented":
-                    logger.warning(f"received unsupported event {event_type}: {_data}")
+                    logger.warning(f"received unsupported event: {_data}")
                     return
                 elif event is not None:
                     await self.protocol.post_event(event)

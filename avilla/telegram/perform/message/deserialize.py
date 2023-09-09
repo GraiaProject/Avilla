@@ -8,7 +8,7 @@ from avilla.core.elements import Picture, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
-from avilla.telegram.elements import (
+from avilla.telegram.fragments import (
     MessageFragment,
     MessageFragmentPhoto,
     MessageFragmentText,
