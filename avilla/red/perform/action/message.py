@@ -55,7 +55,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                 "elements": msg,
             },
         )
-        msg_id = resp["payload"]["msgId"] if "payload" in resp else "unknown"
+        msg_id = resp["msgId"] if "msgId" in resp else "unknown"
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(msg_id)
 
     @MessageSend.send.collect(m, "land.friend")
@@ -80,7 +80,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                 "elements": msg,
             },
         )
-        msg_id = resp["payload"]["msgId"] if "payload" in resp else "unknown"
+        msg_id = resp["msgId"] if "msgId" in resp else "unknown"
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(msg_id)
 
     @MessageRevoke.revoke.collect(m, "land.group.message")

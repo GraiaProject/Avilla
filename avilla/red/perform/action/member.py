@@ -7,7 +7,7 @@ from avilla.core.exceptions import UnknownTarget
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Nick, Summary
-from avilla.standard.core.privilege import MuteInfo
+from avilla.standard.core.privilege import MuteInfo, MuteCapability
 from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
@@ -62,3 +62,24 @@ class RedMemberActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]
                     timedelta(seconds=i["shutUpTime"]),
                 )
         raise UnknownTarget("Member not found")
+
+    @m.entity(MuteCapability.mute, "land.group.member")
+    async def group_member_mute(self, target: Selector, duration: timedelta):
+        time = max(60.0, min(duration.total_seconds(), 2592000))
+        await self.account.websocket_client.call_http(
+            "post", "api/group/muteMember",
+            {
+                "group": int(target["group"]),
+                "memList": [{"uin": int(target["member"]), "timeStamp": time}]
+            }
+        )
+
+    @m.entity(MuteCapability.unmute, "land.group.member")
+    async def group_member_unmute(self, target: Selector):
+        await self.account.websocket_client.call_http(
+            "post", "api/group/muteMember",
+            {
+                "group": int(target["group"]),
+                "memList": [{"uin": int(target["member"]), "timeStamp": 0}]
+            }
+        )

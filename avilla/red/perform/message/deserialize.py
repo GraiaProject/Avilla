@@ -7,9 +7,11 @@ from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.red.resource import RedFileResource, RedImageResource, RedVoiceResource, RedVideoResource
-from avilla.standard.qq.elements import App, Face, MarketFace, Poke, PokeKind, Forward
+from avilla.standard.qq.elements import App, Face, MarketFace, Poke, PokeKind, Forward, Node, DisplayStrategy
+from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Unknown
 from graia.ryanvk import OptionalAccess
+from selectolax.parser import HTMLParser
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -97,7 +99,17 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
 
     @RedMessageDeserialize.collect(m, "multiForwardMsg")
     async def forward(self, raw_element: dict) -> Forward:
-        return Forward(raw_element["resId"])
+        print(raw_element)
+        root = HTMLParser(raw_element["xmlContent"])
+        title = root.css_first("source").attributes["name"]
+        summary = root.css_first("summary").text()
+        brief = root.css_first("msg").attributes["brief"]
+        preview = [node.text() for node in root.tags("title")[1:]]
+        return Forward(
+            raw_element["resId"],
+            nodes=[Node(content=MessageChain([Text(content[2:])])) for content in preview],
+            strategy=DisplayStrategy(title, brief, preview=preview, summary=summary)
+        )
 
     @RedMessageDeserialize.collect(m, "video")
     async def video(self, raw_element: dict) -> Video:
