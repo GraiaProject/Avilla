@@ -44,8 +44,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         msg = await self.account.staff.serialize_message(message)
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
-        await self.account.websocket_client.call(
-            "message::send",
+        resp = await self.account.websocket_client.call_http(
+            "post", "api/message/send",
             {
                 "peer": {
                     "chatType": 2,
@@ -55,7 +55,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                 "elements": msg,
             },
         )
-        return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message("xxxx")
+        msg_id = resp["payload"]["msgId"] if "payload" in resp else "unknown"
+        return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(msg_id)
 
     @MessageSend.send.collect(m, "land.friend")
     async def send_friend_msg(
@@ -68,8 +69,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         msg = await self.account.staff.serialize_message(message)
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
-        await self.account.websocket_client.call(
-            "message::send",
+        resp = await self.account.websocket_client.call(
+            "post", "api/message/send",
             {
                 "peer": {
                     "chatType": 1,
@@ -79,7 +80,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                 "elements": msg,
             },
         )
-        return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message("xxxx")
+        msg_id = resp["payload"]["msgId"] if "payload" in resp else "unknown"
+        return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(msg_id)
 
     @MessageRevoke.revoke.collect(m, "land.group.message")
     async def revoke_group_msg(
