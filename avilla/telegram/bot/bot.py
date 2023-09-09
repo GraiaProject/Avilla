@@ -29,13 +29,14 @@ if TYPE_CHECKING:
 
 class TelegramBot(TelegramBase["TelegranBot"], Service):
     required: set[str] = set()
-    stages: set[str] = {"blocking"}
+    stages: set[str] = {"preparing", "blocking"}
 
     protocol: TelegramProtocol
     config: TelegramBotConfig
 
     bot: ExtBot
     available: bool
+    __auth: bool
     __offset: int | None
 
     def __init__(self, protocol: TelegramProtocol, config: TelegramBotConfig):
@@ -43,7 +44,11 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
         self.protocol = protocol
         self.config = config
         self.__offset = None
-        self.available = False
+        self.__auth = False
+
+    @property
+    def available(self):
+        return self.__auth and not self.kill_switch.is_set() and not self.timeout_signal.is_set()
 
     @property
     def account_id(self):
@@ -53,41 +58,43 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
     def id(self):
         return f"telegram/bot#{self.account_id}"
 
-    async def auth(self):
+    async def auth(self, __retries: int = 0, __max_retries: int = 5):
         try:
             self.bot = ExtBot(
                 self.config.token, base_url=str(self.config.base_url), base_file_url=str(self.config.base_file_url)
             )
             await self.bot.initialize()
             logger.info(f"{self.id} is available")
-            self.available = True
-            account_route = Selector().land("telegram").account(str(self.account_id))
-            if account_route in self.protocol.avilla.accounts:
-                account = cast(TelegramAccount, self.protocol.avilla.accounts[account_route].account)
-            else:
-                account = TelegramAccount(account_route, self.protocol.avilla, self.protocol)
-                self.protocol.avilla.accounts[account_route] = AccountInfo(
-                    account_route,
-                    account,
-                    self.protocol,
-                    PLATFORM,
-                )
-                self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
-
-            self.account = account
-            self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
+            self.__auth = True
         except InvalidTokenOrigin as e:
-            self.available = False
             raise InvalidToken(self.config.token) from e
-        except TimedOut as e:
-            self.available = False
-            raise TimeoutError from e
+        except (TimedOut, NetworkError) as e:
+            logger.warning(f"Failed to connect to telegram server: {e}, retrying ({__retries}/{__max_retries})...")
+            if __retries < __max_retries:
+                await self.auth(__retries + 1, __max_retries)
+            else:
+                logger.error(f"Failed to connect to telegram server: {e}, aborting...")
+
+    def register(self):
+        account_route = Selector().land("telegram").account(str(self.account_id))
+        if account_route in self.protocol.avilla.accounts:
+            account = cast(TelegramAccount, self.protocol.avilla.accounts[account_route].account)
+        else:
+            account = TelegramAccount(account_route, self.protocol.avilla, self.protocol)
+            self.protocol.avilla.accounts[account_route] = AccountInfo(
+                account_route,
+                account,
+                self.protocol,
+                PLATFORM,
+            )
+            self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
+
+        self.account = account
+        self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
 
     async def message_receive(self):
         while not self.manager.status.exiting:
             try:
-                if not self.available:
-                    await self.auth()
                 if not (update := await self.bot.get_updates(offset=self.__offset, timeout=self.config.timeout)):
                     continue
                 for u in update:
@@ -157,7 +164,6 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
                 else:
                     logger.info(f"{self.id} exiting...")
                 await self.unregister()
-                self.available = False
                 return
             if timeout_task in done:
                 receiver_task.cancel()
@@ -165,5 +171,9 @@ class TelegramBot(TelegramBase["TelegranBot"], Service):
                 await asyncio.sleep(5)
 
     async def launch(self, manager: Launart):
+        async with self.stage("preparing"):
+            await self.auth()
+            self.register()
+
         async with self.stage("blocking"):
             await any_completed(manager.status.wait_for_sigexit(), self.daemon())

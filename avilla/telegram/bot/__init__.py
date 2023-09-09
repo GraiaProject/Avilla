@@ -1,1 +1,1 @@
-from avilla.telegram.bot.bot import TelegramBot as TelegramBot
+from .bot import TelegramBot as TelegramBot
