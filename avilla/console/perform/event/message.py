@@ -46,6 +46,6 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
                 scene=console,
                 sender=console,
                 content=message,
-                time=datetime.fromtimestamp(raw_event.time.timestamp()),
+                time=raw_event.time,
             ),
         )
