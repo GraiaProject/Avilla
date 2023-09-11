@@ -6,7 +6,7 @@ from loguru import logger
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageRevoke, MessageSend
+from avilla.standard.core.message import MessageRevoke, MessageSend, MessageReceived, MessageSent
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
@@ -55,7 +55,17 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                 "elements": msg,
             },
         )
-        msg_id = resp["msgId"] if "msgId" in resp else "unknown"
+        if "msgId" in resp:
+            msg_id = resp["msgId"]
+            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event("message::recv", resp)
+            if TYPE_CHECKING:
+                assert isinstance(event, MessageReceived)
+            event.context = self.account.get_context(target.member(self.account.route["account"]))
+            event.message.scene = target
+            event.message.sender = target.member(self.account.route["account"])
+            self.protocol.post_event(MessageSent(event.context, event.message, self.account))
+        else:
+            msg_id = "unknown"
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(msg_id)
 
     @MessageSend.send.collect(m, "land.friend")
@@ -69,7 +79,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         msg = await self.account.staff.serialize_message(message)
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
-        resp = await self.account.websocket_client.call(
+        resp = await self.account.websocket_client.call_http(
             "post", "api/message/send",
             {
                 "peer": {
@@ -80,7 +90,17 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                 "elements": msg,
             },
         )
-        msg_id = resp["msgId"] if "msgId" in resp else "unknown"
+        if "msgId" in resp:
+            msg_id = resp["msgId"]
+            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event("message::recv", resp)
+            if TYPE_CHECKING:
+                assert isinstance(event, MessageReceived)
+            event.context = self.account.get_context(target, via=self.account.route)
+            event.message.scene = target
+            event.message.sender = self.account.route
+            self.protocol.post_event(MessageSent(event.context, event.message, self.account))
+        else:
+            msg_id = "unknown"
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(msg_id)
 
     @MessageRevoke.revoke.collect(m, "land.group.message")

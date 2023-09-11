@@ -51,7 +51,7 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         return RelationshipCreated(context)
 
     @EventParse.collect(m, "group::member::legacy::add::invited")
-    async def member_join(self, raw_event: dict):
+    async def member_join_invited(self, raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")
@@ -59,8 +59,8 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         group = Selector().land(account.route["land"]).group(str(raw_event.get("peerUin", raw_event.get("peerUid"))))
         group_data = raw_event["elements"][0]["grayTipElement"]["xmlElement"]
         root = HTMLParser(group_data["content"])
-        operator = group.member(root.tags("qq")[0].attributes["jp"])
-        member = group.member(root.tags("qq")[1].attributes["jp"])
+        operator = group.member(root.tags("qq")[0].attributes["jp"])  # type: ignore
+        member = group.member(root.tags("qq")[1].attributes["jp"])  # type: ignore
         context = Context(
             account,
             member,
