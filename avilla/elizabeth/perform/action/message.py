@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend
+from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -36,6 +37,21 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result["msg"] != "success" or result["messageId"] < 0:
             raise RuntimeError(f"Failed to send message to {target.pattern['group']}: {message}")
+        
+        context = self.account.get_context(target.member(self.account.route["account"]))
+        self.protocol.post_event(
+            MessageSent(
+                context,
+                Message(
+                    result["messageId"],
+                    target,
+                    context.client,
+                    message,
+                    datetime.now(),
+                ),
+                self.account,
+            )
+        )
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["messageId"])
 
     @m.entity(MessageSend.send, "land.friend")
@@ -57,6 +73,20 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result["msg"] != "success" or result["messageId"] < 0:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {message}")
+        context = self.account.get_context(target, via=self.account.route)
+        self.protocol.post_event(
+            MessageSent(
+                context,
+                Message(
+                    result["messageId"],
+                    target,
+                    context.client,
+                    message,
+                    datetime.now(),
+                ),
+                self.account,
+            )
+        )
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["messageId"])
 
     @m.entity(MessageRevoke.revoke, "land.group.message")
