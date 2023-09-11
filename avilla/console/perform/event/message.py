@@ -35,7 +35,7 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
         context = Context(
             account=self.account,
             client=console,
-            endpoint=console,
+            endpoint=self.account.route,
             scene=console,
             selft=self.account.route,
         )
