@@ -17,10 +17,11 @@ class ConsoleContextPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAc
 
     @CoreCapability.get_context.collect(m, "land.user")
     def get_context_from_channel(self, target: Selector, *, via: Selector | None = None):
-        context = Context(
+        return Context(
             account=self.account,
             client=target,
             endpoint=self.account.route,
             scene=target,
             selft=self.account.route,
         )
+        
