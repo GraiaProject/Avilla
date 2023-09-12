@@ -112,6 +112,15 @@ class Reference(Element):
     slice: tuple[int, int] | None = None
 
 
+@dataclass
+class Emoji(Element):
+    id: str
+    name: str | None = None
+
+    def __str__(self) -> str:
+        return f"[Emoji:id={self.id};name={self.name}]"
+
+
 class Unknown(Element):
     type: str
     raw_data: Any

@@ -3,14 +3,13 @@ from __future__ import annotations
 import base64
 from typing import TYPE_CHECKING, cast
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Notice, NoticeAll, Picture, Text, Emoji
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import (
     App,
     Dice,
-    Face,
     FlashImage,
     Gift,
     Json,
@@ -36,8 +35,8 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
     async def text(self, element: Text) -> dict:
         return {"type": "text", "data": {"text": element.text}}
 
-    @OneBot11MessageSerialize.collect(m, Face)
-    async def face(self, element: Face) -> dict:
+    @OneBot11MessageSerialize.collect(m, Emoji)
+    async def face(self, element: Emoji) -> dict:
         return {"type": "face", "data": {"id": int(element.id)}}
 
     @OneBot11MessageSerialize.collect(m, Picture)
