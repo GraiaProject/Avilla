@@ -9,16 +9,6 @@ from rich.text import Text as RichText
 from graia.amnesia.message.element import Element
 
 
-class Emoji(Element):
-    name: str
-
-    def __init__(self, name: str):
-        self.name = name
-
-    def __str__(self):
-        return f"[$Emoji:name={self.name}]"
-
-
 @dataclass
 class Markup(Element):
     markup: str

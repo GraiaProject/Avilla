@@ -20,15 +20,6 @@ class FlashImage(Picture):
 
 
 @dataclass
-class Face(Element):
-    id: str
-    name: str | None = None
-
-    def __str__(self) -> str:
-        return f"[$Face:id={self.id};name={self.name}]"
-
-
-@dataclass
 class MarketFace(Element):
     id: str
     name: str | None = None

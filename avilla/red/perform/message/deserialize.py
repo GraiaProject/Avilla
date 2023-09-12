@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Emoji
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.red.resource import RedFileResource, RedImageResource, RedVoiceResource, RedVideoResource
-from avilla.standard.qq.elements import App, Face, MarketFace, Poke, PokeKind, Forward, Node, DisplayStrategy
+from avilla.standard.qq.elements import App, MarketFace, Poke, PokeKind, Forward, Node, DisplayStrategy
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Unknown
 from graia.ryanvk import Access
@@ -34,10 +34,10 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
         return Notice(self.context.scene.member(raw_element.get("atNtUin", "atNtUid")))
 
     @RedMessageDeserialize.collect(m, "face")
-    async def face(self, raw_element: dict) -> Face | Poke:
+    async def face(self, raw_element: dict) -> Emoji | Poke:
         if raw_element["faceType"] == 5:
             return Poke(PokeKind.ChuoYiChuo)
-        return Face(raw_element["faceIndex"], raw_element["faceText"])
+        return Emoji(raw_element["faceIndex"], raw_element["faceText"])
 
     @RedMessageDeserialize.collect(m, "pic")
     async def pic(self, raw_element: dict) -> Picture:
