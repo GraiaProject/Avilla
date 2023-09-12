@@ -31,6 +31,8 @@ def _parse_follows_item(item: str, items: dict[str, _FollowItem], predicates: di
             raise ValueError("land already exists")
         item = item[2:]
         items["land"] = _FollowItem("land")
+        if not item.strip():
+            return
     if "*" in items:
         raise ValueError("wildcard already exists, no more items allowed")
     if not (m := _follows_pattern.fullmatch(item)):

@@ -27,6 +27,14 @@ class RedContextPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._
 
     @CoreCapability.get_context.collect(m, "land.friend")
     def get_context_from_friend(self, target: Selector, *, via: Selector | None = None):
+        if via:
+            return Context(
+                self.account,
+                via,
+                target,
+                target,
+                self.account.route,
+            )
         return Context(
             self.account,
             target,

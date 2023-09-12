@@ -37,6 +37,14 @@ class QQGuildContextPerform((m := AccountCollector["QQGuildProtocol", "QQGuildAc
 
     @CoreCapability.get_context.collect(m, "land.guild.user")
     def get_context_from_user(self, target: Selector, *, via: Selector | None = None):
+        if via:
+            return Context(
+                self.account,
+                via,
+                target,
+                target,
+                self.account.route,
+            )
         return Context(
             self.account,
             target,

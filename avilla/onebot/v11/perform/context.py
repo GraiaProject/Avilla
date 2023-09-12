@@ -36,7 +36,7 @@ class OneBot11ContextPerform((m := AccountCollector["OneBot11Protocol", "OneBot1
         )
 
     @CoreCapability.get_context.collect(m, "land.stranger")
-    def get_context_from_friend(self, target: Selector, *, via: Selector | None = None):
+    def get_context_from_stranger(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
             target,

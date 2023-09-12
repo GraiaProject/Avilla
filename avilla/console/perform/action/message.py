@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from secrets import token_hex
 from typing import TYPE_CHECKING
 
@@ -7,10 +8,12 @@ from loguru import logger
 from nonechat.info import Robot
 from nonechat.message import ConsoleMessage
 
+from avilla.core.context import Context
+from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageSend
+from avilla.standard.core.message import MessageSend, MessageSent
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -41,4 +44,25 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
             },
         )
         logger.info(f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}")
-        return Selector().land(self.account.route["land"]).message(token_hex(16))
+
+        context = Context(
+            account=self.account,
+            client=self.account.route,
+            endpoint=target,
+            scene=target,
+            selft=self.account.route,
+        )
+        event = MessageSent(
+            context,
+            Message(
+                id=token_hex(16),
+                scene=target,
+                sender=self.account.route,
+                content=message,
+                time=datetime.now(),
+            ),
+            self.account,
+        )
+        self.protocol.post_event(event)
+
+        return Selector().land(self.account.route["land"]).message(event.message.id)

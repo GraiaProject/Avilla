@@ -51,4 +51,4 @@ class AuditException(Exception):
 
     async def get_audit_result(self, timeout: Optional[float] = None):
         """获取审核结果"""
-        return await audit_result.fetch(self.audit_id, timeout)
+        return await audit_result.fetch(self.audit_id, timeout or 60)
