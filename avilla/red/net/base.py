@@ -46,7 +46,7 @@ class RedNetworking(Generic[T]):
             event_type = data["type"]
             if not data["payload"]:
                 logger.warning(f"received empty event {event_type}")
-                return
+                continue
 
             async def event_parse_task(t: str, payload: dict):
                 event = await Staff.focus(connection).parse_event(t, payload)
