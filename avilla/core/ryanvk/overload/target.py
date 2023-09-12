@@ -116,11 +116,14 @@ class TargetOverload(FnOverload):
                 else:
                     for header, branch in branches.items():
                         if callable(header) and header(value):
-                            break
-                    else:  # hit wildcard
-                        if None not in branches:
-                            break
-                        header = None
+                            break  # hit predicate
+                    else:
+                        if None in branches:  # hit exact key
+                            header = None
+                        elif "*" in branches:  # hit wildcard
+                            bind_sets.append(branches["*"].bind)
+
+                        break
 
                 branch = branches[header]
                 processing_scope = branch.levels
