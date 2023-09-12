@@ -5,18 +5,18 @@ from avilla.core.selector import Selector
 
 
 class RequestCapability(Capability):
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def accept(self, target: Selector):
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def reject(self, target: Selector, reason: str | None = None, forever: bool = False):
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def cancel(self, target: Selector):
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def ignore(self, target: Selector):
         ...

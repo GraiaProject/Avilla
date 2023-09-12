@@ -31,8 +31,14 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
     ) -> Selector:
         if TYPE_CHECKING:
             assert isinstance(self.protocol, ConsoleProtocol)
-        serialized_msg = ConsoleMessage(await Staff.focus(self.account).serialize_message(message))
+        serialized_msg = ConsoleMessage(await self.staff.serialize_message(message))
 
-        await self.account.client.call("send_msg", {"message": serialized_msg, "info": Robot(self.protocol.name)})
+        await self.account.client.call(
+            "send_msg",
+            {
+                "message": serialized_msg,
+                "info": Robot(self.protocol.name),
+            },
+        )
         logger.info(f"{self.account.route['land']}: [send]" f"[Console]" f" <- {str(message)!r}")
         return Selector().land(self.account.route["land"]).message(token_hex(16))

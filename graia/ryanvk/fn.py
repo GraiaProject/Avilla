@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import inspect
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Generic, TypedDict, overload
+from typing import TYPE_CHECKING, Any, Callable, Generic, overload
 
 from typing_extensions import Concatenate, ParamSpec, Self, TypeVar
 
-from graia.ryanvk.override import OverridePerformEntity
+from .behavior import DEFAULT_BEHAVIOR, FnBehavior
+from .override import OverridePerformEntity
 
 if TYPE_CHECKING:
     from .capability import Capability
@@ -24,48 +24,17 @@ P1 = ParamSpec("P1")
 P2 = ParamSpec("P2")
 R2 = TypeVar("R2", covariant=True)
 
-
-class FnRecord(TypedDict):
-    overload_enabled: bool
-    overload_scopes: dict[str, dict[Any, Any]]
-    handler: Callable | None
+B = TypeVar("B", bound=FnBehavior, default=FnBehavior, covariant=True)
 
 
-class _MergeScopesInfo(TypedDict):
-    overload_item: FnOverload
-    scopes: list[dict[Any, Any]]
-
-
-@dataclass(eq=True, frozen=True)
-class FnImplement:
-    fn: Fn
-
-    def merge(self, *records: FnRecord):
-        scopes_info: dict[str, _MergeScopesInfo] = {}
-        scopes = {}
-
-        for record in records:
-            for k, v in record["overload_scopes"].items():
-                overload_item = self.fn.overload_map[k]
-                info = scopes_info.setdefault(k, {"overload_item": overload_item, "scopes": []})
-                info["scopes"].append(v)
-
-        for identity, info in scopes_info.items():
-            merged_scope = info["overload_item"].merge_scopes(*info["scopes"])
-            scopes[identity] = merged_scope
-
-        return {
-            "overload_enabled": self.fn.has_overload_capability,
-            "overload_scopes": scopes,
-            "handler": records[-1]["handler"],
-        }
-
-
-class Fn(Generic[P, R]):
-    owner: type[BasePerform | Capability]
+class Fn(Generic[P, R, B]):
+    owner: type[BasePerform | Capability]  # TODO: review here
     name: str
+
     shape: Callable
     shape_signature: inspect.Signature
+
+    behavior: B
 
     overload_params: dict[str, FnOverload]
     overload_param_map: dict[FnOverload, list[str]]
@@ -74,10 +43,13 @@ class Fn(Generic[P, R]):
     def __init__(
         self,
         shape: Callable[Concatenate[Any, P], R],
+        behavior: B = DEFAULT_BEHAVIOR,
         overload_param_map: dict[FnOverload, list[str]] | None = None,
     ):
         self.shape = shape
         self.shape_signature = inspect.Signature(list(inspect.Signature.from_callable(shape).parameters.values())[1:])
+        self.behavior = behavior
+
         self.overload_param_map = overload_param_map or {}
         self.overload_params = {i: k for k, v in self.overload_param_map.items() for i in v}
         self.overload_map = {i.identity: i for i in self.overload_param_map}
@@ -93,20 +65,20 @@ class Fn(Generic[P, R]):
     @overload
     def __get__(self, instance: Any, owner: type) -> Self:
         ...
-    
+
     def __get__(self, instance: BasePerform | None, owner: type):
         if not isinstance(instance, BasePerform):
             return self
 
         def wrapper(*args: P.args, **kwargs: P.kwargs):
             return instance.staff.call_fn(self, *args, **kwargs)
-    
+
         return wrapper
 
     @classmethod
-    def with_overload(cls, overload_param_map: dict[FnOverload, list[str]]):
-        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[P1, R1]:
-            return cls(shape, overload_param_map=overload_param_map)  # type: ignore
+    def custom(cls, overload_param_map: dict[FnOverload, list[str]], behavior: FnBehavior = DEFAULT_BEHAVIOR):
+        def wrapper(shape: Callable[Concatenate[Any, P], R]):
+            return cls(shape, overload_param_map=overload_param_map, behavior=behavior)
 
         return wrapper
 
@@ -115,34 +87,12 @@ class Fn(Generic[P, R]):
         return bool(self.overload_param_map)
 
     def collect(
-        self,
+        self: Fn[P, R, SupportsCollect[Concatenate[Any, P1], R1]],  # type: ignore
         collector: BaseCollector,
-        **overload_settings: Any,
-    ):
-        def wrapper(entity: Callable[Concatenate[Any, P], R]):
-            artifact = collector.artifacts.setdefault(
-                FnImplement(self),
-                {
-                    "overload_enabled": self.has_overload_capability,
-                    "overload_scopes": {},
-                    "handler": None,
-                },
-            )
-            if self.has_overload_capability:
-                for fn_overload, params in self.overload_param_map.items():
-                    scope = artifact["overload_scopes"].setdefault(fn_overload.identity, {})
-                    fn_overload.collect_entity(
-                        collector,
-                        scope,
-                        entity,
-                        fn_overload.get_params_layout(params, overload_settings),
-                    )
-            else:
-                artifact["handler"] = (collector, entity)
-
-            return entity
-
-        return wrapper
+        *args: P1.args,
+        **kwargs: P1.kwargs,
+    ) -> R1:
+        return self.behavior.collect(collector, self, *args, **kwargs)
 
     def override(
         self: SupportsCollect[P1, Callable[[Callable[Concatenate[Any, P2], R2]], Any]],  # pyright: ignore

@@ -7,15 +7,15 @@ from avilla.core.selector import Selector
 
 
 class SceneCapability(Capability):
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def leave(self, target: Selector) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def disband(self, target: Selector) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def remove_member(self, target: Selector, reason: str | None = None) -> None:
         ...
 
@@ -43,7 +43,7 @@ class RequestJoinCapability(Capability):
 
 
 class RelationshipTerminate(Capability):
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def terminate(self, target: Selector) -> None:
         # TODO: use wand
         ...

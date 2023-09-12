@@ -7,46 +7,46 @@ from avilla.core.selector import Selector
 
 
 class SummaryCapability(Capability):
-    @Fn.with_overload({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    @Fn.custom({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
     async def set_name(self, target: Selector, route: Route, name: str) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    @Fn.custom({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
     async def unset_name(self, target: Selector, route: Route) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    @Fn.custom({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
     async def set_description(self, target: Selector, route: Route, description: str) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    @Fn.custom({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
     async def unset_description(self, target: Selector, route: Route) -> None:
         ...
 
 
 class NickCapability(Capability):
-    @Fn.with_overload({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    @Fn.custom({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
     async def set_name(self, target: Selector, route: Route, name: str) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def set_nickname(self, target: Selector, nickname: str) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def unset_nickname(self, target: Selector) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def set_badge(self, target: Selector, badge: str) -> None:
         ...
 
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     async def unset_badge(self, target: Selector) -> None:
         ...
 
 
 class AvatarFetch(Capability):
-    @Fn.with_overload({TargetOverload(): ["target"]})
+    @Fn.custom({TargetOverload(): ["target"]})
     def get_avatar(self, target: Selector) -> Resource[bytes]:
         ...
