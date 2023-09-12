@@ -77,8 +77,8 @@ class Fn(Generic[P, R, B]):
 
     @classmethod
     def custom(cls, overload_param_map: dict[FnOverload, list[str]], behavior: FnBehavior = DEFAULT_BEHAVIOR):
-        def wrapper(shape: Callable[Concatenate[Any, P], R]):
-            return cls(shape, overload_param_map=overload_param_map, behavior=behavior)
+        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[P1, R1]:
+            return cls(shape, overload_param_map=overload_param_map, behavior=behavior)  # type: ignore
 
         return wrapper
 
