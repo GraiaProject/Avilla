@@ -73,7 +73,8 @@ class AvillaConsoleBackend(Backend):
 
     async def post_event(self, event: Event):
         with suppress(NotImplementedError):
-            await self.account.staff.call_fn(ConsoleCapability.event_callback, event)
+            res = await self.account.staff.call_fn(ConsoleCapability.event_callback, event)
+            self._service.protocol.post_event(res)
             return
 
         logger.warning(f"received unsupported event {event.type}: {event}")

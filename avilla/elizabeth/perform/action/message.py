@@ -10,15 +10,17 @@ from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
 from graia.amnesia.message import MessageChain
 
+from avilla.elizabeth.capability import ElizabethCapability
+
 if TYPE_CHECKING:
-    from ...account import ElizabethAccount  # noqa
-    from ...protocol import ElizabethProtocol  # noqa
+    from avilla.elizabeth.account import ElizabethAccount  # noqa
+    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 
 class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @m.entity(MessageSend.send, "land.group")
+    @m.entity(MessageSend.send, target="land.group")
     async def send_group_message(
         self,
         target: Selector,
@@ -31,7 +33,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             "sendGroupMessage",
             {
                 "target": int(target.pattern["group"]),
-                "messageChain": await self.account.staff.serialize_message(message),
+                "messageChain": [await self.staff.call_fn(ElizabethCapability.serialize_element, i) for i in message],
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
@@ -54,7 +56,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["messageId"])
 
-    @m.entity(MessageSend.send, "land.friend")
+    @m.entity(MessageSend.send, target="land.friend")
     async def send_friend_message(
         self,
         target: Selector,
@@ -67,7 +69,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
             "sendFriendMessage",
             {
                 "target": int(target.pattern["friend"]),
-                "messageChain": await self.account.staff.serialize_message(message),
+                "messageChain": [await self.staff.call_fn(ElizabethCapability.serialize_element, i) for i in message],
                 **({"quote": reply.pattern["message"]} if reply is not None else {}),
             },
         )
@@ -89,30 +91,30 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["messageId"])
 
-    @m.entity(MessageRevoke.revoke, "land.group.message")
-    async def revoke_group_message(self, message: Selector):
+    @m.entity(MessageRevoke.revoke, target="land.group.message")
+    async def revoke_group_message(self, target: Selector):
         await self.account.connection.call(
             "update",
             "recall",
             {
-                "messageId": int(message.pattern["message"]),
-                "target": int(message.pattern["group"]),
+                "messageId": int(target.pattern["message"]),
+                "target": int(target.pattern["group"]),
             },
         )
 
-    @m.entity(MessageRevoke.revoke, "land.friend.message")
-    async def revoke_friend_message(self, message: Selector):
+    @m.entity(MessageRevoke.revoke, target="land.friend.message")
+    async def revoke_friend_message(self, target: Selector):
         await self.account.connection.call(
             "update",
             "recall",
             {
-                "messageId": int(message.pattern["message"]),
-                "target": int(message.pattern["friend"]),
+                "messageId": int(target.pattern["message"]),
+                "target": int(target.pattern["friend"]),
             },
         )
 
-    @m.entity(CoreCapability.pull, "land.group.message", Message)
-    async def get_group_message(self, message: Selector) -> Message:
+    @m.pull("land.group.message", Message)
+    async def get_group_message(self, message: Selector, route: ...) -> Message:
         result = await self.account.connection.call(
             "fetch",
             "messageFromId",
@@ -123,13 +125,13 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result is None:
             raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
-        event = await self.account.staff.ext({"connection": self.account.connection}).parse_event(result["data"]["type"], result["data"])
+        event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(ElizabethCapability.event_callback, result["data"])
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)  # noqa
         return event.message
 
-    @m.entity(CoreCapability.pull, "land.friend.message", Message)
-    async def get_friend_message(self, message: Selector) -> Message:
+    @m.pull("land.friend.message", Message)
+    async def get_friend_message(self, message: Selector, route: ...) -> Message:
         result = await self.account.connection.call(
             "fetch",
             "messageFromId",
@@ -140,7 +142,8 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result is None:
             raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
-        event = await self.account.staff.ext({"connection": self.account.connection}).parse_event(result["data"]["type"], result["data"])
+        event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(ElizabethCapability.event_callback, result["data"])
+        #event = await self.account.staff.ext({"connection": self.account.connection}).parse_event(result["data"]["type"], result["data"])
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)  # noqa
         return event.message

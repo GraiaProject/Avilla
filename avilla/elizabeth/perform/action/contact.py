@@ -15,7 +15,7 @@ class ElizabethContactActionPerform((m := AccountCollector["ElizabethProtocol", 
     m.post_applying = True
 
     @m.pull("land.contact", Nick)
-    async def get_contact_nick(self, target: Selector) -> Nick:
+    async def get_contact_nick(self, target: Selector, route: ...) -> Nick:
         result = await self.account.connection.call(
             "fetch",
             "userProfile",
@@ -26,7 +26,7 @@ class ElizabethContactActionPerform((m := AccountCollector["ElizabethProtocol", 
         return Nick(result["nickname"], result["nickname"], None)
 
     @m.pull("land.contact", Summary)
-    async def get_contact_summary(self, target: Selector) -> Summary:
+    async def get_contact_summary(self, target: Selector, route: ...) -> Summary:
         result = await self.account.connection.call(
             "fetch",
             "userProfile",

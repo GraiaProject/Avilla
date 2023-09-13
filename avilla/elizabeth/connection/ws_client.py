@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from avilla.elizabeth.protocol import ElizabethProtocol, ElizabethConfig
 
 
-class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworking"], Service):
+class ElizabethWsClientNetworking(ElizabethNetworking, Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -97,15 +97,6 @@ class ElizabethWsClientNetworking(ElizabethNetworking["ElizabethWsClientNetworki
 
     async def wait_for_available(self):
         await self.status.wait_for_available()
-
-    def get_staff_components(self):
-        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
-
-    def get_staff_artifacts(self):
-        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
-
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
 
     @property
     def alive(self):

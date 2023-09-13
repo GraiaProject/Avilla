@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @m.entity(RequestCapability.accept, "land.group.request")
+    @m.entity(RequestCapability.accept, target="land.group.request")
     async def accept_member_request(self, target: Selector) -> None:
         event_id, from_id = target.pattern["request"].split(":")[1].split("/")
         await self.account.connection.call(
@@ -29,7 +29,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @m.entity(RequestCapability.reject, "land.group.request")
+    @m.entity(RequestCapability.reject, target="land.group.request")
     async def reject_member_request(self, target: Selector, reason: str | None = None, forever: bool = False) -> None:
         event_id, from_id = target.pattern["request"].split(":")[1].split("/")
         await self.account.connection.call(
@@ -44,7 +44,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @m.entity(RequestCapability.ignore, "land.group.request")
+    @m.entity(RequestCapability.ignore, target="land.group.request")
     async def ignore_member_request(self, target: Selector) -> None:
         event_id, from_id = target.pattern["request"].split(":")[1].split("/")
         await self.account.connection.call(
@@ -59,7 +59,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @m.entity(RequestCapability.accept, "land.group.contact.request")
+    @m.entity(RequestCapability.accept, target="land.group.contact.request")
     async def accept_contact_request(self, target: Selector) -> None:
         await self.account.connection.call(
             "update",
@@ -73,7 +73,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @m.entity(RequestCapability.reject, "land.group.contact.request")
+    @m.entity(RequestCapability.reject, target="land.group.contact.request")
     async def reject_contact_request(self, target: Selector, reason: str | None = None, forever: bool = False) -> None:
         await self.account.connection.call(
             "update",
@@ -87,7 +87,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @m.entity(RequestCapability.accept, "land.group.member.request")
+    @m.entity(RequestCapability.accept, target="land.group.member.request")
     async def accept_bot_invited_request(self, target: Selector) -> None:
         await self.account.connection.call(
             "update",
@@ -101,7 +101,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             },
         )
 
-    @m.entity(RequestCapability.reject, "land.group.member.request")
+    @m.entity(RequestCapability.reject, target="land.group.member.request")
     async def reject_bot_invited_request(
         self, target: Selector, reason: str | None = None, forever: bool = False
     ) -> None:

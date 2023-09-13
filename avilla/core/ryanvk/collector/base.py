@@ -26,13 +26,13 @@ class AvillaBaseCollector(BaseCollector):
     @overload
     def pull(
         self, target: str, route: type[M]
-    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
+    ) -> Callable[[Callable[[Any, Selector, type[M]], Awaitable[M]]], Callable[[Any, Selector, type[M]], Awaitable[M]]]:
         ...
 
     @overload
     def pull(
         self, target: str, route: MetadataRoute[Unpack[tuple[Any, ...]], M]
-    ) -> Callable[[Callable[[Any, Selector], Awaitable[M]]], Callable[[Any, Selector], Awaitable[M]]]:
+    ) -> Callable[[Callable[[Any, Selector, type[M]], Awaitable[M]]], Callable[[Any, Selector, type[M]], Awaitable[M]]]:
         ...
 
     def pull(self, target: str, route: ...) -> ...:

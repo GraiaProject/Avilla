@@ -34,7 +34,7 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
             scene=console,
             selft=self.account.route,
         )
-        translated_event = MessageReceived(
+        return MessageReceived(
             context,
             Message(
                 id=token_hex(16),
@@ -44,4 +44,3 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
                 time=event.time,
             ),
         )
-        self.protocol.post_event(translated_event)

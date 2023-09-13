@@ -4,6 +4,7 @@ from typing import Any, NoReturn, TypeVar
 
 from nonechat.message import Element as ConsoleElement
 
+from avilla.core.event import AvillaEvent
 from graia.amnesia.message import Element as GraiaElement
 from graia.ryanvk import Capability, Fn, TypeOverload
 
@@ -15,7 +16,7 @@ GE_T = TypeVar("GE_T", bound=NoReturn, contravariant=True)
 
 class ConsoleCapability(Capability):
     @Fn.complex({TypeOverload(): ["event"]})
-    async def event_callback(self, event: Any) -> Any:
+    async def event_callback(self, event: Any) -> AvillaEvent:
         ...
 
     @Fn.complex({TypeOverload(): ["element"]})

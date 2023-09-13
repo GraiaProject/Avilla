@@ -21,7 +21,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
     m.post_applying = True
 
     @m.pull("land.group", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"):
             return Summary(raw["name"], None)
@@ -34,7 +34,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
         )
         return Summary(result["name"], None)
 
-    @m.entity(MuteAllCapability.mute_all, "land.group")
+    @m.entity(MuteAllCapability.mute_all, target="land.group")
     async def group_mute_all(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -44,7 +44,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(MuteAllCapability.unmute_all, "land.group")
+    @m.entity(MuteAllCapability.unmute_all, target="land.group")
     async def group_unmute_all(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -54,7 +54,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(SceneCapability.leave, "land.group")
+    @m.entity(SceneCapability.leave, target="land.group")
     async def group_leave(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -64,8 +64,8 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(SummaryCapability.set_name, "land.group", Summary)
-    async def group_set_name(self, target: Selector, t: ..., name: str):
+    @m.entity(SummaryCapability.set_name, target="land.group", route=Summary)
+    async def group_set_name(self, target: Selector, route: ..., name: str):
         privilege_info = await self.account.staff.pull_metadata(target, Privilege)
         if not privilege_info.available:
             self_permission = await self.account.staff.pull_metadata(
@@ -87,8 +87,8 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(CoreCapability.pull, "land.group", Privilege)
-    async def group_get_privilege_info(self, target: Selector) -> Privilege:
+    @m.pull("land.group", Privilege)
+    async def group_get_privilege_info(self, target: Selector, route: ...) -> Privilege:
         self_info = await self.account.connection.call(
             "fetch",
             "memberInfo",

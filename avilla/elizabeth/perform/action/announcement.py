@@ -24,8 +24,8 @@ if TYPE_CHECKING:
 class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.post_applying = True
 
-    @m.entity(CoreCapability.pull, "land.group.announcement", Announcement)
-    async def get_announcement(self, target: Selector) -> Announcement:
+    @m.pull("land.group.announcement", Announcement)
+    async def get_announcement(self, target: Selector, route: ...) -> Announcement:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         group = Selector().land(self.account.route["land"]).group(target.pattern["group"])
         if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).announcement({target.pattern['announcement']})"):
@@ -56,7 +56,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
                 )
         raise KeyError(f"Announcement {target.pattern['announcement']} not found")
 
-    @m.entity(AnnouncementPublish.publish, "land.group")
+    @m.entity(AnnouncementPublish.publish, target="land.group")
     async def publish_announcement(
         self,
         target: Selector,
@@ -90,7 +90,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         result = await self.account.connection.call("update", "anno_publish", data)
         return target.announcement(str(result["fid"]))
 
-    @m.entity(AnnouncementDelete.delete, "land.group.announcement")
+    @m.entity(AnnouncementDelete.delete, target="land.group.announcement")
     async def delete_announcement(self, target: Selector):
         await self.account.connection.call(
             "update",

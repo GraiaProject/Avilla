@@ -17,7 +17,7 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
     m.post_applying = True
 
     @m.pull("land.friend", Nick)
-    async def get_contact_nick(self, target: Selector) -> Nick:
+    async def get_contact_nick(self, target: Selector, route: ...) -> Nick:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"):
             return Nick(raw["nickname"], raw["remark"] or raw["nickname"], None)
@@ -31,7 +31,7 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
         return Nick(result["nickname"], result["nickname"], None)
 
     @m.pull("land.friend", Summary)
-    async def get_contact_summary(self, target: Selector) -> Summary:
+    async def get_contact_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"):
             return Summary(raw["nickname"], "a friend contact assigned to this account")
@@ -44,7 +44,7 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
         )
         return Summary(result["nickname"], "a friend contact assigned to this account")
 
-    @RelationshipTerminate.terminate.collect(m, "land.friend")
+    @RelationshipTerminate.terminate.collect(m, target="land.friend")
     async def friend_terminate(self, target: Selector):
         await self.account.connection.call(
             "update",
