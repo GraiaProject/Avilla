@@ -14,7 +14,7 @@ GE_T = TypeVar("GE_T", bound=NoReturn, contravariant=True)
 
 
 class ConsoleCapability(Capability):
-    @Fn.complex({TypeOverload(): ['event']})
+    @Fn.complex({TypeOverload(): ["event"]})
     async def event_callback(self, event: Any) -> Any:
         ...
 

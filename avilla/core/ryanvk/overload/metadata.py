@@ -22,21 +22,20 @@ class MetadataOverload(FnOverload):
             collection: dict[Route, set] = scope.setdefault(param, {})
             collection.setdefault(route, set()).add(record)
 
-        
     def get_entities(self, scope: dict[Any, Any], args: dict[str, Route]) -> set[tuple[BaseCollector, Callable]]:
         sets: list[set] = []
 
         for arg_name, route in args.items():
             if arg_name not in scope:
                 raise NotImplementedError
-            
+
             collection = scope[arg_name]
 
             if route not in collection:
                 raise NotImplementedError
-            
+
             sets.append(collection[route])
-        
+
         return sets.pop().intersection(*sets)
 
     def merge_scopes(self, *scopes: dict[Any, Any]):

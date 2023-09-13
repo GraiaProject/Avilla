@@ -2,15 +2,16 @@ from __future__ import annotations
 
 from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any, ClassVar
+
 from typing_extensions import Self
 
 from avilla.core._runtime import cx_avilla, cx_context, cx_protocol
 from avilla.core.event import AvillaEvent
-from graia.ryanvk._runtime import processing_artifact_heap
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
     from avilla.core.context import Context
+
 
 class ProtocolConfig:
     ...

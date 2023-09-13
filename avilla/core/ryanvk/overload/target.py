@@ -76,7 +76,7 @@ class TargetOverload(FnOverload):
             pattern_items = _parse_follows(pattern.pattern, **pattern.predicators)
             if not pattern_items:
                 raise ValueError("invalid target pattern")
-            
+
             processing_level = param_scope
 
             if TYPE_CHECKING:
@@ -85,7 +85,7 @@ class TargetOverload(FnOverload):
             for item in pattern_items:
                 if item.name not in processing_level:
                     processing_level[item.name] = {}
-                
+
                 branches = processing_level[item.name]
                 if (item.literal or item.predicate) in branches:
                     branch = branches[item.literal or item.predicate]
@@ -94,9 +94,9 @@ class TargetOverload(FnOverload):
                     branches[item.literal or item.predicate] = branch
 
                 processing_level = branch.levels
-            
+
             branch.bind.add(record)
-        
+
     def get_entities(self, scope: dict[Any, Any], args: dict[str, Selector]) -> set[tuple[BaseCollector, Callable]]:
         bind_sets: list[set] = []
 
@@ -110,7 +110,7 @@ class TargetOverload(FnOverload):
             for key, value in selector.pattern.items():
                 if (branches := processing_scope.get(key)) is None:
                     raise NotImplementedError
-                
+
                 if value in branches:
                     header = value
                 else:
@@ -138,7 +138,7 @@ class TargetOverload(FnOverload):
                     break
 
             raise NotImplementedError
-        
+
         return bind_sets.pop().intersection(*bind_sets)
 
     def merge_scopes(self, *scopes: dict[Any, Any]):
@@ -151,7 +151,7 @@ class TargetOverload(FnOverload):
         for scope in scopes:
             for param, collection in scope.items():
                 param_collections.setdefault(param, []).append(collection)
-        
+
         for param, collections in param_collections.items():
             result[param] = current = collections.pop(0)
             for other in collections:

@@ -116,6 +116,7 @@ class NoneBridgeService(Service):
 
 
 def _import_ryanvk_performs():
+    """
     # isort: off
 
     # 这部分会造成干扰
@@ -133,6 +134,7 @@ def _import_ryanvk_performs():
     from .perform.event.message import MessageEventTranslater
 
     MessageEventTranslater.apply_to(NoneBridgeService.artifacts)
+    """
 
 
 _import_ryanvk_performs()

@@ -1,7 +1,7 @@
 from __future__ import annotations
-from contextlib import suppress
 
 import sys
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from loguru import logger

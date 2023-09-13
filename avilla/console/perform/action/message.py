@@ -8,13 +8,12 @@ from loguru import logger
 from nonechat.info import Robot
 from nonechat.message import ConsoleMessage
 
+from avilla.console.capability import ConsoleCapability
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend, MessageSent
-from avilla.console.capability import ConsoleCapability
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:

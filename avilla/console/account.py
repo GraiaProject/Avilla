@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from nonechat.info import Event
-from nonechat.message import Element
-
 from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.selector import Selector

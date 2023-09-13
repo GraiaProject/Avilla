@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import AbstractContextManager
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
-from ._runtime import GLOBAL_GALLERY, processing_artifact_heap
+from ._runtime import GLOBAL_GALLERY
 from .perform import BasePerform
 
 if TYPE_CHECKING:
@@ -70,10 +70,3 @@ class BaseCollector:
 
     def entity(self, signature: SupportsCollect[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
         return signature.collect(self, *args, **kwargs)
-
-    def apply_soon(self, map: dict[Any, Any] | None = None):
-        map = map or processing_artifact_heap.get()
-
-        @self.on_collected
-        def applier(cls: type[BasePerform]):
-            map.update(cls.__collector__.artifacts)
