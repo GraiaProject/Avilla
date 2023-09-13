@@ -5,33 +5,30 @@ from secrets import token_hex
 from typing import TYPE_CHECKING
 
 from nonechat.info import Event, MessageEvent
+from graia.amnesia.message import MessageChain
 
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
+from avilla.console.capability import ConsoleCapability
 
 if TYPE_CHECKING:
     from avilla.console.account import ConsoleAccount  # noqa
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
-ConsoleEventParse = EventParse[Event]
-
 
 class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/console::event/message"
 
-    @m.entity(ConsoleEventParse, "console.message")
-    async def console_message(self, raw_event: Event):
-        if TYPE_CHECKING:
-            assert isinstance(raw_event, MessageEvent)
-        message = await Staff.focus(self.account, element_typer=lambda e: type(e).__name__).deserialize_message(
-            raw_event.message.content
+    @m.entity(ConsoleCapability.event_callback, console_event="console.message")
+    async def console_message(self, event: MessageEvent):
+        console = Selector().land(self.account.route["land"]).user(str(event.user.id))
+        message = MessageChain(
+            [await self.staff.call_fn(ConsoleCapability.deserialize_element, i) for i in event.message.content]
         )
-        console = Selector().land(self.account.route["land"]).user(str(raw_event.user.id))
         context = Context(
             account=self.account,
             client=console,
@@ -39,13 +36,14 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
             scene=console,
             selft=self.account.route,
         )
-        return MessageReceived(
+        translated_event = MessageReceived(
             context,
             Message(
                 id=token_hex(16),
                 scene=console,
                 sender=console,
                 content=message,
-                time=raw_event.time,
+                time=event.time,
             ),
         )
+        self.protocol.post_event(translated_event)

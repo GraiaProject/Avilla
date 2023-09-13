@@ -1,47 +1,36 @@
 from __future__ import annotations
 
 from dataclasses import asdict
-from typing import TYPE_CHECKING
 
-from nonechat.message import Element
 from nonechat.message import Emoji as CslEmoji
 from nonechat.message import Markdown as CslMarkdown
 from nonechat.message import Markup as CslMarkup
 from nonechat.message import Text as CslText
 
+from avilla.console.capability import ConsoleCapability
 from avilla.console.element import Markdown, Markup
-from avilla.core.elements import Text, Emoji
+from avilla.core.elements import Emoji, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
-from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
-
-ConsoleMessageDeserialize = MessageDeserialize[Element]
 
 
 class ConsoleMessageDeserializePerform((m := ApplicationCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/console::message"
+    m.identify = "deserialize"
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @m.entity(ConsoleMessageDeserialize, "Text")
-    async def text(self, element: Element) -> Text:
-        if TYPE_CHECKING:
-            assert isinstance(element, CslText)
+    @m.entity(ConsoleCapability.deserialize_element, element=CslText)
+    async def text(self, element: CslText) -> Text:
         return Text(element.text)
 
-    @m.entity(ConsoleMessageDeserialize, "Emoji")
-    async def emoji(self, element: Element) -> Emoji:
-        if TYPE_CHECKING:
-            assert isinstance(element, CslEmoji)
+    @m.entity(ConsoleCapability.deserialize_element, element=CslEmoji)
+    async def emoji(self, element: CslEmoji) -> Emoji:
         return Emoji(element.name)
 
-    @m.entity(ConsoleMessageDeserialize, "Markup")
-    async def markup(self, element: Element) -> Markup:
-        if TYPE_CHECKING:
-            assert isinstance(element, CslMarkup)
+    @m.entity(ConsoleCapability.deserialize_element, element=CslMarkup)
+    async def markup(self, element: CslMarkup) -> Markup:
         return Markup(**asdict(element))
 
-    @m.entity(ConsoleMessageDeserialize, "Markdown")
-    async def markdown(self, element: Element) -> Markdown:
-        if TYPE_CHECKING:
-            assert isinstance(element, CslMarkdown)
+    @m.entity(ConsoleCapability.deserialize_element, element=CslMarkdown)
+    async def markdown(self, element: CslMarkdown) -> Markdown:
         return Markdown(**asdict(element))

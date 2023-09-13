@@ -5,6 +5,6 @@ from avilla.core.selector import Selector
 
 
 class ActivityTrigger(Capability):
-    @Fn.custom({TargetOverload(): ["target"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def trigger(self, target: Selector):
         ...

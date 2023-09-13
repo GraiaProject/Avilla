@@ -52,7 +52,10 @@ class FnBehavior:
         return wrapper
 
     def harvest_record(self, staff: Staff, fn: Fn) -> FnRecord:
-        return staff.artifact_map[FnImplement(fn)]
+        result = staff.artifact_map.get(FnImplement(fn))
+        if result is None:
+            raise NotImplementedError
+        return result
 
     def harvest_overload(
         self, staff: Staff, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs

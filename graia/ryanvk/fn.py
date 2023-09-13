@@ -17,11 +17,11 @@ if TYPE_CHECKING:
 
 
 P = ParamSpec("P")
-R = TypeVar("R", covariant=True)
-R1 = TypeVar("R1", covariant=True)
-
 P1 = ParamSpec("P1")
 P2 = ParamSpec("P2")
+
+R = TypeVar("R", covariant=True)
+R1 = TypeVar("R1", covariant=True)
 R2 = TypeVar("R2", covariant=True)
 
 B = TypeVar("B", bound=FnBehavior, default=FnBehavior, covariant=True)
@@ -31,7 +31,7 @@ class Fn(Generic[P, R, B]):
     owner: type[BasePerform | Capability]  # TODO: review here
     name: str
 
-    shape: Callable
+    shape: Callable[Concatenate[Any, P], R]
     shape_signature: inspect.Signature
 
     behavior: B
@@ -76,7 +76,7 @@ class Fn(Generic[P, R, B]):
         return wrapper
 
     @classmethod
-    def custom(cls, overload_param_map: dict[FnOverload, list[str]], behavior: FnBehavior = DEFAULT_BEHAVIOR):
+    def complex(cls, overload_param_map: dict[FnOverload, list[str]], behavior: FnBehavior = DEFAULT_BEHAVIOR):
         def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[P1, R1]:
             return cls(shape, overload_param_map=overload_param_map, behavior=behavior)  # type: ignore
 
@@ -87,12 +87,11 @@ class Fn(Generic[P, R, B]):
         return bool(self.overload_param_map)
 
     def collect(
-        self: Fn[P, R, SupportsCollect[Concatenate[Any, P1], R1]],  # type: ignore
+        self,
         collector: BaseCollector,
-        *args: P1.args,
-        **kwargs: P1.kwargs,
-    ) -> R1:
-        return self.behavior.collect(collector, self, *args, **kwargs)
+        **overload_settings: Any,
+    ):
+        return self.behavior.collect(collector, self, **overload_settings)
 
     def override(
         self: SupportsCollect[P1, Callable[[Callable[Concatenate[Any, P2], R2]], Any]],  # pyright: ignore

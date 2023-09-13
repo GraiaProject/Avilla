@@ -14,6 +14,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend, MessageSent
+from avilla.console.capability import ConsoleCapability
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -34,7 +35,9 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
     ) -> Selector:
         if TYPE_CHECKING:
             assert isinstance(self.protocol, ConsoleProtocol)
-        serialized_msg = ConsoleMessage(await self.staff.serialize_message(message))
+        serialized_msg = ConsoleMessage(
+            [await self.staff.call_fn(ConsoleCapability.serialize_element, i) for i in message]
+        )
 
         await self.account.client.call(
             "send_msg",

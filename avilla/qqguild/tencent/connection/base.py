@@ -7,9 +7,8 @@ from loguru import logger
 
 from avilla.core.ryanvk.staff import Staff
 
-from ..audit import audit_result, MessageAudited
+from ..audit import MessageAudited, audit_result
 from .util import Opcode, Payload
-
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsStaff
@@ -59,7 +58,7 @@ class QQGuildNetworking(Generic[T]):
                 event_type = _data.type
                 if not event_type:
                     raise ValueError("event type is None")
-                event = await Staff.focus(connection).parse_event(event_type.lower(), _data.data)
+                event = await connection.staff.parse_event(event_type.lower(), _data.data)
                 if event == "non-implemented":
                     logger.warning(f"received unsupported event {event_type.lower()}: {_data.data}")
                     return

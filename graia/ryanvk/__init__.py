@@ -1,7 +1,9 @@
+from ._runtime import GLOBAL_GALLERY as GLOBAL_GALLERY
 from ._runtime import merge as merge
 from ._runtime import ref as ref
 from .access import Access as Access
 from .access import OptionalAccess as OptionalAccess
+from .behavior import FnBehavior as FnBehavior
 from .capability import Capability as Capability
 from .collector import BaseCollector as BaseCollector
 from .endpoint import Endpoint as Endpoint

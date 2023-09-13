@@ -42,6 +42,3 @@ class ConsoleAccount(BaseAccount):
     @property
     def available(self) -> bool:
         return self.status.enabled
-
-    def __staff_generic__(self, element_type: Element, event_type: Event):
-        ...

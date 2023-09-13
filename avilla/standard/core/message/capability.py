@@ -8,18 +8,18 @@ from graia.amnesia.message import MessageChain
 
 
 class MessageSend(Capability):
-    @Fn.custom({TargetOverload(): ["target"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def send(self, target: Selector, message: MessageChain, *, reply: Selector | None = None) -> Selector:
         ...
 
 
 class MessageRevoke(Capability):
-    @Fn.custom({TargetOverload(): ["target"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def revoke(self, target: Selector) -> None:
         ...
 
 
 class MessageEdit(Capability):
-    @Fn.custom({TargetOverload(): ["target"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def edit(self, target: Selector, content: MessageChain) -> None:
         ...

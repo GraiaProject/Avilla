@@ -30,7 +30,15 @@ class AccountBasedPerformTemplate(BasePerform, native=True):
 
     @property
     def staff(self):
-        return Staff(self.account.get_staff_artifacts(), self.account.get_staff_components())
+        return self.account.staff
+
+    @property
+    def avilla(self):
+        return self.protocol.avilla
+
+    @property
+    def broadcast(self):
+        return self.avilla.broadcast
 
 
 class AccountCollector(AvillaBaseCollector, Generic[TProtocol, TAccount]):

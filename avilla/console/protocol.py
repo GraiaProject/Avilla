@@ -2,34 +2,41 @@ from __future__ import annotations
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
+from graia.ryanvk import ref, merge
 
 from .service import ConsoleService
+
+
+def import_perform():
+    # isort: off
+
+    import avilla.console.perform.action.activity  # noqa
+    import avilla.console.perform.action.message
+    import avilla.console.perform.action.profile
+    import avilla.console.perform.context
+    import avilla.console.perform.event.message
+    import avilla.console.perform.message.deserialize
+    import avilla.console.perform.message.serialize  # noqa
 
 
 class ConsoleProtocol(BaseProtocol):
     service: ConsoleService
     name: str
 
+    artifacts = {
+        **merge(
+            ref("avilla.protocol/console::action/activity"),
+            ref("avilla.protocol/console::action/message"),
+            ref("avilla.protocol/console::action/profile"),
+            ref("avilla.protocol/console::action/get_context"),
+            ref("avilla.protocol/console::message", "deserialize"),
+            ref("avilla.protocol/console::message", "serialize"),
+            ref("avilla.protocol/console::event/message"),
+        ),
+    }
+
     def __init__(self, name: str = "robot"):
         self.name = name
-
-    @classmethod
-    def __init_isolate__(cls):
-        # isort: off
-
-        from .perform.context import ConsoleContextPerform  # noqa: F401
-
-        # :: Message
-        from .perform.message.deserialize import ConsoleMessageDeserializePerform  # noqa: F401
-        from .perform.message.serialize import ConsoleMessageSerializePerform  # noqa: F401
-
-        # :: Action
-        from .perform.action.message import ConsoleMessageActionPerform  # noqa: F401
-        from .perform.action.activity import ConsoleActivityActionPerform  # noqa: F401
-        from .perform.action.profile import ConsoleProfileActionPerform  # noqa: F401
-
-        # :: Event
-        from .perform.event.message import ConsoleEventMessagePerform  # noqa: F401
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla

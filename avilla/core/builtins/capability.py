@@ -24,19 +24,19 @@ M = TypeVar("M", bound=Metadata)
 class CoreCapability(Capability):
     query = QuerySchema()
 
-    @Fn.custom(
+    @Fn.complex(
         {
             TargetOverload(): ["target"],
-            NoneOverload(TargetOverload(), generate_default_on_collect=True): ["via"],
+            NoneOverload(TargetOverload(), default_factory=lambda _: None): ["via"],
         }
     )
     def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
         ...
 
-    @Fn.custom({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    @Fn.complex({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
     async def pull(self, target: Selector, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M]) -> M:
         ...
 
-    @Fn.custom({TypeOverload(): ["resource"]})
+    @Fn.complex({TypeOverload(): ["resource"]})
     async def fetch(self, resource: Resource[T]) -> T:
         ...

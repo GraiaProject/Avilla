@@ -1,4 +1,5 @@
 from __future__ import annotations
+from contextlib import suppress
 
 import sys
 from typing import TYPE_CHECKING
@@ -7,7 +8,6 @@ from loguru import logger
 from nonechat import Backend, Frontend
 from nonechat.info import Event
 
-from avilla.core.ryanvk.staff import Staff
 from avilla.standard.core.account import (
     AccountAvailable,
     AccountRegistered,
@@ -16,6 +16,7 @@ from avilla.standard.core.account import (
 
 from ..core.account import AccountInfo
 from .account import PLATFORM, ConsoleAccount
+from .capability import ConsoleCapability
 
 if TYPE_CHECKING:
     from .service import ConsoleService
@@ -71,9 +72,8 @@ class AvillaConsoleBackend(Backend):
         logger.warning("Press Ctrl-C for Application exit")
 
     async def post_event(self, event: Event):
-        res = await Staff.focus(self.account).parse_event(event.type, event)
-        if res == "non-implemented":
-            logger.warning(f"received unsupported event {event.type}: {event}")
+        with suppress(NotImplementedError):
+            await self.account.staff.call_fn(ConsoleCapability.event_callback, event)
             return
-        elif res is not None:
-            await self._service.protocol.post_event(res)
+
+        logger.warning(f"received unsupported event {event.type}: {event}")

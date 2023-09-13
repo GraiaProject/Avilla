@@ -20,19 +20,6 @@ class BaseProtocol:
     avilla: Avilla
     artifacts: ClassVar[dict[Any, Any]]
 
-    def __init_subclass__(cls) -> None:
-        cls.artifacts = {}
-
-        token = processing_artifact_heap.set(cls.artifacts)
-        try:
-            cls.__init_isolate__()
-        finally:
-            processing_artifact_heap.reset(token)
-
-    @classmethod
-    def __init_isolate__(cls):
-        ...
-
     def ensure(self, avilla: Avilla) -> Any:
         ...
 

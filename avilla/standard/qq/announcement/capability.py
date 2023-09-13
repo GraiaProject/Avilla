@@ -8,7 +8,7 @@ from avilla.core.selector import Selector
 
 
 class AnnouncementPublish(Capability):
-    @Fn.custom({TargetOverload(): ["target"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def publish(
         self,
         target: Selector,
@@ -29,7 +29,7 @@ class AnnouncementPublish(Capability):
 
 
 class AnnouncementDelete(Capability):
-    @Fn.custom({TargetOverload(): ["target"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def delete(self, target: Selector) -> None:
         """删除群公告
 

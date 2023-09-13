@@ -115,20 +115,20 @@ class TypeOverload(FnOverload):
 
 
 class NoneOverload(FnOverload):
-    generate_default_on_collect: bool = False
+    default_factory: Callable[[str], Any] | None = None
     bypassing: FnOverload
 
-    def __init__(self, bypassing: FnOverload, *, generate_default_on_collect: bool = False) -> None:
+    def __init__(self, bypassing: FnOverload, *, default_factory: Callable[[str], Any] | None = None) -> None:
         self.bypassing = bypassing
-        self.generate_default_on_collect = generate_default_on_collect
+        self.default_factory = default_factory
 
     @property
     def identity(self) -> str:
         return "none_overload:" + str(id(self))
 
     def get_params_layout(self, params: list[str], args: dict[str, Any]) -> dict[str, Any]:
-        if self.generate_default_on_collect:
-            return {param: args.get(param) for param in params}
+        if self.default_factory is not None:
+            return {param: args.get(param) or self.default_factory(param) for param in params}
         return super().get_params_layout(params, args)
 
     def collect_entity(

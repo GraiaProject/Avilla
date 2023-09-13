@@ -5,16 +5,14 @@ from typing import TYPE_CHECKING, AsyncIterator, Generic, Literal, TypeVar, over
 
 from loguru import logger
 
-from avilla.core.ryanvk.staff import Staff
 from avilla.red.account import RedAccount
 from avilla.red.utils import MsgType, get_msg_types
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsStaff  # noqa: F401
     from avilla.red.protocol import RedProtocol
 
 
-T = TypeVar("T", bound="SupportsStaff")
+T = TypeVar("T")
 
 
 class RedNetworking(Generic[T]):
