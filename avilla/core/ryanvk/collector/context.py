@@ -37,9 +37,10 @@ class ContextBasedPerformTemplate(BasePerform, native=True):
     def account(self):
         return self.context.account
 
-    @property
-    def staff(self):
-        return self.context.staff
+    # FIXME: recursion problem
+    # @property
+    # def staff(self):
+    #     return self.context.staff
 
 
 class ContextCollector(AvillaBaseCollector, Generic[TProtocol, TAccount]):

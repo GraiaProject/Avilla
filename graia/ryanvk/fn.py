@@ -7,12 +7,13 @@ from typing_extensions import Concatenate, ParamSpec, Self, TypeVar
 
 from .behavior import DEFAULT_BEHAVIOR, FnBehavior
 from .override import OverridePerformEntity
+from .perform import BasePerform
 
 if TYPE_CHECKING:
     from .capability import Capability
     from .collector import BaseCollector
     from .overload import FnOverload
-    from .perform import BasePerform
+
     from .typing import SupportsCollect
 
 

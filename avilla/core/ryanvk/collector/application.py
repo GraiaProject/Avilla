@@ -20,10 +20,11 @@ class ApplicationBasedPerformTemplate(BasePerform, native=True):
 
     avilla: Access[Avilla] = Access()
 
-    @property
-    def staff(self):
-        return Staff(self.avilla.get_staff_artifacts(), self.avilla.get_staff_components())
-
+    # FIXME: recursion problem
+    # @property
+    # def staff(self):
+    #     return Staff(self.avilla.get_staff_artifacts(), self.avilla.get_staff_components())
+    #
 
 class ApplicationCollector(AvillaBaseCollector):
     post_applying: bool = False

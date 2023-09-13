@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING, Any, Callable, TypeVar
 from typing_extensions import Concatenate, ParamSpec
 
 from .aio import queue_task
+from .sign import FnImplement, FnRecord
 
 if TYPE_CHECKING:
     from .collector import BaseCollector
     from .fn import Fn
     from .perform import BasePerform
-    from .sign import FnImplement, FnRecord
     from .staff import Staff
 
 T = TypeVar("T")

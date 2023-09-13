@@ -65,7 +65,7 @@ class SimpleOverload(FnOverload):
             for param_name, param_collection in scope.items():
                 collection = result.setdefault(param_name, {})
                 for value, entities in param_collection.items():
-                    collection.setdefault(value, {}).update(entities)
+                    collection.setdefault(value, set()).update(entities)
 
         return result
 
@@ -109,7 +109,7 @@ class TypeOverload(FnOverload):
             for param_name, param_collection in scope.items():
                 collection = result.setdefault(param_name, {})
                 for value, entities in param_collection.items():
-                    collection.setdefault(value, {}).update(entities)
+                    collection.setdefault(value, set()).update(entities)
 
         return result
 

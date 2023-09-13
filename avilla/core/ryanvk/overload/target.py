@@ -104,41 +104,40 @@ class TargetOverload(FnOverload):
             if arg_name not in scope:
                 raise NotImplementedError
 
-            processing_scope: LookupCollection = scope[arg_name]
+            def get_bind_set():
+                processing_scope: LookupCollection = scope[arg_name]
+                branch = None
+                for key, value in selector.pattern.items():
+                    if (branches := processing_scope.get(key)) is None:
+                        raise NotImplementedError
 
-            branch = None
-            for key, value in selector.pattern.items():
-                if (branches := processing_scope.get(key)) is None:
-                    raise NotImplementedError
-
-                if value in branches:
-                    header = value
-                else:
-                    for header, branch in branches.items():
-                        if callable(header) and header(value):
-                            break  # hit predicate
+                    if value in branches:
+                        header = value
                     else:
-                        if None in branches:  # hit exact key
-                            header = None
-                        elif "*" in branches:  # hit wildcard
-                            bind_sets.append(branches["*"].bind)
+                        for _key, branch in branches.items():
+                            if callable(_key) and _key(value):
+                                header = _key
+                                break  # hit predicate
+                        else:
+                            if None in branches:
+                                header = None # hit default
+                            elif "*" in branches:
+                                return branches["*"].bind  # hit wildcard
+                            else:
+                                raise NotImplementedError
 
-                        break
+                    branch = branches[header]
+                    processing_scope = branch.levels
 
-                branch = branches[header]
-                processing_scope = branch.levels
-
-                if header is not None and None in branches:
-                    processing_scope = branches[None].levels | processing_scope
-            else:
-                # this time, match finished, maybe branch
+                    if header is not None and None in branches:
+                        processing_scope = branches[None].levels | processing_scope
                 if branch is not None and branch.bind:
                     # branch has bind
-                    bind_sets.append(branch.bind)
-                    break
+                    return branch.bind
 
-            raise NotImplementedError
+                raise NotImplementedError
 
+            bind_sets.append(get_bind_set())
         return bind_sets.pop().intersection(*bind_sets)
 
     def merge_scopes(self, *scopes: dict[Any, Any]):

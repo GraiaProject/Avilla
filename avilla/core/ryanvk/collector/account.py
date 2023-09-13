@@ -27,9 +27,10 @@ class AccountBasedPerformTemplate(BasePerform, native=True):
     protocol: Access[BaseProtocol] = Access()
     account: Access[BaseAccount] = Access()
 
-    @property
-    def staff(self):
-        return self.account.staff
+    # FIXME: recursion problem
+    # @property
+    # def staff(self):
+    #     return self.account.staff
 
     @property
     def avilla(self):

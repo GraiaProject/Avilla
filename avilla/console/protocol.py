@@ -22,7 +22,7 @@ def import_perform():
 class ConsoleProtocol(BaseProtocol):
     service: ConsoleService
     name: str
-
+    import_perform()
     artifacts = {
         **merge(
             ref("avilla.protocol/console::action/activity"),

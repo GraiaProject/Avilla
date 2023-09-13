@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
     m.namespace = "avilla.protocol/console::event/message"
 
-    @m.entity(ConsoleCapability.event_callback, console_event="console.message")
+    @m.entity(ConsoleCapability.event_callback, event=MessageEvent)
     async def console_message(self, event: MessageEvent):
         console = Selector().land(self.account.route["land"]).user(str(event.user.id))
         message = MessageChain(
