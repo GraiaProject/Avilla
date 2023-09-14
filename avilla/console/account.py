@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 PLATFORM = Platform(
     Land(
         "console",
-        [{"name": "GraiaxCommunity"}],
-        humanized_name="Avilla-Console - Console Impl for avilla",
+        [{"name": "GraiaProject"}],
+        humanized_name="Console Interface for Avilla",
     ),
     Abstract(
         protocol="Console",
