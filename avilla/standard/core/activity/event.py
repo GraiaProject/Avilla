@@ -9,7 +9,7 @@ from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 @dataclass
 class ActivityEvent(AvillaEvent):
-    id: str
+    id: str  # eg. "button_clicked"
     scene: Selector
     activity: Selector  # eg. [...].button("#1")
 
