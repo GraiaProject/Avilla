@@ -9,8 +9,8 @@ from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend
 
 if TYPE_CHECKING:
-    from ...account import TelegramAccount  # noqa
-    from ...protocol import TelegramProtocol  # noqa
+    from avilla.telegram.account import TelegramAccount  # noqa
+    from avilla.telegram.protocol import TelegramProtocol  # noqa
 
 
 class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "TelegramAccount"]())._):
