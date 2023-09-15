@@ -3,6 +3,7 @@ import os
 from graia.amnesia.message import MessageChain
 
 from avilla.core import Avilla, Context, MessageReceived, Text
+from avilla.standard.core.message import MessageSent
 from avilla.telegram.protocol import TelegramProtocol, TelegramBotConfig
 
 config = TelegramBotConfig(os.environ["TELEGRAM_TOKEN"])
@@ -14,6 +15,11 @@ avilla.apply_protocols(TelegramProtocol().configure(config))
 async def on_message_received(cx: Context, event: MessageReceived):
     print(repr(event))
     await cx.scene.send_message(MessageChain([Text("Hello, Avilla!")]))
+
+
+@avilla.listen(MessageSent)
+async def on_message_sent(event: MessageSent):
+    print(repr(event))
 
 
 avilla.launch()

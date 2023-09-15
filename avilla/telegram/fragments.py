@@ -1,25 +1,24 @@
 from pathlib import Path
 from typing import IO
 
-from telegram import InputFile, PhotoSize, Update
+from telegram import InputFile, PhotoSize, Update, Message
 from telegram.constants import MessageType
+from telegram.ext import ExtBot
 from typing_extensions import Self
 
 
 class MessageFragment:
     type: MessageType
-    data: dict
     update: Update | None
 
-    def __init__(self, _type: MessageType, data: dict, update: Update | None = None):
+    def __init__(self, _type: MessageType, update: Update | None = None):
         self.type = _type
-        self.data = data
         self.update = update
 
     def __getitem__(self, item):
         return self.__getattribute__(item)
 
-    def send(self):
+    async def send(self, bot: ExtBot, chat: int) -> Message:
         ...
 
     @classmethod
@@ -55,8 +54,11 @@ class MessageFragmentText(MessageFragment):
     text: str
 
     def __init__(self, text: str, update: Update | None = None):
-        super().__init__(MessageType.TEXT, {"text": text}, update)
+        super().__init__(MessageType.TEXT, update)
         self.text = text
+
+    async def send(self, bot: ExtBot, chat: int) -> Message:
+        return await bot.send_message(chat, text=self.text)
 
 
 class MessageFragmentPhoto(MessageFragment):
@@ -69,6 +71,9 @@ class MessageFragmentPhoto(MessageFragment):
         caption: str = None,
         update: Update | None = None,
     ):
-        super().__init__(MessageType.PHOTO, {"file": file}, update)
+        super().__init__(MessageType.PHOTO, update)
         self.file = file
         self.caption = caption
+
+    async def send(self, bot: ExtBot, chat: int) -> Message:
+        return await bot.send_photo(chat, photo=self.file, caption=self.caption)

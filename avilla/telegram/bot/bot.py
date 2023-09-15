@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, cast
 
 from launart import Launart, Service, any_completed
 from loguru import logger
-from telegram.constants import MessageType
 from telegram.error import InvalidToken as InvalidTokenOrigin
 from telegram.error import NetworkError, TimedOut
 from telegram.ext import ExtBot
@@ -21,7 +20,6 @@ from avilla.telegram.account import TelegramAccount
 from avilla.telegram.bot.base import TelegramBase
 from avilla.telegram.const import PLATFORM
 from avilla.telegram.exception import InvalidToken
-from avilla.telegram.fragments import MessageFragmentPhoto, MessageFragmentText
 
 if TYPE_CHECKING:
     from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
@@ -111,15 +109,8 @@ class TelegramBot(TelegramBase["TelegramBot"], Service):
         chat = int(target.pattern["chat"])
         sent_ids = []
         for fragment in fragments:
-            msg = None
-            if fragment.type == MessageType.TEXT:
-                fragment = cast(MessageFragmentText, fragment)
-                msg = await self.bot.send_message(chat, text=fragment.text)
-            elif fragment.type == MessageType.PHOTO:
-                fragment = cast(MessageFragmentPhoto, fragment)
-                msg = await self.bot.send_photo(chat, photo=fragment.file, caption=fragment.caption)
-            if msg:
-                sent_ids.append(msg.message_id)
+            msg = await fragment.send(self.bot, chat)
+            sent_ids.append(msg.message_id)
         return sent_ids
 
     async def wait_for_available(self):
