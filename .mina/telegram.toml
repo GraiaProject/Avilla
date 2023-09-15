@@ -1,6 +1,6 @@
 includes = ["avilla/telegram"]
 raw-dependencies = [
-  "avilla-core >= 1.0.0-alpha.6",
+  "avilla-core >= 1.0.0a8",
 ]
 
 [project]

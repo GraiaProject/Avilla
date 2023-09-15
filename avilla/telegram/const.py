@@ -5,12 +5,12 @@ PLATFORM = Platform(
     LAND,
     Abstract(
         protocol="python-telegram-bot",
-        maintainers=[],
+        maintainers=[{"name": "python-telegram-bot"}],
         humanized_name="python-telegram-bot",
     ),
     Land(
         "telegram",
         [{"name": "GraiaProject"}],
-        humanized_name="",
+        humanized_name="Telegram adapter for Avilla",
     ),
 )
