@@ -4,14 +4,13 @@ import base64
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text, Emoji
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource
 from avilla.standard.qq.elements import (
     App,
     Dice,
-    Face,
     FlashImage,
     Forward,
     Json,
@@ -44,8 +43,8 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
     async def notice_all(self, element: NoticeAll):
         return {"type": "AtAll"}
 
-    @m.entity(ElizabethMessageSerialize, Face)
-    async def face(self, element: Face) -> dict:
+    @m.entity(ElizabethMessageSerialize, Emoji)
+    async def face(self, element: Emoji) -> dict:
         return {"type": "Face", "faceId": element.id, "name": element.name}
 
     @m.entity(ElizabethMessageSerialize, Json)

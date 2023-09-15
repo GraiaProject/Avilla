@@ -3,14 +3,14 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Notice, NoticeAll, Picture, Text, Emoji, Audio
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
-from avilla.standard.qq.elements import Face, MarketFace
+from avilla.standard.qq.elements import MarketFace
 
 if TYPE_CHECKING:
-    from ...account import RedAccount  # noqa
-    from ...protocol import RedProtocol  # noqa
+    from avilla.red.account import RedAccount  # noqa
+    from avilla.red.protocol import RedProtocol  # noqa
 
 RedMessageSerialize = MessageSerialize[dict]
 
@@ -24,8 +24,8 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
     async def text(self, element: Text) -> dict:
         return {"elementType": 1, "textElement": {"content": element.text}}
 
-    @RedMessageSerialize.collect(m, Face)
-    async def face(self, element: Face) -> dict:
+    @RedMessageSerialize.collect(m, Emoji)
+    async def face(self, element: Emoji) -> dict:
         return {"elementType": 6, "faceElement": {"faceIndex": element.id}}
 
     @RedMessageSerialize.collect(m, Notice)
@@ -73,5 +73,37 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                 "emojiId": int(emoji_id),
                 "key": key,
                 "emojiPackageId": int(emoji_package_id),
+            },
+        }
+
+    @RedMessageSerialize.collect(m, Audio)
+    async def audio(self, element: Audio) -> dict:
+        data = await self.account.staff.fetch_resource(element.resource)
+        resp = await self.account.websocket_client.call_http(
+            "multipart",
+            "api/upload",
+            {
+                "file": {
+                    "value": data,
+                    "content_type": None,
+                    "filename": "file_audio",
+                }
+            },
+        )
+        file = Path(resp["ntFilePath"])
+        return {
+            "elementType": 4,
+            "pttElement": {
+                "canConvert2Text": True,
+                "md5HexStr": resp.md5,
+                "fileSize": resp.fileSize,
+                "fileName": file.name,
+                "filePath": resp.ntFilePath,
+                "duration": 1,
+                "formatType": 1,
+                "voiceType": 1,
+                "voiceChangeType": 0,
+                "playState": 1,
+                "waveAmplitudes": [99 for _ in range(17)]
             },
         }

@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Generic, Protocol
+from typing import TYPE_CHECKING, Any, Generic, Protocol, Union, runtime_checkable
 
-from typing_extensions import Concatenate, ParamSpec, TypeVar
-
-from graia.ryanvk.aio import queue_task
+from typing_extensions import ParamSpec, TypeVar
 
 if TYPE_CHECKING:
     from .collector import BaseCollector  # noqa
-    from .staff import Staff
 
 P = ParamSpec("P")
 P1 = ParamSpec("P1")
@@ -21,19 +18,6 @@ CQ = TypeVar("CQ", bound="BaseCollector")
 
 class SupportsCollect(Protocol[P, R]):
     def collect(self, collector: Any, *args: P.args, **kwargs: P.kwargs) -> R:  # type: ignore
-        ...
-
-
-class OutboundCompatible(Protocol[P, T, P1]):
-    def get_artifact_record(
-        self,
-        collections: list[dict[Any, Any]],
-        *args: P.args,
-        **kwargs: P.kwargs,
-    ) -> RecordTwin[Any, Callable[Concatenate[Any, P], T]]:
-        ...
-
-    def get_outbound_callable(self, instance: Any, entity: Callable[Concatenate[Any, P], T]) -> Callable[P1, T]:
         ...
 
 
@@ -54,17 +38,22 @@ class ClsIncluded(Protocol[T]):
 Cr = TypeVar("Cr", bound="BaseCollector", covariant=True)
 
 
-class RecordTwin(Twin[Cr, R2]):
-    def get_instance(self, staff: Staff):
-        cls = self._0.cls
-        if cls in staff.instances:
-            return staff.instances[cls]
+@runtime_checkable
+class SupportsMerge(Protocol):
+    def merge(self, *records: dict):
+        ...
 
-        instance = cls(staff)
-        queue_task(staff.exit_stack.enter_async_context(instance.lifespan()))
-        staff.instances[cls] = instance
 
-        return instance
+class LayoutProtocolProperty(Protocol):
+    @property
+    def get_artifact_layout(self) -> dict:
+        ...
 
-    def unwrap(self, staff: Staff):
-        return self.get_instance(staff), self._1
+
+class LayoutProtocolAttr(Protocol):
+    @property
+    def get_artifact_layout(self) -> dict:
+        ...
+
+
+LayoutProtocol = Union[LayoutProtocolProperty, LayoutProtocolAttr]

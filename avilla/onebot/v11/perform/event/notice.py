@@ -222,12 +222,17 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         if account is None:
             logger.warning(f"Unknown account {self_id} sent message {raw_event}")
             return
-
-        group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
-        target = group.member(str(raw_event["target_id"]))
-        operator = group.message(str(raw_event["user_id"]))
-        context = Context(account, operator, target, group, group.member(str(self_id)))
-        return ActivityTrigged(context, target.activity("nudge"), target.nudge("_"), operator, group)
+        if "group_id" in raw_event:
+            group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
+            target = group.member(str(raw_event["target_id"]))
+            operator = group.message(str(raw_event["user_id"]))
+            context = Context(account, operator, target, group, group.member(str(self_id)))
+            return ActivityTrigged(context, "nudge", group, target.nudge("_"), operator)
+        else:
+            friend = Selector().land(account.route["land"]).friend(str(raw_event["sender_id"]))
+            selft = account.route
+            context = Context(account, friend, selft, friend, selft)
+            return ActivityTrigged(context, "nudge", friend, friend.nudge("_"), friend)
 
     @EventParse.collect(m, "notice.notify.lucky_king")
     async def lucky_king_received(self, raw_event: dict):

@@ -16,6 +16,8 @@ class RequestEvent(AvillaEvent):
         async def catch(interface: DispatcherInterface[RequestEvent]):
             if interface.annotation is Request:
                 return interface.event.request
+            if interface.name == "sender":
+                return interface.event.request.sender
             return await AvillaEvent.Dispatcher.catch(interface)
 
 

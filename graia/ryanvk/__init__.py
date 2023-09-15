@@ -1,3 +1,5 @@
+from ._runtime import merge as merge
+from ._runtime import ref as ref
 from .access import Access as Access
 from .access import OptionalAccess as OptionalAccess
 from .capability import Capability as Capability
@@ -6,9 +8,9 @@ from .endpoint import Endpoint as Endpoint
 from .fn import Fn as Fn
 from .gateway import GLOBAL_GATEWAY as GLOBAL_GATEWAY
 from .gateway import Gateway as Gateway
+from .overload import FnOverload as FnOverload
 from .override import OverridePerformEntity as OverridePerformEntity
 from .perform import BasePerform as BasePerform
 from .staff import Staff as Staff
-from .typing import OutboundCompatible as OutboundCompatible
-from .typing import RecordTwin as RecordTwin
 from .typing import SupportsCollect as SupportsCollect
+from .typing import SupportsMerge as SupportsMerge

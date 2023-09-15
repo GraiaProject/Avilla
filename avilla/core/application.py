@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Iterable, TypeVar, overload
 from creart import it
 from launart import Launart
 from launart.service import Service
+from loguru import logger
 
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AccountInfo, BaseAccount
@@ -17,6 +18,7 @@ from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
 from graia.broadcast import Broadcast
+from graia.amnesia.builtins.memcache import MemcacheService
 
 if TYPE_CHECKING:
     from avilla.core.ryanvk.protocol import SupportsArtifacts
@@ -42,6 +44,7 @@ class Avilla:
         broadcast: Broadcast | None = None,
         launch_manager: Launart | None = None,
         message_cache_size: int = 300,
+        record_send: bool = True,
     ):
         self.broadcast = broadcast or it(Broadcast)
         self.launch_manager = launch_manager or it(Launart)
@@ -52,6 +55,7 @@ class Avilla:
         self.service = AvillaService(self, message_cache_size)
         self.global_artifacts = {}
 
+        self.launch_manager.add_component(MemcacheService())
         self.launch_manager.add_component(self.service)
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
 
@@ -75,6 +79,18 @@ class Avilla:
 
             message_cacher.__annotations__ = {"context": Context, "message": Message}
             clear_cache.__annotations__ = {"event": AccountUnregistered}
+
+        if record_send:
+            from avilla.standard.core.message import MessageSent
+
+            @self.broadcast.receiver(MessageSent)
+            async def message_sender(context: Context, message: Message):
+                scene = f"{'.'.join(f'{k}({v})' for k, v in context.scene.items())}"
+                logger.info(
+                    f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                    f"{context.account.route['account']}]: "
+                    f"{scene} <- {message.content!r}"
+                )
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform

@@ -20,15 +20,8 @@ M = TypeVar("M", bound="Metadata")
 
 
 class AvillaBaseCollector(BaseCollector):
-    post_applying: bool = False
-
     def __init__(self):
         super().__init__()
-
-    def __post_collected__(self, cls: type[BasePerform]):
-        self.cls = cls
-        if self.post_applying:
-            self.apply_soon()
 
     @overload
     def pull(
@@ -49,17 +42,3 @@ class AvillaBaseCollector(BaseCollector):
 
     def fetch(self, resource_type: type[T]):  # type: ignore[reportInvalidTypeVarUse]
         return self.entity(Fetch, resource_type)
-
-    def apply_soon(self, map: dict[Any, Any] | None = None):
-        map = map or processing_artifact_heap.get()
-
-        @self.on_collected
-        def applier(cls: type[BasePerform]):
-            # merge targetfn tree
-            artifacts = cls.__collector__.artifacts
-            if "lookup_collections" in artifacts:
-                lookup_origin = artifacts.pop("lookup_collections")
-                lookup_master = map.setdefault("lookup_collections", {})
-                _merge_lookup_collection(lookup_master, lookup_origin)
-
-            map.update(cls.__collector__.artifacts)

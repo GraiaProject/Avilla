@@ -17,6 +17,8 @@ class ConsoleProtocol(BaseProtocol):
     def __init_isolate__(cls):
         # isort: off
 
+        from .perform.context import ConsoleContextPerform  # noqa: F401
+
         # :: Message
         from .perform.message.deserialize import ConsoleMessageDeserializePerform  # noqa: F401
         from .perform.message.serialize import ConsoleMessageSerializePerform  # noqa: F401

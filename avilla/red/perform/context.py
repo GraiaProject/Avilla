@@ -8,11 +8,11 @@ from avilla.core.context import Context
 from avilla.core.builtins.capability import CoreCapability
 
 if TYPE_CHECKING:
-    from avilla.elizabeth.account import ElizabethAccount  # noqa
-    from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
+    from avilla.red.account import RedAccount  # noqa
+    from avilla.red.protocol import RedProtocol  # noqa
 
 
-class ElizabethContextPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+class RedContextPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
     m.post_applying = True
 
     @CoreCapability.get_context.collect(m, "land.group")

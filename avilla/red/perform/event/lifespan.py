@@ -40,5 +40,5 @@ class RedEventLifespanPerform((m := ConnectionCollector())._):
         self.protocol.avilla.accounts[account.route] = AccountInfo(account.route, account, self.protocol, platform)
         account.websocket_client = self.connection
 
-        logger.info(f"Account {self_id} connected and created")
+        logger.success(f"Account {self_id} connected and created with red-protocol version {version_info}")
         return AccountRegistered(self.protocol.avilla, account)

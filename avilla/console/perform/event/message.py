@@ -35,7 +35,7 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
         context = Context(
             account=self.account,
             client=console,
-            endpoint=console,
+            endpoint=self.account.route,
             scene=console,
             selft=self.account.route,
         )
@@ -46,6 +46,6 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
                 scene=console,
                 sender=console,
                 content=message,
-                time=datetime.fromtimestamp(raw_event.time.timestamp()),
+                time=raw_event.time,
             ),
         )

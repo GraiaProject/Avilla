@@ -80,6 +80,9 @@ class QQGuildProtocol(BaseProtocol):
         from .perform.action.message import QQGuildMessageActionPerform  # noqa: F401
         from .perform.action.role import QQGuildRoleActionPerform  # noqa: F401
 
+        ## :: Context
+        from .perform.context import QQGuildContextPerform   # noqa: F401
+
         ## :: Event
         from .perform.event.audit import QQGuildEventAuditPerform  # noqa: F401
         from .perform.event.message import QQGuildEventMessagePerform  # noqa: F401

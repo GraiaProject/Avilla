@@ -9,6 +9,7 @@ from avilla.standard.core.common import Count
 from avilla.standard.core.privilege import MuteAllCapability
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.relation import SceneCapability
+from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa
@@ -20,6 +21,9 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
 
     @m.pull("land.group", Summary)
     async def get_summary(self, target: Selector) -> Summary:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"red/account({self.account.route['account']}).group({target.pattern['group']})"):
+            return Summary(raw["name"], "a group contact assigned to this account")
         result = await self.account.websocket_client.call_http("get", "api/bot/groups", {})
         result = cast(list, result)
         for i in result:
@@ -30,6 +34,9 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
 
     @m.pull("land.group", Nick)
     async def get_nick(self, target: Selector) -> Nick:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"red/account({self.account.route['account']}).group({target.pattern['group']})"):
+            return Nick(raw["name"], raw["remark"] or raw["name"], None)
         result = await self.account.websocket_client.call_http("get", "api/bot/groups", {})
         result = cast(list, result)
         for i in result:
@@ -40,6 +47,9 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
 
     @m.pull("land.group", Count)
     async def get_count(self, target: Selector) -> Count:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"red/account({self.account.route['account']}).group({target.pattern['group']})"):
+            return Count(raw["memberCount"], raw["maxMember"])
         result = await self.account.websocket_client.call_http("get", "api/bot/groups", {})
         result = cast(list, result)
         for i in result:
