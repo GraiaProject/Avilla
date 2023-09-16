@@ -57,13 +57,15 @@ class Picture(Element):
 
 class Audio(Element):
     resource: Resource[bytes]
+    duration: int
 
-    def __init__(self, resource: Resource[bytes] | Path | str):
+    def __init__(self, resource: Resource[bytes] | Path | str, duration: int = -1):
         if isinstance(resource, Path):
             resource = LocalFileResource(resource)
         elif isinstance(resource, str):
             resource = LocalFileResource(Path(resource))
         self.resource = resource
+        self.duration = duration
 
     def __str__(self) -> str:
         return "[$Audio]"
