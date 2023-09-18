@@ -15,7 +15,6 @@ from avilla.core.event import AvillaEvent
 from avilla.core.utilles import identity
 from avilla.standard.core.account import AccountRegistered, AccountUnregistered
 from graia.broadcast.utilles import run_always_await
-from graia.ryanvk._runtime import processing_artifact_heap
 from graia.ryanvk.aio import queue_task
 
 from .adapter import NoneBridgeAdapter

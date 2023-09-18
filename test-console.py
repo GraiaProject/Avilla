@@ -1,5 +1,5 @@
 from avilla.core import Avilla, Context, MessageReceived
-from avilla.console.element import Markdown, Emoji
+from avilla.console.element import Markdown
 
 from avilla.nonebridge.service import NoneBridgeService
 from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ReverseConfig
@@ -7,6 +7,8 @@ from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ReverseConfig
 from graia.amnesia.builtins.asgi import UvicornASGIService
 
 import nonebot
+
+from avilla.core.elements import Emoji
 
 avilla = Avilla()
 

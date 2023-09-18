@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk.staff import Staff
 from graia.ryanvk import Access, BasePerform
 
 from .base import AvillaBaseCollector

@@ -6,7 +6,9 @@ from graia.ryanvk.collector import BaseCollector
 
 
 class FnOverload:
-    identity: str = "native"
+    @property
+    def identity(self) -> str:
+        return self.__class__.__name__
 
     def collect_entity(
         self,
