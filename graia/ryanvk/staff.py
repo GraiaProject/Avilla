@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import ChainMap
 from contextlib import AsyncExitStack, asynccontextmanager
 from copy import copy
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
 
 from typing_extensions import ParamSpec
 
@@ -30,7 +30,7 @@ class Staff:
         self.exit_stack = AsyncExitStack()
         self.instances = {}
 
-    def call_fn(self, fn: Fn[P, R, FnBehavior], *args: P.args, **kwargs: P.kwargs) -> R:
+    def call_fn(self, fn: Fn[Callable[P, R], FnBehavior], *args: P.args, **kwargs: P.kwargs) -> R:
         collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
         instance = fn.behavior.get_instance(self, collector.cls)
         return entity(instance, *args, **kwargs)
@@ -64,3 +64,10 @@ class Staff:
         instance = copy(self)
         instance.components.update(components)
         return instance
+
+    def get_fn_call(self, fn: Fn[Callable[P, R], Any]) -> Callable[P, R]:
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
+            instance = fn.behavior.get_instance(self, collector.cls)
+            return entity(instance, *args, **kwargs)
+        return wrapper
