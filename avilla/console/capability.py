@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import NoReturn, TypeVar
+from typing import TypeVar
 
 from nonechat.info import Event as ConsoleEvent
 from nonechat.message import Element as ConsoleElement
@@ -12,8 +12,6 @@ from graia.ryanvk import Capability, Fn, TypeOverload
 CE = TypeVar("CE", bound=ConsoleElement)
 GE = TypeVar("GE", bound=GraiaElement)
 CV = TypeVar("CV", bound=ConsoleEvent)
-
-GE_T = TypeVar("GE_T", bound=NoReturn, contravariant=True)
 
 
 class ConsoleCapability(Capability):

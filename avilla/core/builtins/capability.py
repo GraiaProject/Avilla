@@ -34,7 +34,7 @@ class CoreCapability(Capability):
         ...
 
     @Fn.complex({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
-    async def pull(self, target: Selector, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M]) -> Any:#, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M]) -> M:
+    async def pull(self, target: Selector, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M]) -> Any:
         ...
 
     @Fn.complex({TypeOverload(): ["resource"]})
