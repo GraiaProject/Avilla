@@ -23,7 +23,7 @@ class FnBehavior:
     def collect(
         self,
         collector: BaseCollector,
-        fn: Fn[P, R, Any],  # type: ignore
+        fn: Fn[Callable[P, R], Any],  # type: ignore
         **overload_settings: Any,
     ):
         def wrapper(entity: Callable[Concatenate[Any, P], R]):
@@ -58,7 +58,7 @@ class FnBehavior:
         return result
 
     def harvest_overload(
-        self, staff: Staff, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs
+        self, staff: Staff, fn: Fn[Callable[P, R]], *args: P.args, **kwargs: P.kwargs
     ) -> tuple[BaseCollector, Callable[Concatenate[Any, P], R]]:
         artifact_record = self.harvest_record(staff, fn)
 

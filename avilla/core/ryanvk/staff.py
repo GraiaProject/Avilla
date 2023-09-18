@@ -41,7 +41,7 @@ class Staff(BaseStaff):
         return self.call_fn(CoreCapability.get_context, target, via=via)
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
-        return await self.call_fn(CoreCapability.fetch, resource)
+        return await self.get_fn_call(CoreCapability.fetch)(resource)
 
     @overload
     async def pull_metadata(
