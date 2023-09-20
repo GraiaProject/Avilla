@@ -134,9 +134,8 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             Selector().land("qq").voice(raw_element["voiceId"]),
             raw_element["voiceId"],
             raw_element["url"],
-            raw_element["length"],
         )
-        return Audio(resource)
+        return Audio(resource, int(raw_element["length"]))
 
     @m.entity(ElizabethMessageDeserialize, "Forward")
     async def forward(self, raw_element: dict) -> Forward:

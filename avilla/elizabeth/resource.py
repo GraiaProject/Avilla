@@ -19,11 +19,7 @@ class ElizabethImageResource(ElizabethResource):
 
 
 class ElizabethVoiceResource(ElizabethResource):
-    length: int | None
-
-    def __init__(self, selector: Selector, id: str, url: str | None = None, length: int | None = None):
-        super().__init__(selector, id, url)
-        self.length = length
+    pass
 
 
 class ElizabethFileResource(ElizabethResource):

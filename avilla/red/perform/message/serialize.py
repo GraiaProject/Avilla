@@ -99,7 +99,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                 "fileSize": resp.fileSize,
                 "fileName": file.name,
                 "filePath": resp.ntFilePath,
-                "duration": 1,
+                "duration": max(1, element.duration),
                 "formatType": 1,
                 "voiceType": 1,
                 "voiceChangeType": 0,

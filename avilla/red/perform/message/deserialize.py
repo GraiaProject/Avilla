@@ -91,7 +91,8 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
                 raw_element["elementId"],
                 raw_element["fileUuid"],
                 raw_element["filePath"],
-            )
+            ),
+            int(raw_element["duration"]),
         )
 
     @RedMessageDeserialize.collect(m, "grayTip")
