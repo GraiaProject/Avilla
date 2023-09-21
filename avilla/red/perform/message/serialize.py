@@ -30,7 +30,14 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
 
     @RedMessageSerialize.collect(m, Notice)
     async def notice(self, element: Notice) -> dict:
-        return {"elementType": 1, "textElement": {"atType": 2, "atNtUin": element.target.last_value}}
+        return {
+            "elementType": 1,
+            "textElement": {
+                "atType": 2,
+                "atNtUin": element.target.last_value,
+                "content": f"@{element.display or element.target.last_value}",
+            }
+        }
 
     @RedMessageSerialize.collect(m, NoticeAll)
     async def notice_all(self, element: NoticeAll) -> dict:

@@ -29,9 +29,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             return {
                 "elementType": 7,
                 "replyElement": {
-                    # "sourceMsgIdInRecords": reply_msg["msgId"],
+                    "replayMsgId": reply_msg["msgId"],
                     "replayMsgSeq": reply_msg["msgSeq"],
-                    #"senderUid": reply_msg["senderUid"],
+                    "senderUin": reply_msg["senderUin"],
                 },
             }
         logger.warning(f"Unknown message {target.pattern['message']} for reply")

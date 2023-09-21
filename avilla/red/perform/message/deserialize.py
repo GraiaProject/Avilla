@@ -31,7 +31,10 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
             return Text(raw_element["content"])
         if raw_element["atType"] == 1:
             return NoticeAll()
-        return Notice(self.context.scene.member(raw_element.get("atNtUin", "atNtUid")))
+        return Notice(
+            self.context.scene.member(raw_element.get("atNtUin", "atNtUid")),
+            raw_element["content"][1:],
+        )
 
     @RedMessageDeserialize.collect(m, "face")
     async def face(self, raw_element: dict) -> Face | Poke:
