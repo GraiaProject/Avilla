@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text, Emoji
+from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 from avilla.qqguild.tencent.element import Ark, Embed, Reference
@@ -25,8 +25,8 @@ class QQGuildMessageSerializePerform((m := AccountCollector["QQGuildProtocol", "
     async def text(self, element: Text) -> dict:
         return {"type": "text", "text": element.text}
 
-    @QQGuildMessageSerialize.collect(m, Emoji)
-    async def face(self, element: Emoji) -> dict:
+    @QQGuildMessageSerialize.collect(m, Face)
+    async def face(self, element: Face) -> dict:
         return {"type": "emoji", "id": element.id}
 
     @QQGuildMessageSerialize.collect(m, Notice)

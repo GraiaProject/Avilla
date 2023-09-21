@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Emoji
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -59,8 +59,8 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         return NoticeAll()
 
     @m.entity(ElizabethMessageDeserialize, "Face")
-    async def face(self, raw_element: dict) -> Emoji:
-        return Emoji(raw_element["faceId"], raw_element["name"])
+    async def face(self, raw_element: dict) -> Face:
+        return Face(raw_element["faceId"], raw_element["name"])
 
     @m.entity(ElizabethMessageDeserialize, "MarketFace")
     async def market_face(self, raw_element: dict) -> MarketFace:

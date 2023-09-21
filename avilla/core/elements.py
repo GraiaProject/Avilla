@@ -14,15 +14,18 @@ class Notice(Element):
     """该消息元素用于承载消息中用于提醒/呼唤特定用户的部分."""
 
     target: Selector
+    display: str | None
 
-    def __init__(self, target: Selector) -> None:
+    def __init__(self, target: Selector, display: str | None = None) -> None:
         """实例化一个 Notice 消息元素，用于承载消息中用于提醒/呼唤特定用户的部分。
 
         Args:
             target (str): 需要提醒/呼唤的特定用户的 ID.
+            display (str, optional): 需要提醒/呼唤的特定用户的显示名称. Defaults to None.
         """
 
         self.target = target
+        self.display = display
 
     def __str__(self) -> str:
         return f"[$Notice:target={self.target}]"
@@ -115,12 +118,12 @@ class Reference(Element):
 
 
 @dataclass
-class Emoji(Element):
+class Face(Element):
     id: str
     name: str | None = None
 
     def __str__(self) -> str:
-        return f"[Emoji:id={self.id};name={self.name}]"
+        return f"[Face:id={self.id};name={self.name}]"
 
 
 class Unknown(Element):

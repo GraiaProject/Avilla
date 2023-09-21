@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Emoji
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -34,10 +34,10 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
         return Notice(self.context.scene.member(raw_element.get("atNtUin", "atNtUid")))
 
     @RedMessageDeserialize.collect(m, "face")
-    async def face(self, raw_element: dict) -> Emoji | Poke:
+    async def face(self, raw_element: dict) -> Face | Poke:
         if raw_element["faceType"] == 5:
             return Poke(PokeKind.ChuoYiChuo)
-        return Emoji(raw_element["faceIndex"], raw_element["faceText"])
+        return Face(raw_element["faceIndex"], raw_element["faceText"])
 
     @RedMessageDeserialize.collect(m, "pic")
     async def pic(self, raw_element: dict) -> Picture:

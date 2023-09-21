@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text, Emoji, Audio
+from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face, Audio
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
 from avilla.standard.qq.elements import MarketFace
@@ -24,8 +24,8 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
     async def text(self, element: Text) -> dict:
         return {"elementType": 1, "textElement": {"content": element.text}}
 
-    @RedMessageSerialize.collect(m, Emoji)
-    async def face(self, element: Emoji) -> dict:
+    @RedMessageSerialize.collect(m, Face)
+    async def face(self, element: Face) -> dict:
         return {"elementType": 6, "faceElement": {"faceIndex": element.id}}
 
     @RedMessageSerialize.collect(m, Notice)
