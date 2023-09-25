@@ -1,17 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from os.path import dirname
-import pkgutil
 
 from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
+from graia.ryanvk import ref
 
 from .connection.ws_client import ElizabethWsClientNetworking
 from .service import ElizabethService
-from graia.ryanvk import ref, merge
 
 
 @dataclass

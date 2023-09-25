@@ -146,7 +146,6 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(
             ElizabethCapability.event_callback, result["data"]
         )
-        # event = await self.account.staff.ext({"connection": self.account.connection}).parse_event(result["data"]["type"], result["data"])
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)  # noqa
         return event.message

@@ -28,12 +28,12 @@ class ElizabethCapability((m := ApplicationCollector())._):
         elements = []
 
         for raw_element in chain:
-            elements.append(await self.staff.call_fn(ElizabethCapability.deserialize_element, raw_element))
+            elements.append(await self.deserialize_element(raw_element))
 
         return MessageChain(elements)
 
     async def handle_event(self, event: dict):
-        maybe_event = await self.staff.call_fn(ElizabethCapability.event_callback, event)
+        maybe_event = await self.event_callback(event)
 
         if maybe_event is not None:
             self.avilla.broadcast.postEvent(maybe_event)
