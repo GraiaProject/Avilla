@@ -168,3 +168,51 @@ class NoneOverload(FnOverload):
                 sets.append(self.bypassing.get_entities(bypassing_collection[arg_name], {arg_name: arg_value}))
 
         return sets.pop().intersection(*sets)
+
+class PredicateOverload(FnOverload):
+    predicate: Callable[[str, Any], Any]
+
+    def __init__(self, predicate: Callable[[str, Any], Any]) -> None:
+        self.predicate = predicate
+
+    @property
+    def identity(self) -> str:
+        return "predicate_overload:" + str(id(self))
+
+    def collect_entity(
+        self,
+        collector: BaseCollector,
+        scope: dict[Any, Any],
+        entity: Any,
+        params: dict[str, Any],
+    ) -> None:
+        record = (collector, entity)
+
+        for param_name, collect_info in params.items():
+            collection = scope.setdefault(param_name, {})
+            collection.setdefault(collect_info, set()).add(record)
+
+    def get_entities(self, scope: dict[Any, Any], args: dict[str, Any]) -> set[tuple[BaseCollector, Callable]]:
+        result_sets: list[set] = []
+
+        for arg_name, arg_value in args.items():
+            collection = scope[arg_name]
+            key = self.predicate(arg_name, arg_value)
+            if key not in collection:
+                raise NotImplementedError
+            result_sets.append(collection[key])
+
+        return result_sets.pop().intersection(*result_sets)
+
+    def merge_scopes(self, *scopes: dict[Any, Any]):
+        # layout: {arg: {value: set}}
+
+        result = {}
+
+        for scope in scopes:
+            for param_name, param_collection in scope.items():
+                collection = result.setdefault(param_name, {})
+                for value, entities in param_collection.items():
+                    collection.setdefault(value, set()).update(entities)
+
+        return result

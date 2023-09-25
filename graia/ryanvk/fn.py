@@ -13,9 +13,9 @@ if TYPE_CHECKING:
     from .capability import Capability
     from .collector import BaseCollector
     from .overload import FnOverload
-
     from .typing import SupportsCollect
 
+T = TypeVar("T")
 
 P = ParamSpec("P")
 P1 = ParamSpec("P1")
@@ -92,8 +92,8 @@ class Fn(Generic[VnCallable, B]):
         self,
         collector: BaseCollector,
         **overload_settings: Any,
-    ):
-        return self.behavior.collect(collector, self, **overload_settings)
+    ) -> Callable[[T], T]:
+        return self.behavior.collect(collector, self, **overload_settings)  # type: ignore
 
     def override(
         self: SupportsCollect[P1, Callable[[Callable[Concatenate[Any, P2], R2]], Any]],  # pyright: ignore

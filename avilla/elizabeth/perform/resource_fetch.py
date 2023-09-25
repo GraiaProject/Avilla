@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 
 from aiohttp import ClientSession
 
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.exceptions import UnknownTarget
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
-from avilla.core.ryanvk.descriptor.fetch import Fetch
 from avilla.elizabeth.resource import (
     ElizabethImageResource,
     ElizabethResource,
@@ -21,9 +21,9 @@ class ElizabethResourceFetchPerform((m := ProtocolCollector["ElizabethProtocol"]
     m.post_applying = True
 
     # TODO: FileResource
-    @m.entity(Fetch, ElizabethResource)
-    @m.entity(Fetch, ElizabethImageResource)
-    @m.entity(Fetch, ElizabethVoiceResource)
+    @m.entity(CoreCapability.fetch, resource=ElizabethResource)
+    @m.entity(CoreCapability.fetch, resource=ElizabethImageResource)
+    @m.entity(CoreCapability.fetch, resource=ElizabethVoiceResource)
     async def fetch_resource(self, resource: ElizabethResource) -> bytes:
         if resource.url is None:
             raise UnknownTarget

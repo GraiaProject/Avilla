@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
 from loguru import logger
 
 from avilla.core.exceptions import ActionFailed
-from avilla.core.ryanvk.staff import Staff
 from avilla.onebot.v11.utilles import onebot11_event_type
 
 if TYPE_CHECKING:

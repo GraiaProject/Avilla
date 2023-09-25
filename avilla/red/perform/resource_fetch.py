@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from aiohttp import ClientSession
-from contextlib import suppress
+
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.core.ryanvk.descriptor.fetch import Fetch
-from avilla.red.resource import RedImageResource, RedVoiceResource, RedVideoResource, RedResource, RedFileResource
+from avilla.red.resource import RedFileResource, RedImageResource, RedResource, RedVideoResource, RedVoiceResource
 
 if TYPE_CHECKING:
     from ..account import RedAccount  # noqa
@@ -22,7 +23,11 @@ class RedResourceFetchPerform((m := ProtocolCollector["RedProtocol"]())._):
     @Fetch.collect(m, RedVoiceResource)
     @Fetch.collect(m, RedVideoResource)
     async def fetch_resource(self, resource: RedResource) -> bytes:
-        if isinstance(resource, (RedImageResource, RedVoiceResource, RedVideoResource)) and resource.path and resource.path.exists():
+        if (
+            isinstance(resource, (RedImageResource, RedVoiceResource, RedVideoResource))
+            and resource.path
+            and resource.path.exists()
+        ):
             with resource.path.open("rb") as f:
                 return f.read()
         if isinstance(resource, RedImageResource):

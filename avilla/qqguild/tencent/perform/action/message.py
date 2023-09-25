@@ -7,7 +7,6 @@ from loguru import logger
 from avilla.core import CoreCapability, Message
 from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.qqguild.tencent.exception import AuditException
 from avilla.qqguild.tencent.utils import form_data, pro_serialize

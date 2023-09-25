@@ -1,11 +1,12 @@
 from __future__ import annotations
+
 from typing import Any, Callable, TypedDict
 
-from graia.ryanvk import FnBehavior, FnOverload
-
-from graia.ryanvk.collector import BaseCollector
 from avilla.core.ryanvk.descriptor.query import QueryRecord, find_querier_steps
-from avilla.core.selector import Selector, _parse_follows, FollowsPredicater
+from avilla.core.selector import FollowsPredicater, _parse_follows
+from graia.ryanvk import FnBehavior, FnOverload
+from graia.ryanvk.collector import BaseCollector
+
 
 class QueryCollectParams(TypedDict):
     target: str
@@ -37,15 +38,13 @@ class QueryOverload(FnOverload):
         scope: dict[QueryRecord, set[tuple[BaseCollector, Callable[..., Any]]]],
         args: QueryCallArgs,
     ):
-        items = _parse_follows(args['pattern'], **args['predicators'])
+        items = _parse_follows(args["pattern"], **args["predicators"])
         steps = find_querier_steps(scope, items)
 
         if steps is None:
             raise NotImplementedError
-    
+
         ...
-    
-    
 
 
 class QueryFnBehavior(FnBehavior):

@@ -6,7 +6,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.relation.capability import RelationshipTerminate
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -19,7 +19,9 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
     @m.pull("land.friend", Nick)
     async def get_contact_nick(self, target: Selector, route: ...) -> Nick:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"):
+        if raw := await cache.get(
+            f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"
+        ):
             return Nick(raw["nickname"], raw["remark"] or raw["nickname"], None)
         result = await self.account.connection.call(
             "fetch",
@@ -33,7 +35,9 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
     @m.pull("land.friend", Summary)
     async def get_contact_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"):
+        if raw := await cache.get(
+            f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"
+        ):
             return Summary(raw["nickname"], "a friend contact assigned to this account")
         result = await self.account.connection.call(
             "fetch",

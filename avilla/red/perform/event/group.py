@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from loguru import logger
+
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
-from avilla.core.selector import Selector
 from avilla.core.ryanvk.descriptor.event import EventParse
-from avilla.standard.core.profile import Summary
+from avilla.core.selector import Selector
 from avilla.red.collector.connection import ConnectionCollector
-from loguru import logger
+from avilla.standard.core.profile import Summary
 
 
 class RedEventGroupPerform((m := ConnectionCollector())._):
@@ -32,12 +33,12 @@ class RedEventGroupPerform((m := ConnectionCollector())._):
             context,
             group,
             Summary,
-            {
-                Summary.inh(lambda x: x.name): ModifyDetail("update", group_data["groupName"], "")
-            },
+            {Summary.inh(lambda x: x.name): ModifyDetail("update", group_data["groupName"], "")},
             operator=operator,
             scene=group,
         )
+
+
 _ = {
     "msgId": "7273401197226772043",
     "msgRandom": "7198583817760031691",

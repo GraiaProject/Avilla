@@ -15,7 +15,7 @@ from avilla.standard.core.privilege import (
 )
 from avilla.standard.core.profile import Nick, NickCapability, Summary
 from avilla.standard.core.relation import SceneCapability
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -28,7 +28,11 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
     @m.pull("land.group.member", Nick)
     async def get_group_member_nick(self, target: Selector, route: ...) -> Nick:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        if not (result := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).member({target.pattern['member']})")):
+        if not (
+            result := await cache.get(
+                f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).member({target.pattern['member']})"
+            )
+        ):
             result = await self.account.connection.call(
                 "fetch",
                 "memberInfo",
@@ -96,7 +100,11 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
     @m.pull("land.group.member", MuteInfo)
     async def get_group_member_mute_info(self, target: Selector, route: ...) -> MuteInfo:
         cache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        if not (result := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).member({target.pattern['member']})")):
+        if not (
+            result := await cache.get(
+                f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).member({target.pattern['member']})"
+            )
+        ):
             result = await self.account.connection.call(
                 "fetch",
                 "memberInfo",

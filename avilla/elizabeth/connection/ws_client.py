@@ -16,13 +16,13 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.account import ElizabethAccount
 from avilla.elizabeth.connection.base import CallMethod
 from avilla.elizabeth.const import PLATFORM
-from avilla.standard.core.account import AccountRegistered, AccountUnregistered, AccountAvailable, AccountUnavailable
+from avilla.standard.core.account import AccountRegistered, AccountUnavailable
 
 from .base import ElizabethNetworking
 from .util import validate_response
 
 if TYPE_CHECKING:
-    from avilla.elizabeth.protocol import ElizabethProtocol, ElizabethConfig
+    from avilla.elizabeth.protocol import ElizabethConfig, ElizabethProtocol
 
 
 class ElizabethWsClientNetworking(ElizabethNetworking, Service):
@@ -129,9 +129,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking, Service):
                     self.protocol,
                     PLATFORM,
                 )
-                self.protocol.avilla.broadcast.postEvent(AccountRegistered(
-                    self.protocol.avilla, account
-                ))
+                self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
 
             self.protocol.service.account_map[self.config.qq] = self
             # self.protocol.avilla.broadcast.postEvent(AccountAvailable(
@@ -153,9 +151,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking, Service):
                 self.close_signal.set()
                 self.connection = None
                 with suppress(KeyError):
-                    self.protocol.avilla.broadcast.postEvent(AccountUnavailable(
-                        self.protocol.avilla, account
-                    ))
+                    self.protocol.avilla.broadcast.postEvent(AccountUnavailable(self.protocol.avilla, account))
                     del self.protocol.service.account_map[self.config.qq]
                     del self.protocol.avilla.accounts[account_route]
                 return
@@ -164,9 +160,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking, Service):
                 logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
 
                 with suppress(KeyError):
-                    self.protocol.avilla.broadcast.postEvent(AccountUnavailable(
-                        self.protocol.avilla, account
-                    ))
+                    self.protocol.avilla.broadcast.postEvent(AccountUnavailable(self.protocol.avilla, account))
                     del self.protocol.service.account_map[self.config.qq]
                     del self.protocol.avilla.accounts[account_route]
                 await asyncio.sleep(5)

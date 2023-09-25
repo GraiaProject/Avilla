@@ -13,6 +13,7 @@ from .gateway import Gateway as Gateway
 from .overload import FnOverload as FnOverload
 from .overload import SimpleOverload as SimpleOverload
 from .overload import TypeOverload as TypeOverload
+from .overload import PredicateOverload as PredicateOverload
 from .override import OverridePerformEntity as OverridePerformEntity
 from .perform import BasePerform as BasePerform
 from .staff import Staff as Staff

@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from avilla.core.application import Avilla
-from avilla.core.protocol import BaseProtocol, ProtocolConfig
+
 from loguru import logger
 from yarl import URL
 
-from .service import QQGuildService
+from avilla.core.application import Avilla
+from avilla.core.protocol import BaseProtocol, ProtocolConfig
+
 from .connection.ws_client import QQGuildWsClientNetworking
+from .service import QQGuildService
+
 
 @dataclass
 class Intents:
@@ -41,6 +44,7 @@ class Intents:
             | self.at_messages << 30
         )
 
+
 @dataclass
 class QQGuildConfig(ProtocolConfig):
     id: str
@@ -57,6 +61,7 @@ class QQGuildConfig(ProtocolConfig):
 
     def get_authorization(self) -> str:
         return f"Bot {self.id}.{self.token}"
+
 
 class QQGuildProtocol(BaseProtocol):
     service: QQGuildService
@@ -81,7 +86,7 @@ class QQGuildProtocol(BaseProtocol):
         from .perform.action.role import QQGuildRoleActionPerform  # noqa: F401
 
         ## :: Context
-        from .perform.context import QQGuildContextPerform   # noqa: F401
+        from .perform.context import QQGuildContextPerform  # noqa: F401
 
         ## :: Event
         from .perform.event.audit import QQGuildEventAuditPerform  # noqa: F401
@@ -101,7 +106,5 @@ class QQGuildProtocol(BaseProtocol):
         avilla.launch_manager.add_component(self.service)
 
     def configure(self, config: QQGuildConfig):
-        self.service.connections.append(
-            QQGuildWsClientNetworking(self, config)
-        )
+        self.service.connections.append(QQGuildWsClientNetworking(self, config))
         return self

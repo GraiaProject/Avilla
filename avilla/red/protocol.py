@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import InitVar, dataclass, field
 
+from yarl import URL
+
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from yarl import URL
 
 from .net.ws_client import RedWsClientNetworking
 from .service import RedService
@@ -47,7 +48,7 @@ class RedProtocol(BaseProtocol):
         from .perform.action.message import RedMessageActionPerform  # noqa: F401
 
         ## :: Context
-        from .perform.context import RedContextPerform   # noqa: F401
+        from .perform.context import RedContextPerform  # noqa: F401
 
         ## :: Event
         from .perform.event.group import RedEventGroupPerform  # noqa: F401
@@ -68,7 +69,5 @@ class RedProtocol(BaseProtocol):
         avilla.launch_manager.add_component(self.service)
 
     def configure(self, config: RedConfig):
-        self.service.connections.append(
-            RedWsClientNetworking(self, config)
-        )
+        self.service.connections.append(RedWsClientNetworking(self, config))
         return self

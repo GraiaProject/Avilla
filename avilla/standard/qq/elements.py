@@ -288,9 +288,11 @@ class Share(Element):
     def __repr__(self) -> str:
         return f"[$Share:title={self.title};url={self.url}]"
 
+
 @dataclass
 class Node(Element):
     """表示转发消息的节点消息元素"""
+
     mid: Selector | None = None
     name: str | None = None
     uid: str | None = None
@@ -318,11 +320,13 @@ class DisplayStrategy:
 @dataclass
 class Forward(Element):
     """表示转发消息的消息元素"""
+
     id: Selector | None = None
     nodes: list[Node] = field(default_factory=list)
     strategy: DisplayStrategy | None = None
 
     def __str__(self) -> str:
         return f"[$Forward:id={self.id}]"
+
 
 # TODO: other qq elements

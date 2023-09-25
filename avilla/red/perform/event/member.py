@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from loguru import logger
+
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
-from avilla.core.selector import Selector
 from avilla.core.ryanvk.descriptor.event import EventParse
+from avilla.core.selector import Selector
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.standard.core.privilege import MuteInfo
-from loguru import logger
 
 
 class RedEventGroupMemberPerform((m := ConnectionCollector())._):
@@ -38,7 +39,7 @@ class RedEventGroupMemberPerform((m := ConnectionCollector())._):
                 MuteInfo,
                 {
                     MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                    MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear",  timedelta(seconds=0)),
+                    MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear", timedelta(seconds=0)),
                 },
                 operator=operator,
                 scene=group,
@@ -50,7 +51,9 @@ class RedEventGroupMemberPerform((m := ConnectionCollector())._):
                 MuteInfo,
                 {
                     MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", True, False),
-                    MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=int(group_data["shutUp"]["duration"]))),
+                    MuteInfo.inh(lambda x: x.duration): ModifyDetail(
+                        "set", timedelta(seconds=int(group_data["shutUp"]["duration"]))
+                    ),
                 },
                 operator=operator,
                 scene=group,

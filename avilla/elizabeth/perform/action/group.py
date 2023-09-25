@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.builtins.capability import CoreCapability
 from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -10,7 +9,7 @@ from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
 from avilla.standard.core.profile import Summary, SummaryCapability
 from avilla.standard.core.relation import SceneCapability
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -23,7 +22,9 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
     @m.pull("land.group", Summary)
     async def get_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"):
+        if raw := await cache.get(
+            f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"
+        ):
             return Summary(raw["name"], None)
         result = await self.account.connection.call(
             "fetch",

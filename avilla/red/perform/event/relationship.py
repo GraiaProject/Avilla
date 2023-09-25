@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from avilla.core.context import Context
-from avilla.core.event import RelationshipCreated
-from avilla.core.selector import Selector
-from avilla.core.ryanvk.descriptor.event import EventParse
-from avilla.red.collector.connection import ConnectionCollector
 from loguru import logger
 from selectolax.parser import HTMLParser
+
+from avilla.core.context import Context
+from avilla.core.event import RelationshipCreated
+from avilla.core.ryanvk.descriptor.event import EventParse
+from avilla.core.selector import Selector
+from avilla.red.collector.connection import ConnectionCollector
 
 # async function adaptGuildMemberAddedMessage(
 #   session: Session,
@@ -27,6 +28,7 @@ from selectolax.parser import HTMLParser
 #   return session2
 # }
 
+
 class RedEventRelationshipPerform((m := ConnectionCollector())._):
     m.post_applying = True
 
@@ -40,14 +42,7 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         group_data = raw_event["elements"][0]["grayTipElement"]["groupElement"]
         member = group.member(str(group_data["memberUin"]))
         operator = group.member(str(group_data["adminUin"]))
-        context = Context(
-            account,
-            member,
-            group,
-            group,
-            group.member(account.route["account"]),
-            mediums=[operator]
-        )
+        context = Context(account, member, group, group, group.member(account.route["account"]), mediums=[operator])
         return RelationshipCreated(context)
 
     @EventParse.collect(m, "group::member::legacy::add::invited")
@@ -61,12 +56,5 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         root = HTMLParser(group_data["content"])
         operator = group.member(root.tags("qq")[0].attributes["jp"])  # type: ignore
         member = group.member(root.tags("qq")[1].attributes["jp"])  # type: ignore
-        context = Context(
-            account,
-            member,
-            group,
-            group,
-            group.member(account.route["account"]),
-            mediums=[operator]
-        )
+        context = Context(account, member, group, group, group.member(account.route["account"]), mediums=[operator])
         return RelationshipCreated(context)

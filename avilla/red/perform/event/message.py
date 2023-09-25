@@ -26,7 +26,9 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         reply = None
         if raw_event["chatType"] == 2:
-            group = Selector().land(account.route["land"]).group(str(raw_event.get("peerUin", raw_event.get("peerUid"))))
+            group = (
+                Selector().land(account.route["land"]).group(str(raw_event.get("peerUin", raw_event.get("peerUid"))))
+            )
             member = group.member(str(raw_event.get("senderUin", raw_event.get("senderUid"))))
             context = Context(
                 account,
@@ -50,9 +52,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             )
         else:
             friend = (
-                Selector()
-                .land(account.route["land"])
-                .friend(f"{raw_event.get('peerUin', raw_event.get('senderUin'))}")
+                Selector().land(account.route["land"]).friend(f"{raw_event.get('peerUin', raw_event.get('senderUin'))}")
             )
             context = Context(
                 account,
@@ -75,10 +75,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             )
         await cache.set(f"red/account({account.route['account']}).message({msg.id})", raw_event, timedelta(minutes=5))
-        context._collect_metadatas(
-            msg.to_selector(),
-            msg
-        )
+        context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(
             context,
             msg,

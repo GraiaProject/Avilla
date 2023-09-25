@@ -6,7 +6,7 @@ from loguru import logger
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageRevoke, MessageSend, MessageReceived, MessageSent
+from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
@@ -20,14 +20,16 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
 
     async def handle_reply(self, target: Selector):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        reply_msg = await cache.get(f"red/account({self.account.route['account']}).message({target.pattern['message']})")
+        reply_msg = await cache.get(
+            f"red/account({self.account.route['account']}).message({target.pattern['message']})"
+        )
         if reply_msg:
             return {
                 "elementType": 7,
                 "replyElement": {
                     # "sourceMsgIdInRecords": reply_msg["msgId"],
                     "replayMsgSeq": reply_msg["msgSeq"],
-                    #"senderUid": reply_msg["senderUid"],
+                    # "senderUid": reply_msg["senderUid"],
                 },
             }
         logger.warning(f"Unknown message {target.pattern['message']} for reply")
@@ -45,7 +47,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
         resp = await self.account.websocket_client.call_http(
-            "post", "api/message/send",
+            "post",
+            "api/message/send",
             {
                 "peer": {
                     "chatType": 2,
@@ -57,7 +60,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event("message::recv", resp)
+            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event(
+                "message::recv", resp
+            )
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target.member(self.account.route["account"]))
@@ -80,7 +85,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
         resp = await self.account.websocket_client.call_http(
-            "post", "api/message/send",
+            "post",
+            "api/message/send",
             {
                 "peer": {
                     "chatType": 1,
@@ -92,7 +98,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event("message::recv", resp)
+            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event(
+                "message::recv", resp
+            )
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target, via=self.account.route)

@@ -19,6 +19,7 @@ class ApplicationBasedPerformTemplate(BasePerform, native=True):
 
     avilla: Access[Avilla] = Access()
 
+
 class ApplicationCollector(AvillaBaseCollector):
     post_applying: bool = False
 

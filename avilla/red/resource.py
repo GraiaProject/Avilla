@@ -69,7 +69,6 @@ class RedVoiceResource(RedResource):
         self.path = Path(path)
 
 
-
 class RedVideoResource(RedResource):
     def __init__(
         self,

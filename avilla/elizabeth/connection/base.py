@@ -3,16 +3,15 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING, AsyncIterator, Literal, TypeVar
-from typing_extensions import Self
 
 from loguru import logger
+from typing_extensions import Self
 
 from avilla.core.exceptions import InvalidAuthentication
 from avilla.core.ryanvk.staff import Staff
-from avilla.standard.core.account import AccountAvailable
-
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
+from avilla.standard.core.account import AccountAvailable
 
 from .util import validate_response
 

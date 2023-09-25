@@ -15,7 +15,7 @@ from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
 
 if TYPE_CHECKING:
-    from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ForwardConfig
+    from avilla.onebot.v11.protocol import OneBot11ForwardConfig, OneBot11Protocol
 
 
 class OneBot11WsClientNetworking(OneBot11Networking["OneBot11WsClientNetworking"], Service):

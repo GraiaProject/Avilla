@@ -120,7 +120,7 @@ class TargetOverload(FnOverload):
                                 break  # hit predicate
                         else:
                             if None in branches:
-                                header = None # hit default
+                                header = None  # hit default
                             elif "*" in branches:
                                 return branches["*"].bind  # hit wildcard
                             else:

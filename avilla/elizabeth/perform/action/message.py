@@ -3,14 +3,12 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.builtins.capability import CoreCapability
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
+from avilla.elizabeth.capability import ElizabethCapability
 from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
 from graia.amnesia.message import MessageChain
-
-from avilla.elizabeth.capability import ElizabethCapability
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -39,7 +37,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result["msg"] != "success" or result["messageId"] < 0:
             raise RuntimeError(f"Failed to send message to {target.pattern['group']}: {message}")
-        
+
         context = self.account.get_context(target.member(self.account.route["account"]))
         self.protocol.post_event(
             MessageSent(
@@ -125,7 +123,9 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result is None:
             raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
-        event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(ElizabethCapability.event_callback, result["data"])
+        event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(
+            ElizabethCapability.event_callback, result["data"]
+        )
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)  # noqa
         return event.message
@@ -142,8 +142,10 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result is None:
             raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
-        event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(ElizabethCapability.event_callback, result["data"])
-        #event = await self.account.staff.ext({"connection": self.account.connection}).parse_event(result["data"]["type"], result["data"])
+        event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(
+            ElizabethCapability.event_callback, result["data"]
+        )
+        # event = await self.account.staff.ext({"connection": self.account.connection}).parse_event(result["data"]["type"], result["data"])
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)  # noqa
         return event.message

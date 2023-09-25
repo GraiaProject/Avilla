@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Emoji
+from selectolax.parser import HTMLParser
+
+from avilla.core.elements import Audio, Emoji, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
-from avilla.red.resource import RedFileResource, RedImageResource, RedVoiceResource, RedVideoResource
-from avilla.standard.qq.elements import App, MarketFace, Poke, PokeKind, Forward, Node, DisplayStrategy
+from avilla.red.resource import RedFileResource, RedImageResource, RedVideoResource, RedVoiceResource
+from avilla.standard.qq.elements import App, DisplayStrategy, Forward, MarketFace, Node, Poke, PokeKind
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Unknown
 from graia.ryanvk import Access
-from selectolax.parser import HTMLParser
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -108,13 +109,10 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
         return Forward(
             raw_element["resId"],
             nodes=[
-                Node(
-                    name=(part := content.split(":", 1))[0],
-                    content=MessageChain([Text(part[1].lstrip())])
-                )
+                Node(name=(part := content.split(":", 1))[0], content=MessageChain([Text(part[1].lstrip())]))
                 for content in preview
             ],
-            strategy=DisplayStrategy(title, brief, preview=preview, summary=summary)
+            strategy=DisplayStrategy(title, brief, preview=preview, summary=summary),
         )
 
     @RedMessageDeserialize.collect(m, "video")

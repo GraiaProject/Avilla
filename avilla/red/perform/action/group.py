@@ -9,7 +9,7 @@ from avilla.standard.core.common import Count
 from avilla.standard.core.privilege import MuteAllCapability
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.relation import SceneCapability
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa

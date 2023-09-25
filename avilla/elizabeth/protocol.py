@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from avilla.core.application import Avilla
-from avilla.core.protocol import BaseProtocol, ProtocolConfig
+
 from yarl import URL
 
-from .service import ElizabethService
+from avilla.core.application import Avilla
+from avilla.core.protocol import BaseProtocol, ProtocolConfig
+
 from .connection.ws_client import ElizabethWsClientNetworking
+from .service import ElizabethService
+
 
 @dataclass
 class ElizabethConfig(ProtocolConfig):
@@ -39,7 +42,7 @@ class ElizabethProtocol(BaseProtocol):
         from .perform.action.request import ElizabethRequestActionPerform  # noqa: F401
 
         ## ::Context
-        from .perform.context import ElizabethContextPerform  # noqa: F401
+        from .perform.context import ElizabethGetContextPerform  # noqa: F401
 
         ## :: Event
         from .perform.event.activity import ElizabethEventActivityPerform  # noqa: F401
@@ -69,7 +72,5 @@ class ElizabethProtocol(BaseProtocol):
         avilla.launch_manager.add_component(self.service)
 
     def configure(self, config: ElizabethConfig):
-        self.service.connections.append(
-            ElizabethWsClientNetworking(self, config)
-        )
+        self.service.connections.append(ElizabethWsClientNetworking(self, config))
         return self

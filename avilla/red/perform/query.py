@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable, cast
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from ..account import RedAccount  # noqa
@@ -23,9 +23,7 @@ class RedQueryPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
         result = cast(list, result)
         for i in result:
             group_id = str(i["groupCode"])
-            await cache.set(
-                f"red/account({self.account.route['account']}).group({group_id})", i, timedelta(minutes=5)
-            )
+            await cache.set(f"red/account({self.account.route['account']}).group({group_id})", i, timedelta(minutes=5))
             if callable(predicate) and predicate("group", group_id) or group_id == predicate:
                 yield Selector().land(self.account.route["land"]).group(group_id)
 
@@ -52,7 +50,9 @@ class RedQueryPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
         for i in result:
             member_id = str(i["uin"])
             await cache.set(
-                f"red/account({self.account.route['account']}).group({previous['group']}).member({member_id})", i, timedelta(minutes=5)
+                f"red/account({self.account.route['account']}).group({previous['group']}).member({member_id})",
+                i,
+                timedelta(minutes=5),
             )
             if callable(predicate) and predicate("member", member_id) or member_id == predicate:
                 yield previous.member(member_id)

@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING, AsyncIterator, Generic, Literal, TypeVar
 
 from loguru import logger
 
-from avilla.core.ryanvk.staff import Staff
-
 from ..audit import MessageAudited, audit_result
 from .util import Opcode, Payload
 

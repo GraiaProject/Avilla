@@ -15,7 +15,7 @@ from avilla.red.net.base import RedNetworking
 from avilla.standard.core.account import AccountUnregistered
 
 if TYPE_CHECKING:
-    from avilla.red.protocol import RedProtocol, RedConfig
+    from avilla.red.protocol import RedConfig, RedProtocol
 
 
 class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
