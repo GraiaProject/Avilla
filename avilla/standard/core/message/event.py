@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.event import AvillaEvent
 from graia.amnesia.message import MessageChain
+from graia.broadcast.entities.signatures import Force
 
 if TYPE_CHECKING:
     from avilla.core.account import BaseAccount
@@ -22,8 +23,10 @@ class MessageReceived(AvillaEvent):
         async def catch(cls, interface: DispatcherInterface[MessageReceived]):
             if interface.annotation is interface.event.message.__class__:
                 return interface.event.message
-            elif interface.annotation is MessageChain:
+            if interface.annotation is MessageChain:
                 return interface.event.message.content
+            if interface.name == "sender":
+                return interface.event.message.sender
             return await AvillaEvent.Dispatcher.catch(interface)
 
 
@@ -34,11 +37,13 @@ class MessageSent(AvillaEvent):
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @classmethod
-        async def catch(cls, interface: DispatcherInterface[MessageReceived]):
+        async def catch(cls, interface: DispatcherInterface[MessageSent]):
             if interface.annotation is interface.event.message.__class__:
                 return interface.event.message
-            elif interface.annotation is MessageChain:
+            if interface.annotation is MessageChain:
                 return interface.event.message.content
+            if issubclass(interface.annotation, BaseAccount):
+                return interface.event.account
             return await AvillaEvent.Dispatcher.catch(interface)
 
 
@@ -54,8 +59,12 @@ class MessageEdited(AvillaEvent):
         async def catch(cls, interface: DispatcherInterface[MessageEdited]):
             if interface.annotation is Message:
                 return interface.event.message
-            elif interface.annotation is MessageChain:
+            if interface.annotation is MessageChain:
                 return interface.event.current
+            if interface.name == "sender":
+                return interface.event.message.sender
+            if interface.name == "operator":
+                return interface.event.operator
             return await AvillaEvent.Dispatcher.catch(interface)
 
 
@@ -68,4 +77,10 @@ class MessageRevoked(AvillaEvent):
     class Dispatcher(AvillaEvent.Dispatcher):
         @classmethod
         async def catch(cls, interface: DispatcherInterface[MessageRevoked]):
+            if interface.name == "message":
+                return interface.event.message
+            if interface.name == "operator":
+                return interface.event.operator
+            if interface.name == "sender":
+                return Force(interface.event.sender)
             return await AvillaEvent.Dispatcher.catch(interface)

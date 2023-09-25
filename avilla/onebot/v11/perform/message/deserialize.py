@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Emoji, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -31,8 +31,8 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
         return Text(raw_element["data"]["text"])
 
     @OneBot11MessageDeserialize.collect(m, "face")
-    async def face(self, raw_element: dict) -> Emoji:
-        return Emoji(raw_element["data"]["id"])
+    async def face(self, raw_element: dict) -> Face:
+        return Face(raw_element["data"]["id"])
 
     @OneBot11MessageDeserialize.collect(m, "image")
     async def image(self, raw_element: dict) -> Picture | FlashImage:
@@ -95,7 +95,11 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
                 name=msg["sender"]["nickname"],
                 uid=str(msg["sender"]["user_id"]),
                 time=datetime.fromtimestamp(msg["time"]),
-                content=(await self.account.staff.ext({"context": self.context}).deserialize_message(msg["content"])),
+                content=(
+                    await self.account.staff
+                    .ext({"context": self.context})
+                    .deserialize_message(msg["content"])
+                )
             )
             elem.nodes.append(node)
         return elem

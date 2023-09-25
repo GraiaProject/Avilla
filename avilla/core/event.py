@@ -1,15 +1,18 @@
 from __future__ import annotations
 
+from inspect import isclass
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal
 
 from typing_extensions import Unpack
 
+from avilla.core.account import BaseAccount
 from avilla.core.metadata import FieldReference, Metadata, MetadataRoute
 from avilla.core.selector import Selector
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
+from graia.broadcast.entities.signatures import Force
 
 from ._runtime import cx_context
 
@@ -38,6 +41,18 @@ class AvillaEvent(Dispatchable):
 
             if interface.annotation is Context:
                 return interface.event.context
+
+            if isclass(interface.annotation) and issubclass(interface.annotation, BaseAccount):
+                return interface.event.context.account
+
+            if interface.name == "client":
+                return interface.event.context.client
+
+            if interface.name == "scene":
+                return interface.event.context.scene
+
+            if interface.name == "endpoint":
+                return interface.event.context.endpoint
 
         @staticmethod
         async def afterExecution(interface: DispatcherInterface[AvillaEvent], exc, tb):
@@ -80,5 +95,5 @@ class MetadataModified(AvillaEvent):
             if interface.name == "details":
                 return interface.event.details
             if interface.name == "operator":
-                return interface.event.operator
+                return Force(interface.event.operator)
             return await AvillaEvent.Dispatcher.catch(interface)

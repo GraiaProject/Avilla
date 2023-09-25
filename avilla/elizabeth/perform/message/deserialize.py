@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Emoji, File, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
@@ -72,8 +72,8 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         return NoticeAll()
 
     @m.entity(ElizabethCapability.deserialize_element, element="Face")
-    async def face(self, raw_element: dict) -> Emoji:
-        return Emoji(raw_element["faceId"], raw_element["name"])
+    async def face(self, raw_element: dict) -> Face:
+        return Face(raw_element["faceId"], raw_element["name"])
 
     @m.entity(ElizabethCapability.deserialize_element, element="MarketFace")
     async def market_face(self, raw_element: dict) -> MarketFace:
@@ -147,9 +147,8 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             Selector().land("qq").voice(raw_element["voiceId"]),
             raw_element["voiceId"],
             raw_element["url"],
-            raw_element["length"],
         )
-        return Audio(resource)
+        return Audio(resource, int(raw_element["length"]))
 
     @m.entity(ElizabethCapability.deserialize_element, element="Forward")
     async def forward(self, raw_element: dict) -> Forward:

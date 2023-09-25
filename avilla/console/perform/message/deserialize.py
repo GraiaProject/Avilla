@@ -9,7 +9,7 @@ from nonechat.message import Text as CslText
 
 from avilla.console.capability import ConsoleCapability
 from avilla.console.element import Markdown, Markup
-from avilla.core.elements import Emoji, Text
+from avilla.core.elements import Text, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 
 
@@ -24,8 +24,8 @@ class ConsoleMessageDeserializePerform((m := ApplicationCollector())._):
         return Text(element.text)
 
     @m.entity(ConsoleCapability.deserialize_element, element=CslEmoji)
-    async def emoji(self, element: CslEmoji) -> Emoji:
-        return Emoji(element.name)
+    async def emoji(self, element: CslEmoji) -> Face:
+        return Face(element.name)
 
     @m.entity(ConsoleCapability.deserialize_element, element=CslMarkup)
     async def markup(self, element: CslMarkup) -> Markup:

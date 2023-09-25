@@ -10,7 +10,7 @@ from nonechat.message import Text as CslText
 
 from avilla.console.capability import ConsoleCapability
 from avilla.console.element import Markdown, Markup
-from avilla.core.elements import Emoji, Text
+from avilla.core.elements import Face, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 
 if TYPE_CHECKING:
@@ -28,8 +28,8 @@ class ConsoleMessageSerializePerform((m := AccountCollector["ConsoleProtocol", "
     async def text(self, element: Text):
         return CslText(element.text)
 
-    @m.entity(ConsoleCapability.serialize_element, element=Emoji)
-    async def emoji(self, element: Emoji):
+    @m.entity(ConsoleCapability.serialize_element, element=Face)
+    async def emoji(self, element: Face):
         return CslEmoji(element.id)
 
     @m.entity(ConsoleCapability.serialize_element, element=Markup)

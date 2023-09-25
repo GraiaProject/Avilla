@@ -2,9 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from selectolax.parser import HTMLParser
-
-from avilla.core.elements import Audio, Emoji, File, Notice, NoticeAll, Picture, Text, Video
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -13,6 +11,7 @@ from avilla.standard.qq.elements import App, DisplayStrategy, Forward, MarketFac
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Unknown
 from graia.ryanvk import Access
+from selectolax.parser import HTMLParser
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -32,13 +31,16 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
             return Text(raw_element["content"])
         if raw_element["atType"] == 1:
             return NoticeAll()
-        return Notice(self.context.scene.member(raw_element.get("atNtUin", "atNtUid")))
+        return Notice(
+            self.context.scene.member(raw_element.get("atNtUin", "atNtUid")),
+            raw_element["content"][1:],
+        )
 
     @RedMessageDeserialize.collect(m, "face")
-    async def face(self, raw_element: dict) -> Emoji | Poke:
+    async def face(self, raw_element: dict) -> Face | Poke:
         if raw_element["faceType"] == 5:
             return Poke(PokeKind.ChuoYiChuo)
-        return Emoji(raw_element["faceIndex"], raw_element["faceText"])
+        return Face(raw_element["faceIndex"], raw_element["faceText"])
 
     @RedMessageDeserialize.collect(m, "pic")
     async def pic(self, raw_element: dict) -> Picture:
@@ -92,7 +94,8 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
                 raw_element["elementId"],
                 raw_element["fileUuid"],
                 raw_element["filePath"],
-            )
+            ),
+            int(raw_element["duration"]),
         )
 
     @RedMessageDeserialize.collect(m, "grayTip")
@@ -109,10 +112,13 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
         return Forward(
             raw_element["resId"],
             nodes=[
-                Node(name=(part := content.split(":", 1))[0], content=MessageChain([Text(part[1].lstrip())]))
+                Node(
+                    name=(part := content.split(":", 1))[0],
+                    content=MessageChain([Text(part[1].lstrip())])
+                )
                 for content in preview
             ],
-            strategy=DisplayStrategy(title, brief, preview=preview, summary=summary),
+            strategy=DisplayStrategy(title, brief, preview=preview, summary=summary)
         )
 
     @RedMessageDeserialize.collect(m, "video")

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Emoji, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
@@ -27,8 +27,8 @@ class QQGuildMessageDeserializePerform((m := ApplicationCollector())._):
         return Text(raw_element["text"])
 
     @QQGuildMessageDeserialize.collect(m, "emoji")
-    async def emoji(self, raw_element: dict) -> Emoji:
-        return Emoji(raw_element["id"])
+    async def emoji(self, raw_element: dict) -> Face:
+        return Face(raw_element["id"])
 
     @QQGuildMessageDeserialize.collect(m, "attachment")
     async def attachment(self, raw_element: dict) -> Picture:

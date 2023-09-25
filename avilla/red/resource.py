@@ -50,6 +50,8 @@ class RedImageResource(RedResource):
 
     @property
     def url(self) -> str:
+        if self.ctx.scene.last_key == "friend":
+            return f"https://c2cpicdw.qpic.cn/offpic_new//{self.ctx.scene.last_value}-0-{self.id.upper()}/0"
         return f"https://gchat.qpic.cn/gchatpic_new/0/0-0-{self.id.upper()}/0"
 
 
