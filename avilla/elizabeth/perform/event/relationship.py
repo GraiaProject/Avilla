@@ -13,7 +13,8 @@ from avilla.standard.core.profile import Nick, Summary
 
 
 class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "relationship"
 
     @m.entity(ElizabethCapability.event_callback, event="MemberJoinEvent")
     async def member_join(self, raw_event: dict):

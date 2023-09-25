@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from os.path import dirname
+import pkgutil
 
 from yarl import URL
 
@@ -9,6 +11,7 @@ from avilla.core.protocol import BaseProtocol, ProtocolConfig
 
 from .connection.ws_client import ElizabethWsClientNetworking
 from .service import ElizabethService
+from graia.ryanvk import ref, merge
 
 
 @dataclass
@@ -23,48 +26,46 @@ class ElizabethConfig(ProtocolConfig):
         self.base_url = URL.build(scheme="http", host=self.host, port=self.port)
 
 
+def _import_performs():  # noqa: F401
+
+    from avilla.elizabeth.perform import context, resource_fetch  # noqa: F401
+    from avilla.elizabeth.perform.action import (
+        activity,
+        announcement,
+        contact,  # noqa: F401
+        friend,
+        group,
+        group_member,
+        message,
+        request,
+    )
+    from avilla.elizabeth.perform.event import (
+        activity,  # noqa: F401, F811
+        friend,  # noqa: F811
+        group,  # noqa: F811
+        group_member,  # noqa: F401, F811
+        message,  # noqa: F401, F811
+        relationship,  # noqa: F401
+        request,  # noqa: F401, F811
+    )
+    from avilla.elizabeth.perform.message import deserialize, serialize  # noqa
+    from avilla.elizabeth.perform.query import announcement, bot, friend, group  # noqa
+
+_import_performs()
+
 class ElizabethProtocol(BaseProtocol):
     service: ElizabethService
 
+    artifacts = {
+        **ref("avilla.protocol/elizabeth::action"),
+        **ref("avilla.protocol/elizabeth::event"),
+        **ref("avilla.protocol/elizabeth::message"),
+        **ref("avilla.protocol/elizabeth::query"),
+        **ref("avilla.protocol/elizabeth::resource_fetch")
+    }
+
     def __init__(self):
         self.service = ElizabethService(self)
-
-    @classmethod
-    def __init_isolate__(cls):
-        ## :: Action
-        from .perform.action.activity import ElizabethActivityActionPerform  # noqa: F401
-        from .perform.action.announcement import ElizabethAnnouncementActionPerform  # noqa: F401
-        from .perform.action.contact import ElizabethContactActionPerform  # noqa: F401
-        from .perform.action.friend import ElizabethFriendActionPerform  # noqa: F401
-        from .perform.action.group import ElizabethGroupActionPerform  # noqa: F401
-        from .perform.action.group_member import ElizabethGroupMemberActionPerform  # noqa: F401
-        from .perform.action.message import ElizabethMessageActionPerform  # noqa: F401
-        from .perform.action.request import ElizabethRequestActionPerform  # noqa: F401
-
-        ## ::Context
-        from .perform.context import ElizabethGetContextPerform  # noqa: F401
-
-        ## :: Event
-        from .perform.event.activity import ElizabethEventActivityPerform  # noqa: F401
-        from .perform.event.friend import ElizabethEventFriendPerform  # noqa: F401
-        from .perform.event.group import ElizabethEventGroupPerform  # noqa: F401
-        from .perform.event.group_member import ElizabethEventGroupMemberPerform  # noqa: F401
-        from .perform.event.message import ElizabethEventMessagePerform  # noqa: F401
-        from .perform.event.relationship import ElizabethEventRelationshipPerform  # noqa: F401
-        from .perform.event.request import ElizabethEventRequestPerform  # noqa: F401
-
-        ## :: Message
-        from .perform.message.deserialize import ElizabethMessageDeserializePerform  # noqa: F401
-        from .perform.message.serialize import ElizabethMessageSerializePerform  # noqa: F401
-
-        ## :: Query
-        from .perform.query.announcement import ElizabethAnnouncementQueryPerform  # noqa: F401
-        from .perform.query.bot import ElizabethBotQueryPerform  # noqa: F401
-        from .perform.query.friend import ElizabethFriendQueryPerform  # noqa: F401
-        from .perform.query.group import ElizabethGroupQueryPerform  # noqa: F401
-
-        ## :: Resource Fetch
-        from .perform.resource_fetch import ElizabethResourceFetchPerform  # noqa: F401
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla

@@ -15,7 +15,8 @@ from avilla.standard.qq.honor import Honor
 
 
 class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "group_member"
 
     @m.entity(ElizabethCapability.event_callback, event="MemberCardChangeEvent")
     async def member_card_change(self, raw_event: dict):

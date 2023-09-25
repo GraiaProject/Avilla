@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "announcement"
 
     @m.pull("land.group.announcement", Announcement)
     async def get_announcement(self, target: Selector, route: ...) -> Announcement:

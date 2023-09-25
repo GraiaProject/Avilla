@@ -16,7 +16,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "message"
 
     @m.entity(MessageSend.send, target="land.group")
     async def send_group_message(

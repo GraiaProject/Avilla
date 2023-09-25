@@ -14,7 +14,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "friend"
 
     @m.pull("land.friend", Nick)
     async def get_contact_nick(self, target: Selector, route: ...) -> Nick:

@@ -22,7 +22,8 @@ class MessageDeserializeResult(TypedDict):
 
 
 class ElizabethEventMessagePerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "message"
 
     async def _deserialize_message(self, context: Context, raw_elements: list[dict]):
         result: dict[str, Any] = {

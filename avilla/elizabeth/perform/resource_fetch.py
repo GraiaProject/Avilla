@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class ElizabethResourceFetchPerform((m := ProtocolCollector["ElizabethProtocol"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::resource_fetch"
 
     # TODO: FileResource
     @m.entity(CoreCapability.fetch, resource=ElizabethResource)

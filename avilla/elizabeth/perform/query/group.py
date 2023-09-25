@@ -14,7 +14,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethGroupQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::query"
+    m.identify = "group"
 
     @CoreCapability.query.collect(m, "land.group")
     async def query_group(self, predicate: Callable[[str, str], bool] | str, previous: None):

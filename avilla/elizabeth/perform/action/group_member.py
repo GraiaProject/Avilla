@@ -23,7 +23,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "group_member"
 
     @m.pull("land.group.member", Nick)
     async def get_group_member_nick(self, target: Selector, route: ...) -> Nick:
