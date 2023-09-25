@@ -8,7 +8,8 @@ from avilla.standard.core.activity import ActivityTrigged
 
 
 class ElizabethEventActivityPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "activity"
 
     @m.entity(ElizabethCapability.event_callback, event="NudgeEvent")
     async def nudge(self, raw_event: dict):

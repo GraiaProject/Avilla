@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethActivityActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "activity"
 
     @m.entity(ActivityTrigger.trigger, target="land.friend.activity(nudge)")
     async def friend_nudge(self, target: Selector):

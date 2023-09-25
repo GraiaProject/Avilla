@@ -10,7 +10,8 @@ from avilla.standard.core.profile import Nick, Summary
 
 
 class ElizabethEventFriendPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "friend"
 
     @m.entity(ElizabethCapability.event_callback, event="FriendInputStatusChangedEvent")
     async def friend_input_status_changed(self, raw_event: dict):

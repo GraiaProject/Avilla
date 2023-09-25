@@ -15,7 +15,8 @@ from avilla.standard.qq.announcement import Announcement
 
 
 class ElizabethEventGroupPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "group"
 
     @m.entity(ElizabethCapability.event_callback, event="BotGroupPermissionChangeEvent")
     async def bot_group_permission_change(self, raw_event: dict):

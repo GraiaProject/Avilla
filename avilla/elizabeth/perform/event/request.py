@@ -12,7 +12,8 @@ from avilla.standard.core.request import RequestReceived
 
 
 class ElizabethEventRequestPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "request"
 
     @m.entity(ElizabethCapability.event_callback, event="MemberJoinRequestEvent")
     async def member_join_request(self, raw_event: dict):

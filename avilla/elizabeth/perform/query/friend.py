@@ -14,7 +14,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethFriendQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::query"
+    m.identify = "friend"
 
     @CoreCapability.query.collect(m, "land.friend")
     async def query_friend(self, predicate: Callable[[str, str], bool] | str, previous: None):

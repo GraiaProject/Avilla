@@ -17,7 +17,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "group"
 
     @m.pull("land.group", Summary)
     async def get_summary(self, target: Selector, route: ...) -> Summary:

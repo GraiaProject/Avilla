@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "request"
 
     @m.entity(RequestCapability.accept, target="land.group.request")
     async def accept_member_request(self, target: Selector) -> None:
