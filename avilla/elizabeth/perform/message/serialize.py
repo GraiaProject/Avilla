@@ -42,7 +42,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
     async def notice_all(self, element: NoticeAll):
         return {"type": "AtAll"}
 
-    @m.entity(ElizabethCapability.serialize_element, element=Emoji)
+    @m.entity(ElizabethCapability.serialize_element, element=Face)
     async def face(self, element: Face) -> dict:
         return {"type": "Face", "faceId": element.id, "name": element.name}
 
