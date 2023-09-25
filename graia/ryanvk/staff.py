@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
 from typing_extensions import ParamSpec
 
 if TYPE_CHECKING:
-    from .behavior import FnBehavior
     from .fn import Fn
     from .perform import BasePerform
 
@@ -30,7 +29,7 @@ class Staff:
         self.exit_stack = AsyncExitStack()
         self.instances = {}
 
-    def call_fn(self, fn: Fn[Callable[P, R], FnBehavior], *args: P.args, **kwargs: P.kwargs) -> R:
+    def call_fn(self, fn: Fn[Callable[P, R]], *args: P.args, **kwargs: P.kwargs) -> R:
         collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
         instance = fn.behavior.get_instance(self, collector.cls)
         return entity(instance, *args, **kwargs)
@@ -65,7 +64,7 @@ class Staff:
         instance.components.update(components)
         return instance
 
-    def get_fn_call(self, fn: Fn[Callable[P, R], Any]) -> Callable[P, R]:
+    def get_fn_call(self, fn: Fn[Callable[P, R]]) -> Callable[P, R]:
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
             collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
             instance = fn.behavior.get_instance(self, collector.cls)

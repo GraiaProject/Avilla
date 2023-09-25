@@ -26,26 +26,25 @@ R1 = TypeVar("R1", covariant=True)
 R2 = TypeVar("R2", covariant=True)
 
 VnCallable = TypeVar("VnCallable", bound=Callable, covariant=True)
-B = TypeVar("B", bound=FnBehavior, default=FnBehavior, covariant=True)
-BQ = TypeVar("BQ", bound=FnBehavior, default=FnBehavior, contravariant=True)
+    
 
-class Fn(Generic[VnCallable, B]):
+class Fn(Generic[VnCallable]):
     owner: type[BasePerform | Capability]  # TODO: review here
     name: str
 
     shape: Callable
     shape_signature: inspect.Signature
 
-    behavior: B
+    behavior: FnBehavior
 
     overload_params: dict[str, FnOverload]
     overload_param_map: dict[FnOverload, list[str]]
     overload_map: dict[str, FnOverload]
 
     def __init__(
-        self: Fn[Callable[P, R], B],
+        self: Fn[Callable[P, R]],
         shape: Callable[Concatenate[Any, P], R],
-        behavior: B = DEFAULT_BEHAVIOR,
+        behavior: FnBehavior = DEFAULT_BEHAVIOR,
         overload_param_map: dict[FnOverload, list[str]] | None = None,
     ):
         self.shape = shape
@@ -61,7 +60,7 @@ class Fn(Generic[VnCallable, B]):
         self.name = name
 
     @overload
-    def __get__(self: Fn[Callable[P, R], B], instance: BasePerform, owner: type) -> Callable[P, R]:
+    def __get__(self, instance: BasePerform, owner: type) -> VnCallable:
         ...
 
     @overload
@@ -78,8 +77,8 @@ class Fn(Generic[VnCallable, B]):
         return wrapper
 
     @classmethod
-    def complex(cls, overload_param_map: dict[FnOverload, list[str]], behavior: BQ = DEFAULT_BEHAVIOR):
-        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[Callable[P1, R1], BQ]:
+    def complex(cls, overload_param_map: dict[FnOverload, list[str]], behavior: FnBehavior = DEFAULT_BEHAVIOR):
+        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[Callable[P1, R1]]:
             return cls(shape, overload_param_map=overload_param_map, behavior=behavior)  # type: ignore
 
         return wrapper
