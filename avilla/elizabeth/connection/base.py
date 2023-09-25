@@ -90,17 +90,10 @@ class ElizabethNetworking:
             async def event_parse_task(data: dict):
                 event_type = data["type"]
                 with suppress(NotImplementedError):
-                    res = await connection.staff.call_fn(ElizabethCapability.event_callback, data)
-                    await self.protocol.post_event(res)
+                    await ElizabethCapability(connection.staff).handle_event(data)
                     return
 
                 logger.warning(f"received unsupported event {event_type}: {data}")
-                # event = await connection.staff.parse_event(event_type, data)
-                # if event == "non-implemented":
-                #     logger.warning(f"received unsupported event {event_type}: {data}")
-                #     return
-                # elif event is not None:
-                #     await self.protocol.post_event(event)
 
             asyncio.create_task(event_parse_task(body))
 
