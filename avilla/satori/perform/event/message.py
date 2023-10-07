@@ -92,7 +92,7 @@ class SatoriEventMessagePerform((m := ConnectionCollector())._):
             context,
             msg,
             account
-        ) if msg.sender.id == self_id else MessageReceived(
+        ) if msg.sender.last_value == self_id else MessageReceived(
             context,
             msg
         )

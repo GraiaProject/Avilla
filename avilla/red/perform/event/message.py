@@ -80,7 +80,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             context,
             msg,
             account
-        ) if msg.sender.id == account.route["account"] else MessageReceived(
+        ) if msg.sender.last_value == account.route["account"] else MessageReceived(
             context,
             msg
         )

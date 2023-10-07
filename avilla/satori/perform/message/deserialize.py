@@ -57,7 +57,6 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(SatoriCapability.deserialize_element, element="image")
     async def img(self, raw_element: Element) -> Picture:
         scene = self.context.scene if self.context else Selector().land("satori")
-        print(raw_element)
         return Picture(
             SatoriImageResource(
             scene.picture(raw_element.attrs["src"]),
