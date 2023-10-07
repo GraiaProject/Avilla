@@ -2,13 +2,15 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import suppress
-from typing import TYPE_CHECKING, AsyncIterator, Literal, overload
+from typing import TYPE_CHECKING, AsyncIterator
 from typing_extensions import Self
 
 from loguru import logger
 
+from avilla.core.selector import Selector
 from avilla.core.ryanvk.staff import Staff
 from avilla.satori.account import SatoriAccount
+from avilla.satori.capability import SatoriCapability
 
 if TYPE_CHECKING:
     from avilla.satori.protocol import SatoriProtocol
@@ -16,7 +18,7 @@ if TYPE_CHECKING:
 
 class SatoriNetworking:
     protocol: SatoriProtocol
-    accounts: dict[int, SatoriAccount]
+    accounts: dict[str, SatoriAccount]
     close_signal: asyncio.Event
     sequence: int
 
@@ -26,6 +28,7 @@ class SatoriNetworking:
         self.accounts = {}
         self.close_signal = asyncio.Event()
         self.sequence = 0
+        self.connected = False
 
     def get_staff_components(self):
         return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
@@ -53,15 +56,12 @@ class SatoriNetworking:
 
     async def message_handle(self):
         async for connection, data in self.message_receive():
-            event_type = data["type"]
-            if not data["payload"]:
-                logger.warning(f"received empty event {event_type}")
-                continue
+            self.sequence = data["id"]
 
             async def event_parse_task(_data: dict):
                 _type = _data["type"]
                 with suppress(NotImplementedError):
-                    await ElizabethCapability(connection.staff).handle_event(_data)
+                    await SatoriCapability(connection.staff).handle_event(_data)
                     return
 
                 logger.warning(f"received unsupported event {_type}: {_data}")
@@ -74,23 +74,11 @@ class SatoriNetworking:
     async def call(self, action: str, params: dict | None = None) -> None:
         raise NotImplementedError
 
-    @overload
-    async def call_http(
-        self, method: Literal["get", "post", "multipart"], action: str, params: dict | None = None
-    ) -> dict:
-        ...
 
-    @overload
     async def call_http(
         self,
-        method: Literal["get", "post", "multipart"],
         action: str,
-        params: dict | None = None,
-        raw: Literal[True] = True,
-    ) -> bytes:
-        ...
-
-    async def call_http(
-        self, method: Literal["get", "post", "multipart"], action: str, params: dict | None = None, raw: bool = False
-    ) -> dict | bytes:
+        account: Selector,
+        params: dict | None = None
+    ) -> dict:
         ...
