@@ -19,11 +19,13 @@ class SatoriConfig:
     access_token: str | None = None
 
     def __post_init__(self):
-        self.http_url = URL.build(scheme="http", host=self.host, port=self.port)
-        self.ws_url = URL.build(scheme="ws", host=self.host, port=self.port)
+        self.http_url = URL.build(scheme="http", host=str(self.host), port=self.port)
+        self.ws_url = URL.build(scheme="ws", host=str(self.host), port=self.port)
 
 def _import_performs():  # noqa: F401
-    ...
+    from avilla.satori.perform import context  # noqa: F401
+    from avilla.satori.perform.action import message
+    from avilla.satori.perform.event import message
 
 _import_performs()
 
@@ -34,8 +36,6 @@ class SatoriProtocol(BaseProtocol):
         **ref("avilla.protocol/satori::action"),
         **ref("avilla.protocol/satori::event"),
         **ref("avilla.protocol/satori::message"),
-        **ref("avilla.protocol/satori::query"),
-        **ref("avilla.protocol/satori::resource_fetch")
     }
 
     def __init__(self):

@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class SatoriAccount(BaseAccount):
     protocol: SatoriProtocol
     status: AccountStatus
-    client: SatoriWsClientNetworking | None = None
+    client: SatoriWsClientNetworking
 
     def __init__(self, route: Selector, protocol: SatoriProtocol):
         super().__init__(route, protocol.avilla)

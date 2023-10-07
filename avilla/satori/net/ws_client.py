@@ -72,7 +72,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
         endpoint = self.config.http_url / "v1" / action
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {account['account']}",
+            "Authorization": f"Bearer {self.config.access_token}",
             "X-Platform": account["land"],
             "X-Self-ID:": account['account'],
         }
@@ -118,6 +118,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
             if account_route in self.protocol.avilla.accounts:
                 account = cast(SatoriAccount, self.protocol.avilla.accounts[account_route].account)
                 account.status.enabled = login["status"] == 1
+                account.client = self
             else:
                 account = SatoriAccount(account_route, self.protocol)
                 self.protocol.avilla.accounts[account_route] = AccountInfo(
@@ -127,6 +128,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
                     platform(login.get("platform", "satori")),
                 )
                 account.status.enabled = login["status"] == 1
+                account.client = self
                 self.accounts[login["id"]] = account
                 self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
             self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
@@ -144,7 +146,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
         avilla = self.protocol.avilla
         while not manager.status.exiting:
             async with session.ws_connect(
-                    self.config.ws_url / "events",
+                    self.config.ws_url / "v1" / "events",
             ) as self.connection:
                 logger.info(f"{self} Websocket client connected")
                 self.close_signal.clear()
