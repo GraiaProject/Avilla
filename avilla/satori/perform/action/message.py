@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from avilla.satori.protocol import SatoriProtocol  # noqa
 
 
-class ElizabethMessageActionPerform((m := AccountCollector["SatoriProtocol", "SatoriAccount"]())._):
+class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "SatoriAccount"]())._):
     m.namespace = "avilla.protocol/satori::action"
     m.identify = "message"
 
@@ -53,7 +53,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sa
             )
             content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(
                 msg["content"]
-            )
+            ) if "content" in msg else message
             content = content.exclude(Reply)
             _msg = Message(
                 id=f'{msg["id"]}',
@@ -104,7 +104,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sa
             )
             content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(
                 msg["content"]
-            )
+            ) if "content" in msg else message
             content = content.exclude(Reply)
             _msg = Message(
                 id=f'{msg["id"]}',

@@ -89,7 +89,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
 
     @property
     def alive(self):
-        return self.connection is not None and not self.connection.closed and self.connected
+        return self.connection is not None and not self.connection.closed
 
     async def _authenticate(self):
         """鉴权连接"""
@@ -101,7 +101,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
                 "token": self.config.access_token,
             }
         }
-        if self.connected:
+        if self.sequence > -1:
             payload["body"]["sequence"] = self.sequence
         try:
             await self.send(payload)
@@ -114,7 +114,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
             logger.error(f"Received unexpected payload: {resp}")
             return False
         for login in resp["body"]["logins"]:
-            account_route = Selector().land(login.get("platform", "satori")).account(login["id"])
+            account_route = Selector().land(login.get("platform", "satori")).account(login["self_id"])
             if account_route in self.protocol.avilla.accounts:
                 account = cast(SatoriAccount, self.protocol.avilla.accounts[account_route].account)
                 account.status.enabled = login["status"] == 1
@@ -129,7 +129,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
                 )
                 account.status.enabled = login["status"] == 1
                 account.client = self
-                self.accounts[login["id"]] = account
+                self.accounts[login["self_id"]] = account
                 self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
             self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
         return True

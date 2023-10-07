@@ -10,7 +10,7 @@ from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.element import Reply
 from avilla.satori.collector.connection import ConnectionCollector
-from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.message import MessageReceived, MessageSent
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 
@@ -21,12 +21,12 @@ class MessageDeserializeResult(TypedDict):
     reply: str | None
 
 
-class ElizabethEventMessagePerform((m := ConnectionCollector())._):
+class SatoriEventMessagePerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/satori::event"
     m.identify = "message"
 
     @m.entity(SatoriCapability.event_callback, event="message-created")
-    async def friend(self, raw_event: dict):
+    async def message_create(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
@@ -56,7 +56,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 scene=private,
                 sender=private,
                 content=message,
-                time=datetime.fromtimestamp(raw_event["timestamp"]),
+                time=datetime.fromtimestamp(raw_event["timestamp"] / 1000),
                 reply=reply,
             )
         else:
@@ -83,12 +83,16 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 scene=channel,
                 sender=member,
                 content=message,
-                time=datetime.fromtimestamp(raw_event["timestamp"]),
+                time=datetime.fromtimestamp(raw_event["timestamp"] / 1000),
                 reply=reply,
             )
         await cache.set(f"satori/account({account.route['account']}).message({msg.id})", raw_event, timedelta(minutes=5))
         context._collect_metadatas(msg.to_selector(), msg)
-        return MessageReceived(
+        return MessageSent(
             context,
             msg,
+            account
+        ) if msg.sender.id == self_id else MessageReceived(
+            context,
+            msg
         )

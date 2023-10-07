@@ -6,7 +6,7 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
-from graia.ryanvk import ref
+from graia.ryanvk import ref, merge
 
 from .net.ws_client import SatoriWsClientNetworking
 from .service import SatoriService
@@ -23,19 +23,25 @@ class SatoriConfig:
         self.ws_url = URL.build(scheme="ws", host=str(self.host), port=self.port)
 
 def _import_performs():  # noqa: F401
-    from avilla.satori.perform import context  # noqa: F401
-    from avilla.satori.perform.action import message
-    from avilla.satori.perform.event import message
+    import avilla.satori.perform.context  # noqa: F401
+    import avilla.satori.perform.action.message
+    import avilla.satori.perform.event.message
+    import avilla.satori.perform.message.deserialize
+    import avilla.satori.perform.message.serialize  # noqa
 
-_import_performs()
+
 
 class SatoriProtocol(BaseProtocol):
     service: SatoriService
-
+    _import_performs()
     artifacts = {
-        **ref("avilla.protocol/satori::action"),
-        **ref("avilla.protocol/satori::event"),
-        **ref("avilla.protocol/satori::message"),
+        **merge(
+            ref("avilla.protocol/satori::action", "message"),
+            ref("avilla.protocol/satori::action", "get_context"),
+            ref("avilla.protocol/satori::message", "deserialize"),
+            ref("avilla.protocol/satori::message", "serialize"),
+            ref("avilla.protocol/satori::event", "message"),
+        ),
     }
 
     def __init__(self):

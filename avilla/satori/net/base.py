@@ -27,8 +27,7 @@ class SatoriNetworking:
         self.protocol = protocol
         self.accounts = {}
         self.close_signal = asyncio.Event()
-        self.sequence = 0
-        self.connected = False
+        self.sequence = -1
 
     def get_staff_components(self):
         return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
@@ -56,7 +55,7 @@ class SatoriNetworking:
 
     async def message_handle(self):
         async for connection, data in self.message_receive():
-            self.sequence = data["id"]
+            self.sequence = int(data["id"])
 
             async def event_parse_task(_data: dict):
                 _type = _data["type"]

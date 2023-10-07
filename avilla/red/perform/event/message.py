@@ -10,7 +10,7 @@ from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.red.utils import pre_deserialize
-from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.message import MessageReceived, MessageSent
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 
@@ -76,7 +76,11 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             )
         await cache.set(f"red/account({account.route['account']}).message({msg.id})", raw_event, timedelta(minutes=5))
         context._collect_metadatas(msg.to_selector(), msg)
-        return MessageReceived(
+        return MessageSent(
             context,
             msg,
+            account
+        ) if msg.sender.id == account.route["account"] else MessageReceived(
+            context,
+            msg
         )

@@ -31,20 +31,6 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @property
-    def staff(self):
-        if self.context is not None:
-            return self.context.staff
-
-        if self.account is not None:
-            return self.account.staff
-
-        raise RuntimeError
-
-    @property
-    def cap(self):
-        return SatoriCapability(self.staff)
-
     @m.entity(SatoriCapability.deserialize_element, element="text")
     async def text(self, raw_element: Element) -> Text:
         return Text(raw_element.attrs["text"])
@@ -68,8 +54,10 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
         return Text(raw_element.attrs["href"], style="link")
 
     @m.entity(SatoriCapability.deserialize_element, element="img")
+    @m.entity(SatoriCapability.deserialize_element, element="image")
     async def img(self, raw_element: Element) -> Picture:
         scene = self.context.scene if self.context else Selector().land("satori")
+        print(raw_element)
         return Picture(
             SatoriImageResource(
             scene.picture(raw_element.attrs["src"]),
