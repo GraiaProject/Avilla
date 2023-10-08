@@ -21,7 +21,8 @@ from .adapter import NoneBridgeAdapter
 from .bot import NoneBridgeBot
 from .dispatcher import AllEventQueue
 from .driver import NoneBridgeDriver
-from .staff import NoneBridgeStaff
+from avilla.core.ryanvk.staff import Staff
+from graia.ryanvk import ref, merge
 
 if TYPE_CHECKING:
     from avilla.core import Avilla
@@ -36,18 +37,21 @@ class NoneBridgeService(Service):
 
     driver: NoneBridgeDriver
     adapter: NoneBridgeAdapter
-    staff: NoneBridgeStaff
+    staff: Staff
     bots: dict[str, NoneBridgeBot]  # key 是 Selector.pattern 的 json
     queuer: AllEventQueue[AvillaEvent]
 
-    artifacts: ClassVar[dict[Any, Any]] = {"ob_message_deserde": {}, "ob_message_serde": {}}
+    artifacts: ClassVar[dict[Any, Any]] = {
+        **ref("avilla.protocol/onebot_v11::message", "serialize"),
+        **ref("avilla.protocol/onebot_v11::message", "deserialize")
+    }
 
     def __init__(self, avilla: Avilla) -> None:
         super().__init__()
         self.avilla = avilla
         self.driver = NoneBridgeDriver(self)
         self.adapter = NoneBridgeAdapter(self)
-        self.staff = NoneBridgeStaff([self.artifacts], {"avilla": avilla, "nonebridge.service": self})
+        self.staff = Staff([self.artifacts], {"avilla": avilla, "nonebridge.service": self})
         self.bots = {}
         self.queuer = AllEventQueue()
 

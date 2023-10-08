@@ -4,7 +4,7 @@ from typing import Any, Callable, TypedDict
 
 from avilla.core.ryanvk.descriptor.query import QueryRecord, find_querier_steps
 from avilla.core.selector import FollowsPredicater, _parse_follows
-from graia.ryanvk import FnBehavior, FnOverload
+from graia.ryanvk import FnOverload, OverloadBehavior
 from graia.ryanvk.collector import BaseCollector
 
 
@@ -47,5 +47,5 @@ class QueryOverload(FnOverload):
         ...
 
 
-class QueryFnBehavior(FnBehavior):
+class QueryFnBehavior(OverloadBehavior):
     ...
