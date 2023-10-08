@@ -5,7 +5,9 @@ from typing import TYPE_CHECKING, Any, Callable, Generic, overload
 
 from typing_extensions import Concatenate, ParamSpec, Self, TypeVar
 
-from .behavior import DEFAULT_BEHAVIOR, FnBehavior
+from graia.ryanvk.sign import FnImplement
+
+from .behavior import DEFAULT_BEHAVIOR, OverloadBehavior
 from .override import OverridePerformEntity
 from .perform import BasePerform
 
@@ -13,6 +15,7 @@ if TYPE_CHECKING:
     from .capability import Capability
     from .collector import BaseCollector
     from .overload import FnOverload
+    from .staff import Staff
     from .typing import SupportsCollect
 
 T = TypeVar("T")
@@ -25,8 +28,10 @@ R = TypeVar("R", covariant=True)
 R1 = TypeVar("R1", covariant=True)
 R2 = TypeVar("R2", covariant=True)
 
+N = TypeVar("N", bound="BasePerform")
+
 VnCallable = TypeVar("VnCallable", bound=Callable, covariant=True)
-    
+
 
 class Fn(Generic[VnCallable]):
     owner: type[BasePerform | Capability]  # TODO: review here
@@ -35,7 +40,7 @@ class Fn(Generic[VnCallable]):
     shape: Callable
     shape_signature: inspect.Signature
 
-    behavior: FnBehavior
+    behavior: OverloadBehavior
 
     overload_params: dict[str, FnOverload]
     overload_param_map: dict[FnOverload, list[str]]
@@ -44,7 +49,7 @@ class Fn(Generic[VnCallable]):
     def __init__(
         self: Fn[Callable[P, R]],
         shape: Callable[Concatenate[Any, P], R],
-        behavior: FnBehavior = DEFAULT_BEHAVIOR,
+        behavior: OverloadBehavior = DEFAULT_BEHAVIOR,
         overload_param_map: dict[FnOverload, list[str]] | None = None,
     ):
         self.shape = shape
@@ -77,7 +82,7 @@ class Fn(Generic[VnCallable]):
         return wrapper
 
     @classmethod
-    def complex(cls, overload_param_map: dict[FnOverload, list[str]], behavior: FnBehavior = DEFAULT_BEHAVIOR):
+    def complex(cls, overload_param_map: dict[FnOverload, list[str]], behavior: OverloadBehavior = DEFAULT_BEHAVIOR):
         def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[Callable[P1, R1]]:
             return cls(shape, overload_param_map=overload_param_map, behavior=behavior)  # type: ignore
 
@@ -88,11 +93,62 @@ class Fn(Generic[VnCallable]):
         return bool(self.overload_param_map)
 
     def collect(
-        self,
+        self: Fn[Callable[P, R]],  # type: ignore
         collector: BaseCollector,
         **overload_settings: Any,
-    ) -> Callable[[T], T]:
-        return self.behavior.collect(collector, self, **overload_settings)  # type: ignore
+    ):
+        def wrapper(entity: Callable[Concatenate[Any, P], R]):
+            artifact = collector.artifacts.setdefault(
+                FnImplement(self),
+                {
+                    "overload_enabled": self.has_overload_capability,
+                    "overload_scopes": {},
+                    "record_tuple": None,
+                },
+            )
+            if self.has_overload_capability:
+                for fn_overload, params in self.overload_param_map.items():
+                    scope = artifact["overload_scopes"].setdefault(fn_overload.identity, {})
+                    fn_overload.collect_entity(
+                        collector,
+                        scope,
+                        entity,
+                        fn_overload.get_params_layout(params, overload_settings),
+                    )
+            else:
+                artifact["record_tuple"] = (collector, entity)
+
+            return entity
+
+        return wrapper
+
+    def dyn_perform(self, staff: Staff, cls: type[N]) -> N:
+        raise ValueError("common staff can only works with static perform")
+
+    def _get_instance(self, staff: Staff, cls: type[N]) -> N:
+        if cls not in staff.instances:
+            if cls.__static__:
+                instance = staff.instances[cls] = cls(staff)
+            else:
+                instance = self.dyn_perform(staff, cls)
+        else:
+            instance = staff.instances[cls]
+
+        return instance
+
+    def execute(
+        self,
+        staff: Staff,
+        collector: BaseCollector,
+        entity: Callable[Concatenate[Any, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        # get instance
+        instance = self._get_instance(staff, collector.cls)
+
+        # execute
+        return entity(instance, *args, **kwargs)
 
     def override(
         self: SupportsCollect[P1, Callable[[Callable[Concatenate[Any, P2], R2]], Any]],  # pyright: ignore

@@ -31,8 +31,7 @@ class Staff:
 
     def call_fn(self, fn: Fn[Callable[P, R]], *args: P.args, **kwargs: P.kwargs) -> R:
         collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
-        instance = fn.behavior.get_instance(self, collector.cls)
-        return entity(instance, *args, **kwargs)
+        return fn.execute(self, collector, entity, *args, **kwargs)
 
     class PostInitShape(Protocol[P]):
         def __post_init__(self, *args: P.args, **kwargs: P.kwargs) -> Any:
@@ -66,7 +65,5 @@ class Staff:
 
     def get_fn_call(self, fn: Fn[Callable[P, R]]) -> Callable[P, R]:
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
-            instance = fn.behavior.get_instance(self, collector.cls)
-            return entity(instance, *args, **kwargs)
+            return self.call_fn(fn, *args, **kwargs)
         return wrapper

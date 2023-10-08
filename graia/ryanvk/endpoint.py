@@ -3,6 +3,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from typing import (
     TYPE_CHECKING,
+    ClassVar,
     Generic,
     TypeVar,
     overload,
@@ -18,12 +19,17 @@ T = TypeVar("T")
 
 
 class Endpoint(Generic[T]):
+    __dynamic__: ClassVar[bool] = False
+
     name: str
 
     def __init__(self):
         ...
 
-    def __set_name__(self, owner: type, name: str):
+    def __set_name__(self, owner: type[BasePerform], name: str):
+        if self.__dynamic__ and owner.__static__:
+            raise TypeError(f"{self.__class__.__name__} conflicts with static perform {owner.__name__}")
+
         self.name = name
 
     @overload
@@ -39,6 +45,9 @@ class Endpoint(Generic[T]):
             return self
 
         return self.evaluate(instance)
+
+    def __init_subclass__(cls, *, dynamic: bool) -> None:
+        return super().__init_subclass__()
 
     def evaluate(self, instance: BasePerform) -> T:
         ...

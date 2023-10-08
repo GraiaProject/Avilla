@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-class Access(Endpoint[T]):
+class Access(Endpoint[T], dynamic=False):
     def evaluate(self, instance: BasePerform) -> T:
         return instance.staff.components[self.name]
 
@@ -20,6 +20,6 @@ class Access(Endpoint[T]):
         return OptionalAccess()
 
 
-class OptionalAccess(Endpoint[Union[T, None]]):
+class OptionalAccess(Endpoint[Union[T, None]], dynamic=False):
     def evaluate(self, instance: BasePerform) -> T | None:
         return instance.staff.components.get(self.name)

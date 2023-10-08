@@ -3,7 +3,7 @@ from ._runtime import merge as merge
 from ._runtime import ref as ref
 from .access import Access as Access
 from .access import OptionalAccess as OptionalAccess
-from .behavior import FnBehavior as FnBehavior
+from .behavior import OverloadBehavior as OverloadBehavior
 from .capability import Capability as Capability
 from .collector import BaseCollector as BaseCollector
 from .endpoint import Endpoint as Endpoint
@@ -11,9 +11,9 @@ from .fn import Fn as Fn
 from .gateway import GLOBAL_GATEWAY as GLOBAL_GATEWAY
 from .gateway import Gateway as Gateway
 from .overload import FnOverload as FnOverload
+from .overload import PredicateOverload as PredicateOverload
 from .overload import SimpleOverload as SimpleOverload
 from .overload import TypeOverload as TypeOverload
-from .overload import PredicateOverload as PredicateOverload
 from .override import OverridePerformEntity as OverridePerformEntity
 from .perform import BasePerform as BasePerform
 from .staff import Staff as Staff
