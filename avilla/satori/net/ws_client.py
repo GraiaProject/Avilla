@@ -114,6 +114,8 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
             logger.error(f"Received unexpected payload: {resp}")
             return False
         for login in resp["body"]["logins"]:
+            if "self_id" not in login:
+                continue
             account_route = Selector().land(login.get("platform", "satori")).account(login["self_id"])
             if account_route in self.protocol.avilla.accounts:
                 account = cast(SatoriAccount, self.protocol.avilla.accounts[account_route].account)
@@ -127,11 +129,15 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
                     self.protocol,
                     platform(login.get("platform", "satori")),
                 )
+                logger.info(f"account registered: {account_route}")
                 account.status.enabled = login["status"] == 1
                 account.client = self
                 self.accounts[login["self_id"]] = account
                 self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
             self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
+        if not self.accounts:
+            logger.warning(f"No account available")
+            return False
         return True
 
     async def _heartbeat(self):
@@ -148,7 +154,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
             async with session.ws_connect(
                     self.config.ws_url / "v1" / "events",
             ) as self.connection:
-                logger.info(f"{self} Websocket client connected")
+                logger.debug(f"{self} Websocket client connected")
                 self.close_signal.clear()
                 result = await self._authenticate()
                 if not result:

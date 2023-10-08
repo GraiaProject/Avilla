@@ -64,7 +64,7 @@ class SatoriEventMessagePerform((m := ConnectionCollector())._):
                 raw_event.get("guild", {}).get("id", raw_event["channel"]["id"])
             )
             channel = public.channel(raw_event["channel"]["id"])
-            member = channel.member(raw_event.get("member", {}).get("id", raw_event["user"]["id"]))
+            member = channel.member(raw_event.get("member", {}).get("user", {}).get("id", raw_event["user"]["id"]))
             context = Context(
                 account,
                 member,

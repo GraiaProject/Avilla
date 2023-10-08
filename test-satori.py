@@ -5,8 +5,7 @@ from avilla.satori.protocol import SatoriProtocol, SatoriConfig
 
 config = SatoriConfig(
 "localhost",
-    5500,
-    "9491ee65f2e5322d050021d4ceaca05d42c3ff2fc2a457fdffeb315619bf3f91"
+    5140,
 )
 avilla = Avilla(message_cache_size=0)
 avilla.apply_protocols(SatoriProtocol().configure(config))

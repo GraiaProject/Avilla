@@ -26,6 +26,7 @@ def _import_performs():  # noqa: F401
     import avilla.satori.perform.context  # noqa: F401
     import avilla.satori.perform.action.message
     import avilla.satori.perform.event.message
+    import avilla.satori.perform.event.lifespan
     import avilla.satori.perform.message.deserialize
     import avilla.satori.perform.message.serialize  # noqa
 
@@ -41,6 +42,7 @@ class SatoriProtocol(BaseProtocol):
             ref("avilla.protocol/satori::message", "deserialize"),
             ref("avilla.protocol/satori::message", "serialize"),
             ref("avilla.protocol/satori::event", "message"),
+            ref("avilla.protocol/satori::event", "lifespan"),
         ),
     }
 
