@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
-
+VnCallable = TypeVar("VnCallable", bound=Callable)
 
 class Staff:
     artifact_collections: list[dict[Any, Any]]
@@ -63,7 +63,7 @@ class Staff:
         instance.components.update(components)
         return instance
 
-    def get_fn_call(self, fn: Fn[Callable[P, R]]) -> Callable[P, R]:
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+    def get_fn_call(self, fn: Fn[VnCallable]) -> VnCallable:
+        def wrapper(*args, **kwargs):
             return self.call_fn(fn, *args, **kwargs)
-        return wrapper
+        return wrapper  # type: ignore

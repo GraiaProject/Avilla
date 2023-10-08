@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TypeVar
+from typing import Any, TypeVar
 
 from nonechat.info import Event as ConsoleEvent
 from nonechat.message import Element as ConsoleElement
@@ -16,13 +16,13 @@ CV = TypeVar("CV", bound=ConsoleEvent)
 
 class ConsoleCapability(Capability):
     @Fn.complex({TypeOverload(): ["event"]})
-    async def event_callback(self, event: CV) -> AvillaEvent:  # type: ignore
+    async def event_callback(self, event: Any) -> AvillaEvent:  # type: ignore
         ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def deserialize_element(self, element: CE) -> GraiaElement:  # type: ignore
+    async def deserialize_element(self, element: Any) -> GraiaElement:  # type: ignore
         ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: GE) -> ConsoleElement:  # type: ignore
+    async def serialize_element(self, element: Any) -> ConsoleElement:  # type: ignore
         ...
