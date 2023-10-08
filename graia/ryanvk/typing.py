@@ -51,9 +51,7 @@ class LayoutProtocolProperty(Protocol):
 
 
 class LayoutProtocolAttr(Protocol):
-    @property
-    def get_artifact_layout(self) -> dict:
-        ...
+    get_artifact_layout: dict
 
 
 LayoutProtocol = Union[LayoutProtocolProperty, LayoutProtocolAttr]
