@@ -13,8 +13,7 @@ if TYPE_CHECKING:
 
 
 class SatoriContextPerform((m := AccountCollector["SatoriProtocol", "SatoriAccount"]())._):
-    m.namespace = "avilla.protocol/satori::action"
-    m.identify = "get_context"
+    m.namespace = "avilla.protocol/satori::context"
 
     @m.entity(CoreCapability.get_context, target="land.public.channel")
     def get_context_from_public(self, target: Selector, *, via: Selector | None = None):

@@ -10,6 +10,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
 from avilla.core.elements import Text, Notice, NoticeAll, Picture
+from avilla.red.capability import RedCapability
 from avilla.standard.qq.elements import Forward, Node
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
@@ -20,7 +21,9 @@ if TYPE_CHECKING:
 
 
 class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::action"
+    m.identify = "message"
+
 
     async def handle_reply(self, target: Selector):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
@@ -40,7 +43,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         logger.warning(f"Unknown message {target.pattern['message']} for reply")
         return None
 
-    @MessageSend.send.collect(m, "land.group")
+    @m.entity(MessageSend.send, target="land.group")
     async def send_group_msg(
         self,
         target: Selector,
@@ -50,7 +53,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
     ) -> Selector:
         if message.has(Forward):
             return await self.send_group_forward_msg(target, message.get_first(Forward))
-        msg = await self.account.staff.serialize_message(message)
+        msg = await RedCapability(self.account.staff).serialize(message)
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
         resp = await self.account.websocket_client.call_http(
@@ -67,7 +70,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event(
+            event = await RedCapability(self.account.staff.ext({"connection": self.account.websocket_client})).event_callback(
                 "message::recv", resp
             )
             if TYPE_CHECKING:
@@ -80,7 +83,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             msg_id = "unknown"
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(msg_id)
 
-    @MessageSend.send.collect(m, "land.friend")
+    @m.entity(MessageSend.send, target="land.friend")
     async def send_friend_msg(
         self,
         target: Selector,
@@ -88,7 +91,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        msg = await self.account.staff.serialize_message(message)
+        msg = await RedCapability(self.account.staff).serialize(message)
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
         resp = await self.account.websocket_client.call_http(
@@ -105,7 +108,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event(
+            event = await RedCapability(self.account.staff.ext({"connection": self.account.websocket_client})).event_callback(
                 "message::recv", resp
             )
             if TYPE_CHECKING:
@@ -118,7 +121,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             msg_id = "unknown"
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(msg_id)
 
-    @MessageRevoke.revoke.collect(m, "land.group.message")
+    @m.entity(MessageRevoke.revoke, target="land.group.message")
     async def revoke_group_msg(
         self,
         target: Selector,
@@ -136,7 +139,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             },
         )
 
-    @MessageRevoke.revoke.collect(m, "land.friend.message")
+    @m.entity(MessageRevoke.revoke, target="land.friend.message")
     async def revoke_friend_msg(
         self,
         target: Selector,
@@ -156,7 +159,6 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
 
     async def send_group_forward_msg(self, target: Selector, forward: Forward) -> Selector:
         if all(node.mid for node in forward.nodes):
-            # TODO: use RedCapability to send forward message
             await self.account.websocket_client.call_http(
                 "post",
                 "api/message/unsafeSendForward",

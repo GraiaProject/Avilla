@@ -38,7 +38,7 @@ class SatoriProtocol(BaseProtocol):
     artifacts = {
         **merge(
             ref("avilla.protocol/satori::action", "message"),
-            ref("avilla.protocol/satori::action", "get_context"),
+            ref("avilla.protocol/satori::context"),
             ref("avilla.protocol/satori::message", "deserialize"),
             ref("avilla.protocol/satori::message", "serialize"),
             ref("avilla.protocol/satori::event", "message"),

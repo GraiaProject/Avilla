@@ -14,10 +14,11 @@ if TYPE_CHECKING:
 
 
 class RedFriendActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::action"
+    m.identify = "friend"
 
     @m.pull("land.friend", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"red/account({self.account.route['account']}).friend({target.pattern['friend']})"):
             return Summary(raw["nick"], "a friend contact assigned to this account")
@@ -30,7 +31,7 @@ class RedFriendActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]
         raise UnknownTarget("Friend not found")
 
     @m.pull("land.friend", Nick)
-    async def get_nick(self, target: Selector) -> Nick:
+    async def get_nick(self, target: Selector, route: ...) -> Nick:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"red/account({self.account.route['account']}).friend({target.pattern['friend']})"):
             return Nick(raw["nick"], raw["remark"] or raw["nick"], raw["longNick"])

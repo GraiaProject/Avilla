@@ -4,113 +4,120 @@ from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Face
 from avilla.core.ryanvk.collector.application import ApplicationCollector
-from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
+from avilla.red.capability import RedCapability
 from avilla.red.resource import RedFileResource, RedImageResource, RedVideoResource, RedVoiceResource
 from avilla.standard.qq.elements import App, DisplayStrategy, Forward, MarketFace, Node, Poke, PokeKind
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Unknown
-from graia.ryanvk import Access
+from graia.ryanvk import OptionalAccess
 from selectolax.parser import HTMLParser
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
-
-RedMessageDeserialize = MessageDeserialize[dict]
+    from avilla.red.account import RedAccount
 
 
 class RedMessageDeserializePerform((m := ApplicationCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::message"
+    m.identify = "deserialize"
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
-    context: Access[Context] = Access()
+    context: OptionalAccess[Context] = OptionalAccess()
+    account: OptionalAccess[RedAccount] = OptionalAccess()
 
-    @RedMessageDeserialize.collect(m, "text")
-    async def text(self, raw_element: dict) -> Text | Notice | NoticeAll:
-        if not raw_element["atType"]:
-            return Text(raw_element["content"])
-        if raw_element["atType"] == 1:
+
+    @m.entity(RedCapability.deserialize_element, element="text")
+    async def text(self, element: dict) -> Text | Notice | NoticeAll:
+        if not element["atType"]:
+            return Text(element["content"])
+        if element["atType"] == 1:
             return NoticeAll()
+        if self.context:
+            return Notice(
+                self.context.scene.member(element.get("atNtUin", "atNtUid")),
+                element["content"][1:],
+            )
         return Notice(
-            self.context.scene.member(raw_element.get("atNtUin", "atNtUid")),
-            raw_element["content"][1:],
+            Selector().land("qq").member(element.get("atNtUin", "atNtUid")),
+            element["content"][1:],
         )
 
-    @RedMessageDeserialize.collect(m, "face")
-    async def face(self, raw_element: dict) -> Face | Poke:
-        if raw_element["faceType"] == 5:
+    @m.entity(RedCapability.deserialize_element, element="face")
+    async def face(self, element: dict) -> Face | Poke:
+        if element["faceType"] == 5:
             return Poke(PokeKind.ChuoYiChuo)
-        return Face(raw_element["faceIndex"], raw_element["faceText"])
+        return Face(element["faceIndex"], element["faceText"])
 
-    @RedMessageDeserialize.collect(m, "pic")
-    async def pic(self, raw_element: dict) -> Picture:
+    @m.entity(RedCapability.deserialize_element, element="pic")
+    async def pic(self, element: dict) -> Picture:
         resource = RedImageResource(
             self.context,
-            Selector().land("qq").picture(md5 := raw_element["md5HexStr"]),
+            Selector().land("qq").picture(md5 := element["md5HexStr"]),
             md5,
-            raw_element["fileSize"],
-            raw_element["fileName"],
-            raw_element["elementId"],
-            raw_element["fileUuid"],
-            raw_element["sourcePath"],
-            raw_element["picWidth"],
-            raw_element["picHeight"],
+            element["fileSize"],
+            element["fileName"],
+            element["elementId"],
+            element["fileUuid"],
+            element["sourcePath"],
+            element["picWidth"],
+            element["picHeight"],
         )
         return Picture(resource)
 
-    @RedMessageDeserialize.collect(m, "marketFace")
-    async def market_face(self, raw_element: dict) -> MarketFace:
+    @m.entity(RedCapability.deserialize_element, element="marketFace")
+    async def market_face(self, element: dict) -> MarketFace:
         return MarketFace(
-            f"{raw_element['emojiId']}/{raw_element['key']}/{raw_element['emojiPackageId']}",
+            f"{element['emojiId']}/{element['key']}/{element['emojiPackageId']}",
         )
 
-    @RedMessageDeserialize.collect(m, "ark")
-    async def ark(self, raw_element: dict) -> App:
-        return App(raw_element["bytesData"])
+    @m.entity(RedCapability.deserialize_element, element="ark")
+    async def ark(self, element: dict) -> App:
+        return App(element["bytesData"])
 
-    @RedMessageDeserialize.collect(m, "file")
-    async def file(self, raw_element: dict) -> File:
+    @m.entity(RedCapability.deserialize_element, element="file")
+    async def file(self, element: dict) -> File:
         return File(
             RedFileResource(
                 self.context,
-                Selector().land("qq").file(raw_element["fileMd5"]),
-                raw_element["fileMd5"],
-                raw_element["fileSize"],
-                raw_element["fileName"],
-                raw_element["elementId"],
-                raw_element["fileUuid"],
+                Selector().land("qq").file(element["fileMd5"]),
+                element["fileMd5"],
+                element["fileSize"],
+                element["fileName"],
+                element["elementId"],
+                element["fileUuid"],
             )
         )
 
-    @RedMessageDeserialize.collect(m, "ptt")
-    async def ptt(self, raw_element: dict) -> Audio:
+    @m.entity(RedCapability.deserialize_element, element="ptt")
+    async def ptt(self, element: dict) -> Audio:
         return Audio(
             RedVoiceResource(
                 self.context,
-                Selector().land("qq").voice(raw_element["md5HexStr"]),
-                raw_element["md5HexStr"],
-                raw_element.get("fileSize", 0),
-                raw_element["fileName"],
-                raw_element["elementId"],
-                raw_element["fileUuid"],
-                raw_element["filePath"],
+                Selector().land("qq").voice(element["md5HexStr"]),
+                element["md5HexStr"],
+                element.get("fileSize", 0),
+                element["fileName"],
+                element["elementId"],
+                element["fileUuid"],
+                element["filePath"],
             ),
-            int(raw_element["duration"]),
+            int(element["duration"]),
         )
 
-    @RedMessageDeserialize.collect(m, "grayTip")
-    async def gray_tip(self, raw_element: dict) -> Unknown:
-        return Unknown("grayTip", raw_element)
+    @m.entity(RedCapability.deserialize_element, element="grayTip")
+    async def gray_tip(self, element: dict) -> Unknown:
+        return Unknown("grayTip", element)
 
-    @RedMessageDeserialize.collect(m, "multiForwardMsg")
-    async def forward(self, raw_element: dict) -> Forward:
-        root = HTMLParser(raw_element["xmlContent"])
+    @m.entity(RedCapability.deserialize_element, element="multiForwardMsg")
+    async def forward(self, element: dict) -> Forward:
+        root = HTMLParser(element["xmlContent"])
         title = root.css_first("source").attributes["name"]
         summary = root.css_first("summary").text()
         brief = root.css_first("msg").attributes["brief"]
         preview = [node.text() for node in root.tags("title")[1:]]
         return Forward(
-            raw_element["resId"],
+            element["resId"],
             nodes=[
                 Node(
                     name=(part := content.split(":", 1))[0],
@@ -121,17 +128,17 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
             strategy=DisplayStrategy(title, brief, preview=preview, summary=summary)
         )
 
-    @RedMessageDeserialize.collect(m, "video")
-    async def video(self, raw_element: dict) -> Video:
+    @m.entity(RedCapability.deserialize_element, element="video")
+    async def video(self, element: dict) -> Video:
         return Video(
             RedVideoResource(
                 self.context,
-                Selector().land("qq").video(raw_element["videoMd5"]),
-                raw_element["videoMd5"],
-                raw_element["fileSize"],
-                raw_element["fileName"],
-                raw_element["elementId"],
-                raw_element["fileUuid"],
-                raw_element["filePath"],
+                Selector().land("qq").video(element["videoMd5"]),
+                element["videoMd5"],
+                element["fileSize"],
+                element["fileName"],
+                element["elementId"],
+                element["fileUuid"],
+                element["filePath"],
             )
         )

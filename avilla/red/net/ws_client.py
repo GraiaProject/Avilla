@@ -18,9 +18,7 @@ if TYPE_CHECKING:
     from avilla.red.protocol import RedConfig, RedProtocol
 
 
-class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
-    id = "red/connection/websocket/client"
-
+class RedWsClientNetworking(RedNetworking, Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -31,6 +29,10 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
     def __init__(self, protocol: RedProtocol, config: RedConfig) -> None:
         super().__init__(protocol)
         self.config = config
+
+    @property
+    def id(self):
+        return f"satori/connection/websocket/client#{id(self)}"
 
     async def message_receive(self):
         if self.connection is None:

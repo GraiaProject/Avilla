@@ -1,21 +1,22 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator, Generic, Literal, TypeVar, overload
+from contextlib import suppress
+from typing import TYPE_CHECKING, AsyncIterator, Literal, overload
+from typing_extensions import Self
 
 from loguru import logger
 
+from avilla.core.ryanvk.staff import Staff
 from avilla.red.account import RedAccount
+from avilla.red.capability import RedCapability
 from avilla.red.utils import MsgType, get_msg_types
 
 if TYPE_CHECKING:
     from avilla.red.protocol import RedProtocol
 
 
-T = TypeVar("T")
-
-
-class RedNetworking(Generic[T]):
+class RedNetworking:
     protocol: RedProtocol
     account: RedAccount | None
     close_signal: asyncio.Event
@@ -26,7 +27,18 @@ class RedNetworking(Generic[T]):
         self.account = None
         self.close_signal = asyncio.Event()
 
-    def message_receive(self) -> AsyncIterator[tuple[T, dict]]:
+    def get_staff_components(self):
+        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
+
+    def get_staff_artifacts(self):
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
+
+    @property
+    def staff(self):
+        return Staff(self.get_staff_artifacts(), self.get_staff_components())
+
+
+    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]:
         ...
 
     @property
@@ -47,12 +59,10 @@ class RedNetworking(Generic[T]):
                 continue
 
             async def event_parse_task(t: str, payload: dict):
-                event = await connection.staff.parse_event(t, payload)
-                if event == "non-implemented":
-                    logger.warning(f"received unsupported event {t}: {payload}")
+                with suppress(NotImplementedError):
+                    await RedCapability(connection.staff).handle_event(t, payload)
                     return
-                elif event is not None:
-                    self.protocol.post_event(event)
+                logger.warning(f"received unsupported event {t}: {payload}")
 
             def handle_message(message: dict):
                 types = get_msg_types(message)

@@ -5,30 +5,29 @@ from typing import TYPE_CHECKING
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face, Audio
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
+from avilla.red.capability import RedCapability
 from avilla.standard.qq.elements import MarketFace
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa
     from avilla.red.protocol import RedProtocol  # noqa
 
-RedMessageSerialize = MessageSerialize[dict]
-
 
 class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::message"
+    m.identify = "serialize"
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @RedMessageSerialize.collect(m, Text)
+    @m.entity(RedCapability.serialize_element, element=Text)
     async def text(self, element: Text) -> dict:
         return {"elementType": 1, "textElement": {"content": element.text}}
 
-    @RedMessageSerialize.collect(m, Face)
+    @m.entity(RedCapability.serialize_element, element=Face)
     async def face(self, element: Face) -> dict:
         return {"elementType": 6, "faceElement": {"faceIndex": element.id}}
 
-    @RedMessageSerialize.collect(m, Notice)
+    @m.entity(RedCapability.serialize_element, element=Notice)
     async def notice(self, element: Notice) -> dict:
         return {
             "elementType": 1,
@@ -39,11 +38,11 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
             }
         }
 
-    @RedMessageSerialize.collect(m, NoticeAll)
+    @m.entity(RedCapability.serialize_element, element=NoticeAll)
     async def notice_all(self, element: NoticeAll) -> dict:
         return {"elementType": 1, "textElement": {"atType": 1}}
 
-    @RedMessageSerialize.collect(m, Picture)
+    @m.entity(RedCapability.serialize_element, element=Picture)
     async def picture(self, element: Picture) -> dict:
         data = await self.account.staff.fetch_resource(element.resource)
         resp = await self.account.websocket_client.call_http(
@@ -71,7 +70,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
             },
         }
 
-    @RedMessageSerialize.collect(m, MarketFace)
+    @m.entity(RedCapability.serialize_element, element=MarketFace)
     async def market_face(self, element: MarketFace) -> dict:
         emoji_id, key, emoji_package_id = element.id.split("/")
         return {
@@ -83,7 +82,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
             },
         }
 
-    @RedMessageSerialize.collect(m, Audio)
+    @m.entity(RedCapability.serialize_element, element=Audio)
     async def audio(self, element: Audio) -> dict:
         data = await self.account.staff.fetch_resource(element.resource)
         resp = await self.account.websocket_client.call_http(

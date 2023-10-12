@@ -33,7 +33,7 @@ def _import_performs():  # noqa: F401
         contact,  # noqa: F401
         friend,
         group,
-        group_member,
+        member,
         message,
         request,
     )
@@ -41,7 +41,7 @@ def _import_performs():  # noqa: F401
         activity,  # noqa: F401, F811
         friend,  # noqa: F811
         group,  # noqa: F811
-        group_member,  # noqa: F401, F811
+        member,  # noqa: F401, F811
         message,  # noqa: F401, F811
         relationship,  # noqa: F401
         request,  # noqa: F401, F811
@@ -55,11 +55,29 @@ class ElizabethProtocol(BaseProtocol):
     service: ElizabethService
 
     artifacts = {
-        **ref("avilla.protocol/elizabeth::action"),
-        **ref("avilla.protocol/elizabeth::event"),
-        **ref("avilla.protocol/elizabeth::message"),
-        **ref("avilla.protocol/elizabeth::query"),
-        **ref("avilla.protocol/elizabeth::resource_fetch")
+        **ref("avilla.protocol/elizabeth::action", "activity"),
+        **ref("avilla.protocol/elizabeth::action", "announcement"),
+        **ref("avilla.protocol/elizabeth::action", "contact"),
+        **ref("avilla.protocol/elizabeth::action", "friend"),
+        **ref("avilla.protocol/elizabeth::action", "group"),
+        **ref("avilla.protocol/elizabeth::action", "member"),
+        **ref("avilla.protocol/elizabeth::action", "message"),
+        **ref("avilla.protocol/elizabeth::action", "request"),
+        **ref("avilla.protocol/elizabeth::event", "activity"),
+        **ref("avilla.protocol/elizabeth::event", "friend"),
+        **ref("avilla.protocol/elizabeth::event", "group"),
+        **ref("avilla.protocol/elizabeth::event", "member"),
+        **ref("avilla.protocol/elizabeth::event", "message"),
+        **ref("avilla.protocol/elizabeth::event", "relationship"),
+        **ref("avilla.protocol/elizabeth::event", "request"),
+        **ref("avilla.protocol/elizabeth::message", "deserialize"),
+        **ref("avilla.protocol/elizabeth::message", "serialize"),
+        **ref("avilla.protocol/elizabeth::query", "announcement"),
+        **ref("avilla.protocol/elizabeth::query", "bot"),
+        **ref("avilla.protocol/elizabeth::query", "friend"),
+        **ref("avilla.protocol/elizabeth::query", "group"),
+        **ref("avilla.protocol/elizabeth::resource_fetch"),
+        **ref("avilla.protocol/elizabeth::context"),
     }
 
     def __init__(self):

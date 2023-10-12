@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 
 
 class RedContextPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::context"
 
-    @CoreCapability.get_context.collect(m, "land.group")
+    @m.entity(CoreCapability.get_context, target="land.group")
     def get_context_from_group(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
@@ -25,7 +25,7 @@ class RedContextPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._
             target.member(self.account.route["account"]),
         )
 
-    @CoreCapability.get_context.collect(m, "land.friend")
+    @m.entity(CoreCapability.get_context, target="land.friend")
     def get_context_from_friend(self, target: Selector, *, via: Selector | None = None):
         if via:
             return Context(
@@ -37,7 +37,7 @@ class RedContextPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._
             )
         return Context(self.account, target, self.account.route, target, self.account.route)
 
-    @CoreCapability.get_context.collect(m, "land.group.member")
+    @m.entity(CoreCapability.get_context, target="land.group.member")
     def get_context_from_member(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,

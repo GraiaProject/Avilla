@@ -16,10 +16,11 @@ if TYPE_CHECKING:
 
 
 class RedMemberActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::action"
+    m.identify = "member"
 
     @m.pull("land.group.member", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(
             f"red/account({self.account.route['account']}).group({target.pattern['group']}).member({target.pattern['member']})"
@@ -36,7 +37,7 @@ class RedMemberActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]
         raise UnknownTarget("Member not found")
 
     @m.pull("land.group.member", Nick)
-    async def get_nick(self, target: Selector) -> Nick:
+    async def get_nick(self, target: Selector, route: ...) -> Nick:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(
             f"red/account({self.account.route['account']}).group({target.pattern['group']}).member({target.pattern['member']})"
@@ -53,7 +54,7 @@ class RedMemberActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]
         raise UnknownTarget("Member not found")
 
     @m.pull("land.group.member", MuteInfo)
-    async def get_mute_info(self, target: Selector) -> MuteInfo:
+    async def get_mute_info(self, target: Selector, route: ...) -> MuteInfo:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(
             f"red/account({self.account.route['account']}).group({target.pattern['group']}).member({target.pattern['member']})"
@@ -75,7 +76,7 @@ class RedMemberActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]
                 )
         raise UnknownTarget("Member not found")
 
-    @m.entity(MuteCapability.mute, "land.group.member")
+    @m.entity(MuteCapability.mute, target="land.group.member")
     async def group_member_mute(self, target: Selector, duration: timedelta):
         time = max(60.0, min(duration.total_seconds(), 2592000))
         await self.account.websocket_client.call_http(
@@ -84,7 +85,7 @@ class RedMemberActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]
             {"group": int(target["group"]), "memList": [{"uin": int(target["member"]), "timeStamp": time}]},
         )
 
-    @m.entity(MuteCapability.unmute, "land.group.member")
+    @m.entity(MuteCapability.unmute, target="land.group.member")
     async def group_member_unmute(self, target: Selector):
         await self.account.websocket_client.call_http(
             "post",

@@ -5,8 +5,8 @@ from selectolax.parser import HTMLParser
 
 from avilla.core.context import Context
 from avilla.core.event import RelationshipCreated
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
+from avilla.red.capability import RedCapability
 from avilla.red.collector.connection import ConnectionCollector
 
 # async function adaptGuildMemberAddedMessage(
@@ -30,10 +30,11 @@ from avilla.red.collector.connection import ConnectionCollector
 
 
 class RedEventRelationshipPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::event"
+    m.identify = "relationship"
 
-    @EventParse.collect(m, "group::member::add")
-    async def member_join(self, raw_event: dict):
+    @m.entity(RedCapability.event_callback, event_type="group::member::add")
+    async def member_join(self,  event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")
@@ -45,8 +46,9 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(account, member, group, group, group.member(account.route["account"]), mediums=[operator])
         return RelationshipCreated(context)
 
-    @EventParse.collect(m, "group::member::legacy::add::invited")
-    async def member_join_invited(self, raw_event: dict):
+
+    @m.entity(RedCapability.event_callback, event_type="group::member::legacy::add::invited")
+    async def member_join_invited(self, event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")

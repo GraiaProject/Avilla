@@ -43,20 +43,6 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @property
-    def staff(self):
-        if self.context is not None:
-            return self.context.staff
-
-        if self.account is not None:
-            return self.account.staff
-
-        raise RuntimeError
-
-    @property
-    def cap(self):
-        return ElizabethCapability(self.staff)
-
     @m.entity(ElizabethCapability.deserialize_element, element="Plain")
     async def text(self, raw_element: dict) -> Text:
         return Text(raw_element["text"])

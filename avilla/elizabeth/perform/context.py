@@ -13,9 +13,7 @@ if TYPE_CHECKING:
 
 
 class ElizabethGetContextPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.namespace = "avilla.protocol/elizabeth::action"
-    m.identify = "get_context"
-
+    m.namespace = "avilla.protocol/elizabeth::context"
     @m.entity(CoreCapability.get_context, target="land.group")
     def get_context_from_group(self, target: Selector, *, via: Selector | None = None):
         return Context(
