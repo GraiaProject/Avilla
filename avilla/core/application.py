@@ -80,6 +80,8 @@ class Avilla:
             clear_cache.__annotations__ = {"event": AccountUnregistered}
 
         if record_send:
+            from avilla.core.context import Context
+            from avilla.core.message import Message
             from avilla.standard.core.message import MessageSent
 
             @self.broadcast.receiver(MessageSent)
@@ -88,8 +90,10 @@ class Avilla:
                 logger.info(
                     f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
                     f"{context.account.route['account']}]: "
-                    f"{scene} <- {message.content!r}"
+                    f"{scene} <- {str(message.content)!r}"
                 )
+
+            message_sender.__annotations__ = {"context": Context, "message": Message}
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform

@@ -6,9 +6,9 @@ from typing import TYPE_CHECKING
 from avilla.core.event import AvillaEvent
 from graia.amnesia.message import MessageChain
 from graia.broadcast.entities.signatures import Force
+from avilla.core.account import BaseAccount
 
 if TYPE_CHECKING:
-    from avilla.core.account import BaseAccount
     from avilla.core.message import Message
     from avilla.core.selector import Selector
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
