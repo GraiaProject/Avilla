@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from avilla.core.selector import Selector
 from avilla.core.event import AvillaEvent
+from avilla.core.ryanvk.overload.target import TargetOverload
 from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.standard.qq.elements import Forward
 from graia.amnesia.message import Element, MessageChain
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload, SimpleOverload
 
@@ -16,6 +19,14 @@ class RedCapability((m := ApplicationCollector())._):
 
     @Fn.complex({TypeOverload(): ["element"]})
     async def serialize_element(self, element: Element) -> dict:  # type: ignore
+        ...
+
+    @Fn.complex({TypeOverload(): ["element"]})
+    async def forward_export(self, element: Element) -> dict:  # type: ignore
+        ...
+
+    @Fn.complex({TargetOverload(): ["element"]})
+    async def send_forward(self, target: Selector, forward: Forward) -> Selector:
         ...
 
     async def deserialize(self, elements: list[dict]):

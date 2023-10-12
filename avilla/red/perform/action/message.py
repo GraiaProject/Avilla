@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import random
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from loguru import logger
@@ -9,7 +8,6 @@ from loguru import logger
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
-from avilla.core.elements import Text, Notice, NoticeAll, Picture
 from avilla.red.capability import RedCapability
 from avilla.standard.qq.elements import Forward, Node
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
@@ -157,6 +155,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             },
         )
 
+    @m.entity(RedCapability.send_forward, target="land.group")
     async def send_group_forward_msg(self, target: Selector, forward: Forward) -> Selector:
         if all(node.mid for node in forward.nodes):
             await self.account.websocket_client.call_http(
@@ -209,53 +208,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         raise ValueError("Forward message must have at least one node with content or mid")
 
     async def export_forward_node(self, seq: int, node: Node, target: Selector):
-        elems = []
-        for elem in node.content:
-            if isinstance(elem, Text):
-                elems.append({"text": {"str": elem.text}})
-            elif isinstance(elem, Notice):
-                elems.append({"text": {"str": f"@{elem.target.last_value}"}})
-            elif isinstance(elem, NoticeAll):
-                elems.append({"text": {"str": "@全体成员"}})
-            elif isinstance(elem, Picture):
-                data = await self.account.staff.fetch_resource(elem.resource)
-                resp = await self.account.websocket_client.call_http(
-                    "multipart",
-                    "api/upload",
-                    {
-                        "file": {
-                            "value": data,
-                            "content_type": None,
-                            "filename": "file_image",
-                        }
-                    },
-                )
-                md5 = resp["md5"]
-                file = Path(resp["ntFilePath"])
-                pid = f"{{{md5[:8].upper()}-{md5[8:12].upper()}-{md5[12:16].upper()}-{md5[16:20].upper()}-{md5[20:].upper()}}}{file.suffix}"  # noqa: E501
-                elems.append(
-                    {
-                        "customFace": {
-                            "filePath": pid,
-                            "fileId": random.randint(0, 65535),
-                            "serverIp": -1740138629,
-                            "serverPort": 80,
-                            "fileType": 1001,
-                            "useful": 1,
-                            "md5": [int(md5[i : i + 2], 16) for i in range(0, 32, 2)],
-                            "imageType": 1001,
-                            "width": resp["imageInfo"]["width"],
-                            "height": resp["imageInfo"]["height"],
-                            "size": resp["fileSize"],
-                            "origin": 0,
-                            "thumbWidth": 0,
-                            "thumbHeight": 0,
-                            "pbReserve": [2, 0],
-                        }
-                    }
-                )
-            else:
-                elems.append({"text": {"str": str(elem)}})
+        cap = RedCapability(self.account.staff)
+        elems = [await cap.forward_export(elem) for elem in node.content]
         return {
             "head": {
                 "field2": node.uid,

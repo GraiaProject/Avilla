@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import random
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face, Audio
 from avilla.core.ryanvk.collector.account import AccountCollector
@@ -113,3 +114,56 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                 "waveAmplitudes": [99 for _ in range(17)]
             },
         }
+
+    @m.entity(RedCapability.forward_export, element=Text)
+    async def forward_text(self, element: Text) -> dict:
+        return {"text": {"str": element.text}}
+
+    @m.entity(RedCapability.forward_export, element=Notice)
+    async def forward_notice(self, element: Notice) -> dict:
+        return {"text": {"str": f"@{element.display or element.target.last_value}"}}
+
+    @m.entity(RedCapability.forward_export, element=NoticeAll)
+    async def forward_notice_all(self, element: NoticeAll) -> dict:
+        return {"text": {"str": "@全体成员"}}
+
+    @m.entity(RedCapability.forward_export, element=Picture)
+    async def forward_picture(self, element: Picture) -> dict:
+        data = await self.account.staff.fetch_resource(element.resource)
+        resp = await self.account.websocket_client.call_http(
+            "multipart",
+            "api/upload",
+            {
+                "file": {
+                    "value": data,
+                    "content_type": None,
+                    "filename": "file_image",
+                }
+            },
+        )
+        md5 = resp["md5"]
+        file = Path(resp["ntFilePath"])
+        pid = f"{{{md5[:8].upper()}-{md5[8:12].upper()}-{md5[12:16].upper()}-{md5[16:20].upper()}-{md5[20:].upper()}}}{file.suffix}"  # noqa: E501
+        return {
+            "customFace": {
+                "filePath": pid,
+                "fileId": random.randint(0, 65535),
+                "serverIp": -1740138629,
+                "serverPort": 80,
+                "fileType": 1001,
+                "useful": 1,
+                "md5": [int(md5[i : i + 2], 16) for i in range(0, 32, 2)],
+                "imageType": 1001,
+                "width": resp["imageInfo"]["width"],
+                "height": resp["imageInfo"]["height"],
+                "size": resp["fileSize"],
+                "origin": 0,
+                "thumbWidth": 0,
+                "thumbHeight": 0,
+                "pbReserve": [2, 0],
+            }
+        }
+
+    @m.entity(RedCapability.forward_export, element=Any)
+    async def forward_any(self, element: Any) -> dict:
+        return {"text": {"str": str(element)}}
