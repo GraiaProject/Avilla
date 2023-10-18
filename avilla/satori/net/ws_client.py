@@ -72,7 +72,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
         endpoint = self.config.http_url / "v1" / action
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {self.config.access_token}",
+            "Authorization": f"Bearer {self.config.access_token or ''}",
             "X-Platform": account["land"],
             "X-Self-ID:": account['account'],
         }
@@ -82,7 +82,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
             headers=headers,
         ) as resp:
             resp.raise_for_status()
-            return await resp.json(content_type=None)
+            return json.loads(content) if (content := await resp.text()) else {}
 
     async def wait_for_available(self):
         await self.status.wait_for_available()
@@ -109,11 +109,15 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
             logger.error(f"Error while sending IDENTIFY event: {e}")
             return False
 
-        resp = await self.connection.receive_json()
-        if resp["op"] != 4:
+        resp = await self.connection.receive()
+        if resp.type != aiohttp.WSMsgType.TEXT:
             logger.error(f"Received unexpected payload: {resp}")
             return False
-        for login in resp["body"]["logins"]:
+        data = resp.json()
+        if data["op"] != 4:
+            logger.error(f"Received unexpected payload: {data}")
+            return False
+        for login in data["body"]["logins"]:
             if "self_id" not in login:
                 continue
             account_route = Selector().land(login.get("platform", "satori")).account(login["self_id"])
@@ -151,52 +155,57 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         avilla = self.protocol.avilla
         while not manager.status.exiting:
-            async with session.ws_connect(
+            try:
+                async with session.ws_connect(
                     self.config.ws_url / "v1" / "events",
-            ) as self.connection:
-                logger.debug(f"{self} Websocket client connected")
-                self.close_signal.clear()
-                result = await self._authenticate()
-                if not result:
-                    await asyncio.sleep(3)
-                    continue
-                self.close_signal.clear()
-                close_task = asyncio.create_task(self.close_signal.wait())
-                receiver_task = asyncio.create_task(self.message_handle())
-                sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
-                heartbeat_task = asyncio.create_task(self._heartbeat())
-                done, pending = await any_completed(
-                    sigexit_task,
-                    close_task,
-                    receiver_task,
-                    heartbeat_task,
-                )
-                if sigexit_task in done:
-                    logger.info(f"{self} Websocket client exiting...")
-                    await self.connection.close()
-                    self.close_signal.set()
-                    self.connection = None
-                    for v in list(avilla.accounts.values()):
-                        if v.protocol is self.protocol:
-                            _account = v.route["account"]
-                            if _account in self.accounts:
-                                del self.accounts[_account]
-                    return
-                if close_task in done:
-                    receiver_task.cancel()
-                    logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
-                    accounts = {str(i) for i in self.accounts.keys()}
-                    for n in list(avilla.accounts.keys()):
-                        logger.debug(f"Unregistering satori account {n}...")
-                        account = cast("SatoriAccount", avilla.accounts[n].account)
-                        account.status.enabled = False
-                        await avilla.broadcast.postEvent(AccountUnregistered(avilla, account))
-                        if n["account"] in accounts:
-                            del avilla.accounts[n]
-                    self.accounts.clear()
-                    await asyncio.sleep(5)
-                    logger.info(f"{self} Reconnecting...")
-                    continue
+                ) as self.connection:
+                    logger.debug(f"{self} Websocket client connected")
+                    self.close_signal.clear()
+                    result = await self._authenticate()
+                    if not result:
+                        await asyncio.sleep(3)
+                        continue
+                    self.close_signal.clear()
+                    close_task = asyncio.create_task(self.close_signal.wait())
+                    receiver_task = asyncio.create_task(self.message_handle())
+                    sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
+                    heartbeat_task = asyncio.create_task(self._heartbeat())
+                    done, pending = await any_completed(
+                        sigexit_task,
+                        close_task,
+                        receiver_task,
+                        heartbeat_task,
+                    )
+                    if sigexit_task in done:
+                        logger.info(f"{self} Websocket client exiting...")
+                        await self.connection.close()
+                        self.close_signal.set()
+                        self.connection = None
+                        for v in list(avilla.accounts.values()):
+                            if v.protocol is self.protocol:
+                                _account = v.route["account"]
+                                if _account in self.accounts:
+                                    del self.accounts[_account]
+                        return
+                    if close_task in done:
+                        receiver_task.cancel()
+                        logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
+                        accounts = {str(i) for i in self.accounts.keys()}
+                        for n in list(avilla.accounts.keys()):
+                            logger.debug(f"Unregistering satori account {n}...")
+                            account = cast("SatoriAccount", avilla.accounts[n].account)
+                            account.status.enabled = False
+                            await avilla.broadcast.postEvent(AccountUnregistered(avilla, account))
+                            if n["account"] in accounts:
+                                del avilla.accounts[n]
+                        self.accounts.clear()
+                        await asyncio.sleep(5)
+                        logger.info(f"{self} Reconnecting...")
+                        continue
+            except Exception as e:
+                logger.error(f"{self} Error while connecting: {e}")
+                await asyncio.sleep(5)
+                logger.info(f"{self} Reconnecting...")
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
