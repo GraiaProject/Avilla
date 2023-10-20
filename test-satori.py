@@ -4,8 +4,8 @@ from avilla.satori.protocol import SatoriProtocol, SatoriConfig
 
 
 config = SatoriConfig(
-"localhost",
-    5140,
+    "localhost",
+    5500,
 )
 avilla = Avilla(message_cache_size=0)
 avilla.apply_protocols(SatoriProtocol().configure(config))
@@ -15,7 +15,6 @@ avilla.apply_protocols(SatoriProtocol().configure(config))
 async def on_message_received(cx: Context, event: MessageSent):
     print(cx.endpoint, cx.client)
     print(event.message.content)
-    #if cx.client.follows("::public.channel.member(3165388245)"):
     if event.message.content.startswith("test"):
         print(
             await cx.scene.send_message(

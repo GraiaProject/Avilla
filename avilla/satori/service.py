@@ -30,6 +30,7 @@ class SatoriService(App):
 
     def __init__(self, protocol: SatoriProtocol):
         self.protocol = protocol
+        self._accounts = {}
         super().__init__()
         self.register(self.handle_event)
         self.lifecycle(self.handle_lifecycle)
