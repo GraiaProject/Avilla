@@ -10,7 +10,7 @@ authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
 dependencies = [
-  "aiohttp",
+  "satori-python",
 ]
 description = ""
 license = {text = "MIT"}

@@ -138,7 +138,7 @@ class RedWsClientNetworking(RedNetworking, Service):
                         self.close_signal.set()
                         self.connection = None
                         for v in list(avilla.accounts.values()):
-                            if v.protocol is self.protocol and v.route["account"] == self.account.route["account"]:
+                            if v.protocol is self.protocol and self.account and v.route["account"] == self.account.route["account"]:  # type: ignore
                                 self.account = None
                                 del avilla.accounts[v.route]
                                 await avilla.broadcast.postEvent(AccountUnregistered(avilla, v.account))

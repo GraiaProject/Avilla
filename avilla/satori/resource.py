@@ -3,26 +3,29 @@ from __future__ import annotations
 from avilla.core.resource import Resource
 from avilla.core.selector import Selector
 
+from satori.element import Resource as RawResource
 
-class SatoriResource(Resource[bytes]):
-    src: str
+class SatoriResource(Resource[bytes], RawResource):
+    def __init__(
+        self,
+        src: str,
+        cache: bool | None = None,
+        timeout:  str | None = None
+    ):
+        RawResource.__init__(self, src, cache, timeout)
 
-    def __init__(self, selector: Selector, src: str, cache: bool = False):
-        super().__init__(selector)
-        self.src = src
-        self.cache = cache
 
 
 class SatoriImageResource(SatoriResource):
     def __init__(
-            self,
-            selector: Selector,
-            src: str,
-            width: int | None = None,
-            height: int | None = None,
-            cache: bool = False
+        self,
+        src: str,
+        cache: bool | None = None,
+        timeout:  str | None = None,
+        width: int | None = None,
+        height: int | None = None
     ):
-        super().__init__(selector, src, cache)
+        super().__init__(src, cache, timeout)
         self.width = width
         self.height = height
 

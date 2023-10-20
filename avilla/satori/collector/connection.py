@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from avilla.core.ryanvk.collector.base import AvillaBaseCollector
 from graia.ryanvk import Access, BasePerform
+from satori.account import Account
 
 if TYPE_CHECKING:
-    from avilla.satori.net.ws_client import SatoriWsClientNetworking
     from avilla.satori.protocol import SatoriProtocol
 
 
@@ -18,7 +18,7 @@ class ConnectionBasedPerformTemplate(BasePerform, native=True):
     __collector__: ClassVar[ConnectionCollector]
 
     protocol: Access[SatoriProtocol] = Access()
-    connection: Access[SatoriWsClientNetworking] = Access()
+    connection: Access[Account] = Access()
 
 
 class ConnectionCollector(AvillaBaseCollector):

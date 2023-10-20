@@ -174,7 +174,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                     },
                     "msgInfos": [
                         {
-                            "msgId": node.mid["message"],
+                            "msgId": node.mid["message"],  # type: ignore
                             "senderShowName": node.name
                         } for node in forward.nodes
                     ]
@@ -209,7 +209,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
 
     async def export_forward_node(self, seq: int, node: Node, target: Selector):
         cap = RedCapability(self.account.staff)
-        elems = [await cap.forward_export(elem) for elem in node.content]
+        elems = [await cap.forward_export(elem) for elem in node.content]   # type: ignore
         return {
             "head": {
                 "field2": node.uid,
