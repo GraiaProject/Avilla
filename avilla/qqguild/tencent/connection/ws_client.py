@@ -235,16 +235,20 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             if account_route in self.protocol.avilla.accounts:
                 account = cast(QQGuildAccount, self.protocol.avilla.accounts[account_route].account)
             else:
-                account = QQGuildAccount(account_route, self.protocol.avilla, self.protocol)
+                account = QQGuildAccount(account_route, self.protocol)
                 self.protocol.avilla.accounts[account_route] = AccountInfo(
                     account_route,
                     account,
                     self.protocol,
                     PLATFORM,
                 )
-            self.protocol.service.account_map[self.account_id] = self
+            self.protocol.service.accounts[self.account_id] = account
+            account.connection = self
             self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
-
+        else:
+            account = self.protocol.service.accounts[self.account_id]
+            account.connection = self
+            self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
         return True
 
     async def _heartbeat(self, heartbeat_interval: int, shard: tuple[int, int]):
@@ -259,62 +263,67 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         self, manager: Launart, session: aiohttp.ClientSession, url: str, shard: tuple[int, int]
     ):
         while not manager.status.exiting:
-            async with session.ws_connect(url, timeout=30) as conn:
-                self.connections[shard] = conn
-                logger.info(f"{self} Websocket client connected")
-                heartbeat_interval = await self._hello(shard)
-                if not heartbeat_interval:
-                    await asyncio.sleep(3)
-                    continue
-                result = await self._authenticate(shard)
-                if not result:
-                    await asyncio.sleep(3)
-                    continue
-                account_route = Selector().land("qqguild").account(self.account_id)
-                self.protocol.avilla.broadcast.postEvent(
-                    AccountAvailable(self.protocol.avilla, self.protocol.avilla.accounts[account_route].account)
-                )
-                self.close_signal.clear()
-                close_task = asyncio.create_task(self.close_signal.wait())
-                receiver_task = asyncio.create_task(self.message_handle(shard))
-                sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
-                heartbeat_task = asyncio.create_task(self._heartbeat(heartbeat_interval, shard))
-                done, pending = await any_completed(
-                    sigexit_task,
-                    close_task,
-                    receiver_task,
-                    heartbeat_task,
-                )
-                if sigexit_task in done:
-                    logger.info(f"{self} Websocket client exiting...")
-                    await conn.close()
-                    self.close_signal.set()
-                    with suppress(KeyError):
-                        del self.connections[shard]
-                        await self.protocol.avilla.broadcast.postEvent(
-                            AccountUnavailable(
-                                self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
+            try:
+                async with session.ws_connect(url, timeout=30) as conn:
+                    self.connections[shard] = conn
+                    logger.info(f"{self} Websocket client connected")
+                    heartbeat_interval = await self._hello(shard)
+                    if not heartbeat_interval:
+                        await asyncio.sleep(3)
+                        continue
+                    result = await self._authenticate(shard)
+                    if not result:
+                        await asyncio.sleep(3)
+                        continue
+                    account_route = Selector().land("qqguild").account(self.account_id)
+                    self.protocol.avilla.broadcast.postEvent(
+                        AccountAvailable(self.protocol.avilla, self.protocol.avilla.accounts[account_route].account)
+                    )
+                    self.close_signal.clear()
+                    close_task = asyncio.create_task(self.close_signal.wait())
+                    receiver_task = asyncio.create_task(self.message_handle(shard))
+                    sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
+                    heartbeat_task = asyncio.create_task(self._heartbeat(heartbeat_interval, shard))
+                    done, pending = await any_completed(
+                        sigexit_task,
+                        close_task,
+                        receiver_task,
+                        heartbeat_task,
+                    )
+                    if sigexit_task in done:
+                        logger.info(f"{self} Websocket client exiting...")
+                        await conn.close()
+                        self.close_signal.set()
+                        with suppress(KeyError):
+                            del self.connections[shard]
+                            await self.protocol.avilla.broadcast.postEvent(
+                                AccountRegistered(
+                                    self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
+                                )
                             )
-                        )
-                        del self.protocol.service.account_map[self.account_id]
-                        del self.protocol.avilla.accounts[account_route]
-                    return
-                if close_task in done:
-                    receiver_task.cancel()
-                    heartbeat_task.cancel()
-                    logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
+                            del self.protocol.service.accounts[self.account_id]
+                            del self.protocol.avilla.accounts[account_route]
+                        return
+                    if close_task in done:
+                        receiver_task.cancel()
+                        heartbeat_task.cancel()
+                        logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
 
-                    with suppress(KeyError):
-                        await self.protocol.avilla.broadcast.postEvent(
-                            AccountUnregistered(
-                                self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
+                        with suppress(KeyError):
+                            await self.protocol.avilla.broadcast.postEvent(
+                                AccountUnavailable(
+                                    self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
+                                )
                             )
-                        )
-                        del self.protocol.service.account_map[self.account_id]
-                        del self.protocol.avilla.accounts[account_route]
-                    await asyncio.sleep(5)
-                    logger.info(f"{self} Reconnecting...")
-                    continue
+                            del self.protocol.service.accounts[self.account_id]
+                            # del self.protocol.avilla.accounts[account_route]
+                        await asyncio.sleep(5)
+                        logger.info(f"{self} Reconnecting...")
+                        continue
+            except Exception as e:
+                logger.error(f"{self} Error while connecting: {e}")
+                await asyncio.sleep(5)
+                logger.info(f"{self} Reconnecting...")
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):

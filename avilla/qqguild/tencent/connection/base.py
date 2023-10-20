@@ -41,7 +41,7 @@ class QQGuildNetworking(Generic[T]):
     async def wait_for_available(self):
         ...
 
-    async def send(self, payload: dict) -> None:
+    async def send(self, payload: dict, shard: tuple[int, int]) -> None:
         ...
 
     async def message_handle(self, shard: tuple[int, int]):
