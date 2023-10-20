@@ -158,6 +158,7 @@ class SatoriWsClientNetworking(SatoriNetworking, Service):
             try:
                 async with session.ws_connect(
                     self.config.ws_url / "v1" / "events",
+                        timeout=30
                 ) as self.connection:
                     logger.debug(f"{self} Websocket client connected")
                     self.close_signal.clear()

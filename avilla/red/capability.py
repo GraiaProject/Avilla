@@ -8,6 +8,7 @@ from avilla.standard.qq.elements import Forward
 from graia.amnesia.message import Element, MessageChain
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload, SimpleOverload
 
+
 class RedCapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})
     async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | None:
@@ -25,7 +26,7 @@ class RedCapability((m := ApplicationCollector())._):
     async def forward_export(self, element: Element) -> dict:  # type: ignore
         ...
 
-    @Fn.complex({TargetOverload(): ["element"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def send_forward(self, target: Selector, forward: Forward) -> Selector:
         ...
 
