@@ -33,7 +33,7 @@ N = TypeVar("N", bound="BasePerform")
 VnCallable = TypeVar("VnCallable", bound=Callable, covariant=True)
 
 
-class Fn(Generic[VnCallable]):
+class Fn(Generic[P, R]):
     owner: type[BasePerform | Capability]  # TODO: review here
     name: str
 
@@ -47,7 +47,7 @@ class Fn(Generic[VnCallable]):
     overload_map: dict[str, FnOverload]
 
     def __init__(
-        self: Fn[Callable[P, R]],
+        self: Fn[P, R],
         shape: Callable[Concatenate[Any, P], R],
         behavior: OverloadBehavior = DEFAULT_BEHAVIOR,
         overload_param_map: dict[FnOverload, list[str]] | None = None,
@@ -65,7 +65,7 @@ class Fn(Generic[VnCallable]):
         self.name = name
 
     @overload
-    def __get__(self, instance: BasePerform, owner: type) -> VnCallable:
+    def __get__(self, instance: BasePerform, owner: type) -> Callable[P, R]:
         ...
 
     @overload
@@ -83,7 +83,7 @@ class Fn(Generic[VnCallable]):
 
     @classmethod
     def complex(cls, overload_param_map: dict[FnOverload, list[str]], behavior: OverloadBehavior = DEFAULT_BEHAVIOR):
-        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[Callable[P1, R1]]:
+        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[P1, R1]:
             return cls(shape, overload_param_map=overload_param_map, behavior=behavior)  # type: ignore
 
         return wrapper
@@ -93,11 +93,11 @@ class Fn(Generic[VnCallable]):
         return bool(self.overload_param_map)
 
     def collect(
-        self: Fn[Callable[P, R]],  # type: ignore
+        self,
         collector: BaseCollector,
         **overload_settings: Any,
     ):
-        def wrapper(entity: Callable[Concatenate[Any, P], R]):
+        def wrapper(entity: Callable[Concatenate[Any, P], R]) -> Callable[Concatenate[Any, P], R]:
             artifact = collector.artifacts.setdefault(
                 FnImplement(self),
                 {

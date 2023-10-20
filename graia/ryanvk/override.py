@@ -21,7 +21,7 @@ FnRecord = tuple["BaseCollector", Callable]
 
 class OverridePerformEntity(Generic[P, R]):
     collector: BaseCollector
-    fn: Fn[Callable[P, R]]
+    fn: Fn[P, R]
     entity: Callable[Concatenate[Any, P], R]
 
     origin_perform: type[BasePerform]
@@ -30,7 +30,7 @@ class OverridePerformEntity(Generic[P, R]):
     def __init__(
         self,
         collector: BaseCollector,
-        fn: Fn[Callable[P, R]],
+        fn: Fn[P, R],
         entity: Callable[Concatenate[Any, P], R],
     ) -> None:
         self.collector = collector

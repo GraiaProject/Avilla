@@ -33,12 +33,12 @@ class ContextSelector(Selector):
         ...
 
     @overload
-    def __getitem__(self, item: Fn[Callable[Concatenate[Selector, P], R]]) -> Callable[P, R]:
+    def __getitem__(self, item: Fn[Concatenate[Selector, P], R]) -> Callable[P, R]:
         ...
 
     def __getitem__(
         self,
-        item: str | Fn[Callable[Concatenate[Selector, P], R]],
+        item: str | Fn[Concatenate[Selector, P], R],
     ) -> str | Callable[P, R]:
         if isinstance(item, str):
             return super().__getitem__(item)

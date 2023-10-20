@@ -29,7 +29,7 @@ class Staff:
         self.exit_stack = AsyncExitStack()
         self.instances = {}
 
-    def call_fn(self, fn: Fn[Callable[P, R]], *args: P.args, **kwargs: P.kwargs) -> R:
+    def call_fn(self, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
         collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
         return fn.execute(self, collector, entity, *args, **kwargs)
 
@@ -63,7 +63,7 @@ class Staff:
         instance.components.update(components)
         return instance
 
-    def get_fn_call(self, fn: Fn[VnCallable]) -> VnCallable:
-        def wrapper(*args, **kwargs):
+    def get_fn_call(self, fn: Fn[P, R]) -> Callable[P, R]:
+        def wrapper(*args: P.args, **kwargs: P.kwargs):
             return self.call_fn(fn, *args, **kwargs)
-        return wrapper  # type: ignore
+        return wrapper

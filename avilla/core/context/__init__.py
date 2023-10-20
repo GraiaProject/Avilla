@@ -151,10 +151,10 @@ class Context:
         ...
 
     @overload
-    def __getitem__(self, closure: Fn[Callable[P, R]]) -> Callable[P, R]:
+    def __getitem__(self, closure: Fn[P, R]) -> Callable[P, R]:
         ...
 
-    def __getitem__(self, closure: Selector | Fn[Callable[P, Any]]) -> Any:
+    def __getitem__(self, closure: Selector | Fn[P, Any]):
         if isinstance(closure, Selector):
             return ContextSelector(self, closure.pattern)
 

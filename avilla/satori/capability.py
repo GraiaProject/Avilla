@@ -1,24 +1,26 @@
 from __future__ import annotations
+from typing import Any
 
 from avilla.core.event import AvillaEvent
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from graia.amnesia.message import Element, MessageChain
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 
-from .utils import parse, Element as SatoriElement
+from avilla.standard.core.application.event import AvillaLifecycleEvent
 
+from .utils import parse, Element as SatoriElement
 
 class SatoriCapability((m := ApplicationCollector())._):
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["event"]})
-    async def event_callback(self, event: dict) -> AvillaEvent | None:
+    async def event_callback(self, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None:
         ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw.type): ["element"]})
-    async def deserialize_element(self, element: SatoriElement) -> Element:  # type: ignore
+    async def deserialize_element(self, raw_element: SatoriElement) -> Element:
         ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Element) -> str:  # type: ignore
+    async def serialize_element(self, element: Any) -> str:
         ...
 
     async def deserialize(self, content: str):
