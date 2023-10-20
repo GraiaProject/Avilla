@@ -209,7 +209,7 @@ class AvillaCommands:
             target = ExecTarget(func, dispatchers, decorators)
             if isinstance(command, str):
                 mapping = {arg.name: arg.value for arg in Args.from_callable(func)[0]}
-                mapping.update(args or {})
+                mapping.update(args or {}) # type: ignore
                 _command = alconna_from_format(command, mapping, meta, union=False)
                 _command.reset_namespace(self.__namespace__)
                 key = _command.name + "".join(
