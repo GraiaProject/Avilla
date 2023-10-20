@@ -72,7 +72,7 @@ class Fn(Generic[P, R]):
     def __get__(self, instance: Any, owner: type) -> Self:
         ...
 
-    def __get__(self: Any, instance: BasePerform | None, owner: type):
+    def __get__(self, instance: BasePerform | None, owner: type):
         if not isinstance(instance, BasePerform):
             return self
 
