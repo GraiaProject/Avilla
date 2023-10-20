@@ -21,7 +21,7 @@ class RedResourceFetchPerform((m := ProtocolCollector["RedProtocol"]())._):
     @m.entity(CoreCapability.fetch, resource=RedFileResource)
     @m.entity(CoreCapability.fetch, resource=RedImageResource)
     @m.entity(CoreCapability.fetch, resource=RedVoiceResource)
-    @m.entity(CoreCapability.fetch, resource=RedVideoResource)
+    @m.entity(CoreCapability.fetch, resource=RedVideoResource)  # type: ignore
     async def fetch_resource(self, resource: RedResource) -> bytes:
         if (
             isinstance(resource, (RedImageResource, RedVoiceResource, RedVideoResource))
@@ -37,7 +37,7 @@ class RedResourceFetchPerform((m := ProtocolCollector["RedProtocol"]())._):
                         return await resp.read()
         if TYPE_CHECKING:
             assert isinstance(resource.ctx.account, RedAccount)
-        return await self.context.account.websocket_client.call_http(
+        return await resource.ctx.account.websocket_client.call_http(
             "post",
             "api/message/fetchRichMedia",
             {

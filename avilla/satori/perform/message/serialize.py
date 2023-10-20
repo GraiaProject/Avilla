@@ -5,9 +5,9 @@ from typing import TYPE_CHECKING
 from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text, Video, File
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.satori.capability import SatoriCapability
-from avilla.satori.utils import escape
-from avilla.satori.resource import SatoriImageResource, SatoriAudioResource, SatoriVideoResource, SatoriFileResource
+from avilla.satori.resource import SatoriResource
 
+from satori.parser import escape
 
 if TYPE_CHECKING:
     from avilla.satori.account import SatoriAccount  # noqa
@@ -70,27 +70,27 @@ class SatoriMessageSerializePerform((m := AccountCollector["SatoriProtocol", "Sa
     @m.entity(SatoriCapability.serialize_element, element=Picture)
     async def picture(self, element: Picture) -> str:
         res = element.resource
-        if not isinstance(res, SatoriImageResource):
-            raise NotImplementedError("Only SatoriImageResource is supported.")
+        if not isinstance(res, SatoriResource):
+            raise NotImplementedError("Only SatoriResource is supported.")
         return f'<img src="{res.src}" {"cache" if res.cache else ""}/>'
 
     @m.entity(SatoriCapability.serialize_element, element=Audio)
     async def audio(self, element: Audio) -> str:
         res = element.resource
-        if not isinstance(res, SatoriAudioResource):
-            raise NotImplementedError("Only SatoriAudioResource is supported.")
+        if not isinstance(res, SatoriResource):
+            raise NotImplementedError("Only SatoriResource is supported.")
         return f'<audio src="{res.src}" {"cache" if res.cache else ""}/>'
 
     @m.entity(SatoriCapability.serialize_element, element=Video)
     async def video(self, element: Video) -> str:
         res = element.resource
-        if not isinstance(res, SatoriVideoResource):
-            raise NotImplementedError("Only SatoriVideoResource is supported.")
+        if not isinstance(res, SatoriResource):
+            raise NotImplementedError("Only SatoriResource is supported.")
         return f'<video src="{res.src}" {"cache" if res.cache else ""}/>'
 
     @m.entity(SatoriCapability.serialize_element, element=File)
     async def file(self, element: File) -> str:
         res = element.resource
-        if not isinstance(res, SatoriFileResource):
-            raise NotImplementedError("Only SatoriFileResource is supported.")
+        if not isinstance(res, SatoriResource):
+            raise NotImplementedError("Only SatoriResource is supported.")
         return f'<file src="{res.src}" {"cache" if res.cache else ""}/>'

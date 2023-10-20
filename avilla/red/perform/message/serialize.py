@@ -102,10 +102,10 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
             "elementType": 4,
             "pttElement": {
                 "canConvert2Text": True,
-                "md5HexStr": resp.md5,
-                "fileSize": resp.fileSize,
+                "md5HexStr": resp["md5"],
+                "fileSize": resp["fileSize"],
                 "fileName": file.name,
-                "filePath": resp.ntFilePath,
+                "filePath": resp["ntFilePath"],
                 "duration": max(1, element.duration),
                 "formatType": 1,
                 "voiceType": 1,

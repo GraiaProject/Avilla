@@ -40,7 +40,7 @@ class RedQueryPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
             if callable(predicate) and predicate("friend", friend_id) or friend_id == predicate:
                 yield Selector().land(self.account.route["land"]).friend(friend_id)
 
-    @m.entity(CoreCapability.query, target="member", previous="land.group")
+    @m.entity(CoreCapability.query, target="member", previous="land.group")  # type: ignore
     async def query_group_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         result = await self.account.websocket_client.call_http(

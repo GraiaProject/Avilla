@@ -52,7 +52,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(RedCapability.deserialize_element, element="pic")
     async def pic(self, element: dict) -> Picture:
         resource = RedImageResource(
-            self.context,
+            self.context,  # type: ignore
             Selector().land("qq").picture(md5 := element["md5HexStr"]),
             md5,
             element["fileSize"],
@@ -79,7 +79,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     async def file(self, element: dict) -> File:
         return File(
             RedFileResource(
-                self.context,
+                self.context,  # type: ignore
                 Selector().land("qq").file(element["fileMd5"]),
                 element["fileMd5"],
                 element["fileSize"],
@@ -93,7 +93,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     async def ptt(self, element: dict) -> Audio:
         return Audio(
             RedVoiceResource(
-                self.context,
+                self.context,  # type: ignore
                 Selector().land("qq").voice(element["md5HexStr"]),
                 element["md5HexStr"],
                 element.get("fileSize", 0),
@@ -132,7 +132,7 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     async def video(self, element: dict) -> Video:
         return Video(
             RedVideoResource(
-                self.context,
+                self.context,  # type: ignore
                 Selector().land("qq").video(element["videoMd5"]),
                 element["videoMd5"],
                 element["fileSize"],

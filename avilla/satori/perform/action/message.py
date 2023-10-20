@@ -34,15 +34,10 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if reply:
             message = Reply(reply["message"]) + message
-        result = await self.account.client.call_http(
-            "message.create",
-            self.account.route,
-            {
-                "channel_id": target["channel"],
-                "content": await SatoriCapability(self.account.staff).serialize(message)
-            }
+        result = await self.account.client.message_create(
+            channel_id=target["channel"],
+            content=await SatoriCapability(self.account.staff).serialize(message)
         )
-        result = cast(list[dict[str, str]], result)
         for msg in result:
             _ctx = Context(
                 self.account,
@@ -52,11 +47,11 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 target.member(self.account.route["account"]),
             )
             content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(
-                msg["content"]
-            ) if "content" in msg else message
+                msg.content
+            )
             content = content.exclude(Reply)
             _msg = Message(
-                id=f'{msg["id"]}',
+                id=f'{msg.id}',
                 scene=target,
                 sender=target.member(self.account.route["account"]),
                 content=content,
@@ -65,7 +60,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             )
             self.protocol.post_event(MessageSent(_ctx, _msg, self.account))
         if len(result) == 1:
-            return target.message(result[0]["id"])
+            return target.message(result[0].id)
         token = token_urlsafe(16)
         await cache.set(
             f"satori/account({self.account.route['account']}).messages({token})",
@@ -85,15 +80,10 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if reply:
             message = Reply(reply["message"]) + message
-        result = await self.account.client.call_http(
-            "message.create",
-            self.account.route,
-            {
-                "channel_id": target["private"],
-                "content": await SatoriCapability(self.account.staff).serialize(message)
-            }
+        result = await self.account.client.message_create(
+            channel_id=target["private"],
+            content=await SatoriCapability(self.account.staff).serialize(message)
         )
-        result = cast(list[dict[str, str]], result)
         for msg in result:
             _ctx = Context(
                 self.account,
@@ -103,11 +93,11 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 self.account.route,
             )
             content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(
-                msg["content"]
-            ) if "content" in msg else message
+                msg.content
+            )
             content = content.exclude(Reply)
             _msg = Message(
-                id=f'{msg["id"]}',
+                id=f'{msg.id}',
                 scene=target,
                 sender=self.account.route,
                 content=content,
@@ -116,7 +106,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             )
             self.protocol.post_event(MessageSent(_ctx, _msg, self.account))
         if len(result) == 1:
-            return target.message(result[0]["id"])
+            return target.message(result[0].id)
         token = token_urlsafe(16)
         await cache.set(
             f"satori/account({self.account.route['account']}).messages({token})",
@@ -132,22 +122,14 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 f"satori/account({self.account.route['account']}).messages({target['message']})"
         ):
             for msg in result:
-                await self.account.client.call_http(
-                    "message.delete",
-                    self.account.route,
-                    {
-                        "channel_id": target["channel"],
-                        "message_id": msg["id"]
-                    }
+                await self.account.client.message_delete(
+                    channel_id=target["channel"],
+                    message_id=msg.id
                 )
             return
-        await self.account.client.call_http(
-            "message.delete",
-            self.account.route,
-            {
-                "channel_id": target["channel"],
-                "message_id": target["message"]
-            }
+        await self.account.client.message_delete(
+            channel_id= target["channel"],
+            message_id=target["message"]
         )
 
     @m.entity(MessageRevoke.revoke, target="land.private.user.message")
@@ -157,50 +139,38 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 f"satori/account({self.account.route['account']}).messages({target['message']})"
         ):
             for msg in result:
-                await self.account.client.call_http(
-                    "message.delete",
-                    self.account.route,
-                    {
-                        "channel_id": target["private"],
-                        "message_id": msg["id"]
-                    }
+                await self.account.client.message_delete(
+                    channel_id=target["private"],
+                    message_id=msg.id
                 )
             return
-        await self.account.client.call_http(
-            "message.delete",
-            self.account.route,
-            {
-                "channel_id": target["private"],
-                "message_id": target["message"]
-            }
+        await self.account.client.message_delete(
+            channel_id= target["private"],
+            message_id=target["message"]
         )
 
     @m.pull("land.public.channel.message", Message)
     async def get_public_message(self, message: Selector, route: ...) -> Message:
-        msg = await self.account.client.call_http(
-            "message.get",
-            self.account.route,
-            {
-                "channel_id": message["channel"],
-                "message_id": message["message"],
-            }
+        msg = await self.account.client.message_get(
+            channel_id=message["channel"],
+            message_id=message["message"],
         )
         _ctx = self.account.get_context(message.info("::public.channel").member(
-                msg.get("member", {}).get("id", self.account.route["account"])
+                msg.member.user.id if msg.member and msg.member.user else self.account.route["account"]
             )
         )
         content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(
-            msg["content"]
+            msg.content
         )
         reply = None
         if replys := content.get(Reply):
             reply = message.info(f"~.message({replys[0].id})")
             content = content.exclude(Reply)
         return Message(
-            id=f'{msg["id"]}',
+            id=f'{msg.id}',
             scene=message.info("::public.channel"),
             sender=message.info("::public.channel").member(
-                msg.get("member", {}).get("id", self.account.route["account"])
+                msg.member.user.id if msg.member and msg.member.user else self.account.route["account"]
             ),
             content=content,
             time=datetime.now(),
@@ -209,24 +179,20 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
 
     @m.pull("land.private.user.message", Message)
     async def get_private_message(self, message: Selector, route: ...) -> Message:
-        msg = await self.account.client.call_http(
-            "message.get",
-            self.account.route,
-            {
-                "channel_id": message["private"],
-                "message_id": message["message"],
-            }
+        msg = await self.account.client.message_get(
+            channel_id=message["private"],
+            message_id=message["message"],
         )
         _ctx = self.account.get_context(message.info("::private.user"))
         content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(
-            msg["content"]
+            msg.content
         )
         reply = None
         if replys := content.get(Reply):
             reply = message.info(f"~.message({replys[0].id})")
             content = content.exclude(Reply)
         return Message(
-            id=f'{msg["id"]}',
+            id=f'{msg.id}',
             scene=message.info("::private.user"),
             sender=message.info("::private.user"),
             content=content,

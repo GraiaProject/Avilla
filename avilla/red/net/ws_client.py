@@ -12,7 +12,7 @@ from loguru import logger
 
 from avilla.red.account import RedAccount
 from avilla.red.net.base import RedNetworking
-from avilla.standard.core.account import AccountUnregistered
+from avilla.standard.core.account import AccountUnregistered, AccountUnavailable
 
 if TYPE_CHECKING:
     from avilla.red.protocol import RedConfig, RedProtocol
@@ -138,11 +138,11 @@ class RedWsClientNetworking(RedNetworking, Service):
                         self.close_signal.set()
                         self.connection = None
                         for v in list(avilla.accounts.values()):
-                            if v.protocol is self.protocol:
-                                _account = v.route["account"]
-                                if _account == self.account.route["account"]:  # type: ignore
-                                    self.account = None
-                        return
+                            if v.protocol is self.protocol and self.account and v.route["account"] == self.account.route["account"]:  # type: ignore
+                                self.account = None
+                                del avilla.accounts[v.route]
+                                await avilla.broadcast.postEvent(AccountUnregistered(avilla, v.account))
+                                return
                     if close_task in done:
                         receiver_task.cancel()
                         logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
@@ -150,12 +150,7 @@ class RedWsClientNetworking(RedNetworking, Service):
                             logger.debug(f"Unregistering red-protocol account {n}...")
                             account = cast("RedAccount", avilla.accounts[n].account)
                             account.status.enabled = False
-                            await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
-                            if (
-                                n.follows("land(qq).account")
-                                and n["account"] == self.account.route["account"]  # type: ignore
-                            ):
-                                del avilla.accounts[n]
+                            await avilla.broadcast.postEvent(AccountUnavailable(avilla, avilla.accounts[n].account))
                         self.account = None
                         await asyncio.sleep(5)
                         logger.info(f"{self} Reconnecting...")

@@ -7,11 +7,11 @@ from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.standard.qq.elements import Forward
 from graia.amnesia.message import Element, MessageChain
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload, SimpleOverload
-
+from avilla.standard.core.application.event import AvillaLifecycleEvent
 
 class RedCapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})
-    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | None:
+    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None:
         ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["element"]})
@@ -19,11 +19,11 @@ class RedCapability((m := ApplicationCollector())._):
         ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Element) -> dict:  # type: ignore
+    async def serialize_element(self, element: Any) -> dict:  # type: ignore
         ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def forward_export(self, element: Element) -> dict:  # type: ignore
+    async def forward_export(self, element: Any) -> dict:  # type: ignore
         ...
 
     @Fn.complex({TargetOverload(): ["target"]})

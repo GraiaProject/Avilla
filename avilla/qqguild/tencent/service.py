@@ -9,6 +9,7 @@ from avilla.qqguild.tencent.connection.base import QQGuildNetworking
 from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientNetworking
 
 if TYPE_CHECKING:
+    from .account import QQGuildAccount
     from .protocol import QQGuildProtocol
 
 
@@ -17,19 +18,19 @@ class QQGuildService(Service):
 
     protocol: QQGuildProtocol
     connections: list[QQGuildWsClientNetworking]
-    account_map: dict[str, QQGuildNetworking]
+    accounts: dict[str, QQGuildAccount]
 
     def __init__(self, protocol: QQGuildProtocol):
         self.protocol = protocol
         self.connections = []
-        self.account_map = {}
+        self.accounts = {}
         super().__init__()
 
     def has_connection(self, account_id: str):
-        return account_id in self.account_map
+        return account_id in self.accounts
 
     def get_connection(self, account_id: str) -> QQGuildNetworking:
-        return self.account_map[account_id]
+        return self.accounts[account_id].connection
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):

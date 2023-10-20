@@ -83,7 +83,6 @@ class RedProtocol(BaseProtocol):
     def __init__(self):
         self.service = RedService(self)
 
-
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
 
