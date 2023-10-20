@@ -5,18 +5,18 @@ from datetime import timedelta
 from avilla.core.context import Context
 from avilla.core.event import RelationshipCreated, RelationshipDestroyed
 from avilla.core.selector import Selector
+from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteInfo, Privilege
 from avilla.standard.core.profile import Nick, Summary
 
-from . import ElizabethEventParse
-
 
 class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "relationship"
 
-    @m.entity(ElizabethEventParse, "MemberJoinEvent")
+    @m.entity(ElizabethCapability.event_callback, event="MemberJoinEvent")
     async def member_join(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -73,7 +73,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @m.entity(ElizabethEventParse, "MemberLeaveEventKick")
+    @m.entity(ElizabethCapability.event_callback, event="MemberLeaveEventKick")
     async def member_leave_kick(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -129,7 +129,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=False)
 
-    @m.entity(ElizabethEventParse, "MemberLeaveEventQuit")
+    @m.entity(ElizabethCapability.event_callback, event="MemberLeaveEventQuit")
     async def member_leave_quit(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -169,7 +169,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=True)
 
-    @m.entity(ElizabethEventParse, "BotJoinGroupEvent")
+    @m.entity(ElizabethCapability.event_callback, event="BotJoinGroupEvent")
     async def bot_join_group(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -210,7 +210,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @m.entity(ElizabethEventParse, "BotLeaveEventActive")
+    @m.entity(ElizabethCapability.event_callback, event="BotLeaveEventActive")
     async def bot_leave_active(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -234,7 +234,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=True)
 
-    @m.entity(ElizabethEventParse, "BotLeaveEventKick")
+    @m.entity(ElizabethCapability.event_callback, event="BotLeaveEventKick")
     async def bot_leave_kick(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -274,7 +274,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=False)
 
-    @m.entity(ElizabethEventParse, "BotLeaveEventDisband")
+    @m.entity(ElizabethCapability.event_callback, event="BotLeaveEventDisband")
     async def bot_leave_disband(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

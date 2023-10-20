@@ -16,9 +16,7 @@ class AuditResultStore:
         if future := self._futures.get(audit):
             future.set_result(result)
 
-    async def fetch(
-        self, audit: str, timeout: float = 30
-    ) -> Optional["MessageAudited"]:
+    async def fetch(self, audit: str, timeout: float = 30) -> Optional["MessageAudited"]:
         future = asyncio.get_event_loop().create_future()
         self._futures[audit] = future
         try:

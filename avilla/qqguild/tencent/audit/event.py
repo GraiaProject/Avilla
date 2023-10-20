@@ -4,8 +4,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from avilla.core.event import AvillaEvent
-from .metadata import Audit
 
+from .metadata import Audit
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface

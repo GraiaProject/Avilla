@@ -1,50 +1,52 @@
 from __future__ import annotations
 
+from avilla.core.metadata import Route
 from avilla.core.resource import Resource
-from avilla.core.ryanvk import Capability, TargetFn, TargetMetadataUnitedFn
+from avilla.core.ryanvk import Capability, Fn, MetadataOverload, TargetOverload
+from avilla.core.selector import Selector
 
 
 class SummaryCapability(Capability):
-    @TargetMetadataUnitedFn
-    async def set_name(self, name: str) -> None:
+    @Fn.complex({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    async def set_name(self, target: Selector, route: Route, name: str) -> None:
         ...
 
-    @TargetMetadataUnitedFn
-    async def unset_name(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    async def unset_name(self, target: Selector, route: Route) -> None:
         ...
 
-    @TargetMetadataUnitedFn
-    async def set_description(self, description: str) -> None:
+    @Fn.complex({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    async def set_description(self, target: Selector, route: Route, description: str) -> None:
         ...
 
-    @TargetMetadataUnitedFn
-    async def unset_description(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    async def unset_description(self, target: Selector, route: Route) -> None:
         ...
 
 
 class NickCapability(Capability):
-    @TargetMetadataUnitedFn
-    async def set_name(self, name: str) -> None:
+    @Fn.complex({TargetOverload(): ["target"], MetadataOverload(): ["route"]})
+    async def set_name(self, target: Selector, route: Route, name: str) -> None:
         ...
 
-    @TargetFn
-    async def set_nickname(self, nickname: str) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def set_nickname(self, target: Selector, nickname: str) -> None:
         ...
 
-    @TargetFn
-    async def unset_nickname(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def unset_nickname(self, target: Selector) -> None:
         ...
 
-    @TargetFn
-    async def set_badge(self, badge: str) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def set_badge(self, target: Selector, badge: str) -> None:
         ...
 
-    @TargetFn
-    async def unset_badge(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def unset_badge(self, target: Selector) -> None:
         ...
 
 
 class AvatarFetch(Capability):
-    @TargetFn
-    def get_avatar(self) -> Resource[bytes]:
+    @Fn.complex({TargetOverload(): ["target"]})
+    def get_avatar(self, target: Selector) -> Resource[bytes]:
         ...

@@ -5,5 +5,6 @@
     "venv": ".venv",
     "venvPath": ".",
     "typeCheckingMode": "basic",
-    "include": ["avilla", "launart", "graia"],
+    "include": ["avilla", "graia"],
+    "stubPath": ""
 }

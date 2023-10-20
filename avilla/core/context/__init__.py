@@ -78,7 +78,7 @@ class Context:
         self.mediums = [ContextMedium(ContextSelector.from_selector(self, medium)) for medium in mediums or []]
 
         self.cache = {"meta": prelude_metadatas or {}}
-        self.staff = Staff.focus(self)
+        self.staff = Staff(self.get_staff_artifacts(), self.get_staff_components())
 
     @property
     def protocol(self):
@@ -154,7 +154,7 @@ class Context:
     def __getitem__(self, closure: Fn[P, R]) -> Callable[P, R]:
         ...
 
-    def __getitem__(self, closure: Selector | Fn[P, Any]) -> Any:
+    def __getitem__(self, closure: Selector | Fn[P, Any]):
         if isinstance(closure, Selector):
             return ContextSelector(self, closure.pattern)
 

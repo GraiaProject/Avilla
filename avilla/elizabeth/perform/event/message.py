@@ -6,13 +6,12 @@ from typing import Any, TypedDict, cast
 from avilla.core.context import Context
 from avilla.core.message import Message, MessageChain
 from avilla.core.selector import Selector
+from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.message import MessageReceived, MessageRevoked
 from avilla.standard.core.privilege import MuteInfo, Privilege
 from avilla.standard.core.profile import Nick, Summary
-
-from . import ElizabethEventParse
 
 
 class MessageDeserializeResult(TypedDict):
@@ -23,7 +22,8 @@ class MessageDeserializeResult(TypedDict):
 
 
 class ElizabethEventMessagePerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "message"
 
     async def _deserialize_message(self, context: Context, raw_elements: list[dict]):
         result: dict[str, Any] = {
@@ -39,10 +39,12 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
                 break
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        result["content"] = await account.staff.ext({"context": context}).deserialize_message(raw_elements[1:])
+        result["content"] = await ElizabethCapability(account.staff.ext({"context": context})).deserialize_chain(
+            raw_elements[1:]
+        )
         return cast(MessageDeserializeResult, result)
 
-    @m.entity(ElizabethEventParse, "FriendMessage")
+    @m.entity(ElizabethCapability.event_callback, event="FriendMessage")
     async def friend(self, raw_event: dict):
         account = Selector().land("qq").account(str(self.connection.account_id))
         friend = Selector().land(account["land"]).friend(str(raw_event["sender"]["id"]))
@@ -72,7 +74,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @m.entity(ElizabethEventParse, "GroupMessage")
+    @m.entity(ElizabethCapability.event_callback, event="GroupMessage")
     async def group(self, raw_event: dict):
         account = Selector().land("qq").account(str(self.connection.account_id))
         sender = raw_event["sender"]
@@ -121,7 +123,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @m.entity(ElizabethEventParse, "FriendRecallEvent")
+    @m.entity(ElizabethCapability.event_callback, event="FriendRecallEvent")
     async def friend_recall(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -140,7 +142,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
             friend,
         )
 
-    @m.entity(ElizabethEventParse, "GroupRecallEvent")
+    @m.entity(ElizabethCapability.event_callback, event="GroupRecallEvent")
     async def group_recall(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

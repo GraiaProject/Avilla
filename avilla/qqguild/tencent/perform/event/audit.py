@@ -5,8 +5,8 @@ from datetime import datetime
 from avilla.core.context import Context
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
-from avilla.qqguild.tencent.collector.connection import ConnectionCollector
 from avilla.qqguild.tencent.audit import Audit, MessageAuditPass, MessageAuditReject
+from avilla.qqguild.tencent.collector.connection import ConnectionCollector
 
 
 class QQGuildEventAuditPerform((m := ConnectionCollector())._):
@@ -26,7 +26,7 @@ class QQGuildEventAuditPerform((m := ConnectionCollector())._):
             raw_event["seq_in_channel"],
             datetime.fromtimestamp(raw_event["audit_time"]),
             datetime.fromtimestamp(raw_event["audit_time"]),
-            message
+            message,
         )
         context = Context(
             account,
@@ -36,7 +36,6 @@ class QQGuildEventAuditPerform((m := ConnectionCollector())._):
             channel.member(account_route["account"]),
         )
         return MessageAuditPass(context, audit)
-
 
     @EventParse.collect(m, "message_audit_reject")
     async def on_message_audit_reject(self, raw_event: dict):

@@ -3,12 +3,9 @@ from __future__ import annotations
 from collections import ChainMap
 from contextlib import AsyncExitStack, asynccontextmanager
 from copy import copy
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
 
 from typing_extensions import ParamSpec
-
-from graia.ryanvk.fn import FnImplement
-from graia.ryanvk.aio import queue_task
 
 if TYPE_CHECKING:
     from .fn import Fn
@@ -16,7 +13,7 @@ if TYPE_CHECKING:
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
-
+VnCallable = TypeVar("VnCallable", bound=Callable)
 
 class Staff:
     artifact_collections: list[dict[Any, Any]]
@@ -33,31 +30,8 @@ class Staff:
         self.instances = {}
 
     def call_fn(self, fn: Fn[P, R], *args: P.args, **kwargs: P.kwargs) -> R:
-        artifact_record = self.artifact_map[FnImplement(fn)]
-
-        if fn.has_overload_capability:
-            bound_args = fn.shape_signature.bind(*args, **kwargs)
-            bound_args.apply_defaults()
-            collections = None
-
-            for overload_item, required_args in fn.overload_param_map.items():
-                scope = artifact_record["overload_scopes"][overload_item.identity]
-                entities = overload_item.get_entities(scope, {i: bound_args.arguments[i] for i in required_args})
-                collections = entities if collections is None else collections.intersection(entities)
-
-            if not collections:
-                raise NotImplementedError
-
-            collector, entity = collections.pop()
-            if collector.cls not in self.instances:
-                instance = self.instances[collector.cls] = collector.cls(self)
-                queue_task(self.exit_stack.enter_async_context(instance.lifespan()))
-            else:
-                instance = self.instances[collector.cls]
-            return entity(instance, *args, **kwargs)
-
-        else:
-            return artifact_record["handler"](*args, **kwargs)
+        collector, entity = fn.behavior.harvest_overload(self, fn, *args, **kwargs)
+        return fn.execute(self, collector, entity, *args, **kwargs)
 
     class PostInitShape(Protocol[P]):
         def __post_init__(self, *args: P.args, **kwargs: P.kwargs) -> Any:
@@ -88,3 +62,8 @@ class Staff:
         instance = copy(self)
         instance.components.update(components)
         return instance
+
+    def get_fn_call(self, fn: Fn[P, R]) -> Callable[P, R]:
+        def wrapper(*args: P.args, **kwargs: P.kwargs):
+            return self.call_fn(fn, *args, **kwargs)
+        return wrapper

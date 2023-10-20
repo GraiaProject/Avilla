@@ -120,6 +120,9 @@ class Selector:
     def last_value(self) -> str:
         return next(reversed(self.pattern.values()))
 
+    def items(self):
+        return self.pattern.items()
+
     def appendix(self, key: str, value: str):
         return Selector(pattern={**self.pattern, key: value})
 

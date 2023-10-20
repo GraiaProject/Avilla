@@ -6,19 +6,19 @@ from typing import cast
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
 from avilla.core.selector import Selector
+from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteInfo, Privilege
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.qq.announcement import Announcement
 
-from . import ElizabethEventParse
-
 
 class ElizabethEventGroupPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "group"
 
-    @m.entity(ElizabethEventParse, "BotGroupPermissionChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, event="BotGroupPermissionChangeEvent")
     async def bot_group_permission_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -69,7 +69,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethEventParse, "BotMuteEvent")
+    @m.entity(ElizabethCapability.event_callback, event="BotMuteEvent")
     async def bot_mute(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -113,13 +113,15 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", True, False),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=raw_event["durationSeconds"]), None),
+                MuteInfo.inh(lambda x: x.duration): ModifyDetail(
+                    "set", timedelta(seconds=raw_event["durationSeconds"]), None
+                ),
             },
             operator=operator,
             scene=group,
         )
 
-    @m.entity(ElizabethEventParse, "BotUnmuteEvent")
+    @m.entity(ElizabethCapability.event_callback, event="BotUnmuteEvent")
     async def bot_unmute(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -163,13 +165,13 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear",  timedelta(seconds=0)),
+                MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear", timedelta(seconds=0)),
             },
             operator=operator,
             scene=group,
         )
 
-    @m.entity(ElizabethEventParse, "GroupNameChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, event="GroupNameChangeEvent")
     async def group_name_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -216,7 +218,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethEventParse, "GroupMuteAllEvent")
+    @m.entity(ElizabethCapability.event_callback, event="GroupMuteAllEvent")
     async def group_mute_all(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -265,7 +267,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethEventParse, "GroupEntranceAnnouncementChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, event="GroupEntranceAnnouncementChangeEvent")
     async def group_entrance_announcement_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

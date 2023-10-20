@@ -27,6 +27,14 @@ class AccountBasedPerformTemplate(BasePerform, native=True):
     protocol: Access[BaseProtocol] = Access()
     account: Access[BaseAccount] = Access()
 
+    @property
+    def avilla(self):
+        return self.protocol.avilla
+
+    @property
+    def broadcast(self):
+        return self.avilla.broadcast
+
 
 class AccountCollector(AvillaBaseCollector, Generic[TProtocol, TAccount]):
     post_applying: bool = False

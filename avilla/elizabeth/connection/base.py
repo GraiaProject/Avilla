@@ -1,27 +1,29 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator, Generic, Literal, TypeVar
+from contextlib import suppress
+from typing import TYPE_CHECKING, AsyncIterator, Literal, TypeVar
 
 from loguru import logger
+from typing_extensions import Self
 
 from avilla.core.exceptions import InvalidAuthentication
 from avilla.core.ryanvk.staff import Staff
+from avilla.core.selector import Selector
+from avilla.elizabeth.capability import ElizabethCapability
+from avilla.standard.core.account import AccountAvailable
 
 from .util import validate_response
-from avilla.standard.core.account import AccountAvailable
-from ...core import Selector
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsStaff
     from avilla.elizabeth.protocol import ElizabethProtocol
 
 
-T = TypeVar("T", bound="SupportsStaff")
+T = TypeVar("T", bound="ElizabethNetworking")
 CallMethod = Literal["get", "post", "fetch", "update", "multipart"]
 
 
-class ElizabethNetworking(Generic[T]):
+class ElizabethNetworking:
     protocol: ElizabethProtocol
     response_waiters: dict[str, asyncio.Future]
     close_signal: asyncio.Event
@@ -35,7 +37,17 @@ class ElizabethNetworking(Generic[T]):
         self.response_waiters = {}
         self.close_signal = asyncio.Event()
 
-    def message_receive(self) -> AsyncIterator[tuple[T, dict]]:
+    def get_staff_components(self):
+        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
+
+    def get_staff_artifacts(self):
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
+
+    @property
+    def staff(self):
+        return Staff(self.get_staff_artifacts(), self.get_staff_components())
+
+    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]:
         ...
 
     @property
@@ -65,9 +77,7 @@ class ElizabethNetworking(Generic[T]):
                 logger.success("session key got.")
                 account_route = Selector().land("qq").account(str(self.account_id))
                 account = self.protocol.avilla.accounts[account_route].account
-                self.protocol.avilla.broadcast.postEvent(AccountAvailable(
-                    self.protocol.avilla, account
-                ))
+                self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
                 continue
 
             if sync_id in self.response_waiters:
@@ -79,12 +89,11 @@ class ElizabethNetworking(Generic[T]):
 
             async def event_parse_task(data: dict):
                 event_type = data["type"]
-                event = await Staff.focus(connection).parse_event(event_type, data)
-                if event == "non-implemented":
-                    logger.warning(f"received unsupported event {event_type}: {data}")
+                with suppress(NotImplementedError):
+                    await ElizabethCapability(connection.staff).handle_event(data)
                     return
-                elif event is not None:
-                    await self.protocol.post_event(event)
+
+                logger.warning(f"received unsupported event {event_type}: {data}")
 
             asyncio.create_task(event_parse_task(body))
 

@@ -1,21 +1,22 @@
 from __future__ import annotations
 
-from avilla.core.ryanvk import Capability, TargetFn
+from avilla.core.ryanvk import Capability, Fn, TargetOverload
+from avilla.core.selector import Selector
 
 
 class RequestCapability(Capability):
-    @TargetFn
-    async def accept(self):
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def accept(self, target: Selector):
         ...
 
-    @TargetFn
-    async def reject(self, reason: str | None = None, forever: bool = False):
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def reject(self, target: Selector, reason: str | None = None, forever: bool = False):
         ...
 
-    @TargetFn
-    async def cancel(self):
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def cancel(self, target: Selector):
         ...
 
-    @TargetFn
-    async def ignore(self):
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def ignore(self, target: Selector):
         ...

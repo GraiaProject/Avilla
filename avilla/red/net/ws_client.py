@@ -15,12 +15,10 @@ from avilla.red.net.base import RedNetworking
 from avilla.standard.core.account import AccountUnregistered
 
 if TYPE_CHECKING:
-    from avilla.red.protocol import RedProtocol, RedConfig
+    from avilla.red.protocol import RedConfig, RedProtocol
 
 
-class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
-    id = "red/connection/websocket/client"
-
+class RedWsClientNetworking(RedNetworking, Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
@@ -31,6 +29,10 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
     def __init__(self, protocol: RedProtocol, config: RedConfig) -> None:
         super().__init__(protocol)
         self.config = config
+
+    @property
+    def id(self):
+        return f"satori/connection/websocket/client#{id(self)}"
 
     async def message_receive(self):
         if self.connection is None:
@@ -105,55 +107,63 @@ class RedWsClientNetworking(RedNetworking["RedWsClientNetworking"], Service):
 
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         while not manager.status.exiting:
-            async with session.ws_connect(self.config.endpoint) as self.connection:
-                logger.info(f"{self} Websocket client connected")
-                self.close_signal.clear()
+            try:
+                async with session.ws_connect(
+                    self.config.endpoint,
+                    timeout=30
+                ) as self.connection:
+                    logger.info(f"{self} Websocket client connected")
+                    self.close_signal.clear()
 
-                close_task = asyncio.create_task(self.close_signal.wait())
-                receiver_task = asyncio.create_task(self.message_handle())
-                sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
-                await self.send(
-                    {
-                        "type": "meta::connect",
-                        "payload": {
-                            "token": self.config.access_token,
-                        },
-                    }
-                )
-                done, pending = await any_completed(
-                    sigexit_task,
-                    close_task,
-                    receiver_task,
-                )
-                avilla = self.protocol.avilla
-                if sigexit_task in done:
-                    logger.info(f"{self} Websocket client exiting...")
-                    await self.connection.close()
-                    self.close_signal.set()
-                    self.connection = None
-                    for v in list(avilla.accounts.values()):
-                        if v.protocol is self.protocol:
-                            _account = v.route["account"]
-                            if _account == self.account.route["account"]:  # type: ignore
-                                self.account = None
-                    return
-                if close_task in done:
-                    receiver_task.cancel()
-                    logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
-                    for n in list(avilla.accounts.keys()):
-                        logger.debug(f"Unregistering red-protocol account {n}...")
-                        account = cast("RedAccount", avilla.accounts[n].account)
-                        account.status.enabled = False
-                        await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
-                        if (
-                            n.follows("land(qq).account")
-                            and n["account"] == self.account.route["account"]  # type: ignore
-                        ):
-                            del avilla.accounts[n]
-                    self.account = None
-                    await asyncio.sleep(5)
-                    logger.info(f"{self} Reconnecting...")
-                    continue
+                    close_task = asyncio.create_task(self.close_signal.wait())
+                    receiver_task = asyncio.create_task(self.message_handle())
+                    sigexit_task = asyncio.create_task(manager.status.wait_for_sigexit())
+                    await self.send(
+                        {
+                            "type": "meta::connect",
+                            "payload": {
+                                "token": self.config.access_token,
+                            },
+                        }
+                    )
+                    done, pending = await any_completed(
+                        sigexit_task,
+                        close_task,
+                        receiver_task,
+                    )
+                    avilla = self.protocol.avilla
+                    if sigexit_task in done:
+                        logger.info(f"{self} Websocket client exiting...")
+                        await self.connection.close()
+                        self.close_signal.set()
+                        self.connection = None
+                        for v in list(avilla.accounts.values()):
+                            if v.protocol is self.protocol:
+                                _account = v.route["account"]
+                                if _account == self.account.route["account"]:  # type: ignore
+                                    self.account = None
+                        return
+                    if close_task in done:
+                        receiver_task.cancel()
+                        logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
+                        for n in list(avilla.accounts.keys()):
+                            logger.debug(f"Unregistering red-protocol account {n}...")
+                            account = cast("RedAccount", avilla.accounts[n].account)
+                            account.status.enabled = False
+                            await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
+                            if (
+                                n.follows("land(qq).account")
+                                and n["account"] == self.account.route["account"]  # type: ignore
+                            ):
+                                del avilla.accounts[n]
+                        self.account = None
+                        await asyncio.sleep(5)
+                        logger.info(f"{self} Reconnecting...")
+                        continue
+            except Exception as e:
+                logger.error(f"{self} Error while connecting: {e}")
+                await asyncio.sleep(5)
+                logger.info(f"{self} Reconnecting...")
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):

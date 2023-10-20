@@ -29,10 +29,7 @@ from .base import CallMethod, QQGuildNetworking
 from .util import Opcode, Payload, validate_response
 
 if TYPE_CHECKING:
-    from avilla.qqguild.tencent.protocol import QQGuildProtocol, QQGuildConfig
-
-
-
+    from avilla.qqguild.tencent.protocol import QQGuildConfig, QQGuildProtocol
 
 
 class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], Service):

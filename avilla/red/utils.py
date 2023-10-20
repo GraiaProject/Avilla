@@ -1,6 +1,7 @@
-from enum import IntEnum
-from typing import TypedDict, Literal
 from dataclasses import dataclass
+from enum import IntEnum
+from typing import Literal, TypedDict
+
 
 class MsgType(IntEnum):
     normal = 2
@@ -14,6 +15,7 @@ class MsgType(IntEnum):
     ark = 11
     may_market = 17
 
+
 class SubMsgTypes(TypedDict):
     text: bool
     image: bool
@@ -23,6 +25,7 @@ class SubMsgTypes(TypedDict):
     reply: bool
     market_face: bool
     file: bool
+
 
 @dataclass
 class MsgTypes:
@@ -34,6 +37,7 @@ class MsgTypes:
     @property
     def group(self):
         return self.chat == "group"
+
 
 def pre_deserialize(elements: list[dict]):
     res = []
@@ -49,28 +53,26 @@ def pre_deserialize(elements: list[dict]):
         res.append(slot)
     return res
 
+
 def get_msg_types(raw_event: dict) -> MsgTypes:
-    return MsgTypes(**{
-        "chat": "friend" if raw_event["chatType"] == 1 else "group",
-        "msg": MsgType(raw_event["msgType"]),
-        "sub": {
-            "text": bool(raw_event["subMsgType"] & (1 << 0)),
-            "image": bool(raw_event["subMsgType"] & (1 << 1)),
-            "face": bool(raw_event["subMsgType"] & (1 << 4)),
-            "link": bool(raw_event["subMsgType"] & (1 << 7)),
-            "forward": bool(raw_event["subMsgType"] & (1 << 3)),
-            "reply": (
-                raw_event["msgType"] == 9 and bool(raw_event["subMsgType"] & (1 << 5))
-            ),
-            "market_face": (
-                raw_event["msgType"] == 17 and bool(raw_event["subMsgType"] & (1 << 3))
-            ),
-            "file": (
-                raw_event["msgType"] == 3 and bool(raw_event["subMsgType"] & (1 << 9))
-            )
-        },
-        "send": "system" if raw_event["sendType"] == 3 else "normal",
-    })
+    return MsgTypes(
+        **{
+            "chat": "friend" if raw_event["chatType"] == 1 else "group",
+            "msg": MsgType(raw_event["msgType"]),
+            "sub": {
+                "text": bool(raw_event["subMsgType"] & (1 << 0)),
+                "image": bool(raw_event["subMsgType"] & (1 << 1)),
+                "face": bool(raw_event["subMsgType"] & (1 << 4)),
+                "link": bool(raw_event["subMsgType"] & (1 << 7)),
+                "forward": bool(raw_event["subMsgType"] & (1 << 3)),
+                "reply": (raw_event["msgType"] == 9 and bool(raw_event["subMsgType"] & (1 << 5))),
+                "market_face": (raw_event["msgType"] == 17 and bool(raw_event["subMsgType"] & (1 << 3))),
+                "file": (raw_event["msgType"] == 3 and bool(raw_event["subMsgType"] & (1 << 9))),
+            },
+            "send": "system" if raw_event["sendType"] == 3 else "normal",
+        }
+    )
+
 
 """\
 1 ===> text, at, ...

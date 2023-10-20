@@ -2,24 +2,26 @@ from __future__ import annotations
 
 from typing import Literal
 
-from avilla.core.ryanvk import Capability, Fn, TargetFn
+from avilla.core.ryanvk import Capability, Fn, TargetOverload
 from avilla.core.selector import Selector
 
 
 class SceneCapability(Capability):
-    @TargetFn
-    async def leave(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def leave(self, target: Selector) -> None:
         ...
 
-    @TargetFn
-    async def disband(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def disband(self, target: Selector) -> None:
         ...
 
-    @TargetFn
-    async def remove_member(self, reason: str | None = None) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def remove_member(self, target: Selector, reason: str | None = None) -> None:
         ...
 
-    # @TargetFn
+    # @Fn.with_overload({
+    #    TargetOverload(): ['target']
+    # })
     # async def request_join(self, solver: Isolate) -> None:
     #     ...
 
@@ -41,7 +43,7 @@ class RequestJoinCapability(Capability):
 
 
 class RelationshipTerminate(Capability):
-    @TargetFn
-    async def terminate(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def terminate(self, target: Selector) -> None:
         # TODO: use wand
         ...

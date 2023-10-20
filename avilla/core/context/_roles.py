@@ -29,6 +29,7 @@ class ContextClientSelector(ContextSelector):
     def trigger_activity(self, activity: str):
         return self.context[ActivityTrigger.trigger](self.activity(activity))
 
+
 class ContextEndpointSelector(ContextSelector):
     def expects_request(self) -> ContextRequestSelector:
         if "request" in self.pattern:

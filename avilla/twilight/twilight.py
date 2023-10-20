@@ -262,7 +262,7 @@ class ElementMatch(RegexMatch):
 
     def __init__(
         self,
-        type: Type[Element] = ...,
+        type: Type[Element],
         optional: bool = False,
     ) -> None:
         """初始化 ElementMatch 对象.

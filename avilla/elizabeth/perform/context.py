@@ -2,20 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.core.builtins.capability import CoreCapability
+from avilla.core.context import Context
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.core.context import Context
-from avilla.core.builtins.capability import CoreCapability
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
     from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 
-class ElizabethContextPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
-
-    @CoreCapability.get_context.collect(m, "land.group")
+class ElizabethGetContextPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+    m.namespace = "avilla.protocol/elizabeth::context"
+    @m.entity(CoreCapability.get_context, target="land.group")
     def get_context_from_group(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
@@ -25,7 +24,7 @@ class ElizabethContextPerform((m := AccountCollector["ElizabethProtocol", "Eliza
             target.member(self.account.route["account"]),
         )
 
-    @CoreCapability.get_context.collect(m, "land.friend")
+    @m.entity(CoreCapability.get_context, target="land.friend")
     def get_context_from_friend(self, target: Selector, *, via: Selector | None = None):
         if via:
             return Context(
@@ -35,15 +34,9 @@ class ElizabethContextPerform((m := AccountCollector["ElizabethProtocol", "Eliza
                 target,
                 self.account.route,
             )
-        return Context(
-            self.account,
-            target,
-            self.account.route,
-            target,
-            self.account.route
-        )
+        return Context(self.account, target, self.account.route, target, self.account.route)
 
-    @CoreCapability.get_context.collect(m, "land.group.member")
+    @m.entity(CoreCapability.get_context, target="land.group.member")
     def get_context_from_member(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,

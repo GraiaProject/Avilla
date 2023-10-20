@@ -89,7 +89,7 @@ def form_data(message: dict):
             files[key] = {
                 "value": json.dumps({key: value}).encode("utf-8"),
                 "content_type": "application/json",
-                "filename": f"{key}.json"
+                "filename": f"{key}.json",
             }
         else:
             data_[key] = value

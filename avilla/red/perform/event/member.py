@@ -2,20 +2,23 @@ from __future__ import annotations
 
 from datetime import timedelta
 
+from loguru import logger
+
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
 from avilla.core.selector import Selector
-from avilla.core.ryanvk.descriptor.event import EventParse
+from avilla.red.capability import RedCapability
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.standard.core.privilege import MuteInfo
-from loguru import logger
 
 
 class RedEventGroupMemberPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::event"
+    m.identify = "member"
 
-    @EventParse.collect(m, "group::member::mute")
-    async def group_name_change(self, raw_event: dict):
+
+    @m.entity(RedCapability.event_callback, event_type="group::member::mute")
+    async def group_name_change(self,  event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")
@@ -38,7 +41,7 @@ class RedEventGroupMemberPerform((m := ConnectionCollector())._):
                 MuteInfo,
                 {
                     MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                    MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear",  timedelta(seconds=0)),
+                    MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear", timedelta(seconds=0)),
                 },
                 operator=operator,
                 scene=group,
@@ -50,7 +53,9 @@ class RedEventGroupMemberPerform((m := ConnectionCollector())._):
                 MuteInfo,
                 {
                     MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", True, False),
-                    MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=int(group_data["shutUp"]["duration"]))),
+                    MuteInfo.inh(lambda x: x.duration): ModifyDetail(
+                        "set", timedelta(seconds=int(group_data["shutUp"]["duration"]))
+                    ),
                 },
                 operator=operator,
                 scene=group,

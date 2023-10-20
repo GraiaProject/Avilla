@@ -3,14 +3,15 @@ from __future__ import annotations
 import io
 import os
 
-from avilla.core.ryanvk import Capability, TargetFn
+from avilla.core.ryanvk import Capability, Fn, TargetOverload
 from avilla.core.selector import Selector
 
 
 class AnnouncementPublish(Capability):
-    @TargetFn
+    @Fn.complex({TargetOverload(): ["target"]})
     async def publish(
         self,
+        target: Selector,
         content: str,
         *,
         send_to_new_member: bool = False,
@@ -28,8 +29,8 @@ class AnnouncementPublish(Capability):
 
 
 class AnnouncementDelete(Capability):
-    @TargetFn
-    async def delete(self) -> None:
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def delete(self, target: Selector) -> None:
         """删除群公告
 
         target 是群公告的 id

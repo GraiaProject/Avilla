@@ -6,19 +6,20 @@ from loguru import logger
 
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
+from avilla.red.capability import RedCapability
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.red.utils import pre_deserialize
-from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.message import MessageReceived, MessageSent
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 
 class RedEventMessagePerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::event"
+    m.identify = "message"
 
-    @EventParse.collect(m, "message::recv")
-    async def message(self, raw_event: dict):
+    @m.entity(RedCapability.event_callback, event_type="message::recv")
+    async def message(self,  event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")
@@ -26,7 +27,9 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         reply = None
         if raw_event["chatType"] == 2:
-            group = Selector().land(account.route["land"]).group(str(raw_event.get("peerUin", raw_event.get("peerUid"))))
+            group = (
+                Selector().land(account.route["land"]).group(str(raw_event.get("peerUin", raw_event.get("peerUid"))))
+            )
             member = group.member(str(raw_event.get("senderUin", raw_event.get("senderUid"))))
             context = Context(
                 account,
@@ -39,7 +42,9 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             if elements[0]["type"] == "reply":
                 reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
-            message = await account.staff.ext({"context": context}).deserialize_message(elements)
+            message = await RedCapability(account.staff.ext({"context": context})).deserialize(
+                elements
+            )
             msg = Message(
                 id=f'{raw_event["msgId"]}',
                 scene=group,
@@ -50,9 +55,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             )
         else:
             friend = (
-                Selector()
-                .land(account.route["land"])
-                .friend(f"{raw_event.get('peerUin', raw_event.get('senderUin'))}")
+                Selector().land(account.route["land"]).friend(f"{raw_event.get('peerUin', raw_event.get('senderUin'))}")
             )
             context = Context(
                 account,
@@ -65,7 +68,9 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             if elements[0]["type"] == "reply":
                 reply = friend.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
-            message = await account.staff.ext({"context": context}).deserialize_message(elements)
+            message = await RedCapability(account.staff.ext({"context": context})).deserialize(
+                elements
+            )
             msg = Message(
                 id=f'{raw_event["msgId"]}',
                 scene=friend,
@@ -75,11 +80,12 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             )
         await cache.set(f"red/account({account.route['account']}).message({msg.id})", raw_event, timedelta(minutes=5))
-        context._collect_metadatas(
-            msg.to_selector(),
-            msg
-        )
-        return MessageReceived(
+        context._collect_metadatas(msg.to_selector(), msg)
+        return MessageSent(
             context,
             msg,
+            account
+        ) if msg.sender.last_value == account.route["account"] else MessageReceived(
+            context,
+            msg
         )

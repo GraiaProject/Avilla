@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageRevoke, MessageSend
-from avilla.standard.qq.elements import Forward, Node
+from avilla.standard.qq.elements import Forward
 from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
@@ -119,4 +119,6 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         )
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {forward}")
-        return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["message_id"])
+        return (
+            Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["message_id"])
+        )

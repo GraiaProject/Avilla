@@ -1,17 +1,8 @@
 {
-    "python.formatting.provider": "none",
-    "python.linting.enabled": false,
-    "python.linting.pylintEnabled": false,
-    "python.linting.maxNumberOfProblems": 1000,
     "python.analysis.completeFunctionParens": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.autoComplete.extraPaths": [
         "__pypackages__/3.10/lib"
-    ],
-    "python.linting.ignorePatterns": [
-        "**/site-packages/**/*.py",
-        ".vscode/*.py",
-        "__pypackages__"
     ],
     "yaml.schemas": {
         "https://squidfunk.github.io/mkdocs-material/schema.json": "mkdocs.yml"
@@ -31,7 +22,4 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.analysis.extraPaths": [
-        "__pypackages__/3.10/lib"
-    ]
 }

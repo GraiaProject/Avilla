@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, TypeVar, overload
+from typing import Any, Callable, Generic, TypeVar, Union, overload
 from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
@@ -144,3 +144,6 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
 class FieldReference(Generic[_MetadataT1, T]):
     define: type[_MetadataT1] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]
     operator: Callable[[_MetadataT1], T]
+
+
+Route = Union[type[Metadata], MetadataRoute]

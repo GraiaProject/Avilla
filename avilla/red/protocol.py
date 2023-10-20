@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from dataclasses import InitVar, dataclass, field
 
+from yarl import URL
+
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from yarl import URL
+from graia.ryanvk import ref, merge
 
 from .net.ws_client import RedWsClientNetworking
 from .service import RedService
@@ -25,42 +27,62 @@ class RedConfig(ProtocolConfig):
         self.endpoint = URL.build(scheme="ws", host=self.host, port=self.port)
         self.http_endpoint = URL.build(scheme="http", host=_http_host or self.host, port=self.port)
 
+def _import_performs():  # noqa: F401
+    # isort: off
+
+    # :: Message
+    import avilla.red.perform.message.deserialize  # noqa: F401
+    import avilla.red.perform.message.serialize  # noqa: F401
+
+    ## :: Action
+    import avilla.red.perform.action.friend  # noqa: F401
+    import avilla.red.perform.action.group  # noqa: F401
+    import avilla.red.perform.action.member  # noqa: F401
+    import avilla.red.perform.action.message  # noqa: F401
+
+    ## :: Context
+    import avilla.red.perform.context  # noqa: F401
+
+    ## :: Event
+    import avilla.red.perform.event.group  # noqa: F401
+    import avilla.red.perform.event.member  # noqa: F401
+    import avilla.red.perform.event.message  # noqa: F401
+    import avilla.red.perform.event.lifespan  # noqa: F401
+    import avilla.red.perform.event.relationship  # noqa: F401
+
+    ## :: Query
+    import avilla.red.perform.query  # noqa: F401
+
+    ## :: Resource Fetch
+    import avilla.red.perform.resource_fetch  # noqa: F401
+
 
 class RedProtocol(BaseProtocol):
     service: RedService
 
+    _import_performs()
+    artifacts = {
+        **merge(
+            ref("avilla.protocol/red::context"),
+            ref("avilla.protocol/red::query"),
+            ref("avilla.protocol/red::resource_fetch"),
+            ref("avilla.protocol/red::action", "message"),
+            ref("avilla.protocol/red::action", "friend"),
+            ref("avilla.protocol/red::action", "group"),
+            ref("avilla.protocol/red::action", "member"),
+            ref("avilla.protocol/red::message", "deserialize"),
+            ref("avilla.protocol/red::message", "serialize"),
+            ref("avilla.protocol/red::event", "message"),
+            ref("avilla.protocol/red::event", "lifespan"),
+            ref("avilla.protocol/red::event", "relationship"),
+            ref("avilla.protocol/red::event", "group"),
+            ref("avilla.protocol/red::event", "member")
+        ),
+    }
+
     def __init__(self):
         self.service = RedService(self)
 
-    @classmethod
-    def __init_isolate__(cls):
-        # isort: off
-
-        # :: Message
-        from .perform.message.deserialize import RedMessageDeserializePerform  # noqa: F401
-        from .perform.message.serialize import RedMessageSerializePerform  # noqa: F401
-
-        ## :: Action
-        from .perform.action.friend import RedFriendActionPerform  # noqa: F401
-        from .perform.action.group import RedGroupActionPerform  # noqa: F401
-        from .perform.action.member import RedMemberActionPerform  # noqa: F401
-        from .perform.action.message import RedMessageActionPerform  # noqa: F401
-
-        ## :: Context
-        from .perform.context import RedContextPerform   # noqa: F401
-
-        ## :: Event
-        from .perform.event.group import RedEventGroupPerform  # noqa: F401
-        from .perform.event.member import RedEventGroupMemberPerform  # noqa: F401
-        from .perform.event.message import RedEventMessagePerform  # noqa: F401
-        from .perform.event.lifespan import RedEventLifespanPerform  # noqa: F401
-        from .perform.event.relationship import RedEventRelationshipPerform  # noqa: F401
-
-        ## :: Query
-        from .perform.query import RedQueryPerform  # noqa: F401
-
-        ## :: Resource Fetch
-        from .perform.resource_fetch import RedResourceFetchPerform  # noqa: F401
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
@@ -68,7 +90,5 @@ class RedProtocol(BaseProtocol):
         avilla.launch_manager.add_component(self.service)
 
     def configure(self, config: RedConfig):
-        self.service.connections.append(
-            RedWsClientNetworking(self, config)
-        )
+        self.service.connections.append(RedWsClientNetworking(self, config))
         return self

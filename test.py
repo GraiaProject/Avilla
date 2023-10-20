@@ -25,16 +25,16 @@ broadcast = create(Broadcast)
 launart = Launart()
 
 
-ob_config = OneBot11ReverseConfig("/ob", "dfawdfafergergeaar")
-ob = OneBot11Protocol().configure(ob_config)
-mah_config = ElizabethConfig(A60_MAH_ACCOUNT, "localhost", 8660, A60_MAH_SECRET)
-mah = ElizabethProtocol().configure(mah_config)
+#ob_config = OneBot11ReverseConfig("/ob", "dfawdfafergergeaar")
+#ob = OneBot11Protocol().configure(ob_config)
+#mah_config = ElizabethConfig(A60_MAH_ACCOUNT, "localhost", 8660, A60_MAH_SECRET)
+#mah = ElizabethProtocol().configure(mah_config)
 console_protocol = ConsoleProtocol()
-
+#
 avilla = Avilla(launch_manager=launart, broadcast=broadcast, message_cache_size=0)
-
+#
 avilla.apply_protocols(console_protocol)
-debug(ob.artifacts)
+#debug(ob.artifacts)
 
 launart.add_component(UvicornASGIService("127.0.0.1", 9090))
 
@@ -53,7 +53,7 @@ def x(a: SupportsCollect[P, R]) -> SupportsCollect[P, R]:
     return a
 
 class TestPerform((m := ContextCollector())._):
-    @MessageSend.send.override(m, "::friend")
+    @MessageSend.send.override(m, target="::friend")
     async def s2(
         self,
         target: Selector,
@@ -65,7 +65,7 @@ class TestPerform((m := ContextCollector())._):
 
 
 class TestPerform1((n := ContextCollector())._):
-    @MessageSend.send.override(n, "::friend")
+    @MessageSend.send.override(n, target="::friend")
     async def s2(
         self,
         target: Selector,

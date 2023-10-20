@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from avilla.core.builtins.capability import CoreCapability
+from avilla.core.context import Context
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.core.context import Context
-from avilla.core.builtins.capability import CoreCapability
 
 if TYPE_CHECKING:
     from avilla.qqguild.tencent.account import QQGuildAccount  # noqa
@@ -45,10 +45,4 @@ class QQGuildContextPerform((m := AccountCollector["QQGuildProtocol", "QQGuildAc
                 target,
                 self.account.route,
             )
-        return Context(
-            self.account,
-            target,
-            self.account.route,
-            target,
-            self.account.route
-        )
+        return Context(self.account, target, self.account.route, target, self.account.route)
