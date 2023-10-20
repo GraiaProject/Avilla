@@ -1,4 +1,4 @@
-name: "PyPI Publish: Red"
+name: "PyPI Publish: Satori"
 on:
   workflow_dispatch: {}
   push:
