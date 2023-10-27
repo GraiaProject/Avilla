@@ -1582,7 +1582,7 @@ files = [
 
 [[package]]
 name = "satori-python"
-version = "0.3.1"
+version = "0.5.0"
 requires_python = ">=3.8"
 summary = "Satori Protocol SDK for python"
 dependencies = [
@@ -1595,8 +1595,8 @@ dependencies = [
     "uvicorn[standard]>=0.23.2",
 ]
 files = [
-    {file = "satori_python-0.3.1-py3-none-any.whl", hash = "sha256:7217aeb4783b8c4506f65c2477e9fde8c845fd849128b6529ab043e4d49f6615"},
-    {file = "satori_python-0.3.1.tar.gz", hash = "sha256:d97fe25e2eed91f068a3f56fcea59bcd60e54761b206b2ef42e4aa14c4249d0e"},
+    {file = "satori_python-0.5.0-py3-none-any.whl", hash = "sha256:7aab40077f1d78c13567ae55584a0a07373a2f8649b77833832c9c95710d49e3"},
+    {file = "satori_python-0.5.0.tar.gz", hash = "sha256:38c065df53f2159eabedb64106345f19978c0c801953a4243a3200af20c681b1"},
 ]
 
 [[package]]

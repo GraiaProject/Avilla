@@ -4,12 +4,12 @@ from __future__ import annotations
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
 from graia.ryanvk import ref, merge
-from satori.config import ClientInfo
+from satori.config import WebsocketsInfo
 
 from .service import SatoriService
 
 
-class SatoriConfig(ProtocolConfig, ClientInfo):
+class SatoriConfig(ProtocolConfig, WebsocketsInfo):
     ...
 
 
