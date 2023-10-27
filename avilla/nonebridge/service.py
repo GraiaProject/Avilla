@@ -6,23 +6,23 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import nonebot
+from graia.broadcast.utilles import run_always_await
 from launart import Launart, Service, any_completed
 from loguru import logger
 from nonebot.message import handle_event
 
 from avilla.core.account import BaseAccount
 from avilla.core.event import AvillaEvent
+from avilla.core.ryanvk.staff import Staff
 from avilla.core.utilles import identity
 from avilla.standard.core.account import AccountRegistered, AccountUnregistered
-from graia.broadcast.utilles import run_always_await
+from graia.ryanvk import merge, ref
 from graia.ryanvk.aio import queue_task
 
 from .adapter import NoneBridgeAdapter
 from .bot import NoneBridgeBot
 from .dispatcher import AllEventQueue
 from .driver import NoneBridgeDriver
-from avilla.core.ryanvk.staff import Staff
-from graia.ryanvk import ref, merge
 
 if TYPE_CHECKING:
     from avilla.core import Avilla
@@ -43,7 +43,7 @@ class NoneBridgeService(Service):
 
     artifacts: ClassVar[dict[Any, Any]] = {
         **ref("avilla.protocol/onebot_v11::message", "serialize"),
-        **ref("avilla.protocol/onebot_v11::message", "deserialize")
+        **ref("avilla.protocol/onebot_v11::message", "deserialize"),
     }
 
     def __init__(self, avilla: Avilla) -> None:

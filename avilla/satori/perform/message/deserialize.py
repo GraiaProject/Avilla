@@ -1,7 +1,27 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
 from dataclasses import asdict
+from typing import TYPE_CHECKING
+
+from satori.element import At
+from satori.element import Audio as SatoriAudio
+from satori.element import Bold, Br, Code
+from satori.element import File as SatoriFile
+from satori.element import (
+    Image,
+    Italic,
+    Link,
+    Paragraph,
+    Quote,
+    Sharp,
+    Spoiler,
+    Strikethrough,
+    Subscript,
+    Superscript,
+)
+from satori.element import Text as SatoriText
+from satori.element import Underline
+from satori.element import Video as SatoriVideo
 
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.application import ApplicationCollector
@@ -9,33 +29,11 @@ from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.element import Reply
 from avilla.satori.resource import (
+    SatoriAudioResource,
     SatoriFileResource,
     SatoriImageResource,
     SatoriVideoResource,
-    SatoriAudioResource,
 )
-from satori.element import (
-    Text as SatoriText,
-    At,
-    Sharp,
-    Link,
-    Image,
-    Audio as SatoriAudio,
-    File as SatoriFile,
-    Video as SatoriVideo,
-    Quote,
-    Bold,
-    Italic,
-    Strikethrough,
-    Underline,
-    Spoiler,
-    Code,
-    Superscript,
-    Subscript,
-    Br,
-    Paragraph
-)
-
 from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:

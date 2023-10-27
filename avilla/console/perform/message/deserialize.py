@@ -9,7 +9,7 @@ from nonechat.message import Text as CslText
 
 from avilla.console.capability import ConsoleCapability
 from avilla.console.element import Markdown, Markup
-from avilla.core.elements import Text, Face
+from avilla.core.elements import Face, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 
 

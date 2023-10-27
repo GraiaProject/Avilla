@@ -5,10 +5,11 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 
-from avilla.core.elements import Picture
-from avilla.core.selector import Selector
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Element
+
+from avilla.core.elements import Picture
+from avilla.core.selector import Selector
 
 
 class FlashImage(Picture):

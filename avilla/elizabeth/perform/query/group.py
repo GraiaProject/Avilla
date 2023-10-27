@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import TYPE_CHECKING, Callable, cast
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa

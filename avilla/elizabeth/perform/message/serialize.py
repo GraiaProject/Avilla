@@ -4,7 +4,7 @@ import base64
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text, Face
+from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource

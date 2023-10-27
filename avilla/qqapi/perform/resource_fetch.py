@@ -6,7 +6,7 @@ from aiohttp import ClientSession
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
-from avilla.qqapi.resource import QQAPIResource, QQAPIImageResource
+from avilla.qqapi.resource import QQAPIImageResource, QQAPIResource
 
 if TYPE_CHECKING:
     from avilla.qqapi.protocol import QQAPIProtocol  # noqa

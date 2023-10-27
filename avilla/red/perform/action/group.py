@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+
 from avilla.core.exceptions import UnknownTarget
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -9,7 +11,6 @@ from avilla.standard.core.common import Count
 from avilla.standard.core.privilege import MuteAllCapability
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.relation import SceneCapability
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa

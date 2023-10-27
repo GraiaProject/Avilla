@@ -3,15 +3,20 @@ from __future__ import annotations
 import random
 from typing import TYPE_CHECKING
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+from graia.amnesia.message import MessageChain
 from loguru import logger
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
 from avilla.red.capability import RedCapability
+from avilla.standard.core.message import (
+    MessageReceived,
+    MessageRevoke,
+    MessageSend,
+    MessageSent,
+)
 from avilla.standard.qq.elements import Forward, Node
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
-from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa
@@ -21,7 +26,6 @@ if TYPE_CHECKING:
 class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
     m.namespace = "avilla.protocol/red::action"
     m.identify = "message"
-
 
     async def handle_reply(self, target: Selector):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
@@ -68,9 +72,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await RedCapability(self.account.staff.ext({"connection": self.account.websocket_client})).event_callback(
-                "message::recv", resp
-            )
+            event = await RedCapability(
+                self.account.staff.ext({"connection": self.account.websocket_client})
+            ).event_callback("message::recv", resp)
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target.member(self.account.route["account"]))
@@ -106,9 +110,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await RedCapability(self.account.staff.ext({"connection": self.account.websocket_client})).event_callback(
-                "message::recv", resp
-            )
+            event = await RedCapability(
+                self.account.staff.ext({"connection": self.account.websocket_client})
+            ).event_callback("message::recv", resp)
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target, via=self.account.route)
@@ -173,11 +177,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                         "guildId": None,
                     },
                     "msgInfos": [
-                        {
-                            "msgId": node.mid["message"],  # type: ignore
-                            "senderShowName": node.name
-                        } for node in forward.nodes
-                    ]
+                        {"msgId": node.mid["message"], "senderShowName": node.name}  # type: ignore
+                        for node in forward.nodes
+                    ],
                 },
             )
             return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message("unknown")
@@ -209,7 +211,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
 
     async def export_forward_node(self, seq: int, node: Node, target: Selector):
         cap = RedCapability(self.account.staff)
-        elems = [await cap.forward_export(elem) for elem in node.content]   # type: ignore
+        elems = [await cap.forward_export(elem) for elem in node.content]  # type: ignore
         return {
             "head": {
                 "field2": node.uid,

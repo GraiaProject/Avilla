@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 
 from avilla.core.context import Context
@@ -11,7 +12,6 @@ from avilla.red.capability import RedCapability
 from avilla.red.collector.connection import ConnectionCollector
 from avilla.red.utils import pre_deserialize
 from avilla.standard.core.message import MessageReceived, MessageSent
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 
 class RedEventMessagePerform((m := ConnectionCollector())._):
@@ -19,7 +19,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
     m.identify = "message"
 
     @m.entity(RedCapability.event_callback, event_type="message::recv")
-    async def message(self,  event_type: ..., raw_event: dict):
+    async def message(self, event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")
@@ -42,9 +42,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             if elements[0]["type"] == "reply":
                 reply = group.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
-            message = await RedCapability(account.staff.ext({"context": context})).deserialize(
-                elements
-            )
+            message = await RedCapability(account.staff.ext({"context": context})).deserialize(elements)
             msg = Message(
                 id=f'{raw_event["msgId"]}',
                 scene=group,
@@ -68,9 +66,7 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             if elements[0]["type"] == "reply":
                 reply = friend.message(f"{elements[0]['sourceMsgIdInRecords']}")
                 elements = elements[1:]
-            message = await RedCapability(account.staff.ext({"context": context})).deserialize(
-                elements
-            )
+            message = await RedCapability(account.staff.ext({"context": context})).deserialize(elements)
             msg = Message(
                 id=f'{raw_event["msgId"]}',
                 scene=friend,
@@ -81,11 +77,8 @@ class RedEventMessagePerform((m := ConnectionCollector())._):
             )
         await cache.set(f"red/account({account.route['account']}).message({msg.id})", raw_event, timedelta(minutes=5))
         context._collect_metadatas(msg.to_selector(), msg)
-        return MessageSent(
-            context,
-            msg,
-            account
-        ) if msg.sender.last_value == account.route["account"] else MessageReceived(
-            context,
-            msg
+        return (
+            MessageSent(context, msg, account)
+            if msg.sender.last_value == account.route["account"]
+            else MessageReceived(context, msg)
         )

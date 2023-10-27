@@ -12,7 +12,7 @@ from loguru import logger
 
 from avilla.red.account import RedAccount
 from avilla.red.net.base import RedNetworking
-from avilla.standard.core.account import AccountUnregistered, AccountUnavailable
+from avilla.standard.core.account import AccountUnavailable, AccountUnregistered
 
 if TYPE_CHECKING:
     from avilla.red.protocol import RedConfig, RedProtocol
@@ -108,10 +108,7 @@ class RedWsClientNetworking(RedNetworking, Service):
     async def connection_daemon(self, manager: Launart, session: aiohttp.ClientSession):
         while not manager.status.exiting:
             try:
-                async with session.ws_connect(
-                    self.config.endpoint,
-                    timeout=30
-                ) as self.connection:
+                async with session.ws_connect(self.config.endpoint, timeout=30) as self.connection:
                     logger.info(f"{self} Websocket client connected")
                     self.close_signal.clear()
 

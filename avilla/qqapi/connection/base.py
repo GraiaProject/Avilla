@@ -2,15 +2,16 @@ from __future__ import annotations
 
 import asyncio
 from contextlib import suppress
-from typing import TYPE_CHECKING, AsyncIterator, Literal
-from typing_extensions import Self
 from datetime import datetime
+from typing import TYPE_CHECKING, AsyncIterator, Literal
 
 from loguru import logger
+from typing_extensions import Self
 
 from avilla.core.ryanvk.staff import Staff
 from avilla.qqapi.audit import MessageAudited, audit_result
 from avilla.qqapi.capability import QQAPICapability
+
 from .util import Opcode, Payload
 
 if TYPE_CHECKING:

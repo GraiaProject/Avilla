@@ -12,11 +12,7 @@ from avilla.core.platform import Land
 from avilla.core.resource import Resource
 from avilla.core.ryanvk import Fn
 from avilla.core.ryanvk.staff import Staff
-from avilla.core.selector import (
-    FollowsPredicater,
-    Selectable,
-    Selector,
-)
+from avilla.core.selector import FollowsPredicater, Selectable, Selector
 from avilla.core.utilles import classproperty
 
 from ._roles import (

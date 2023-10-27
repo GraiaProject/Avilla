@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from graia.amnesia.message import MessageChain
+
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageRevoke, MessageSend
 from avilla.standard.qq.elements import Forward
-from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from ...account import OneBot11Account  # noqa

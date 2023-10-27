@@ -5,18 +5,23 @@ from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from loguru import logger
-from avilla.core.account import AccountInfo
-from avilla.standard.core.account import AccountRegistered, AccountAvailable, AccountUnavailable, AccountUnregistered
-
-from satori.client import App
 from satori.account import Account
+from satori.client import App
 from satori.model import Event, LoginStatus
 
+from avilla.core.account import AccountInfo
+from avilla.standard.core.account import (
+    AccountAvailable,
+    AccountRegistered,
+    AccountUnavailable,
+    AccountUnregistered,
+)
+
+from ..core import Selector
+from ..core.ryanvk.staff import Staff
 from .account import SatoriAccount
 from .capability import SatoriCapability
 from .const import platform
-from ..core import Selector
-from ..core.ryanvk.staff import Staff
 
 if TYPE_CHECKING:
     from .protocol import SatoriProtocol

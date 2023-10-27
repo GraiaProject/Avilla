@@ -8,7 +8,7 @@ from avilla.core.selector import Selector
 from avilla.red.account import RedAccount
 from avilla.red.capability import RedCapability
 from avilla.red.collector.connection import ConnectionCollector
-from avilla.standard.core.account.event import AccountRegistered, AccountAvailable
+from avilla.standard.core.account.event import AccountAvailable, AccountRegistered
 
 
 class RedEventLifespanPerform((m := ConnectionCollector())._):
@@ -16,7 +16,7 @@ class RedEventLifespanPerform((m := ConnectionCollector())._):
     m.identify = "lifespan"
 
     @m.entity(RedCapability.event_callback, event_type="meta::connect")
-    async def connect(self,  event_type: ..., raw_event: dict):
+    async def connect(self, event_type: ..., raw_event: dict):
         self_id: int = raw_event["authData"]["account"]
         account = self.connection.account
 

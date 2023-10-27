@@ -2,16 +2,39 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Face
+from graia.amnesia.message import MessageChain
+from graia.amnesia.message.element import Unknown
+from selectolax.parser import HTMLParser
+
+from avilla.core.elements import (
+    Audio,
+    Face,
+    File,
+    Notice,
+    NoticeAll,
+    Picture,
+    Text,
+    Video,
+)
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.red.capability import RedCapability
-from avilla.red.resource import RedFileResource, RedImageResource, RedVideoResource, RedVoiceResource
-from avilla.standard.qq.elements import App, DisplayStrategy, Forward, MarketFace, Node, Poke, PokeKind
-from graia.amnesia.message import MessageChain
-from graia.amnesia.message.element import Unknown
+from avilla.red.resource import (
+    RedFileResource,
+    RedImageResource,
+    RedVideoResource,
+    RedVoiceResource,
+)
+from avilla.standard.qq.elements import (
+    App,
+    DisplayStrategy,
+    Forward,
+    MarketFace,
+    Node,
+    Poke,
+    PokeKind,
+)
 from graia.ryanvk import OptionalAccess
-from selectolax.parser import HTMLParser
 
 if TYPE_CHECKING:
     from avilla.core.context import Context
@@ -25,7 +48,6 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     # LINK: https://github.com/microsoft/pyright/issues/5409
     context: OptionalAccess[Context] = OptionalAccess()
     account: OptionalAccess[RedAccount] = OptionalAccess()
-
 
     @m.entity(RedCapability.deserialize_element, element="text")
     async def text(self, element: dict) -> Text | Notice | NoticeAll:
@@ -119,13 +141,10 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
         return Forward(
             element["resId"],
             nodes=[
-                Node(
-                    name=(part := content.split(":", 1))[0],
-                    content=MessageChain([Text(part[1].lstrip())])
-                )
+                Node(name=(part := content.split(":", 1))[0], content=MessageChain([Text(part[1].lstrip())]))
                 for content in preview
             ],
-            strategy=DisplayStrategy(title, brief, preview=preview, summary=summary)
+            strategy=DisplayStrategy(title, brief, preview=preview, summary=summary),
         )
 
     @m.entity(RedCapability.deserialize_element, element="video")

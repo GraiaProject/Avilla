@@ -1,5 +1,6 @@
 from avilla.core.platform import Abstract, Land, Platform
 
+
 def platform(land: str):
     return Platform(
         Land(

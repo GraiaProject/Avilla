@@ -7,7 +7,13 @@ from aiohttp import ClientSession
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
-from avilla.red.resource import RedFileResource, RedImageResource, RedResource, RedVideoResource, RedVoiceResource
+from avilla.red.resource import (
+    RedFileResource,
+    RedImageResource,
+    RedResource,
+    RedVideoResource,
+    RedVoiceResource,
+)
 
 if TYPE_CHECKING:
     from ..account import RedAccount  # noqa

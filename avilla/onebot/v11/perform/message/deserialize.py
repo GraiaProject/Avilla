@@ -3,13 +3,22 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
 from avilla.onebot.v11.element import Reply
 from avilla.onebot.v11.resource import OneBot11ImageResource
-from avilla.standard.qq.elements import Dice, FlashImage, Forward, Json, Node, Poke, Share, Xml
+from avilla.standard.qq.elements import (
+    Dice,
+    FlashImage,
+    Forward,
+    Json,
+    Node,
+    Poke,
+    Share,
+    Xml,
+)
 from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
@@ -95,11 +104,7 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
                 name=msg["sender"]["nickname"],
                 uid=str(msg["sender"]["user_id"]),
                 time=datetime.fromtimestamp(msg["time"]),
-                content=(
-                    await self.account.staff
-                    .ext({"context": self.context})
-                    .deserialize_message(msg["content"])
-                )
+                content=(await self.account.staff.ext({"context": self.context}).deserialize_message(msg["content"])),
             )
             elem.nodes.append(node)
         return elem

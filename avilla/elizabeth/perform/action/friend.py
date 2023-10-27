@@ -2,11 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.relation.capability import RelationshipTerminate
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa

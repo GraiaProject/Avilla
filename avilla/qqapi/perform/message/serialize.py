@@ -3,10 +3,10 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.qqapi.capability import QQAPICapability
-from avilla.qqapi.element import Ark, Embed, Reference, Markdown, Keyboard
+from avilla.qqapi.element import Ark, Embed, Keyboard, Markdown, Reference
 from avilla.qqapi.resource import QQAPIImageResource
 from avilla.qqapi.utils import escape
 
@@ -87,7 +87,9 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
             "params": {
                 "key": slot[0],
                 "value": slot[1],
-            } if (slot := element.params.popitem()) else None,
+            }
+            if (slot := element.params.popitem())
+            else None,
         }
 
     @m.entity(QQAPICapability.serialize_element, element=Keyboard)

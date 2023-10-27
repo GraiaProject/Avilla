@@ -1,14 +1,16 @@
 from __future__ import annotations
+
 from typing import Any
+
+from graia.amnesia.message import Element, MessageChain
 
 from avilla.core.event import AvillaEvent
 from avilla.core.ryanvk.collector.application import ApplicationCollector
-from graia.amnesia.message import Element, MessageChain
-from graia.ryanvk import Fn, PredicateOverload, TypeOverload, SimpleOverload
-
 from avilla.standard.core.application.event import AvillaLifecycleEvent
+from graia.ryanvk import Fn, PredicateOverload, SimpleOverload, TypeOverload
 
 from .utils import handle_text
+
 
 class QQAPICapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})

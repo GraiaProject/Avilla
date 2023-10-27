@@ -5,7 +5,7 @@ import json
 import sys
 from contextlib import suppress
 from dataclasses import asdict
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
@@ -16,9 +16,9 @@ from loguru import logger
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
-from avilla.qqapi.const import PLATFORM
 from avilla.qqapi.account import QQAPIAccount
-from avilla.qqapi.exception import UnauthorizedException, NetworkError
+from avilla.qqapi.const import PLATFORM
+from avilla.qqapi.exception import NetworkError, UnauthorizedException
 from avilla.standard.core.account import (
     AccountAvailable,
     AccountRegistered,
@@ -52,8 +52,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
 
     async def get_access_token(self) -> str:
         if self._access_token is None or (
-            self._expires_in
-            and datetime.now(timezone.utc) > self._expires_in - timedelta(seconds=30)
+            self._expires_in and datetime.now(timezone.utc) > self._expires_in - timedelta(seconds=30)
         ):
             async with self.session.post(
                 self.config.get_api_base(),
@@ -64,14 +63,11 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
             ) as resp:
                 if resp.status != 200 or not resp.content:
                     raise NetworkError(
-                        f"Get authorization failed with status code {resp.status}."
-                        " Please check your config."
+                        f"Get authorization failed with status code {resp.status}." " Please check your config."
                     )
                 data = await resp.json()
             self._access_token = cast(str, data["access_token"])
-            self._expires_in = datetime.now(timezone.utc) + timedelta(
-                seconds=int(data["expires_in"])
-            )
+            self._expires_in = datetime.now(timezone.utc) + timedelta(seconds=int(data["expires_in"]))
         return self._access_token
 
     async def _get_authorization_header(self) -> str:
@@ -125,11 +121,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
         await connection.send_json(payload)
 
     async def _call_http(
-        self,
-        method: CallMethod,
-        action: str,
-        headers: dict[str, str] | None = None,
-        params: dict | None = None
+        self, method: CallMethod, action: str, headers: dict[str, str] | None = None, params: dict | None = None
     ) -> dict:
         params = params or {}
         params = {k: v for k, v in params.items() if v is not None}
@@ -314,9 +306,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
         else:
             account = self.protocol.service.accounts[self.account_id]
             account.connection = self
-        self.protocol.avilla.broadcast.postEvent(
-            AccountAvailable(self.protocol.avilla, account)
-        )
+        self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
         return True
 
     async def _heartbeat(self, heartbeat_interval: int, shard: tuple[int, int]):

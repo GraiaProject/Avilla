@@ -6,7 +6,7 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from graia.ryanvk import ref, merge
+from graia.ryanvk import merge, ref
 
 from .connection.ws_client import ElizabethWsClientNetworking
 from .service import ElizabethService
@@ -25,31 +25,30 @@ class ElizabethConfig(ProtocolConfig):
 
 
 def _import_performs():  # noqa: F401
-
     from avilla.elizabeth.perform import context, resource_fetch  # noqa: F401
+    from avilla.elizabeth.perform.action import contact  # noqa: F401
     from avilla.elizabeth.perform.action import (
         activity,
         announcement,
-        contact,  # noqa: F401
         friend,
         group,
         member,
         message,
         request,
     )
-    from avilla.elizabeth.perform.event import (
-        activity,  # noqa: F401, F811
-        friend,  # noqa: F811
-        group,  # noqa: F811
-        member,  # noqa: F401, F811
-        message,  # noqa: F401, F811
-        relationship,  # noqa: F401
-        request,  # noqa: F401, F811
-    )
+    from avilla.elizabeth.perform.event import activity  # noqa: F401, F811
+    from avilla.elizabeth.perform.event import friend  # noqa: F811
+    from avilla.elizabeth.perform.event import group  # noqa: F811
+    from avilla.elizabeth.perform.event import member  # noqa: F401, F811
+    from avilla.elizabeth.perform.event import message  # noqa: F401, F811
+    from avilla.elizabeth.perform.event import relationship  # noqa: F401
+    from avilla.elizabeth.perform.event import request  # noqa: F401, F811
     from avilla.elizabeth.perform.message import deserialize, serialize  # noqa
     from avilla.elizabeth.perform.query import announcement, bot, friend, group  # noqa
 
+
 _import_performs()
+
 
 class ElizabethProtocol(BaseProtocol):
     service: ElizabethService

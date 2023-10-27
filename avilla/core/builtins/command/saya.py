@@ -4,13 +4,12 @@ from typing import TYPE_CHECKING, Callable, List, Optional, Union
 from arclet.alconna import Alconna, CommandMeta
 from arclet.alconna.args import Arg, Args, TAValue
 from arclet.alconna.tools import AlconnaString
-from pygtrie import _NoChildren
-
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.saya.behaviour import Behaviour
 from graia.saya.cube import Cube
 from graia.saya.schema import BaseSchema
+from pygtrie import _NoChildren
 
 from . import AvillaCommands
 

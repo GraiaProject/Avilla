@@ -14,7 +14,6 @@ class RedEventGroupPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/red::event"
     m.identify = "group"
 
-
     @m.entity(RedCapability.event_callback, event_type="group::name_update")
     async def group_name_change(self, event_type: ..., raw_event: dict):
         account = self.connection.account

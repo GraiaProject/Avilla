@@ -3,11 +3,11 @@ from __future__ import annotations
 from contextlib import contextmanager
 from typing import TYPE_CHECKING
 
+from satori.account import Account
+
 from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.selector import Selector
 from avilla.standard.core.account import AccountAvailable, AccountUnavailable
-
-from satori.account import Account
 
 if TYPE_CHECKING:
     from .protocol import SatoriProtocol

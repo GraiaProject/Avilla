@@ -1,12 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Optional, Union
 
+from graia.amnesia.message.element import Element
 from rich.console import JustifyMethod
 from rich.emoji import EmojiVariant
 from rich.style import Style
 from rich.text import Text as RichText
-
-from graia.amnesia.message.element import Element
 
 
 @dataclass

@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
-from avilla.qqapi.capability import QQAPICapability
 from avilla.core.selector import Selector
+from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.collector.connection import ConnectionCollector
 from avilla.standard.core.profile import Summary
 

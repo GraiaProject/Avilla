@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text, Video, File
+from satori.parser import escape
+
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.resource import SatoriResource
-
-from satori.parser import escape
 
 if TYPE_CHECKING:
     from avilla.satori.account import SatoriAccount  # noqa
@@ -50,7 +50,7 @@ class SatoriMessageSerializePerform((m := AccountCollector["SatoriProtocol", "Sa
             "superscript",
             "subscript",
             "p",
-            "paragraph"
+            "paragraph",
         }:
             return f"<{style}>{text}</{style}>"
         return text

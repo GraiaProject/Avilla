@@ -7,7 +7,7 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from graia.ryanvk import ref, merge
+from graia.ryanvk import merge, ref
 
 from .connection.ws_client import QQAPIWsClientNetworking
 from .service import QQAPIService
@@ -134,7 +134,7 @@ class QQAPIProtocol(BaseProtocol):
             ref("avilla.protocol/qqapi::event", "activity"),
             ref("avilla.protocol/qqapi::event", "relationship"),
             ref("avilla.protocol/qqapi::event", "metadata"),
-            ref("avilla.protocol/qqapi::event", "audit")
+            ref("avilla.protocol/qqapi::event", "audit"),
         ),
     }
 

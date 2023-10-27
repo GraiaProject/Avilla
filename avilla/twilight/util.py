@@ -19,9 +19,10 @@ from typing import (
     overload,
 )
 
+from graia.amnesia.message.chain import MessageChain
+
 from avilla.core.elements import Element, Notice, NoticeAll, Text
 from avilla.core.utilles import identity
-from graia.amnesia.message.chain import MessageChain
 
 from .typing import T
 

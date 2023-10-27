@@ -6,7 +6,7 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from graia.ryanvk import ref, merge
+from graia.ryanvk import merge, ref
 
 from .net.ws_client import RedWsClientNetworking
 from .service import RedService
@@ -26,6 +26,7 @@ class RedConfig(ProtocolConfig):
             raise ValueError("access_token must be set")
         self.endpoint = URL.build(scheme="ws", host=self.host, port=self.port)
         self.http_endpoint = URL.build(scheme="http", host=_http_host or self.host, port=self.port)
+
 
 def _import_performs():  # noqa: F401
     # isort: off
@@ -76,7 +77,7 @@ class RedProtocol(BaseProtocol):
             ref("avilla.protocol/red::event", "lifespan"),
             ref("avilla.protocol/red::event", "relationship"),
             ref("avilla.protocol/red::event", "group"),
-            ref("avilla.protocol/red::event", "member")
+            ref("avilla.protocol/red::event", "member"),
         ),
     }
 

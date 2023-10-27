@@ -39,14 +39,20 @@ class QQAPIChannelActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in result["apis"]:
             if api["path"] == "channels/{channel_id}" and api["method"] == "PATCH":
-                await self.account.connection.call_http("patch", f"channels/{target.pattern['channel']}", {"name": name})
+                await self.account.connection.call_http(
+                    "patch", f"channels/{target.pattern['channel']}", {"name": name}
+                )
                 return
         raise PermissionError(permission_error_message(f"set_name@{target.path}", "read", ["manage"]))
 
     @MuteAllCapability.mute_all.collect(m, target="land.guild.channel")
     async def channel_mute_all(self, target: Selector, route: ...):
-        await self.account.connection.call_http("patch", f"channels/{target.pattern['channel']}", {"speak_permission": 2})
+        await self.account.connection.call_http(
+            "patch", f"channels/{target.pattern['channel']}", {"speak_permission": 2}
+        )
 
     @MuteAllCapability.unmute_all.collect(m, target="land.guild.channel")
     async def channel_unmute_all(self, target: Selector, route: ...):
-        await self.account.connection.call_http("patch", f"channels/{target.pattern['channel']}", {"speak_permission": 1})
+        await self.account.connection.call_http(
+            "patch", f"channels/{target.pattern['channel']}", {"speak_permission": 1}
+        )

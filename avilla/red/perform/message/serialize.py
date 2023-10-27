@@ -4,7 +4,7 @@ import random
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from avilla.core.elements import Notice, NoticeAll, Picture, Text, Face, Audio
+from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.red.capability import RedCapability
 from avilla.standard.qq.elements import MarketFace
@@ -36,7 +36,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                 "atType": 2,
                 "atNtUin": element.target.last_value,
                 "content": f"@{element.display or element.target.last_value}",
-            }
+            },
         }
 
     @m.entity(RedCapability.serialize_element, element=NoticeAll)
@@ -111,7 +111,7 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
                 "voiceType": 1,
                 "voiceChangeType": 0,
                 "playState": 1,
-                "waveAmplitudes": [99 for _ in range(17)]
+                "waveAmplitudes": [99 for _ in range(17)],
             },
         }
 

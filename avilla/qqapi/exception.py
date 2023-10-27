@@ -32,6 +32,7 @@ class RateLimitException(ActionFailed):
 class ApiNotAvailable(ActionFailed):
     pass
 
+
 class NetworkError(BaseNetworkError):
     def __init__(self, msg: Optional[str] = None):
         super().__init__()

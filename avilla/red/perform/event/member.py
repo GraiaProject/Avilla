@@ -16,9 +16,8 @@ class RedEventGroupMemberPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/red::event"
     m.identify = "member"
 
-
     @m.entity(RedCapability.event_callback, event_type="group::member::mute")
-    async def group_name_change(self,  event_type: ..., raw_event: dict):
+    async def group_name_change(self, event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")

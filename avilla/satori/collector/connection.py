@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
+from satori.account import Account
+
 from avilla.core.ryanvk.collector.base import AvillaBaseCollector
 from graia.ryanvk import Access, BasePerform
-from satori.account import Account
 
 if TYPE_CHECKING:
     from avilla.satori.protocol import SatoriProtocol

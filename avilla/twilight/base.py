@@ -5,12 +5,18 @@ import fnmatch
 import re
 import weakref
 from collections import defaultdict
-from typing import ClassVar, DefaultDict, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import (
+    ClassVar,
+    DefaultDict,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    Union,
+)
 
-from typing_extensions import get_args
-
-from avilla.core.elements import Element, Text
-from avilla.standard.core.message import MessageReceived
 from graia.amnesia.message import MessageChain
 from graia.broadcast.builtin.derive import Derive
 from graia.broadcast.entities.decorator import Decorator
@@ -18,6 +24,10 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.exceptions import ExecutionStop
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from typing_extensions import get_args
+
+from avilla.core.elements import Element, Text
+from avilla.standard.core.message import MessageReceived
 
 from .typing import Unions, generic_issubclass, get_origin
 from .util import _from_mapping_string, _to_mapping_str

@@ -6,6 +6,8 @@ import os
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.qq.announcement import (
@@ -13,7 +15,6 @@ from avilla.standard.qq.announcement import (
     AnnouncementDelete,
     AnnouncementPublish,
 )
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa

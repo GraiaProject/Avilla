@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+from base64 import b64decode
 from typing import TYPE_CHECKING
 
 from aiohttp import ClientSession
-from base64 import b64decode
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
 from avilla.satori.resource import (
-    SatoriImageResource,
-    SatoriVideoResource,
     SatoriAudioResource,
     SatoriFileResource,
-    SatoriResource
+    SatoriImageResource,
+    SatoriResource,
+    SatoriVideoResource,
 )
 
 if TYPE_CHECKING:

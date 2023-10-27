@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from avilla.core.selector import Selector
-from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk.overload.target import TargetOverload
-from avilla.core.ryanvk.collector.application import ApplicationCollector
-from avilla.standard.qq.elements import Forward
 from graia.amnesia.message import Element, MessageChain
-from graia.ryanvk import Fn, PredicateOverload, TypeOverload, SimpleOverload
+
+from avilla.core.event import AvillaEvent
+from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk.overload.target import TargetOverload
+from avilla.core.selector import Selector
 from avilla.standard.core.application.event import AvillaLifecycleEvent
+from avilla.standard.qq.elements import Forward
+from graia.ryanvk import Fn, PredicateOverload, SimpleOverload, TypeOverload
+
 
 class RedCapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})

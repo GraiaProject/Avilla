@@ -3,12 +3,18 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from graia.amnesia.message import MessageChain
+
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
-from avilla.standard.core.message import MessageReceived, MessageRevoke, MessageSend, MessageSent
-from graia.amnesia.message import MessageChain
+from avilla.standard.core.message import (
+    MessageReceived,
+    MessageRevoke,
+    MessageSend,
+    MessageSent,
+)
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa

@@ -3,6 +3,7 @@ from __future__ import annotations
 from secrets import token_hex
 from typing import TYPE_CHECKING
 
+from graia.amnesia.message import MessageChain
 from nonechat.info import MessageEvent
 
 from avilla.console.capability import ConsoleCapability
@@ -11,7 +12,6 @@ from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
-from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from avilla.console.account import ConsoleAccount  # noqa

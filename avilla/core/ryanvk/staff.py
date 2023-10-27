@@ -1,19 +1,18 @@
 from __future__ import annotations
 
 from functools import reduce
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    ChainMap,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, Callable, ChainMap, overload
 
 from typing_extensions import ParamSpec, TypeVar, Unpack
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import MetadataRoute
-from avilla.core.selector import FollowsPredicater, Selector, _FollowItem, _parse_follows
+from avilla.core.selector import (
+    FollowsPredicater,
+    Selector,
+    _FollowItem,
+    _parse_follows,
+)
 from graia.ryanvk import BaseCollector
 from graia.ryanvk import Staff as BaseStaff
 

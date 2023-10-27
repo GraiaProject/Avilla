@@ -3,9 +3,9 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING, AsyncIterator, Literal, overload
-from typing_extensions import Self
 
 from loguru import logger
+from typing_extensions import Self
 
 from avilla.core.ryanvk.staff import Staff
 from avilla.red.account import RedAccount
@@ -36,7 +36,6 @@ class RedNetworking:
     @property
     def staff(self):
         return Staff(self.get_staff_artifacts(), self.get_staff_components())
-
 
     def message_receive(self) -> AsyncIterator[tuple[Self, dict]]:
         ...

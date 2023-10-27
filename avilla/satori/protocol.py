@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+from satori.config import WebsocketsInfo
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from graia.ryanvk import ref, merge
-from satori.config import WebsocketsInfo
+from graia.ryanvk import merge, ref
 
 from .service import SatoriService
 
@@ -14,13 +14,13 @@ class SatoriConfig(ProtocolConfig, WebsocketsInfo):
 
 
 def _import_performs():  # noqa: F401
-    import avilla.satori.perform.context  # noqa: F401
-    import avilla.satori.perform.resource_fetch  # noqa: F401
     import avilla.satori.perform.action.message
-    import avilla.satori.perform.event.message
+    import avilla.satori.perform.context  # noqa: F401
     import avilla.satori.perform.event.lifespan
+    import avilla.satori.perform.event.message
     import avilla.satori.perform.message.deserialize
     import avilla.satori.perform.message.serialize  # noqa
+    import avilla.satori.perform.resource_fetch  # noqa: F401
 
 
 class SatoriProtocol(BaseProtocol):

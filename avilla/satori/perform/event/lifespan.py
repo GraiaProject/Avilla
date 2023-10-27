@@ -1,21 +1,21 @@
 from __future__ import annotations
 
 from loguru import logger
+from satori.account import Account
+from satori.model import Event, LoginStatus
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
 from avilla.satori.account import SatoriAccount
-from avilla.satori.collector.connection import ConnectionCollector
 from avilla.satori.capability import SatoriCapability
+from avilla.satori.collector.connection import ConnectionCollector
 from avilla.satori.const import platform
 from avilla.standard.core.account.event import (
     AccountAvailable,
     AccountRegistered,
     AccountUnavailable,
-    AccountUnregistered
+    AccountUnregistered,
 )
-from satori.model import Event, LoginStatus
-from satori.account import Account
 
 
 class SatoriEventLifespanPerform((m := ConnectionCollector())._):
@@ -32,9 +32,7 @@ class SatoriEventLifespanPerform((m := ConnectionCollector())._):
         self.connection.client.accounts[account.identity] = account
         self.connection.client.app.accounts[account.identity] = account
 
-        self.protocol.avilla.accounts[route] = AccountInfo(
-                route, _account, self.protocol, platform(account.platform)
-            )
+        self.protocol.avilla.accounts[route] = AccountInfo(route, _account, self.protocol, platform(account.platform))
         self.protocol.service._accounts[account.identity] = _account
         _account.client = self.connection
         return AccountRegistered(self.protocol.avilla, _account)

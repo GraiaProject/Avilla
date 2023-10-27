@@ -4,6 +4,7 @@ from datetime import datetime
 from secrets import token_hex
 from typing import TYPE_CHECKING
 
+from graia.amnesia.message import MessageChain
 from loguru import logger
 from nonechat.info import Robot
 from nonechat.message import ConsoleMessage
@@ -14,7 +15,6 @@ from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend, MessageSent
-from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from avilla.console.account import ConsoleAccount  # noqa

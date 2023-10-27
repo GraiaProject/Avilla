@@ -3,8 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
 from avilla.core.ryanvk.collector.base import AvillaBaseCollector
-from graia.ryanvk import BasePerform
-from graia.ryanvk import Access
+from graia.ryanvk import Access, BasePerform
 
 if TYPE_CHECKING:
     from avilla.onebot.v11.net.ws_client import OneBot11WsClientNetworking

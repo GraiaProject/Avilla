@@ -34,7 +34,7 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
     m.identify = "relationship"
 
     @m.entity(RedCapability.event_callback, event_type="group::member::add")
-    async def member_join(self,  event_type: ..., raw_event: dict):
+    async def member_join(self, event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")
@@ -45,7 +45,6 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         operator = group.member(str(group_data["adminUin"]))
         context = Context(account, member, group, group, group.member(account.route["account"]), mediums=[operator])
         return RelationshipCreated(context)
-
 
     @m.entity(RedCapability.event_callback, event_type="group::member::legacy::add::invited")
     async def member_join_invited(self, event_type: ..., raw_event: dict):

@@ -2,16 +2,16 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.qqapi.capability import QQAPICapability
 from avilla.core.selector import Selector
+from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.collector.connection import ConnectionCollector
 from avilla.qqapi.element import Reference
 from avilla.standard.core.message import MessageReceived, MessageRevoked
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 
 class QQAPIEventMessagePerform((m := ConnectionCollector())._):
