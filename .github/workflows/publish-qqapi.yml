@@ -1,9 +1,9 @@
-name: "PyPI Publish: QQGuild (Tencent)"
+name: "PyPI Publish: QQ API"
 on:
   workflow_dispatch: {}
   push:
     tags:
-      - "qqguild/tencent-v*.*.*"
+      - "qqapi-v*.*.*"
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +19,7 @@ jobs:
           python3 -m pip install pdm twine pdm-mina mina-build
       - name: Build Package
         run: |
-          pdm mina build qqguild-tencent
+          pdm mina build qqapi
       - name: Publish to PyPI
         run: |
           twine upload dist/* --non-interactive -u __token__ -p ${{ secrets.PYPI_TOKEN }}
