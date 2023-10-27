@@ -8,6 +8,7 @@ from graia.ryanvk import Fn, PredicateOverload, TypeOverload, SimpleOverload
 
 from avilla.standard.core.application.event import AvillaLifecycleEvent
 
+from .utils import handle_text
 
 class QQAPICapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})
@@ -19,24 +20,80 @@ class QQAPICapability((m := ApplicationCollector())._):
         ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Any) -> dict:
+    async def serialize_element(self, element: Any) -> str | tuple[str, Any]:
         ...
 
-    async def deserialize(self, content: list[dict]):
+    async def deserialize(self, event: dict):
         elements = []
 
-        for raw_element in content:
-            elements.append(await self.deserialize_element(raw_element))
+        if message_reference := event.get("message_reference"):
+            elements.append(await self.deserialize_element({"type": "message_reference", **message_reference}))
+        if event.get("mention_everyone", False):
+            elements.append(await self.deserialize_element({"type": "mention_everyone"}))
+        if "content" in event:
+            for i in handle_text(event["content"]):
+                elements.append(await self.deserialize_element(i))
+        if attachments := event.get("attachments"):
+            for i in attachments:
+                elements.append(await self.deserialize_element({"type": "attachment", "url": i["url"]}))
+        if embeds := event.get("embeds"):
+            for i in embeds:
+                elements.append(await self.deserialize_element({"type": "embed", **i}))
+        if ark := event.get("ark"):
+            elements.append(await self.deserialize_element({"type": "ark", **ark}))
 
         return MessageChain(elements)
 
     async def serialize(self, message: MessageChain):
-        chain = []
+        res = {}
+        content = ""
+
+        # def pro_serialize(message: list[dict]):
+        #     res = {}
+        #     content = ""
+        #     for elem in message:
+        #         if elem["type"] == "mention_everyone":
+        #             content += "@everyone"
+        #         elif elem["type"] == "mention_user":
+        #             content += f"<@{elem['user_id']}>"
+        #         elif elem["type"] == "mention_channel":
+        #             content += f"<#{elem['channel_id']}"
+        #         elif elem["type"] == "emoji":
+        #             content += f"<emoji:{elem['id']}>"
+        #         elif elem["type"] == "text":
+        #             content += escape(elem["text"])
+        #         elif elem["type"] == "attachment":
+        #             res["image"] = elem["url"]
+        #         elif elem["type"] == "local_iamge":
+        #             res["file_image"] = elem["content"]
+        #         elif elem["type"] == "markdown":
+        #             res["markdown"] = elem["content"]
+        #             res["markdown"].pop("type")
+        #         elif elem["type"] == "keyboard":
+        #             res["keyboard"] = elem["content"]
+        #             res["keyboard"].pop("type")
+        #         elif elem["type"] == "embed":
+        #             res["embed"] = elem
+        #             res["embed"].pop("type")
+        #         elif elem["type"] == "ark":
+        #             res["ark"] = elem
+        #             res["ark"].pop("type")
+        #         elif elem["type"] == "message_reference":
+        #             res["message_reference"] = elem
+        #             res["message_reference"].pop("type")
+        #     if content:
+        #         res["content"] = content
+        #     return res
 
         for element in message:
-            chain.append(await self.serialize_element(element))
-
-        return chain
+            elem = await self.serialize_element(element)
+            if isinstance(elem, str):
+                content += elem
+            else:
+                res[elem[0]] = elem[1]
+        if content:
+            res["content"] = content
+        return res
 
     async def handle_event(self, event: dict):
         maybe_event = await self.event_callback(event)

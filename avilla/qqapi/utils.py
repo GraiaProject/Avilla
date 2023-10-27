@@ -30,61 +30,6 @@ def handle_text(msg: str):
         yield {"type": "text", "text": unescape(content)}
 
 
-def pre_deserialize(message: dict) -> list[dict]:
-    res = []
-    if message_reference := message.get("message_reference"):
-        res.append({"type": "message_reference", **message_reference})
-    if message.get("mention_everyone", False):
-        res.append({"type": "mention_everyone"})
-    if "content" in message:
-        res.extend(handle_text(message["content"]))
-    if attachments := message.get("attachments"):
-        res.extend({"type": "attachment", "url": i["url"]} for i in attachments if i["url"])
-    if embeds := message.get("embeds"):
-        res.extend({"type": "embed", **i} for i in embeds)
-    if ark := message.get("ark"):
-        res.append({"type": "ark", **ark})
-    return res
-
-
-def pro_serialize(message: list[dict]):
-    res = {}
-    content = ""
-    for elem in message:
-        if elem["type"] == "mention_everyone":
-            content += "@everyone"
-        elif elem["type"] == "mention_user":
-            content += f"<@{elem['user_id']}>"
-        elif elem["type"] == "mention_channel":
-            content += f"<#{elem['channel_id']}"
-        elif elem["type"] == "emoji":
-            content += f"<emoji:{elem['id']}>"
-        elif elem["type"] == "text":
-            content += escape(elem["text"])
-        elif elem["type"] == "attachment":
-            res["image"] = elem["url"]
-        elif elem["type"] == "local_iamge":
-            res["file_image"] = elem["content"]
-        elif elem["type"] == "markdown":
-            res["markdown"] = elem["content"]
-            res["markdown"].pop("type")
-        elif elem["type"] == "keyboard":
-            res["keyboard"] = elem["content"]
-            res["keyboard"].pop("type")
-        elif elem["type"] == "embed":
-            res["embed"] = elem
-            res["embed"].pop("type")
-        elif elem["type"] == "ark":
-            res["ark"] = elem
-            res["ark"].pop("type")
-        elif elem["type"] == "message_reference":
-            res["message_reference"] = elem
-            res["message_reference"].pop("type")
-    if content:
-        res["content"] = content
-    return res
-
-
 def form_data(message: dict):
     if not (file_image := message.pop("file_image", None)):
         return "post", message

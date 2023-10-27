@@ -1,25 +1,21 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 from avilla.core.context import Context
 from avilla.core.event import RelationshipCreated, RelationshipDestroyed
-from avilla.core.ryanvk.descriptor.event import EventParse
+from avilla.qqapi.capability import QQAPICapability
 from avilla.core.selector import Selector
-from avilla.qqguild.tencent.collector.connection import ConnectionCollector
-
-if TYPE_CHECKING:
-    ...
+from avilla.qqapi.collector.connection import ConnectionCollector
 
 
-class QQGuildEventRelationshipPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
+    m.namespace = "avilla.protocol/qqapi::event"
+    m.identify = "relationship"
 
-    @EventParse.collect(m, "guild_create")
-    async def guild_create(self, raw_event: dict):
-        account_route = Selector().land("qqguild").account(str(self.connection.account_id))
+    @m.entity(QQAPICapability.event_callback, event_type="guild_create")
+    async def guild_create(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qqguild")
+        land = Selector().land("qq")
         guild = land.guild(str(raw_event["id"]))
         inviter = guild.user(str(raw_event["op_user_id"]))
         context = Context(
@@ -32,11 +28,11 @@ class QQGuildEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @EventParse.collect(m, "guild_delete")
-    async def guild_delete(self, raw_event: dict):
-        account_route = Selector().land("qqguild").account(str(self.connection.account_id))
+    @m.entity(QQAPICapability.event_callback, event_type="guild_delete")
+    async def guild_delete(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qqguild")
+        land = Selector().land("qq")
         guild = land.guild(str(raw_event["id"]))
         operator = guild.user(str(raw_event["op_user_id"]))
         context = Context(
@@ -48,11 +44,11 @@ class QQGuildEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=False)
 
-    @EventParse.collect(m, "channel_create")
-    async def channel_create(self, raw_event: dict):
-        account_route = Selector().land("qqguild").account(str(self.connection.account_id))
+    @m.entity(QQAPICapability.event_callback, event_type="channel_create")
+    async def channel_create(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qqguild")
+        land = Selector().land("qq")
         guild = land.guild(str(raw_event["guild_id"]))
         channel = guild.channel(str(raw_event["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
@@ -65,11 +61,11 @@ class QQGuildEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @EventParse.collect(m, "channel_delete")
-    async def channel_delete(self, raw_event: dict):
-        account_route = Selector().land("qqguild").account(str(self.connection.account_id))
+    @m.entity(QQAPICapability.event_callback, event_type="channel_delete")
+    async def channel_delete(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qqguild")
+        land = Selector().land("qq")
         guild = land.guild(str(raw_event["guild_id"]))
         channel = guild.channel(str(raw_event["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
@@ -82,11 +78,11 @@ class QQGuildEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=False)
 
-    @EventParse.collect(m, "guild_member_add")
-    async def guild_member_add(self, raw_event: dict):
-        account_route = Selector().land("qqguild").account(str(self.connection.account_id))
+    @m.entity(QQAPICapability.event_callback, event_type="guild_member_add")
+    async def guild_member_add(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qqguild")
+        land = Selector().land("qq")
         guild = land.guild(str(raw_event["guild_id"]))
         user = guild.user(str(raw_event["user"]["id"]))
         operator = guild.user(str(raw_event["operator_id"]))
@@ -100,11 +96,11 @@ class QQGuildEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @EventParse.collect(m, "guild_member_remove")
-    async def guild_member_remove(self, raw_event: dict):
-        account_route = Selector().land("qqguild").account(str(self.connection.account_id))
+    @m.entity(QQAPICapability.event_callback, event_type="guild_member_remove")
+    async def guild_member_remove(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qqguild")
+        land = Selector().land("qq")
         guild = land.guild(str(raw_event["guild_id"]))
         user = guild.user(str(raw_event["user"]["id"]))
         operator = guild.user(str(raw_event["operator_id"]))

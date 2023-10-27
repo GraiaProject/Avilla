@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.qqguild.tencent.const import PRIVILEGE_TRANS
-from avilla.qqguild.tencent.role import (
+from avilla.qqapi.const import PRIVILEGE_TRANS
+from avilla.qqapi.role import (
     Role,
     RoleCreate,
     RoleDelete,
@@ -19,16 +19,17 @@ from avilla.standard.core.privilege import MuteCapability, MuteInfo, Privilege
 from avilla.standard.core.profile import Summary, SummaryCapability
 
 if TYPE_CHECKING:
-    from avilla.qqguild.tencent.account import QQGuildAccount  # noqa
-    from avilla.qqguild.tencent.protocol import QQGuildProtocol  # noqa
+    from avilla.qqapi.account import QQAPIAccount  # noqa
+    from avilla.qqapi.protocol import QQAPIProtocol  # noqa
 
 
-class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuildAccount"]())._):
-    m.post_applying = True
+class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"]())._):
+    m.namespace = "avilla.protocol/qqapi::action"
+    m.identify = "role"
 
     @m.pull("land.guild.role", Role)
     async def get_role(self, target: Selector) -> Role:
-        result = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/roles", {})
+        result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/roles", {})
         for role in result["roles"]:
             if role["id"] == target.pattern["role"]:
                 return Role(role["id"], target.into("land.guild"), role["name"], bool(role["hoist"]), role["color"])
@@ -47,7 +48,7 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
 
     @m.pull("land.guild.role", Count)
     async def get_role_count(self, target: Selector) -> Count:
-        result = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/roles", {})
+        result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/roles", {})
         for role in result["roles"]:
             if role["id"] == target.pattern["role"]:
                 return Count(role["number"], role["member_limit"])
@@ -59,14 +60,14 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
 
     @m.pull("land.guild.role", Privilege)
     async def get_privilege(self, target: Selector) -> Privilege:
-        self_info = await self.account.connection.call(
+        self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
         effective = bool({"2", "4", "5"} & set(self_info["roles"]))
-        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permission", {})
+        apis = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":
-                result = await self.account.connection.call(
+                result = await self.account.connection.call_http(
                     "get", f"channels/{target.pattern['channel']}/roles/{target.pattern['role']}/permissions", {}
                 )
                 return Privilege(
@@ -81,10 +82,10 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
 
     @m.pull("land.guild.role", Privilege >> Summary)
     async def get_privilege_summary(self, target: Selector) -> Summary:
-        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permission", {})
+        apis = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":
-                result = await self.account.connection.call(
+                result = await self.account.connection.call_http(
                     "get", f"channels/{target.pattern['channel']}/roles/{target.pattern['role']}/permissions", {}
                 )
                 return Summary(
@@ -99,10 +100,10 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
 
     @m.pull("land.guild.role", MuteInfo)
     async def get_mute_info(self, target: Selector) -> MuteInfo:
-        apis = await self.account.connection.call("get", f"guilds/{target.pattern['guild']}/api_permission", {})
+        apis = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":
-                result = await self.account.connection.call(
+                result = await self.account.connection.call_http(
                     "get", f"channels/{target.pattern['channel']}/roles/{target.pattern['role']}/permissions", {}
                 )
                 return MuteInfo(
@@ -111,31 +112,31 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
                 )
         raise PermissionError(permission_error_message(f"get_permission@{target.path}", "read", ["manage"]))
 
-    @MuteCapability.mute.collect(m, "land.guild.role")
+    @MuteCapability.mute.collect(m, target="land.guild.role")
     async def mute(self, target: Selector, duration: timedelta) -> None:
         if not (await self.get_privilege(target)).effective:
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", "read", ["manage"]))
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "put",
             f"channels/{target.pattern['channel']}/roles/{target.pattern['role']}/permissions",
             {"add": 0, "remove": 4},
         )
 
-    @MuteCapability.unmute.collect(m, "land.guild.role")
+    @MuteCapability.unmute.collect(m, target="land.guild.role")
     async def unmute(self, target: Selector) -> None:
         if not (await self.get_privilege(target)).effective:
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", "read", ["manage"]))
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "put",
             f"channels/{target.pattern['channel']}/roles/{target.pattern['role']}/permissions",
             {"add": 4, "remove": 0},
         )
 
-    @RoleCreate.create.collect(m, "land.guild")
+    @RoleCreate.create.collect(m, target="land.guild")
     async def create_role(
         self, target: Selector, name: str, hoist: bool | None = None, color: int | None = None
     ) -> Selector:
-        self_info = await self.account.connection.call(
+        self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
         effective = bool({"2", "4", "5"} & set(self_info["roles"]))
@@ -146,38 +147,38 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
             data["hoist"] = hoist
         if color is not None:
             data["color"] = color
-        result = await self.account.connection.call("post", f"guilds/{target.pattern['guild']}/roles", data)
+        result = await self.account.connection.call_http("post", f"guilds/{target.pattern['guild']}/roles", data)
         return target.role(result["role_id"])
 
-    @RoleDelete.delete.collect(m, "land.guild.role")
+    @RoleDelete.delete.collect(m, target="land.guild.role")
     async def delete_role(self, target: Selector) -> None:
-        self_info = await self.account.connection.call(
+        self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
         effective = bool({"2", "4", "5"} & set(self_info["roles"]))
         if not effective:
             raise PermissionError(permission_error_message(f"delete_role@{target.path}", "read", ["manage"]))
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "delete", f"guilds/{target.pattern['guild']}/roles/{target.pattern['role']}", {}
         )
 
-    @SummaryCapability.set_name.collect(m, "land.guild.role", Summary)
-    async def set_name(self, target: Selector, t: ..., name: str) -> None:
-        self_info = await self.account.connection.call(
+    @SummaryCapability.set_name.collect(m, target="land.guild.role", route=Summary)
+    async def set_name(self, target: Selector, route: ..., name: str) -> None:
+        self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
         effective = bool({"2", "4", "5"} & set(self_info["roles"]))
         if not effective:
             raise PermissionError(permission_error_message(f"set_name@{target.path}", "read", ["manage"]))
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "patch", f"guilds/{target.pattern['guild']}/roles/{target.pattern['role']}", {"name": name}
         )
 
-    @RoleEdit.edit.collect(m, "land.guild.role")
+    @RoleEdit.edit.collect(m, target="land.guild.role")
     async def edit_role(
         self, target: Selector, name: str | None = None, hoist: bool | None = None, color: int | None = None
     ) -> None:
-        self_info = await self.account.connection.call(
+        self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
         effective = bool({"2", "4", "5"} & set(self_info["roles"]))
@@ -190,41 +191,41 @@ class QQGuildRoleActionPerform((m := AccountCollector["QQGuildProtocol", "QQGuil
             data["hoist"] = hoist
         if color is not None:
             data["color"] = color
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "patch", f"guilds/{target.pattern['guild']}/roles/{target.pattern['role']}", data
         )
 
-    @RoleMemberCapability.add.collect(m, "land.guild.user")
+    @RoleMemberCapability.add.collect(m, target="land.guild.user")
     async def add_role_user(self, target: Selector, member: Selector) -> None:
         role_id = target.pattern["role"]
         if role_id == "5":
             raise ValueError("missing target: channel")
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "put", f"guilds/{target.pattern['guild']}/members/{member.pattern['user']}/roles/{role_id}", {}
         )
 
-    @RoleMemberCapability.add.collect(m, "land.guild.channel.member")
+    @RoleMemberCapability.add.collect(m, target="land.guild.channel.member")
     async def add_role_member(self, target: Selector, member: Selector) -> None:
         role_id = target.pattern["role"]
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "put",
             f"guilds/{target.pattern['guild']}/members/{member.pattern['member']}/roles/{role_id}",
             {"channel": {"id": target.pattern["channel"]}} if role_id == "5" else {},
         )
 
-    @RoleMemberCapability.remove.collect(m, "land.guild.user")
+    @RoleMemberCapability.remove.collect(m, target="land.guild.user")
     async def remove_role_user(self, target: Selector, member: Selector) -> None:
         role_id = target.pattern["role"]
         if role_id == "5":
             raise ValueError("missing target: channel")
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "delete", f"guilds/{target.pattern['guild']}/members/{member.pattern['user']}/roles/{role_id}", {}
         )
 
-    @RoleMemberCapability.remove.collect(m, "land.guild.channel.member")
+    @RoleMemberCapability.remove.collect(m, target="land.guild.channel.member")
     async def remove_role_member(self, target: Selector, member: Selector) -> None:
         role_id = target.pattern["role"]
-        await self.account.connection.call(
+        await self.account.connection.call_http(
             "delete",
             f"guilds/{target.pattern['guild']}/members/{member.pattern['member']}/roles/{role_id}",
             {"channel": {"id": target.pattern["channel"]}} if role_id == "5" else {},

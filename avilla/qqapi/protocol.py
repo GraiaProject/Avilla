@@ -7,6 +7,7 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
+from graia.ryanvk import ref, merge
 
 from .connection.ws_client import QQAPIWsClientNetworking
 from .service import QQAPIService
@@ -79,43 +80,63 @@ class QQAPIConfig(ProtocolConfig):
         return self.intent.is_group_enabled
 
 
+def _import_performs():  # noqa: F401
+    # isort: off
+
+    # :: Message
+    import avilla.qqapi.perform.message.deserialize  # noqa: F401
+    import avilla.qqapi.perform.message.serialize  # noqa: F401
+
+    ## :: Action
+    import avilla.qqapi.perform.action.channel  # noqa: F401
+    import avilla.qqapi.perform.action.guild  # noqa: F401
+    import avilla.qqapi.perform.action.guild_member  # noqa: F401
+    import avilla.qqapi.perform.action.message  # noqa: F401
+    import avilla.qqapi.perform.action.role  # noqa: F401
+
+    ## :: Context
+    import avilla.qqapi.perform.context  # noqa: F401
+
+    ## :: Event
+    import avilla.qqapi.perform.event.activity  # noqa: F401
+    import avilla.qqapi.perform.event.audit  # noqa: F401
+    import avilla.qqapi.perform.event.metadata  # noqa: F401
+    import avilla.qqapi.perform.event.message  # noqa: F401
+    import avilla.qqapi.perform.event.relationship  # noqa: F401
+
+    ## :: Query
+    import avilla.qqapi.perform.query  # noqa: F401
+
+    ## :: Resource Fetch
+    import avilla.qqapi.perform.resource_fetch  # noqa: F401
+
+
 class QQAPIProtocol(BaseProtocol):
     service: QQAPIService
 
     def __init__(self):
         self.service = QQAPIService(self)
 
-    artifacts = {}
-    # @classmethod
-    # def __init_isolate__(cls):
-    #     ...
-    #     # isort: off
-    #
-    #     # :: Message
-    #     from .perform.message.deserialize import QQGuildMessageDeserializePerform  # noqa: F401
-    #     from .perform.message.serialize import QQGuildMessageSerializePerform  # noqa: F401
-    #
-    #     ## :: Action
-    #     from .perform.action.channel import QQGuildChannelActionPerform  # noqa: F401
-    #     from .perform.action.guild import QQGuildGuildActionPerform  # noqa: F401
-    #     from .perform.action.member import QQGuildMemberActionPerform  # noqa: F401
-    #     from .perform.action.message import QQGuildMessageActionPerform  # noqa: F401
-    #     from .perform.action.role import QQGuildRoleActionPerform  # noqa: F401
-    #
-    #     ## :: Context
-    #     from .perform.context import QQGuildContextPerform  # noqa: F401
-    #
-    #     ## :: Event
-    #     from .perform.event.audit import QQGuildEventAuditPerform  # noqa: F401
-    #     from .perform.event.message import QQGuildEventMessagePerform  # noqa: F401
-    #     from .perform.event.metadata import QQGuildEventMetadataPerform  # noqa: F401
-    #     from .perform.event.relationship import QQGuildEventRelationshipPerform  # noqa: F401
-    #
-    #     ## :: Query
-    #     from .perform.query import QQGuildQueryPerform  # noqa: F401
-    #
-    #     ## :: Resource Fetch
-    #     from .perform.resource_fetch import QQGuildResourceFetchPerform  # noqa: F401
+    _import_performs()
+    artifacts = {
+        **merge(
+            ref("avilla.protocol/qqapi::context"),
+            ref("avilla.protocol/qqapi::query"),
+            ref("avilla.protocol/qqapi::resource_fetch"),
+            ref("avilla.protocol/qqapi::action", "message"),
+            ref("avilla.protocol/qqapi::action", "channel"),
+            ref("avilla.protocol/qqapi::action", "guild"),
+            ref("avilla.protocol/qqapi::action", "guild_member"),
+            ref("avilla.protocol/qqapi::action", "role"),
+            ref("avilla.protocol/qqapi::message", "deserialize"),
+            ref("avilla.protocol/qqapi::message", "serialize"),
+            ref("avilla.protocol/qqapi::event", "message"),
+            ref("avilla.protocol/qqapi::event", "activity"),
+            ref("avilla.protocol/qqapi::event", "relationship"),
+            ref("avilla.protocol/qqapi::event", "metadata"),
+            ref("avilla.protocol/qqapi::event", "audit")
+        ),
+    }
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla
