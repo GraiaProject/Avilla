@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, ClassVar, TypeVar
 
-from avilla.core.ryanvk.collector.base import AvillaBaseCollector, BasePerform
-from graia.ryanvk import Access
+from avilla.core.ryanvk.collector.base import AvillaBaseCollector
+from graia.ryanvk import Access, BasePerform
 
 if TYPE_CHECKING:
-    from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientNetworking
-    from avilla.qqguild.tencent.protocol import QQGuildProtocol
+    from avilla.qqapi.connection.ws_client import QQAPIWsClientNetworking
+    from avilla.qqapi.protocol import QQAPIProtocol
 
 
 T = TypeVar("T")
@@ -17,8 +17,8 @@ T1 = TypeVar("T1")
 class ConnectionBasedPerformTemplate(BasePerform, native=True):
     __collector__: ClassVar[ConnectionCollector]
 
-    protocol: Access[QQGuildProtocol] = Access()
-    connection: Access[QQGuildWsClientNetworking] = Access()
+    protocol: Access[QQAPIProtocol] = Access()
+    connection: Access[QQAPIWsClientNetworking] = Access()
 
 
 class ConnectionCollector(AvillaBaseCollector):

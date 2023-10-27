@@ -24,18 +24,18 @@ PRIVILEGE_TRANS = defaultdict(
 )
 PLATFORM = Platform(
     Land(
-        "qqguild",
+        "qq",
         [{"name": "Tencent"}],
-        humanized_name="QQ Guild",
+        humanized_name="QQ API",
     ),
     Abstract(
-        "qqguild-official",
+        "qq-api-official",
         [{"name": "Tencent"}],
-        humanized_name="QQ Guild",
+        humanized_name="QQ API",
     ),
     Abstract(
-        "qqguild/tencent",
+        "qqapi",
         [{"name": "GraiaProject"}],
-        humanized_name="QQ Guild Protocol for Avilla, use offical API",
+        humanized_name="QQ/QQ-Guild Protocol for Avilla, use offical API",
     ),
 )

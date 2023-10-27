@@ -3,12 +3,12 @@ import os
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.elements import Text
-from avilla.qqguild.tencent.element import Reference
-from avilla.qqguild.tencent.protocol import QQGuildProtocol, QQGuildConfig, Intents
+from avilla.qqapi.element import Reference
+from avilla.qqapi.protocol import QQAPIProtocol, QQAPIConfig, Intents
 from avilla.standard.core.privilege import Privilege
 
 
-config = QQGuildConfig(
+config = QQAPIConfig(
     os.getenv("QQGUILD_ID"),
     os.getenv("QQGUILD_TOKEN"),
     os.getenv("QQGUILD_SECRET"),
@@ -17,7 +17,8 @@ config = QQGuildConfig(
 )
 
 avilla = Avilla(message_cache_size=0)
-avilla.apply_protocols(QQGuildProtocol().configure(config))
+avilla.apply_protocols(QQAPIProtocol().configure(config))
+
 
 
 
@@ -37,17 +38,12 @@ async def on_message_received(cx: Context, event: MessageReceived):
                 #     fields=["line1", "line2"],
                 # )
             ],
-            reply=event.message
+            reply=event.message,
         )
     )
-    print(
-        await cx.scene.pull(Privilege)
-    )
-    print(
-        await cx.client.pull(Privilege)
-    )
-    print(
-        await cx[CoreCapability.pull](cx.self, Privilege)
-    )
+    print(await cx.scene.pull(Privilege))
+    print(await cx.client.pull(Privilege))
+    print(await cx[CoreCapability.pull](cx.self, Privilege))
+
 
 avilla.launch()

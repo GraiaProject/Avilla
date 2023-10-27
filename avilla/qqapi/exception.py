@@ -3,7 +3,7 @@ from typing import Optional
 from avilla.core.exceptions import ActionFailed as BaseActionFailed
 from avilla.core.exceptions import HttpRequestError, InvalidAuthentication
 from avilla.core.exceptions import NetworkError as BaseNetworkError
-from avilla.qqguild.tencent.audit import audit_result
+from avilla.qqapi.audit import audit_result
 
 
 class ActionFailed(HttpRequestError, BaseActionFailed):
@@ -28,6 +28,9 @@ class UnauthorizedException(ActionFailed, InvalidAuthentication):
 class RateLimitException(ActionFailed):
     pass
 
+
+class ApiNotAvailable(ActionFailed):
+    pass
 
 class NetworkError(BaseNetworkError):
     def __init__(self, msg: Optional[str] = None):

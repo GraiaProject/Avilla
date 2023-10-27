@@ -5,6 +5,7 @@ import json
 import sys
 from contextlib import suppress
 from dataclasses import asdict
+from datetime import datetime, timezone, timedelta
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
@@ -15,9 +16,9 @@ from loguru import logger
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
-from avilla.qqguild.tencent.account import QQGuildAccount
-from avilla.qqguild.tencent.const import PLATFORM
-from avilla.qqguild.tencent.exception import UnauthorizedException
+from avilla.qqapi.const import PLATFORM
+from avilla.qqapi.account import QQAPIAccount
+from avilla.qqapi.exception import UnauthorizedException, NetworkError
 from avilla.standard.core.account import (
     AccountAvailable,
     AccountRegistered,
@@ -25,51 +26,89 @@ from avilla.standard.core.account import (
     AccountUnregistered,
 )
 
-from .base import CallMethod, QQGuildNetworking
+from .base import CallMethod, QQAPINetworking
 from .util import Opcode, Payload, validate_response
 
 if TYPE_CHECKING:
-    from avilla.qqguild.tencent.protocol import QQGuildConfig, QQGuildProtocol
+    from avilla.qqapi.protocol import QQAPIConfig, QQAPIProtocol
 
 
-class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], Service):
-    id = "qqguild/connection/client"
+class QQAPIWsClientNetworking(QQAPINetworking, Service):
+    id = "qqapi/connection/client"
 
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    config: QQGuildConfig
+    config: QQAPIConfig
     connections: dict[tuple[int, int], aiohttp.ClientWebSocketResponse]
     session: aiohttp.ClientSession
-    sequence: int | None
 
-    def __init__(self, protocol: QQGuildProtocol, config: QQGuildConfig) -> None:
+    def __init__(self, protocol: QQAPIProtocol, config: QQAPIConfig) -> None:
         super().__init__(protocol)
         self.config = config
         if any([not config.id, not config.token, not config.secret]):
             raise ValueError("config is not complete")
         self.connections = {}
-        self.session_id = None
-        self.sequence = None
+
+    async def get_access_token(self) -> str:
+        if self._access_token is None or (
+            self._expires_in
+            and datetime.now(timezone.utc) > self._expires_in - timedelta(seconds=30)
+        ):
+            async with self.session.post(
+                self.config.get_api_base(),
+                json={
+                    "appId": self.config.id,
+                    "clientSecret": self.config.secret,
+                },
+            ) as resp:
+                if resp.status != 200 or not resp.content:
+                    raise NetworkError(
+                        f"Get authorization failed with status code {resp.status}."
+                        " Please check your config."
+                    )
+                data = await resp.json()
+            self._access_token = cast(str, data["access_token"])
+            self._expires_in = datetime.now(timezone.utc) + timedelta(
+                seconds=int(data["expires_in"])
+            )
+        return self._access_token
+
+    async def _get_authorization_header(self) -> str:
+        """获取当前 Bot 的鉴权信息"""
+        if self.config.is_group_bot:
+            return f"QQBot {await self.get_access_token()}"
+        return f"Bot {self.config.id}.{self.config.token}"
+
+    async def get_authorization_header(self) -> dict[str, str]:
+        """获取当前 Bot 的鉴权信息"""
+        headers = {"Authorization": await self._get_authorization_header()}
+        if self.config.is_group_bot:
+            headers["X-Union-Appid"] = self.config.id
+        return headers
 
     async def message_receive(self, shard: tuple[int, int]):
         if (connection := self.connections.get(shard)) is None:
             raise RuntimeError("connection is not established")
 
         async for msg in connection:
-            logger.debug(f"{msg=}")
+            # logger.debug(f"{msg=}")
 
             if msg.type in {aiohttp.WSMsgType.CLOSE, aiohttp.WSMsgType.ERROR, aiohttp.WSMsgType.CLOSED}:
                 self.close_signal.set()
                 break
             elif msg.type == aiohttp.WSMsgType.TEXT:
                 data: dict = json.loads(cast(str, msg.data))
-                if data["op"] == 7:
+                if data["op"] == Opcode.RECONNECT:
+                    logger.warning("Received reconnect event from server, will reconnect in 5 seconds...")
                     break
-                if data["op"] == 9:
+                if data["op"] == Opcode.INVALID_SESSION:
                     self.session_id = None
                     self.sequence = None
+                    logger.warning("Received invalid session event from server, will try to resume")
                     break
+                if data["op"] == Opcode.HEARTBEAT_ACK:
+                    continue
                 yield self, data
         else:
             await self.connection_closed()
@@ -85,13 +124,19 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
 
         await connection.send_json(payload)
 
-    async def call(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
+    async def _call_http(
+        self,
+        method: CallMethod,
+        action: str,
+        headers: dict[str, str] | None = None,
+        params: dict | None = None
+    ) -> dict:
         params = params or {}
         params = {k: v for k, v in params.items() if v is not None}
         if method in {"get", "fetch"}:
             async with self.session.get(
                 (self.config.get_api_base() / action).with_query(params),
-                headers={"Authorization": self.config.get_authorization()},
+                headers=headers,
             ) as resp:
                 result = await resp.json()
                 validate_response(result, resp.status)
@@ -101,7 +146,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             async with self.session.patch(
                 (self.config.get_api_base() / action),
                 json=params,
-                headers={"Authorization": self.config.get_authorization()},
+                headers=headers,
             ) as resp:
                 result = await resp.json()
                 validate_response(result, resp.status)
@@ -111,7 +156,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             async with self.session.put(
                 (self.config.get_api_base() / action),
                 json=params,
-                headers={"Authorization": self.config.get_authorization()},
+                headers=headers,
             ) as resp:
                 result = await resp.json()
                 validate_response(result, resp.status)
@@ -120,7 +165,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         if method == "delete":
             async with self.session.delete(
                 (self.config.get_api_base() / action).with_query(params),
-                headers={"Authorization": self.config.get_authorization()},
+                headers=headers,
             ) as resp:
                 result = await resp.json()
                 validate_response(result, resp.status)
@@ -130,7 +175,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             async with self.session.post(
                 (self.config.get_api_base() / action),
                 json=params,
-                headers={"Authorization": self.config.get_authorization()},
+                headers=headers,
             ) as resp:
                 result = await resp.json()
                 validate_response(result, resp.status)
@@ -149,13 +194,30 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             async with self.session.post(
                 (self.config.get_api_base() / action),
                 data=data,
-                headers={"Authorization": self.config.get_authorization()},
+                headers=headers,
             ) as resp:
                 result = await resp.json()
                 validate_response(result, resp.status)
                 return result
 
         raise ValueError(f"unknown method {method}")
+
+    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
+        headers = await self.get_authorization_header()
+        try:
+            return await self._call_http(method, action, headers, params)
+        except UnauthorizedException as e:
+            if not self.config.is_group_bot:
+                raise
+            self._access_token = None
+            try:
+                headers = await self.get_authorization_header()
+            except Exception:
+                raise e from None
+            try:
+                return await self._call_http(method, action, headers, params)
+            except Exception as e1:
+                raise e1 from None
 
     async def wait_for_available(self):
         await self.status.wait_for_available()
@@ -179,6 +241,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             raise RuntimeError("connection is not established")
         try:
             payload = Payload(**await connection.receive_json())
+            assert payload.opcode == Opcode.HELLO, f"Received unexpected payload: {payload!r}"
             return payload.data["heartbeat_interval"]
         except Exception as e:
             logger.error(
@@ -194,11 +257,12 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             payload = Payload(
                 op=Opcode.IDENTIFY,
                 d={
-                    "token": self.config.get_authorization(),
+                    "token": await self._get_authorization_header(),
                     "intents": self.config.intent.to_int(),
                     "shard": list(shard),
                     "properties": {
                         "$os": sys.platform,
+                        "$language": f"python {sys.version}",
                         "$sdk": "Avilla",
                     },
                 },
@@ -207,7 +271,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             payload = Payload(
                 op=Opcode.RESUME,
                 d={
-                    "token": self.config.get_authorization(),
+                    "token": await self._get_authorization_header(),
                     "session_id": self.session_id,
                     "seq": self.sequence,
                 },
@@ -224,18 +288,20 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
             # 鉴权成功之后，后台会下发一个 Ready Event
             payload = Payload(**await connection.receive_json())
             if payload.opcode == Opcode.INVALID_SESSION:
-                raise UnauthorizedException(payload.op, {"message": "Invaild Intents."})
+                logger.warning("Received invalid session event from server, will try to resume")
+                return False
             if not (payload.opcode == Opcode.DISPATCH and payload.type == "READY" and payload.data):
                 logger.error(f"Received unexpected payload: {payload}")
                 return False
             self.sequence = payload.sequence
             self.session_id = payload.data["session_id"]
+            self.self_info = payload.data["user"]
             self.account_id = payload.data["user"]["id"]
-            account_route = Selector().land("qqguild").account(self.account_id)
+            account_route = Selector().land("qq").account(self.account_id)
             if account_route in self.protocol.avilla.accounts:
-                account = cast(QQGuildAccount, self.protocol.avilla.accounts[account_route].account)
+                account = cast(QQAPIAccount, self.protocol.avilla.accounts[account_route].account)
             else:
-                account = QQGuildAccount(account_route, self.protocol)
+                account = QQAPIAccount(account_route, self.protocol)
                 self.protocol.avilla.accounts[account_route] = AccountInfo(
                     account_route,
                     account,
@@ -248,13 +314,15 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
         else:
             account = self.protocol.service.accounts[self.account_id]
             account.connection = self
-            self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
+        self.protocol.avilla.broadcast.postEvent(
+            AccountAvailable(self.protocol.avilla, account)
+        )
         return True
 
     async def _heartbeat(self, heartbeat_interval: int, shard: tuple[int, int]):
         """心跳"""
         while True:
-            if self.sequence:
+            if self.session_id:
                 with suppress(Exception):
                     await self.send({"op": 1, "d": self.sequence}, shard=shard)
             await asyncio.sleep(heartbeat_interval / 1000)
@@ -275,10 +343,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                     if not result:
                         await asyncio.sleep(3)
                         continue
-                    account_route = Selector().land("qqguild").account(self.account_id)
-                    self.protocol.avilla.broadcast.postEvent(
-                        AccountAvailable(self.protocol.avilla, self.protocol.avilla.accounts[account_route].account)
-                    )
+                    account_route = Selector().land("qq").account(self.account_id)
                     self.close_signal.clear()
                     close_task = asyncio.create_task(self.close_signal.wait())
                     receiver_task = asyncio.create_task(self.message_handle(shard))
@@ -294,10 +359,12 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
                         logger.info(f"{self} Websocket client exiting...")
                         await conn.close()
                         self.close_signal.set()
+                        receiver_task.cancel()
+                        heartbeat_task.cancel()
                         with suppress(KeyError):
                             del self.connections[shard]
                             await self.protocol.avilla.broadcast.postEvent(
-                                AccountRegistered(
+                                AccountUnregistered(
                                     self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
                                 )
                             )
@@ -328,7 +395,7 @@ class QQGuildWsClientNetworking(QQGuildNetworking["QQGuildWsClientNetworking"], 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
             self.session = aiohttp.ClientSession()
-            gateway_info = await self.call("get", "gateway/bot")
+            gateway_info = await self.call_http("get", "gateway/bot")
             ws_url = gateway_info["url"]
             remain = gateway_info.get("session_start_limit", {}).get("remaining")
             if remain is not None and remain <= 0:

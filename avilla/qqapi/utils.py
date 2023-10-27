@@ -21,9 +21,9 @@ def handle_text(msg: str):
             yield {"type": "text", "text": unescape(content)}
         text_begin = embed.pos + embed.end()
         if embed["type"] == "@":
-            yield {"type": "mention", "user_id": embed.group("id")}
+            yield {"type": "mention_user", "user_id": embed.group("id")}
         elif embed["type"] == "#":
-            yield {"type": "mention", "channel_id": embed.group("id")}
+            yield {"type": "mention_channel", "channel_id": embed.group("id")}
         else:
             yield {"type": "emoji", "id": embed.group("id")}
     if content := msg[text_begin:]:
@@ -65,6 +65,12 @@ def pro_serialize(message: list[dict]):
             res["image"] = elem["url"]
         elif elem["type"] == "local_iamge":
             res["file_image"] = elem["content"]
+        elif elem["type"] == "markdown":
+            res["markdown"] = elem["content"]
+            res["markdown"].pop("type")
+        elif elem["type"] == "keyboard":
+            res["keyboard"] = elem["content"]
+            res["keyboard"].pop("type")
         elif elem["type"] == "embed":
             res["embed"] = elem
             res["embed"].pop("type")

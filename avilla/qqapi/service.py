@@ -5,22 +5,22 @@ from typing import TYPE_CHECKING, Set
 
 from launart import Launart, Service, any_completed
 
-from avilla.qqguild.tencent.connection.base import QQGuildNetworking
-from avilla.qqguild.tencent.connection.ws_client import QQGuildWsClientNetworking
+from avilla.qqapi.connection.base import QQAPINetworking
+from avilla.qqapi.connection.ws_client import QQAPIWsClientNetworking
 
 if TYPE_CHECKING:
-    from .account import QQGuildAccount
-    from .protocol import QQGuildProtocol
+    from .account import QQAPIAccount
+    from .protocol import QQAPIProtocol
 
 
-class QQGuildService(Service):
-    id = "qqguild/tencent.service"
+class QQAPIService(Service):
+    id = "qqapi.service"
 
-    protocol: QQGuildProtocol
-    connections: list[QQGuildWsClientNetworking]
-    accounts: dict[str, QQGuildAccount]
+    protocol: QQAPIProtocol
+    connections: list[QQAPIWsClientNetworking]
+    accounts: dict[str, QQAPIAccount]
 
-    def __init__(self, protocol: QQGuildProtocol):
+    def __init__(self, protocol: QQAPIProtocol):
         self.protocol = protocol
         self.connections = []
         self.accounts = {}
@@ -29,7 +29,7 @@ class QQGuildService(Service):
     def has_connection(self, account_id: str):
         return account_id in self.accounts
 
-    def get_connection(self, account_id: str) -> QQGuildNetworking:
+    def get_connection(self, account_id: str) -> QQAPINetworking:
         return self.accounts[account_id].connection
 
     async def launch(self, manager: Launart):

@@ -4,9 +4,9 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Literal, overload
 
-from avilla.core.exceptions import InvalidOperation, UnknownError
-from avilla.qqguild.tencent.exception import (
+from avilla.qqapi.exception import (
     ActionFailed,
+    ApiNotAvailable,
     AuditException,
     RateLimitException,
     UnauthorizedException,
@@ -24,7 +24,7 @@ def validate_response(data: Any, code: int, raising: Literal[True] = True) -> An
 
 
 def validate_response(data: dict, code: int, raising: bool = True):
-    if code in {200, 204}:
+    if code == 200 or 203 <= code < 300:
         return data.get("data", data)
     if code in {201, 202}:
         if data and (audit_id := data.get("data", {}).get("message_audit", {}).get("audit_id")):
@@ -34,11 +34,11 @@ def validate_response(data: dict, code: int, raising: bool = True):
     elif code == 401:
         exc = UnauthorizedException(code, data)
     elif code in {404, 405}:
-        exc = InvalidOperation(data)
+        exc = ApiNotAvailable(code, data)
     elif code == 429:
         exc = RateLimitException(code, data)
     else:
-        exc = UnknownError(data)
+        exc = ActionFailed(code, data)
     if raising:
         raise exc
     return exc

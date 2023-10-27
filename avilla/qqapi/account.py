@@ -4,19 +4,19 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from avilla.core.account import BaseAccount, AccountStatus
-from avilla.qqguild.tencent.connection.base import QQGuildNetworking
-from ...core import Selector
+from avilla.qqapi.connection.base import QQAPINetworking
+from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
-    from .protocol import QQGuildProtocol
+    from .protocol import QQAPIProtocol
 
 
 @dataclass
-class QQGuildAccount(BaseAccount):
-    protocol: QQGuildProtocol
-    connection: QQGuildNetworking
+class QQAPIAccount(BaseAccount):
+    protocol: QQAPIProtocol
+    connection: QQAPINetworking
 
-    def __init__(self, route: Selector, protocol: QQGuildProtocol):
+    def __init__(self, route: Selector, protocol: QQAPIProtocol):
         super().__init__(route, protocol.avilla)
         self.protocol = protocol
         self.status = AccountStatus()
