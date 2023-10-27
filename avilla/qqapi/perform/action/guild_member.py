@@ -21,14 +21,14 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
     m.identify = "guild_member"
 
     @m.pull("land.guild.user", Nick)
-    async def get_summary(self, target: Selector) -> Nick:
+    async def get_summary(self, target: Selector, route: ...) -> Nick:
         result = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['user']}", {}
         )
         return Nick(result["user"]["useranme"], result["nickname"], None)
 
     @m.pull("land.guild.channel.member", Privilege)
-    async def get_privilege(self, target: Selector) -> Privilege:
+    async def get_privilege(self, target: Selector, route: ...) -> Privilege:
         self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
@@ -60,7 +60,7 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
         raise PermissionError(permission_error_message(f"get_permission@{target.path}", "read", ["manage"]))
 
     @m.pull("land.guild.channel.member", Privilege >> Summary)
-    async def get_privilege_summary(self, target: Selector) -> Summary:
+    async def get_privilege_summary(self, target: Selector, route: ...) -> Summary:
         apis = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/members/{user_id}/permissions" and api["method"] == "GET":
@@ -74,7 +74,7 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
         raise PermissionError(permission_error_message(f"get_permission@{target.path}", "read", ["manage"]))
 
     @m.pull("land.guild.channel.member", MuteInfo)
-    async def get_mute_info(self, target: Selector) -> MuteInfo:
+    async def get_mute_info(self, target: Selector, route: ...) -> MuteInfo:
         apis = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/members/{user_id}/permissions" and api["method"] == "GET":

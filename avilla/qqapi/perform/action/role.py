@@ -28,7 +28,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
     m.identify = "role"
 
     @m.pull("land.guild.role", Role)
-    async def get_role(self, target: Selector) -> Role:
+    async def get_role(self, target: Selector, route: ...) -> Role:
         result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/roles", {})
         for role in result["roles"]:
             if role["id"] == target.pattern["role"]:
@@ -36,18 +36,18 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
         raise ValueError(f"Role {target.pattern['role']} not found")
 
     @m.pull("land.guild.role", Summary)
-    async def get_role_summary(self, target: Selector) -> Summary:
+    async def get_role_summary(self, target: Selector, route: ...) -> Summary:
         return Summary(
             (await self.get_role(target)).name,
             "name of role",
         )
 
     @m.pull("land.guild.role", Role >> Summary)
-    async def get_role_summary1(self, target: Selector) -> Summary:
+    async def get_role_summary1(self, target: Selector, route: ...) -> Summary:
         return (await self.get_role_summary(target)).infers(Role >> Summary)
 
     @m.pull("land.guild.role", Count)
-    async def get_role_count(self, target: Selector) -> Count:
+    async def get_role_count(self, target: Selector, route: ...) -> Count:
         result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/roles", {})
         for role in result["roles"]:
             if role["id"] == target.pattern["role"]:
@@ -55,11 +55,11 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
         raise ValueError(f"Role {target.pattern['role']} not found")
 
     @m.pull("land.guild.role", Role >> Count)
-    async def get_role_count1(self, target: Selector) -> Count:
+    async def get_role_count1(self, target: Selector, route: ...) -> Count:
         return (await self.get_role_count(target)).infers(Role >> Count)
 
     @m.pull("land.guild.role", Privilege)
-    async def get_privilege(self, target: Selector) -> Privilege:
+    async def get_privilege(self, target: Selector, route: ...) -> Privilege:
         self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )
@@ -77,11 +77,11 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
         raise PermissionError(permission_error_message(f"get_permission@{target.path}", "read", ["manage"]))
 
     @m.pull("land.guild.role", Role >> Privilege)
-    async def get_privilege1(self, target: Selector) -> Privilege:
+    async def get_privilege1(self, target: Selector, route: ...) -> Privilege:
         return (await self.get_privilege(target)).infers(Role >> Privilege)
 
     @m.pull("land.guild.role", Privilege >> Summary)
-    async def get_privilege_summary(self, target: Selector) -> Summary:
+    async def get_privilege_summary(self, target: Selector, route: ...) -> Summary:
         apis = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":
@@ -95,11 +95,11 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
         raise PermissionError(permission_error_message(f"get_permission@{target.path}", "read", ["manage"]))
 
     @m.pull("land.guild.role", Role >> Privilege >> Summary)
-    async def get_privilege_summary1(self, target: Selector) -> Summary:
+    async def get_privilege_summary1(self, target: Selector, route: ...) -> Summary:
         return (await self.get_privilege_summary(target)).infers(Role >> Privilege >> Summary)
 
     @m.pull("land.guild.role", MuteInfo)
-    async def get_mute_info(self, target: Selector) -> MuteInfo:
+    async def get_mute_info(self, target: Selector, route: ...) -> MuteInfo:
         apis = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}/api_permission", {})
         for api in apis["apis"]:
             if api["path"] == "/channels/{channel_id}/roles/{role_id}/permissions" and api["method"] == "GET":

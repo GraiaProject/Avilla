@@ -141,8 +141,8 @@ class NoneOverload(FnOverload):
         params: dict[str, Any],
     ) -> None:
         record = (collector, entity)
-        scope.update({"none": {}, "bypassing": {}})
-
+        if not scope:
+            scope.update({"none": {}, "bypassing": {}})
         for param, collect_info in params.items():
             if collect_info is None:
                 scope["none"].setdefault(param, set()).add(record)

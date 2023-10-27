@@ -25,8 +25,8 @@ class QQAPIEventAuditPerform((m := ConnectionCollector())._):
             raw_event["audit_id"],
             channel,
             raw_event["seq_in_channel"],
-            datetime.fromtimestamp(raw_event["audit_time"]),
-            datetime.fromtimestamp(raw_event["audit_time"]),
+            datetime.fromisoformat(raw_event["audit_time"]),
+            datetime.fromisoformat(raw_event["audit_time"]),
             message,
         )
         context = Context(
@@ -49,8 +49,8 @@ class QQAPIEventAuditPerform((m := ConnectionCollector())._):
             raw_event["audit_id"],
             channel,
             raw_event["seq_in_channel"],
-            datetime.fromtimestamp(raw_event["audit_time"]),
-            datetime.fromtimestamp(raw_event["audit_time"]),
+            datetime.fromisoformat(raw_event["audit_time"]),
+            datetime.fromisoformat(raw_event["audit_time"]),
         )
         context = Context(
             account,

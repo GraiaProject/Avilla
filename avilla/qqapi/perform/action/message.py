@@ -46,7 +46,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             if result is None:
                 raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
             event = await QQAPICapability(self.account.staff.ext({"connection": self.account.connection})).event_callback(
-                "message_create", result
+                "message_create", result["message"]
             )
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
@@ -67,7 +67,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 logger.warning(f"Failed to get message from {audit_res.audit.message.pattern['channel']}: {message}")
                 return audit_res.audit.message
             event = await QQAPICapability(self.account.staff.ext({"connection": self.account.connection})).event_callback(
-                "message_create", result
+                "message_create", result["message"]
             )
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)

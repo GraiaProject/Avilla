@@ -15,12 +15,13 @@ if TYPE_CHECKING:
 class QQAPIGuildActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"]())._):
     m.namespace = "avilla.protocol/qqapi::action"
     m.identify = "guild"
+
     @m.pull("land.guild", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
         result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}", {})
         return Summary(result["name"], result["description"])
 
     @m.pull("land.guild", Count)
-    async def get_count(self, target: Selector) -> Count:
+    async def get_count(self, target: Selector, route: ...) -> Count:
         result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}", {})
         return Count(result["member_count"], result["max_members"])

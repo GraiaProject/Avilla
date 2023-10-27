@@ -19,18 +19,18 @@ class QQAPIChannelActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
     m.identify = "channel"
 
     @m.pull("land.guild.channel", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
         result = await self.account.connection.call_http("get", f"channels/{target.pattern['channel']}", {})
         return Summary(result["name"], None)
 
     @m.pull("land.guild.channel", Privilege)
-    async def get_privilege(self, target: Selector) -> Privilege:
+    async def get_privilege(self, target: Selector, route: ...) -> Privilege:
         result = await self.account.connection.call_http("get", f"channels/{target.pattern['channel']}", {})
         value = int(result["permissions"]) & 1 == 1
         return Privilege(value, value)
 
     @m.pull("land.guild.channel", Privilege >> Summary)
-    async def get_privilege_summary(self, target: Selector) -> Summary:
+    async def get_privilege_summary(self, target: Selector, route: ...) -> Summary:
         result = await self.account.connection.call_http("get", f"channels/{target.pattern['channel']}", {})
         return Summary(PRIVILEGE_TRANS[result["permissions"]], "permission of account self")
 
@@ -44,9 +44,9 @@ class QQAPIChannelActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         raise PermissionError(permission_error_message(f"set_name@{target.path}", "read", ["manage"]))
 
     @MuteAllCapability.mute_all.collect(m, target="land.guild.channel")
-    async def channel_mute_all(self, target: Selector):
+    async def channel_mute_all(self, target: Selector, route: ...):
         await self.account.connection.call_http("patch", f"channels/{target.pattern['channel']}", {"speak_permission": 2})
 
     @MuteAllCapability.unmute_all.collect(m, target="land.guild.channel")
-    async def channel_unmute_all(self, target: Selector):
+    async def channel_unmute_all(self, target: Selector, route: ...):
         await self.account.connection.call_http("patch", f"channels/{target.pattern['channel']}", {"speak_permission": 1})

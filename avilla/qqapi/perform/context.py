@@ -26,7 +26,7 @@ class QQAPIContextPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"
         )
 
     @m.entity(CoreCapability.get_context, target="land.guild.channel.member")
-    def get_context_from_member(self, target: Selector, *, via: Selector | None = None):
+    def get_context_from_guild_member(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
             target,
@@ -70,7 +70,7 @@ class QQAPIContextPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"
         return Context(self.account, target, self.account.route, target, self.account.route)
 
     @m.entity(CoreCapability.get_context, target="land.group.member")
-    def get_context_from_member(self, target: Selector, *, via: Selector | None = None):
+    def get_context_from_group_member(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
             target,
