@@ -46,5 +46,7 @@ class MetadataOverload(FnOverload):
             for param_name, collection in scope.items():
                 result_collection = result.setdefault(param_name, {})
                 for route, entities in collection.items():
-                    result_collection.setdefault(route, set())
-                    result.update(entities)
+                    routes = result_collection.setdefault(route, set())
+                    routes.update(entities)
+
+        return result

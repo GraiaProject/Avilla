@@ -22,7 +22,7 @@ class FnOverload:
     def get_entities(self, scope: dict[Any, Any], args: dict[str, Any]) -> set[tuple[BaseCollector, Callable]]:
         return scope["_"]
 
-    def merge_scopes(self, *scopes: dict[Any, Any]):
+    def merge_scopes(self, *scopes: dict[Any, Any]) -> dict:
         return scopes[-1]
 
     def get_params_layout(self, params: list[str], args: dict[str, Any]) -> dict[str, Any]:

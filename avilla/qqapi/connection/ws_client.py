@@ -400,7 +400,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                 )
             else:
                 shards = gateway_info.get("shards") or 1
-                print(shards)
+                logger.debug(f"Get Shards: {shards}")
                 for i in range(shards):
                     tasks.append(
                         asyncio.create_task(self.connection_daemon(manager, self.session, ws_url, (i, shards)))
