@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from collections import ChainMap
 from contextlib import AsyncExitStack, asynccontextmanager
 from copy import copy
 from typing import TYPE_CHECKING, Any, Callable, Protocol, TypeVar, overload
 
 from typing_extensions import ParamSpec
+
+from ._runtime import merge
 
 if TYPE_CHECKING:
     from .fn import Fn
@@ -15,16 +16,17 @@ P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
 VnCallable = TypeVar("VnCallable", bound=Callable)
 
+
 class Staff:
     artifact_collections: list[dict[Any, Any]]
-    artifact_map: ChainMap[Any, Any]
+    artifact_map: dict[Any, Any]
     components: dict[str, Any]
     exit_stack: AsyncExitStack
     instances: dict[type, Any]
 
     def __init__(self, artifacts_collections: list[dict[Any, Any]], components: dict[str, Any]) -> None:
         self.artifact_collections = artifacts_collections
-        self.artifact_map = ChainMap(*artifacts_collections)
+        self.artifact_map = merge(*artifacts_collections)
         self.components = components
         self.exit_stack = AsyncExitStack()
         self.instances = {}
