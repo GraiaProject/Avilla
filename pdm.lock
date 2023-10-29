@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:e23c67a78b7ba33d2b3f1a6d151c9ceaa0759b54a43263e1e17130a91f21a2d0"
+content_hash = "sha256:40f45cc82f7b62b853a3cd7bdeac52a7cdb6be923e555023485f23309438929d"
 
 [[package]]
 name = "aiohttp"
@@ -616,6 +616,22 @@ files = [
 ]
 
 [[package]]
+name = "httpcore"
+version = "0.18.0"
+requires_python = ">=3.8"
+summary = "A minimal low-level HTTP client."
+dependencies = [
+    "anyio<5.0,>=3.0",
+    "certifi",
+    "h11<0.15,>=0.13",
+    "sniffio==1.*",
+]
+files = [
+    {file = "httpcore-0.18.0-py3-none-any.whl", hash = "sha256:adc5398ee0a476567bf87467063ee63584a8bce86078bf748e48754f60202ced"},
+    {file = "httpcore-0.18.0.tar.gz", hash = "sha256:13b5e5cd1dca1a6636a6aaea212b19f4f85cd88c366a2b82304181b769aab3c9"},
+]
+
+[[package]]
 name = "httptools"
 version = "0.6.1"
 requires_python = ">=3.8.0"
@@ -650,6 +666,22 @@ files = [
     {file = "httptools-0.6.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:95658c342529bba4e1d3d2b1a874db16c7cca435e8827422154c9da76ac4e13a"},
     {file = "httptools-0.6.1-cp39-cp39-win_amd64.whl", hash = "sha256:7ebaec1bf683e4bf5e9fbb49b8cc36da482033596a415b3e4ebab5a4c0d7ec5e"},
     {file = "httptools-0.6.1.tar.gz", hash = "sha256:c6e26c30455600b95d94b1b836085138e82f177351454ee841c148f93a9bad5a"},
+]
+
+[[package]]
+name = "httpx"
+version = "0.25.0"
+requires_python = ">=3.8"
+summary = "The next generation HTTP client."
+dependencies = [
+    "certifi",
+    "httpcore<0.19.0,>=0.18.0",
+    "idna",
+    "sniffio",
+]
+files = [
+    {file = "httpx-0.25.0-py3-none-any.whl", hash = "sha256:181ea7f8ba3a82578be86ef4171554dd45fec26a02556a744db029a0a27b7100"},
+    {file = "httpx-0.25.0.tar.gz", hash = "sha256:47ecda285389cb32bb2691cc6e069e3ab0205956f681c5b2ad2325719751d875"},
 ]
 
 [[package]]
@@ -1371,6 +1403,19 @@ summary = "Read key-value pairs from a .env file and set them as environment var
 files = [
     {file = "python-dotenv-1.0.0.tar.gz", hash = "sha256:a8df96034aae6d2d50a4ebe8216326c61c3eb64836776504fcca410e5937a3ba"},
     {file = "python_dotenv-1.0.0-py3-none-any.whl", hash = "sha256:f5971a9226b701070a4bf2c38c89e5a3f0d64de8debda981d1db98583009122a"},
+]
+
+[[package]]
+name = "python-telegram-bot"
+version = "20.6"
+requires_python = ">=3.8"
+summary = "We have made you a wrapper you can't refuse"
+dependencies = [
+    "httpx~=0.25.0",
+]
+files = [
+    {file = "python-telegram-bot-20.6.tar.gz", hash = "sha256:c6951dc6b9368d80a17b5d0496ced39bca2c9bafab06cbfdae6226493d8b06fe"},
+    {file = "python_telegram_bot-20.6-py3-none-any.whl", hash = "sha256:be8ebda350fd0c69c3ebdd7ce87b1e6f8b3fb1d218a193dd821d1d6285b9f649"},
 ]
 
 [[package]]

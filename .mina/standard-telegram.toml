@@ -1,0 +1,20 @@
+includes = ["avilla/standard/telegram"]
+raw_dependencies = [
+  "avilla-core >= 1.0.0a8",
+]
+
+[project]
+name = "avilla-standard-telegram"
+version = "0.1.0" # WIP for release
+authors = [
+  {name = "nullqwertyuiop", email = "null@member.fsf.org"}
+]
+dependencies = []
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
