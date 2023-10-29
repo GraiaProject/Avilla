@@ -4,9 +4,9 @@ import base64
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Notice, NoticeAll, Picture, Text, Emoji
+from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
+from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource
 from avilla.standard.qq.elements import (
     App,
@@ -23,51 +23,50 @@ if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
     from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
-ElizabethMessageSerialize = MessageSerialize[dict]
-
 
 class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::message"
+    m.identify = "serialize"
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @m.entity(ElizabethMessageSerialize, Text)
+    @m.entity(ElizabethCapability.serialize_element, element=Text)
     async def text(self, element: Text) -> dict:
         return {"type": "Plain", "text": element.text}
 
-    @m.entity(ElizabethMessageSerialize, Notice)
+    @m.entity(ElizabethCapability.serialize_element, element=Notice)
     async def notice(self, element: Notice):
         return {"type": "At", "target": int(element.target.last_value)}
 
-    @m.entity(ElizabethMessageSerialize, NoticeAll)
+    @m.entity(ElizabethCapability.serialize_element, element=NoticeAll)
     async def notice_all(self, element: NoticeAll):
         return {"type": "AtAll"}
 
-    @m.entity(ElizabethMessageSerialize, Emoji)
-    async def face(self, element: Emoji) -> dict:
+    @m.entity(ElizabethCapability.serialize_element, element=Face)
+    async def face(self, element: Face) -> dict:
         return {"type": "Face", "faceId": element.id, "name": element.name}
 
-    @m.entity(ElizabethMessageSerialize, Json)
+    @m.entity(ElizabethCapability.serialize_element, element=Json)
     async def json(self, element: Json):
         return {"type": "Json", "json": element.content}
 
-    @m.entity(ElizabethMessageSerialize, Xml)
+    @m.entity(ElizabethCapability.serialize_element, element=Xml)
     async def xml(self, element: Xml):
         return {"type": "Xml", "xml": element.content}
 
-    @m.entity(ElizabethMessageSerialize, App)
+    @m.entity(ElizabethCapability.serialize_element, element=App)
     async def app(self, element: App):
         return {"type": "App", "content": element.content}
 
-    @m.entity(ElizabethMessageSerialize, Poke)
+    @m.entity(ElizabethCapability.serialize_element, element=Poke)
     async def poke(self, element: Poke):
         return {"type": "Poke", "name": element.kind.value}
 
-    @m.entity(ElizabethMessageSerialize, Dice)
+    @m.entity(ElizabethCapability.serialize_element, element=Dice)
     async def dice(self, element: Dice):
         return {"type": "Dice", "value": element.value}
 
-    @m.entity(ElizabethMessageSerialize, MusicShare)
+    @m.entity(ElizabethCapability.serialize_element, element=MusicShare)
     async def music_share(self, element: MusicShare):
         return {
             "type": "MusicShare",
@@ -80,7 +79,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
             "brief": element.brief,
         }
 
-    @m.entity(ElizabethMessageSerialize, Picture)
+    @m.entity(ElizabethCapability.serialize_element, element=Picture)
     async def image(self, element: Picture) -> dict:
         if isinstance(element.resource, ElizabethImageResource):
             return {
@@ -94,13 +93,13 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                 "base64": base64.b64encode(await self.account.staff.fetch_resource(element.resource)).decode("utf-8"),
             }
 
-    @m.entity(ElizabethMessageSerialize, FlashImage)
+    @m.entity(ElizabethCapability.serialize_element, element=FlashImage)
     async def flash_image(self, element: FlashImage):
         raw = await self.image(element)
         raw["type"] = "FlashImage"
         return raw
 
-    @m.entity(ElizabethMessageSerialize, Audio)
+    @m.entity(ElizabethCapability.serialize_element, element=Audio)
     async def audio(self, element: Audio):
         if isinstance(element.resource, ElizabethVoiceResource):
             return {
@@ -114,7 +113,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                 "base64": base64.b64encode(await self.account.staff.fetch_resource(element.resource)).decode("utf-8"),
             }
 
-    @m.entity(ElizabethMessageSerialize, Forward)
+    @m.entity(ElizabethCapability.serialize_element, element=Forward)
     async def forward(self, element: Forward):
         display = asdict(element.strategy) if element.strategy else None
         nodes = []
@@ -127,7 +126,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                         "senderId": int(node.uid) if node.uid else None,
                         "senderName": node.name,
                         "time": int(node.time.timestamp()),
-                        "messageChain":  await self.account.staff.serialize_message(node.content)  # type: ignore
+                        "messageChain": await self.account.staff.serialize_message(node.content),  # type: ignore
                     }
                 )
         return {"type": "Forward", "display": display, "nodes": nodes}

@@ -1,13 +1,10 @@
 from __future__ import annotations
 
 from collections import ChainMap
-from contextvars import ContextVar
 from itertools import chain
 from typing import Any
 
 from graia.ryanvk.typing import SupportsMerge
-
-processing_artifact_heap: ContextVar[dict[Any, Any]] = ContextVar("ryanvk#processing_artifact_heap")
 
 GLOBAL_GALLERY = {}  # layout: {namespace: {identify: {...}}}, cover-mode.
 

@@ -27,20 +27,27 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Self
-
-from avilla.core.elements import Element
-from avilla.core.utilles import identity
 from graia.amnesia.message.chain import MessageChain
 from graia.broadcast.builtin.derive import Derive, DeriveDispatcher
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from typing_extensions import Self
+
+from avilla.core.elements import Element
+from avilla.core.utilles import identity
 
 from .base import ChainDecorator
 from .commander_util import ParamToken, TextToken, tokenize
-from .typing import AnnotatedType, Sentinel, T, generic_isinstance, generic_issubclass, get_origin
+from .typing import (
+    AnnotatedType,
+    Sentinel,
+    T,
+    generic_isinstance,
+    generic_issubclass,
+    get_origin,
+)
 from .util import (
     ElementType,
     MessageChainType,
@@ -262,7 +269,7 @@ class ElementMatch(RegexMatch):
 
     def __init__(
         self,
-        type: Type[Element] = ...,
+        type: Type[Element],
         optional: bool = False,
     ) -> None:
         """初始化 ElementMatch 对象.

@@ -8,13 +8,13 @@ from contextvars import ContextVar
 from typing import Any, Generic, Iterable, List, MutableMapping, TypeVar, Union
 from weakref import WeakKeyDictionary, WeakSet
 
-from typing_extensions import Self
-
-from avilla.core.elements import Element, Text
 from graia.amnesia.message.chain import MessageChain
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from typing_extensions import Self
+
+from avilla.core.elements import Element, Text
 
 from .typing import MaybeFlag, Sentinel, T
 

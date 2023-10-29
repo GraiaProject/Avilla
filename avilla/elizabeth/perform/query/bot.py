@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 
 
 class ElizabethBotQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::query"
+    m.identify = "bot"
 
     @CoreCapability.query.collect(m, "land.account")
     async def query_account(self, predicate: Callable[[str, str], bool] | str, previous: None):

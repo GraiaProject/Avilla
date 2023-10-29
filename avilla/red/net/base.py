@@ -1,23 +1,22 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator, Generic, Literal, TypeVar, overload
+from contextlib import suppress
+from typing import TYPE_CHECKING, AsyncIterator, Literal, overload
 
 from loguru import logger
+from typing_extensions import Self
 
 from avilla.core.ryanvk.staff import Staff
 from avilla.red.account import RedAccount
-from avilla.red.utils import get_msg_types, MsgType
+from avilla.red.capability import RedCapability
+from avilla.red.utils import MsgType, get_msg_types
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsStaff  # noqa: F401
     from avilla.red.protocol import RedProtocol
 
 
-T = TypeVar("T", bound="SupportsStaff")
-
-
-class RedNetworking(Generic[T]):
+class RedNetworking:
     protocol: RedProtocol
     account: RedAccount | None
     close_signal: asyncio.Event
@@ -28,7 +27,17 @@ class RedNetworking(Generic[T]):
         self.account = None
         self.close_signal = asyncio.Event()
 
-    def message_receive(self) -> AsyncIterator[tuple[T, dict]]:
+    def get_staff_components(self):
+        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
+
+    def get_staff_artifacts(self):
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
+
+    @property
+    def staff(self):
+        return Staff(self.get_staff_artifacts(), self.get_staff_components())
+
+    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]:
         ...
 
     @property
@@ -49,43 +58,41 @@ class RedNetworking(Generic[T]):
                 continue
 
             async def event_parse_task(t: str, payload: dict):
-                event = await Staff.focus(connection).parse_event(t, payload)
-                if event == "non-implemented":
-                    logger.warning(f"received unsupported event {t}: {payload}")
+                with suppress(NotImplementedError):
+                    await RedCapability(connection.staff).handle_event(t, payload)
                     return
-                elif event is not None:
-                    self.protocol.post_event(event)
+                logger.warning(f"received unsupported event {t}: {payload}")
 
             def handle_message(message: dict):
                 types = get_msg_types(message)
                 if types.msg == MsgType.system and types.send == "system":
                     if (
-                        message["subMsgType"] == 8 and
-                        message["elements"][0]["elementType"] == 8 and
-                        message["elements"][0]["grayTipElement"]["subElementType"] == 4 and
-                        message["elements"][0]["grayTipElement"]["groupElement"]["type"] == 1
+                        message["subMsgType"] == 8
+                        and message["elements"][0]["elementType"] == 8
+                        and message["elements"][0]["grayTipElement"]["subElementType"] == 4
+                        and message["elements"][0]["grayTipElement"]["groupElement"]["type"] == 1
                     ):
                         asyncio.create_task(event_parse_task("group::member::add", message))
                     elif (
-                        message["subMsgType"] == 8 and
-                        message["elements"][0]["elementType"] == 8 and
-                        message["elements"][0]["grayTipElement"]["subElementType"] == 4 and
-                        message["elements"][0]["grayTipElement"]["groupElement"]["type"] == 8
+                        message["subMsgType"] == 8
+                        and message["elements"][0]["elementType"] == 8
+                        and message["elements"][0]["grayTipElement"]["subElementType"] == 4
+                        and message["elements"][0]["grayTipElement"]["groupElement"]["type"] == 8
                     ):
                         asyncio.create_task(event_parse_task("group::member::mute", message))
                     elif (
-                        message["subMsgType"] == 8 and
-                        message["elements"][0]["elementType"] == 8 and
-                        message["elements"][0]["grayTipElement"]["subElementType"] == 4 and
-                        message["elements"][0]["grayTipElement"]["groupElement"]["type"] == 5
+                        message["subMsgType"] == 8
+                        and message["elements"][0]["elementType"] == 8
+                        and message["elements"][0]["grayTipElement"]["subElementType"] == 4
+                        and message["elements"][0]["grayTipElement"]["groupElement"]["type"] == 5
                     ):
                         asyncio.create_task(event_parse_task("group::name_update", message))
                     elif (
-                        message["subMsgType"] == 12 and
-                        message["elements"][0]["elementType"] == 8 and
-                        message["elements"][0]["grayTipElement"]["subElementType"] == 12 and
-                        message["elements"][0]["grayTipElement"]["xmlElement"]["busiType"] == '1' and
-                        message["elements"][0]["grayTipElement"]["xmlElement"]["busiId"] == '10145'
+                        message["subMsgType"] == 12
+                        and message["elements"][0]["elementType"] == 8
+                        and message["elements"][0]["grayTipElement"]["subElementType"] == 12
+                        and message["elements"][0]["grayTipElement"]["xmlElement"]["busiType"] == "1"
+                        and message["elements"][0]["grayTipElement"]["xmlElement"]["busiId"] == "10145"
                     ):
                         asyncio.create_task(event_parse_task("group::member::legacy::add::invited", message))
                     else:
@@ -99,7 +106,6 @@ class RedNetworking(Generic[T]):
                     handle_message(msg)
             else:
                 asyncio.create_task(event_parse_task(event_type, data["payload"]))
-
 
     async def connection_closed(self):
         self.close_signal.set()

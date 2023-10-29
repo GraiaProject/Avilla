@@ -6,7 +6,8 @@ import os
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from avilla.core.builtins.capability import CoreCapability
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.qq.announcement import (
@@ -14,7 +15,6 @@ from avilla.standard.qq.announcement import (
     AnnouncementDelete,
     AnnouncementPublish,
 )
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -22,13 +22,16 @@ if TYPE_CHECKING:
 
 
 class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "announcement"
 
-    @m.entity(CoreCapability.pull, "land.group.announcement", Announcement)
-    async def get_announcement(self, target: Selector) -> Announcement:
+    @m.pull("land.group.announcement", Announcement)
+    async def get_announcement(self, target: Selector, route: ...) -> Announcement:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         group = Selector().land(self.account.route["land"]).group(target.pattern["group"])
-        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).announcement({target.pattern['announcement']})"):
+        if raw := await cache.get(
+            f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).announcement({target.pattern['announcement']})"
+        ):
             return Announcement(
                 raw["fid"],
                 group,
@@ -43,7 +46,9 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         ):
             if str(data["fid"]) == target.pattern["announcement"]:
                 await cache.set(
-                    f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).announcement({target.pattern['announcement']})", data, timedelta(minutes=5)
+                    f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']}).announcement({target.pattern['announcement']})",
+                    data,
+                    timedelta(minutes=5),
                 )
                 return Announcement(
                     data["fid"],
@@ -56,7 +61,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
                 )
         raise KeyError(f"Announcement {target.pattern['announcement']} not found")
 
-    @m.entity(AnnouncementPublish.publish, "land.group")
+    @m.entity(AnnouncementPublish.publish, target="land.group")
     async def publish_announcement(
         self,
         target: Selector,
@@ -90,7 +95,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         result = await self.account.connection.call("update", "anno_publish", data)
         return target.announcement(str(result["fid"]))
 
-    @m.entity(AnnouncementDelete.delete, "land.group.announcement")
+    @m.entity(AnnouncementDelete.delete, target="land.group.announcement")
     async def delete_announcement(self, target: Selector):
         await self.account.connection.call(
             "update",

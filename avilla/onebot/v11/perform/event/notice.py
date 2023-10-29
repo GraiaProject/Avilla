@@ -6,7 +6,12 @@ from typing import cast
 from loguru import logger
 
 from avilla.core.context import Context
-from avilla.core.event import MetadataModified, ModifyDetail, RelationshipCreated, RelationshipDestroyed
+from avilla.core.event import (
+    MetadataModified,
+    ModifyDetail,
+    RelationshipCreated,
+    RelationshipDestroyed,
+)
 from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.onebot.v11.collector.connection import ConnectionCollector

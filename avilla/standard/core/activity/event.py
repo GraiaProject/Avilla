@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
 from avilla.core.event import AvillaEvent
 from avilla.core.selector import Selector
-from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 @dataclass
@@ -13,7 +14,7 @@ class ActivityEvent(AvillaEvent):
     scene: Selector
     activity: Selector  # eg. [...].button("#1")
 
-    def to_selector(self): # eg. [...].activity("button_clicked")
+    def to_selector(self):  # eg. [...].activity("button_clicked")
         return self.scene.activity(self.id)
 
     class Dispatcher(AvillaEvent.Dispatcher):
@@ -22,6 +23,7 @@ class ActivityEvent(AvillaEvent):
             if interface.name == "activity":
                 return interface.event.to_selector()
             return await AvillaEvent.Dispatcher.catch(interface)
+
 
 @dataclass
 class ActivityAvailable(ActivityEvent):

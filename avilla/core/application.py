@@ -5,6 +5,8 @@ import signal
 from typing import TYPE_CHECKING, Any, Iterable, TypeVar, overload
 
 from creart import it
+from graia.amnesia.builtins.memcache import MemcacheService
+from graia.broadcast import Broadcast
 from launart import Launart
 from launart.service import Service
 from loguru import logger
@@ -17,11 +19,8 @@ from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
-from graia.broadcast import Broadcast
-from graia.amnesia.builtins.memcache import MemcacheService
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsArtifacts
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
 
     from .resource import Resource
@@ -81,6 +80,8 @@ class Avilla:
             clear_cache.__annotations__ = {"event": AccountUnregistered}
 
         if record_send:
+            from avilla.core.context import Context
+            from avilla.core.message import Message
             from avilla.standard.core.message import MessageSent
 
             @self.broadcast.receiver(MessageSent)
@@ -89,15 +90,17 @@ class Avilla:
                 logger.info(
                     f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
                     f"{context.account.route['account']}]: "
-                    f"{scene} <- {message.content!r}"
+                    f"{scene} <- {str(message.content)!r}"
                 )
+
+            message_sender.__annotations__ = {"context": Context, "message": Message}
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
 
         CoreResourceFetchPerform.apply_to(self.global_artifacts)
 
-    def get_staff_components(self) -> dict[str, SupportsArtifacts]:
+    def get_staff_components(self):
         return {"avilla": self}
 
     def get_staff_artifacts(self):
@@ -111,7 +114,7 @@ class Avilla:
         return get_current_avilla()
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
-        return await Staff.focus(self).fetch_resource(resource)
+        return await Staff(self.get_staff_artifacts(), self.get_staff_components()).fetch_resource(resource)
 
     def get_account(self, target: Selector) -> AccountInfo:
         return self.accounts[target]

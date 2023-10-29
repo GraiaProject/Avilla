@@ -1,12 +1,19 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from aiohttp import ClientSession
-from contextlib import suppress
+
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
-from avilla.core.ryanvk.descriptor.fetch import Fetch
-from avilla.red.resource import RedImageResource, RedVoiceResource, RedVideoResource, RedResource, RedFileResource
+from avilla.red.resource import (
+    RedFileResource,
+    RedImageResource,
+    RedResource,
+    RedVideoResource,
+    RedVoiceResource,
+)
 
 if TYPE_CHECKING:
     from ..account import RedAccount  # noqa
@@ -14,15 +21,19 @@ if TYPE_CHECKING:
 
 
 class RedResourceFetchPerform((m := ProtocolCollector["RedProtocol"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::resource_fetch"
 
-    @Fetch.collect(m, RedResource)
-    @Fetch.collect(m, RedFileResource)
-    @Fetch.collect(m, RedImageResource)
-    @Fetch.collect(m, RedVoiceResource)
-    @Fetch.collect(m, RedVideoResource)
+    @m.entity(CoreCapability.fetch, resource=RedResource)
+    @m.entity(CoreCapability.fetch, resource=RedFileResource)
+    @m.entity(CoreCapability.fetch, resource=RedImageResource)
+    @m.entity(CoreCapability.fetch, resource=RedVoiceResource)
+    @m.entity(CoreCapability.fetch, resource=RedVideoResource)  # type: ignore
     async def fetch_resource(self, resource: RedResource) -> bytes:
-        if isinstance(resource, (RedImageResource, RedVoiceResource, RedVideoResource)) and resource.path and resource.path.exists():
+        if (
+            isinstance(resource, (RedImageResource, RedVoiceResource, RedVideoResource))
+            and resource.path
+            and resource.path.exists()
+        ):
             with resource.path.open("rb") as f:
                 return f.read()
         if isinstance(resource, RedImageResource):
@@ -32,7 +43,7 @@ class RedResourceFetchPerform((m := ProtocolCollector["RedProtocol"]())._):
                         return await resp.read()
         if TYPE_CHECKING:
             assert isinstance(resource.ctx.account, RedAccount)
-        return await self.context.account.websocket_client.call_http(
+        return await resource.ctx.account.websocket_client.call_http(
             "post",
             "api/message/fetchRichMedia",
             {

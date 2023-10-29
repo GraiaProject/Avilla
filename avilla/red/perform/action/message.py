@@ -1,18 +1,22 @@
 from __future__ import annotations
 
 import random
-from pathlib import Path
 from typing import TYPE_CHECKING
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+from graia.amnesia.message import MessageChain
 from loguru import logger
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.core.elements import Text, Notice, NoticeAll, Picture
-from avilla.standard.core.message import MessageRevoke, MessageSend, MessageReceived, MessageSent
+from avilla.red.capability import RedCapability
+from avilla.standard.core.message import (
+    MessageReceived,
+    MessageRevoke,
+    MessageSend,
+    MessageSent,
+)
 from avilla.standard.qq.elements import Forward, Node
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
-from graia.amnesia.message import MessageChain
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa
@@ -20,24 +24,28 @@ if TYPE_CHECKING:
 
 
 class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::action"
+    m.identify = "message"
 
     async def handle_reply(self, target: Selector):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        reply_msg = await cache.get(f"red/account({self.account.route['account']}).message({target.pattern['message']})")
+        reply_msg = await cache.get(
+            f"red/account({self.account.route['account']}).message({target.pattern['message']})"
+        )
         if reply_msg:
             return {
                 "elementType": 7,
                 "replyElement": {
-                    # "sourceMsgIdInRecords": reply_msg["msgId"],
+                    "replayMsgId": reply_msg["msgId"],
                     "replayMsgSeq": reply_msg["msgSeq"],
-                    #"senderUid": reply_msg["senderUid"],
+                    "senderUin": reply_msg["senderUin"],
+                    "senderUinStr": str(reply_msg["senderUin"]),
                 },
             }
         logger.warning(f"Unknown message {target.pattern['message']} for reply")
         return None
 
-    @MessageSend.send.collect(m, "land.group")
+    @m.entity(MessageSend.send, target="land.group")
     async def send_group_msg(
         self,
         target: Selector,
@@ -47,11 +55,12 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
     ) -> Selector:
         if message.has(Forward):
             return await self.send_group_forward_msg(target, message.get_first(Forward))
-        msg = await self.account.staff.serialize_message(message)
+        msg = await RedCapability(self.account.staff).serialize(message)
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
         resp = await self.account.websocket_client.call_http(
-            "post", "api/message/send",
+            "post",
+            "api/message/send",
             {
                 "peer": {
                     "chatType": 2,
@@ -63,7 +72,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event("message::recv", resp)
+            event = await RedCapability(
+                self.account.staff.ext({"connection": self.account.websocket_client})
+            ).event_callback("message::recv", resp)
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target.member(self.account.route["account"]))
@@ -74,7 +85,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             msg_id = "unknown"
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(msg_id)
 
-    @MessageSend.send.collect(m, "land.friend")
+    @m.entity(MessageSend.send, target="land.friend")
     async def send_friend_msg(
         self,
         target: Selector,
@@ -82,11 +93,12 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        msg = await self.account.staff.serialize_message(message)
+        msg = await RedCapability(self.account.staff).serialize(message)
         if reply and (reply_msg := await self.handle_reply(reply)):
             msg.insert(0, reply_msg)
         resp = await self.account.websocket_client.call_http(
-            "post", "api/message/send",
+            "post",
+            "api/message/send",
             {
                 "peer": {
                     "chatType": 1,
@@ -98,7 +110,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         )
         if "msgId" in resp:
             msg_id = resp["msgId"]
-            event = await self.account.staff.ext({"connection": self.account.websocket_client}).parse_event("message::recv", resp)
+            event = await RedCapability(
+                self.account.staff.ext({"connection": self.account.websocket_client})
+            ).event_callback("message::recv", resp)
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target, via=self.account.route)
@@ -109,7 +123,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             msg_id = "unknown"
         return Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(msg_id)
 
-    @MessageRevoke.revoke.collect(m, "land.group.message")
+    @m.entity(MessageRevoke.revoke, target="land.group.message")
     async def revoke_group_msg(
         self,
         target: Selector,
@@ -127,7 +141,7 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             },
         )
 
-    @MessageRevoke.revoke.collect(m, "land.friend.message")
+    @m.entity(MessageRevoke.revoke, target="land.friend.message")
     async def revoke_friend_msg(
         self,
         target: Selector,
@@ -145,9 +159,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             },
         )
 
+    @m.entity(RedCapability.send_forward, target="land.group")
     async def send_group_forward_msg(self, target: Selector, forward: Forward) -> Selector:
         if all(node.mid for node in forward.nodes):
-            # TODO: use RedCapability to send forward message
             await self.account.websocket_client.call_http(
                 "post",
                 "api/message/unsafeSendForward",
@@ -163,11 +177,9 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
                         "guildId": None,
                     },
                     "msgInfos": [
-                        {
-                            "msgId": node.mid["message"],
-                            "senderShowName": node.name
-                        } for node in forward.nodes
-                    ]
+                        {"msgId": node.mid["message"], "senderShowName": node.name}  # type: ignore
+                        for node in forward.nodes
+                    ],
                 },
             )
             return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message("unknown")
@@ -198,53 +210,8 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
         raise ValueError("Forward message must have at least one node with content or mid")
 
     async def export_forward_node(self, seq: int, node: Node, target: Selector):
-        elems = []
-        for elem in node.content:
-            if isinstance(elem, Text):
-                elems.append({"text": {"str": elem.text}})
-            elif isinstance(elem, Notice):
-                elems.append({"text": {"str": f"@{elem.target.last_value}"}})
-            elif isinstance(elem, NoticeAll):
-                elems.append({"text": {"str": "@全体成员"}})
-            elif isinstance(elem, Picture):
-                data = await self.account.staff.fetch_resource(elem.resource)
-                resp = await self.account.websocket_client.call_http(
-                    "multipart",
-                    "api/upload",
-                    {
-                        "file": {
-                            "value": data,
-                            "content_type": None,
-                            "filename": "file_image",
-                        }
-                    },
-                )
-                md5 = resp["md5"]
-                file = Path(resp["ntFilePath"])
-                pid = f"{{{md5[:8].upper()}-{md5[8:12].upper()}-{md5[12:16].upper()}-{md5[16:20].upper()}-{md5[20:].upper()}}}{file.suffix}"  # noqa: E501
-                elems.append(
-                    {
-                        "customFace": {
-                            "filePath": pid,
-                            "fileId": random.randint(0, 65535),
-                            "serverIp": -1740138629,
-                            "serverPort": 80,
-                            "fileType": 1001,
-                            "useful": 1,
-                            "md5": [int(md5[i : i + 2], 16) for i in range(0, 32, 2)],
-                            "imageType": 1001,
-                            "width": resp["imageInfo"]["width"],
-                            "height": resp["imageInfo"]["height"],
-                            "size": resp["fileSize"],
-                            "origin": 0,
-                            "thumbWidth": 0,
-                            "thumbHeight": 0,
-                            "pbReserve": [2, 0],
-                        }
-                    }
-                )
-            else:
-                elems.append({"text": {"str": str(elem)}})
+        cap = RedCapability(self.account.staff)
+        elems = [await cap.forward_export(elem) for elem in node.content]  # type: ignore
         return {
             "head": {
                 "field2": node.uid,

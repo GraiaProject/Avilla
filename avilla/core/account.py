@@ -36,7 +36,7 @@ class BaseAccount:
 
     @property
     def staff(self):
-        return Staff.focus(self)
+        return Staff(self.get_staff_artifacts(), self.get_staff_components())
 
     @property
     def available(self) -> bool:

@@ -3,15 +3,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from avilla.core.event import AvillaEvent
 from graia.amnesia.message import MessageChain
 from graia.broadcast.entities.signatures import Force
 
+from avilla.core.account import BaseAccount
+from avilla.core.event import AvillaEvent
+
 if TYPE_CHECKING:
-    from avilla.core.account import BaseAccount
+    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+
     from avilla.core.message import Message
     from avilla.core.selector import Selector
-    from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 
 
 @dataclass

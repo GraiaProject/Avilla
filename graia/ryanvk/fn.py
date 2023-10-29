@@ -1,82 +1,61 @@
 from __future__ import annotations
 
 import inspect
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Callable, Generic, TypedDict
+from typing import TYPE_CHECKING, Any, Callable, Generic, overload
 
-from typing_extensions import Concatenate, ParamSpec, TypeVar
+from typing_extensions import Concatenate, ParamSpec, Self, TypeVar
 
-from graia.ryanvk.override import OverridePerformEntity
+from graia.ryanvk.sign import FnImplement
+
+from .behavior import DEFAULT_BEHAVIOR, OverloadBehavior
+from .override import OverridePerformEntity
+from .perform import BasePerform
 
 if TYPE_CHECKING:
     from .capability import Capability
     from .collector import BaseCollector
     from .overload import FnOverload
-    from .perform import BasePerform
+    from .staff import Staff
     from .typing import SupportsCollect
 
+T = TypeVar("T")
 
 P = ParamSpec("P")
-R = TypeVar("R", covariant=True)
-
 P1 = ParamSpec("P1")
 P2 = ParamSpec("P2")
+
+R = TypeVar("R", covariant=True)
+R1 = TypeVar("R1", covariant=True)
 R2 = TypeVar("R2", covariant=True)
 
+N = TypeVar("N", bound="BasePerform")
 
-class FnRecord(TypedDict):
-    overload_enabled: bool
-    overload_scopes: dict[str, dict[Any, Any]]
-    handler: Callable | None
-
-
-class _MergeScopesInfo(TypedDict):
-    overload_item: FnOverload
-    scopes: list[dict[Any, Any]]
-
-
-@dataclass(eq=True, frozen=True)
-class FnImplement:
-    fn: Fn
-
-    def merge(self, *records: FnRecord):
-        scopes_info: dict[str, _MergeScopesInfo] = {}
-        scopes = {}
-
-        for record in records:
-            for k, v in record["overload_scopes"].items():
-                overload_item = self.fn.overload_map[k]
-                info = scopes_info.setdefault(k, {"overload_item": overload_item, "scopes": []})
-                info["scopes"].append(v)
-
-        for identity, info in scopes_info.items():
-            merged_scope = info["overload_item"].merge_scopes(*info["scopes"])
-            scopes[identity] = merged_scope
-
-        return {
-            "overload_enabled": self.fn.has_overload_capability,
-            "overload_scopes": scopes,
-            "handler": records[-1]["handler"],
-        }
+VnCallable = TypeVar("VnCallable", bound=Callable, covariant=True)
 
 
 class Fn(Generic[P, R]):
-    owner: type[BasePerform | Capability]
+    owner: type[BasePerform | Capability]  # TODO: review here
     name: str
+
     shape: Callable
     shape_signature: inspect.Signature
+
+    behavior: OverloadBehavior
 
     overload_params: dict[str, FnOverload]
     overload_param_map: dict[FnOverload, list[str]]
     overload_map: dict[str, FnOverload]
 
     def __init__(
-        self,
+        self: Fn[P, R],
         shape: Callable[Concatenate[Any, P], R],
+        behavior: OverloadBehavior = DEFAULT_BEHAVIOR,
         overload_param_map: dict[FnOverload, list[str]] | None = None,
     ):
         self.shape = shape
         self.shape_signature = inspect.Signature(list(inspect.Signature.from_callable(shape).parameters.values())[1:])
+        self.behavior = behavior
+
         self.overload_param_map = overload_param_map or {}
         self.overload_params = {i: k for k, v in self.overload_param_map.items() for i in v}
         self.overload_map = {i.identity: i for i in self.overload_param_map}
@@ -85,10 +64,27 @@ class Fn(Generic[P, R]):
         self.owner = owner
         self.name = name
 
+    @overload
+    def __get__(self, instance: BasePerform, owner: type) -> Callable[P, R]:
+        ...
+
+    @overload
+    def __get__(self, instance: Any, owner: type) -> Self:
+        ...
+
+    def __get__(self, instance: BasePerform | None, owner: type):
+        if not isinstance(instance, BasePerform):
+            return self
+
+        def wrapper(*args: P.args, **kwargs: P.kwargs):
+            return instance.staff.call_fn(self, *args, **kwargs)
+
+        return wrapper
+
     @classmethod
-    def with_overload(cls, overload_param_map: dict[FnOverload, list[str]]):
-        def wrapper(shape: Callable[Concatenate[Any, P], R]):
-            return cls(shape, overload_param_map=overload_param_map)
+    def complex(cls, overload_param_map: dict[FnOverload, list[str]], behavior: OverloadBehavior = DEFAULT_BEHAVIOR):
+        def wrapper(shape: Callable[Concatenate[Any, P1], R1]) -> Fn[P1, R1]:
+            return cls(shape, overload_param_map=overload_param_map, behavior=behavior)  # type: ignore
 
         return wrapper
 
@@ -101,13 +97,13 @@ class Fn(Generic[P, R]):
         collector: BaseCollector,
         **overload_settings: Any,
     ):
-        def wrapper(entity: Callable[Concatenate[Any, P], R]):
+        def wrapper(entity: Callable[Concatenate[Any, P], R]) -> Callable[Concatenate[Any, P], R]:
             artifact = collector.artifacts.setdefault(
                 FnImplement(self),
                 {
                     "overload_enabled": self.has_overload_capability,
                     "overload_scopes": {},
-                    "handler": None,
+                    "record_tuple": None,
                 },
             )
             if self.has_overload_capability:
@@ -117,14 +113,42 @@ class Fn(Generic[P, R]):
                         collector,
                         scope,
                         entity,
-                        {param: overload_settings[param] for param in params},
+                        fn_overload.get_params_layout(params, overload_settings),
                     )
             else:
-                artifact["handler"] = (collector, entity)
+                artifact["record_tuple"] = (collector, entity)
 
             return entity
 
         return wrapper
+
+    def dyn_perform(self, staff: Staff, cls: type[N]) -> N:
+        raise ValueError("common staff can only works with static perform")
+
+    def _get_instance(self, staff: Staff, cls: type[N]) -> N:
+        if cls not in staff.instances:
+            if cls.__static__:
+                instance = staff.instances[cls] = cls(staff)
+            else:
+                instance = self.dyn_perform(staff, cls)
+        else:
+            instance = staff.instances[cls]
+
+        return instance
+
+    def execute(
+        self,
+        staff: Staff,
+        collector: BaseCollector,
+        entity: Callable[Concatenate[Any, P], R],
+        *args: P.args,
+        **kwargs: P.kwargs,
+    ) -> R:
+        # get instance
+        instance = self._get_instance(staff, collector.cls)
+
+        # execute
+        return entity(instance, *args, **kwargs)
 
     def override(
         self: SupportsCollect[P1, Callable[[Callable[Concatenate[Any, P2], R2]], Any]],  # pyright: ignore

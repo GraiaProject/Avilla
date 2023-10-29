@@ -1,19 +1,21 @@
 from __future__ import annotations
 
+from loguru import logger
+
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
 from avilla.core.selector import Selector
-from avilla.core.ryanvk.descriptor.event import EventParse
-from avilla.standard.core.profile import Summary
+from avilla.red.capability import RedCapability
 from avilla.red.collector.connection import ConnectionCollector
-from loguru import logger
+from avilla.standard.core.profile import Summary
 
 
 class RedEventGroupPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::event"
+    m.identify = "group"
 
-    @EventParse.collect(m, "group::name_update")
-    async def group_name_change(self, raw_event: dict):
+    @m.entity(RedCapability.event_callback, event_type="group::name_update")
+    async def group_name_change(self, event_type: ..., raw_event: dict):
         account = self.connection.account
         if account is None:
             logger.warning(f"Unknown account received message {raw_event}")
@@ -32,12 +34,12 @@ class RedEventGroupPerform((m := ConnectionCollector())._):
             context,
             group,
             Summary,
-            {
-                Summary.inh(lambda x: x.name): ModifyDetail("update", group_data["groupName"], "")
-            },
+            {Summary.inh(lambda x: x.name): ModifyDetail("update", group_data["groupName"], "")},
             operator=operator,
             scene=group,
         )
+
+
 _ = {
     "msgId": "7273401197226772043",
     "msgRandom": "7198583817760031691",

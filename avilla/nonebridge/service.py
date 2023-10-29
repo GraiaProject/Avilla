@@ -6,23 +6,23 @@ from contextlib import suppress
 from typing import TYPE_CHECKING, Any, ClassVar
 
 import nonebot
+from graia.broadcast.utilles import run_always_await
 from launart import Launart, Service, any_completed
 from loguru import logger
 from nonebot.message import handle_event
 
 from avilla.core.account import BaseAccount
 from avilla.core.event import AvillaEvent
+from avilla.core.ryanvk.staff import Staff
 from avilla.core.utilles import identity
 from avilla.standard.core.account import AccountRegistered, AccountUnregistered
-from graia.broadcast.utilles import run_always_await
-from graia.ryanvk._runtime import processing_artifact_heap
+from graia.ryanvk import merge, ref
 from graia.ryanvk.aio import queue_task
 
 from .adapter import NoneBridgeAdapter
 from .bot import NoneBridgeBot
 from .dispatcher import AllEventQueue
 from .driver import NoneBridgeDriver
-from .staff import NoneBridgeStaff
 
 if TYPE_CHECKING:
     from avilla.core import Avilla
@@ -37,18 +37,21 @@ class NoneBridgeService(Service):
 
     driver: NoneBridgeDriver
     adapter: NoneBridgeAdapter
-    staff: NoneBridgeStaff
+    staff: Staff
     bots: dict[str, NoneBridgeBot]  # key 是 Selector.pattern 的 json
     queuer: AllEventQueue[AvillaEvent]
 
-    artifacts: ClassVar[dict[Any, Any]] = {"ob_message_deserde": {}, "ob_message_serde": {}}
+    artifacts: ClassVar[dict[Any, Any]] = {
+        **ref("avilla.protocol/onebot_v11::message", "serialize"),
+        **ref("avilla.protocol/onebot_v11::message", "deserialize"),
+    }
 
     def __init__(self, avilla: Avilla) -> None:
         super().__init__()
         self.avilla = avilla
         self.driver = NoneBridgeDriver(self)
         self.adapter = NoneBridgeAdapter(self)
-        self.staff = NoneBridgeStaff([self.artifacts], {"avilla": avilla, "nonebridge.service": self})
+        self.staff = Staff([self.artifacts], {"avilla": avilla, "nonebridge.service": self})
         self.bots = {}
         self.queuer = AllEventQueue()
 
@@ -116,6 +119,7 @@ class NoneBridgeService(Service):
 
 
 def _import_ryanvk_performs():
+    """
     # isort: off
 
     # 这部分会造成干扰
@@ -133,6 +137,7 @@ def _import_ryanvk_performs():
     from .perform.event.message import MessageEventTranslater
 
     MessageEventTranslater.apply_to(NoneBridgeService.artifacts)
+    """
 
 
 _import_ryanvk_performs()

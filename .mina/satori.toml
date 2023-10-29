@@ -1,0 +1,22 @@
+includes = ["avilla/satori"]
+raw_dependencies = [
+  "avilla-core >= 1.0.0a8",
+]
+
+[project]
+name = "avilla-satori"
+version = "1.0.0a9"
+authors = [
+  {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
+]
+dependencies = [
+  "satori-python",
+]
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"

@@ -3,17 +3,17 @@ from __future__ import annotations
 from avilla.core.context import Context
 from avilla.core.event import MetadataModified, ModifyDetail
 from avilla.core.selector import Selector
+from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.standard.core.inputting import InputtingStatus
 from avilla.standard.core.profile import Nick, Summary
 
-from . import ElizabethEventParse
-
 
 class ElizabethEventFriendPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::event"
+    m.identify = "friend"
 
-    @m.entity(ElizabethEventParse, "FriendInputStatusChangedEvent")
+    @m.entity(ElizabethCapability.event_callback, event="FriendInputStatusChangedEvent")
     async def friend_input_status_changed(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -45,7 +45,7 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
             scene=friend,
         )
 
-    @m.entity(ElizabethEventParse, "FriendNickChangedEvent")
+    @m.entity(ElizabethCapability.event_callback, event="FriendNickChangedEvent")
     async def friend_nick_changed(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

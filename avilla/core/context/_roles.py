@@ -4,6 +4,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, TypeVar
 
+from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import ParamSpec
 
 from avilla.core.message import Message
@@ -13,7 +14,6 @@ from avilla.standard.core.activity import ActivityTrigger
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.relation import SceneCapability
 from avilla.standard.core.request import RequestCapability
-from graia.amnesia.message import Element, MessageChain, Text
 
 from ._selector import ContextSelector
 
@@ -28,6 +28,7 @@ _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 class ContextClientSelector(ContextSelector):
     def trigger_activity(self, activity: str):
         return self.context[ActivityTrigger.trigger](self.activity(activity))
+
 
 class ContextEndpointSelector(ContextSelector):
     def expects_request(self) -> ContextRequestSelector:

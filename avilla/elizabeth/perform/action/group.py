@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.builtins.capability import CoreCapability
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+
 from avilla.core.exceptions import permission_error_message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -10,7 +11,6 @@ from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
 from avilla.standard.core.profile import Summary, SummaryCapability
 from avilla.standard.core.relation import SceneCapability
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -18,12 +18,15 @@ if TYPE_CHECKING:
 
 
 class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/elizabeth::action"
+    m.identify = "group"
 
     @m.pull("land.group", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        if raw := await cache.get(f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"):
+        if raw := await cache.get(
+            f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"
+        ):
             return Summary(raw["name"], None)
         result = await self.account.connection.call(
             "fetch",
@@ -34,7 +37,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
         )
         return Summary(result["name"], None)
 
-    @m.entity(MuteAllCapability.mute_all, "land.group")
+    @m.entity(MuteAllCapability.mute_all, target="land.group")
     async def group_mute_all(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -44,7 +47,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(MuteAllCapability.unmute_all, "land.group")
+    @m.entity(MuteAllCapability.unmute_all, target="land.group")
     async def group_unmute_all(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -54,7 +57,7 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(SceneCapability.leave, "land.group")
+    @m.entity(SceneCapability.leave, target="land.group")
     async def group_leave(self, target: Selector):
         await self.account.connection.call(
             "update",
@@ -64,8 +67,8 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(SummaryCapability.set_name, "land.group", Summary)
-    async def group_set_name(self, target: Selector, t: ..., name: str):
+    @m.entity(SummaryCapability.set_name, target="land.group", route=Summary)
+    async def group_set_name(self, target: Selector, route: ..., name: str):
         privilege_info = await self.account.staff.pull_metadata(target, Privilege)
         if not privilege_info.available:
             self_permission = await self.account.staff.pull_metadata(
@@ -87,8 +90,8 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
             },
         )
 
-    @m.entity(CoreCapability.pull, "land.group", Privilege)
-    async def group_get_privilege_info(self, target: Selector) -> Privilege:
+    @m.pull("land.group", Privilege)
+    async def group_get_privilege_info(self, target: Selector, route: ...) -> Privilege:
         self_info = await self.account.connection.call(
             "fetch",
             "memberInfo",

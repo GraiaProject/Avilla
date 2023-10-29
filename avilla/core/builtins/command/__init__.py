@@ -33,12 +33,6 @@ from arclet.alconna.argv import Argv, argv_config, set_default_argv_type
 from arclet.alconna.builtin import generate_duplication
 from arclet.alconna.tools.construct import AlconnaString, alconna_from_format
 from creart import it
-from nepattern import DirectPattern
-from pygtrie import CharTrie
-from tarina.generic import generic_isinstance, generic_issubclass, get_origin
-from tarina.string import split_once
-
-from avilla.core import MessageReceived
 from graia.amnesia.message import MessageChain
 from graia.amnesia.message.element import Text
 from graia.broadcast import Broadcast
@@ -47,6 +41,12 @@ from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.exectarget import ExecTarget
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
 from graia.broadcast.typing import T_Dispatcher
+from nepattern import DirectPattern
+from pygtrie import CharTrie
+from tarina.generic import generic_isinstance, generic_issubclass, get_origin
+from tarina.string import split_once
+
+from avilla.core import MessageReceived
 
 T = TypeVar("T")
 TCallable = TypeVar("TCallable", bound=Callable[..., Any])
@@ -209,7 +209,7 @@ class AvillaCommands:
             target = ExecTarget(func, dispatchers, decorators)
             if isinstance(command, str):
                 mapping = {arg.name: arg.value for arg in Args.from_callable(func)[0]}
-                mapping.update(args or {})
+                mapping.update(args or {})  # type: ignore
                 _command = alconna_from_format(command, mapping, meta, union=False)
                 _command.reset_namespace(self.__namespace__)
                 key = _command.name + "".join(

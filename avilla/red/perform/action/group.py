@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
+
 from avilla.core.exceptions import UnknownTarget
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -9,7 +11,6 @@ from avilla.standard.core.common import Count
 from avilla.standard.core.privilege import MuteAllCapability
 from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.relation import SceneCapability
-from graia.amnesia.builtins.memcache import MemcacheService, Memcache
 
 if TYPE_CHECKING:
     from avilla.red.account import RedAccount  # noqa
@@ -17,10 +18,11 @@ if TYPE_CHECKING:
 
 
 class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/red::action"
+    m.identify = "group"
 
     @m.pull("land.group", Summary)
-    async def get_summary(self, target: Selector) -> Summary:
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"red/account({self.account.route['account']}).group({target.pattern['group']})"):
             return Summary(raw["name"], "a group contact assigned to this account")
@@ -33,7 +35,7 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
         raise UnknownTarget("Group not found")
 
     @m.pull("land.group", Nick)
-    async def get_nick(self, target: Selector) -> Nick:
+    async def get_nick(self, target: Selector, route: ...) -> Nick:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"red/account({self.account.route['account']}).group({target.pattern['group']})"):
             return Nick(raw["name"], raw["remark"] or raw["name"], None)
@@ -46,7 +48,7 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
         raise UnknownTarget("Group not found")
 
     @m.pull("land.group", Count)
-    async def get_count(self, target: Selector) -> Count:
+    async def get_count(self, target: Selector, route: ...) -> Count:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(f"red/account({self.account.route['account']}).group({target.pattern['group']})"):
             return Count(raw["memberCount"], raw["maxMember"])
@@ -58,19 +60,19 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
                 return Count(i["memberCount"], i["maxMember"])
         raise UnknownTarget("Group not found")
 
-    @MuteAllCapability.mute_all.collect(m, "land.group")
+    @m.entity(MuteAllCapability.mute_all, target="land.group")
     async def mute_all(self, target: Selector):
         await self.account.websocket_client.call_http(
             "post", "api/group/muteEveryone", {"group": int(target["group"]), "enable": True}
         )
 
-    @MuteAllCapability.unmute_all.collect(m, "land.group")
+    @m.entity(MuteAllCapability.unmute_all, target="land.group")
     async def unmute_all(self, target: Selector):
         await self.account.websocket_client.call_http(
             "post", "api/group/muteEveryone", {"group": int(target["group"]), "enable": False}
         )
 
-    @SceneCapability.remove_member.collect(m, "land.group.member")
+    @m.entity(SceneCapability.remove_member, target="land.group.member")
     async def remove_member(self, target: Selector, reason: str | None = None):
         await self.account.websocket_client.call_http(
             "post",

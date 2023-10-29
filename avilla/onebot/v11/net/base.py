@@ -6,16 +6,14 @@ from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
 from loguru import logger
 
 from avilla.core.exceptions import ActionFailed
-from avilla.core.ryanvk.staff import Staff
 from avilla.onebot.v11.utilles import onebot11_event_type
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsStaff
     from avilla.onebot.v11.account import OneBot11Account
     from avilla.onebot.v11.protocol import OneBot11Protocol
 
 
-T = TypeVar("T", bound="SupportsStaff")
+T = TypeVar("T")
 
 
 class OneBot11Networking(Generic[T]):
@@ -51,16 +49,17 @@ class OneBot11Networking(Generic[T]):
                     future.set_result(data)
                 continue
 
+            """
             async def event_parse_task(data: dict):
                 event_type = onebot11_event_type(data)
-                event = await Staff.focus(connection).parse_event(event_type, data)
+                event = await connection.staff.parse_event(event_type, data)
                 if event == "non-implemented":
                     logger.warning(f"received unsupported event {event_type}: {data}")
                     return
                 elif event is not None:
                     await self.protocol.post_event(event)
 
-            asyncio.create_task(event_parse_task(data))
+            asyncio.create_task(event_parse_task(data))"""
 
     async def connection_closed(self):
         self.close_signal.set()
