@@ -29,3 +29,23 @@ class DiceLimit(int, Enum):
     MAX_VALUE_FOOTBALL = 5
     MAX_VALUE_SLOT_MACHINE = 64
     MAX_VALUE_BOWLING = 6
+
+
+class MessageEntityType(str, Enum):
+    MENTION = "mention"
+    HASH_TAG = "hashtag"
+    CASHTAG = "cashtag"
+    PHONE_NUMBER = "phone_number"
+    BOT_COMMAND = "bot_command"
+    URL = "url"
+    EMAIL = "email"
+    BOLD = "bold"
+    ITALIC = "italic"
+    CODE = "code"
+    PRE = "pre"
+    TEXT_LINK = "text_link"
+    TEXT_MENTION = "text_mention"
+    UNDERLINE = "underline"
+    STRIKETHROUGH = "strikethrough"
+    SPOILER = "spoiler"
+    CUSTOM_EMOJI = "custom_emoji"
