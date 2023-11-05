@@ -1,115 +1,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Final
 
-from graia.amnesia.message.element import Element
+from graia.amnesia.message.element import Element, Text
 
-from avilla.core.elements import Audio as CoreAudio
-from avilla.core.elements import Picture
-
-# from avilla.core.elements import Video as CoreVideo
-from avilla.standard.telegram.constants import DiceEmoji, DiceLimit
-from avilla.standard.telegram.resource import TelegramResource
-
-
-# region File Elements
-class PhotoSize(Picture):
-    resource: TelegramResource[bytes]
-    width: int
-    height: int
-
-    def __init__(self, resource: TelegramResource, width: int, height: int):
-        super().__init__(resource)
-        self.width = width
-        self.height = height
-
-    def __str__(self) -> str:
-        return f"[$PhotoSize]"
-
-    def __repr__(self) -> str:
-        return f"[$PhotoSize:file_id={self.resource.file_id};width={self.width};height={self.height}]"
+from avilla.core import Audio, Notice, Video
 
 
 @dataclass
-class _Medium(Element):
+class FileObject:
     file_id: str
     file_unique_id: str
-    file_size: int | None = None
-
-    def __str__(self) -> str:
-        return f"[$Medium]"
-
-    def __repr__(self) -> str:
-        return f"[$Medium:file_id={self.file_id}]"
-
-    def __hash__(self):
-        return hash(self.file_unique_id)
-
-    def __eq__(self, other):
-        return isinstance(other, _Medium) and self.file_unique_id == other.file_unique_id
 
 
 @dataclass
-class _ThumbedMedium(_Medium):
-    thumbnail: PhotoSize | None = None
-
-    def __str__(self):
-        return f"[$ThumbedMedium]"
-
-    def __repr__(self):
-        return f"[$ThumbedMedium:file_id={self.file_id}]"
-
-
-class Animation(_ThumbedMedium):
+class Animation(FileObject, Element):
     width: int
     height: int
-    duration: int
-    file_name: str | None = None
-    mime_type: str | None = None
-
-    def __init__(
-        self,
-        file_id: str,
-        file_unique_id: str,
-        width: int,
-        height: int,
-        duration: int,
-        file_size: int | None = None,
-        thumbnail: PhotoSize | None = None,
-    ):
-        super().__init__(file_id, file_unique_id, file_size, thumbnail)
-        self.width = width
-        self.height = height
-        self.duration = duration
+    is_animated: bool
+    is_video: bool
 
     def __str__(self) -> str:
-        return f"[$Animation:file_id={self.file_id}]"
-
-
-class Audio(CoreAudio, _ThumbedMedium):
-    resource: TelegramResource[bytes]
-    duration: int
-    performer: str | None = None
-    title: str | None = None
-    file_name: str | None = None
-    mime_type: str | None = None
-
-    def __init__(
-        self,
-        resource: TelegramResource[bytes],
-        duration: int,
-        thumbnail: PhotoSize | None = None,
-        performer: str | None = None,
-        title: str | None = None,
-    ):
-        super().__init__(resource, duration)
-        self.thumbnail = thumbnail
-        self.performer = performer
-        self.title = title
-
-    def __str__(self) -> str:
-        return f"[$Audio:file_id={self.file_id}]"
+        return f"[$Animation]"
 
 
 @dataclass
@@ -120,181 +34,102 @@ class Contact(Element):
     user_id: int | None = None
     vcard: str | None = None
 
+    def __str__(self) -> str:
+        return f"[$Contact]"
+
 
 @dataclass
-class Document(_ThumbedMedium):
-    file_name: str | None = None
-    mime_type: str | None = None
-
+class Document(FileObject, Element):
     def __str__(self) -> str:
-        return f"[$Document:file_id={self.file_id}]"
+        return f"[$Document]"
 
 
 @dataclass
 class Location(Element):
-    longitude: float
     latitude: float
-    horizontal_accuracy: float | None = None
-    live_period: int | None = None
-    heading: int | None = None
-    proximity_alert_radius: int | None = None
+    longitude: float
 
     def __str__(self) -> str:
         return f"[$Location]"
 
-    def __repr__(self) -> str:
-        return f"[$Location:longitude={self.longitude};latitude={self.latitude}]"
 
-
-class Sticker(_ThumbedMedium):
+@dataclass
+class Sticker(FileObject, Element):
     width: int
     height: int
     is_animated: bool
     is_video: bool
-    type: str
-    emoji: str | None = None
-    set_name: str | None = None
-    mask_position: dict | None = None
-    premium_animation: ... | None = None
-    custom_emoji_id: str | None = None
-    needs_repainting: bool | None = None
-
-    def __init__(
-        self,
-        file_id: str,
-        file_unique_id: str,
-        width: int,
-        height: int,
-        is_animated: bool,
-        is_video: bool,
-        type: str,
-        file_size: int | None = None,
-        thumbnail: PhotoSize | None = None,
-        emoji: str | None = None,
-        set_name: str | None = None,
-        mask_position: dict | None = None,
-        premium_animation: ... | None = None,
-        custom_emoji_id: str | None = None,
-        needs_repainting: bool | None = None,
-    ):
-        super().__init__(file_id, file_unique_id, file_size, thumbnail)
-        self.width = width
-        self.height = height
-        self.is_animated = is_animated
-        self.is_video = is_video
-        self.type = type
-        self.emoji = emoji
-        self.set_name = set_name
-        self.mask_position = mask_position
-        self.premium_animation = premium_animation
-        self.custom_emoji_id = custom_emoji_id
-        self.needs_repainting = needs_repainting
 
     def __str__(self) -> str:
-        return f"[$Sticker:file_id={self.file_id}]"
+        return f"[$Sticker]"
 
 
 @dataclass
 class Venue(Element):
-    location: Location
+    latitude: float
+    longitude: float
     title: str
     address: str
-    foursquare_id: str | None = None
-    foursquare_type: str | None = None
-    google_place_id: str | None = None
-    google_place_type: str | None = None
 
     def __str__(self) -> str:
         return f"[$Venue]"
 
-    def __repr__(self) -> str:
-        return f"[$Venue:location={self.location};title={self.title};address={self.address}]"
 
-
-class Video(_ThumbedMedium):
-    width: int
-    height: int
-    duration: int
-    mime_type: str | None = None
-    file_name: str | None = None
-
-    def __init__(
-        self,
-        file_id: str,
-        file_unique_id: str,
-        width: int,
-        height: int,
-        duration: int,
-        file_size: int | None = None,
-        thumbnail: PhotoSize | None = None,
-        mime_type: str | None = None,
-        file_name: str | None = None,
-    ):
-        super().__init__(file_id, file_unique_id, file_size, thumbnail)
-        self.width = width
-        self.height = height
-        self.duration = duration
-        self.mime_type = mime_type
-        self.file_name = file_name
-
+class VideoNote(Video):
     def __str__(self) -> str:
-        return f"[$Video:file_id={self.file_id}]"
+        return f"[$VideoNote]"
 
 
-class VideoNote(_ThumbedMedium):
-    length: int
-    duration: int
-    file_name: str | None = None
-    mime_type: str | None = None
-
-    def __init__(
-        self,
-        file_id: str,
-        file_unique_id: str,
-        length: int,
-        duration: int,
-        file_size: int | None = None,
-        thumbnail: PhotoSize | None = None,
-        file_name: str | None = None,
-        mime_type: str | None = None,
-    ):
-        super().__init__(file_id, file_unique_id, file_size, thumbnail)
-        self.length = length
-        self.duration = duration
-        self.file_name = file_name
-        self.mime_type = mime_type
-
+class Voice(Audio):
     def __str__(self) -> str:
-        return f"[$VideoNote:file_id={self.file_id}]"
+        return f"[$Voice]"
 
 
-class Voice(_Medium):
-    duration: int
-    mime_type: str | None = None
-    file_name: str | None = None
-
-    def __init__(
-        self,
-        file_id: str,
-        file_unique_id: str,
-        duration: int,
-        file_size: int | None = None,
-        file_name: str | None = None,
-        mime_type: str | None = None,
-    ):
-        super().__init__(file_id, file_unique_id, file_size)
-        self.duration = duration
-        self.file_name = file_name
-        self.mime_type = mime_type
-
-    def __str__(self) -> str:
-        return f"[$Voice:file_id={self.file_id}]"
+class PollType(str, Enum):
+    REGULAR = "regular"
+    QUIZ = "quiz"
 
 
-# endregion
+@dataclass
+class Poll(Element):
+    question: str
+    options: list[str]
+    total_voter_count: int
+    is_closed: bool
+    is_anonymous: bool
+    type: PollType
 
 
-# region Non-typical Elements
+class DiceEmoji(str, Enum):
+    DICE = "Dice"
+    """ 🎲 """
+
+    DARTS = "Darts"
+    """ 🎯 """
+
+    BASKETBALL = "Basketball"
+    """ 🏀 """
+
+    FOOTBALL = "Football"
+    """ ⚽ """
+
+    SLOT_MACHINE = "SlotMachine"
+    """ 🎰 """
+
+    BOWLING = "Bowling"
+    """ 🎳 """
+
+
+class DiceLimit(int, Enum):
+    MIN_VALUE = 1
+    MAX_VALUE_DICE = 6
+    MAX_VALUE_DARTS = 6
+    MAX_VALUE_BASKETBALL = 5
+    MAX_VALUE_FOOTBALL = 5
+    MAX_VALUE_SLOT_MACHINE = 64
+    MAX_VALUE_BOWLING = 6
+
+
 class _Dice(Element):
     value: int
     emoji: DiceEmoji
@@ -311,7 +146,7 @@ class _Dice(Element):
         return DiceLimit.MIN_VALUE
 
     def __str__(self) -> str:
-        return f"[$Dice:value={self.value};emoji={self.emoji}]"
+        return f"[${self.emoji.value}:value={self.value}]"
 
 
 class Dice(_Dice):
@@ -342,4 +177,129 @@ class Story(Element):
     """Currently holds no information."""
 
 
-# endregion
+class MessageEntityType(str, Enum):
+    MENTION = "mention"
+    HASH_TAG = "hashtag"
+    CASHTAG = "cashtag"
+    PHONE_NUMBER = "phone_number"
+    BOT_COMMAND = "bot_command"
+    URL = "url"
+    EMAIL = "email"
+    BOLD = "bold"
+    ITALIC = "italic"
+    CODE = "code"
+    PRE = "pre"
+    TEXT_LINK = "text_link"
+    TEXT_MENTION = "text_mention"
+    UNDERLINE = "underline"
+    STRIKETHROUGH = "strikethrough"
+    SPOILER = "spoiler"
+    CUSTOM_EMOJI = "custom_emoji"
+
+
+@dataclass
+class _Entity(Text, Element):
+    text: str
+    type: MessageEntityType
+
+    def __str__(self):
+        return f"[${self.type.value}:text={self.text}]"
+
+
+@dataclass
+class Mention(Notice, _Entity):
+    type: Final[MessageEntityType] = MessageEntityType.MENTION
+
+
+@dataclass
+class HashTag(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.HASH_TAG
+
+
+@dataclass
+class Cashtag(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.CASHTAG
+
+
+@dataclass
+class PhoneNumber(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.PHONE_NUMBER
+
+
+@dataclass
+class BotCommand(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.BOT_COMMAND
+
+
+@dataclass
+class Url(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.URL
+
+
+@dataclass
+class Email(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.EMAIL
+
+
+@dataclass
+class Bold(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.BOLD
+
+
+@dataclass
+class Italic(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.ITALIC
+
+
+@dataclass
+class Code(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.CODE
+
+
+@dataclass
+class Pre(_Entity):
+    language: str
+    type: Final[MessageEntityType] = MessageEntityType.PRE
+
+
+@dataclass
+class TextLink(_Entity):
+    url: str
+    type: Final[MessageEntityType] = MessageEntityType.TEXT_LINK
+
+
+@dataclass
+class TextMention(_Entity):
+    user: ...
+    type: Final[MessageEntityType] = MessageEntityType.TEXT_MENTION
+
+
+@dataclass
+class Underline(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.UNDERLINE
+
+
+@dataclass
+class Strikethrough(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.STRIKETHROUGH
+
+
+@dataclass
+class Spoiler(_Entity):
+    type: Final[MessageEntityType] = MessageEntityType.SPOILER
+
+
+@dataclass
+class CustomEmoji(_Entity):
+    custom_emoji_id: str
+    type: Final[MessageEntityType] = MessageEntityType.CUSTOM_EMOJI
+
+
+class Invoice(Element):
+    # To be implemented
+    ...
+
+
+class Game(Element):
+    # To be implemented
+    ...
