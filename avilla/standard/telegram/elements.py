@@ -85,21 +85,6 @@ class Voice(Audio):
         return f"[$Voice]"
 
 
-class PollType(str, Enum):
-    REGULAR = "regular"
-    QUIZ = "quiz"
-
-
-@dataclass
-class Poll(Element):
-    question: str
-    options: list[str]
-    total_voter_count: int
-    is_closed: bool
-    is_anonymous: bool
-    type: PollType
-
-
 class DiceEmoji(str, Enum):
     DICE = "Dice"
     """ 🎲 """
