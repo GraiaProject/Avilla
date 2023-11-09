@@ -41,7 +41,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         msg = await QQAPICapability(self.account.staff).serialize(message)
         if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
-            msg["event_id"] = event_id
+            msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
@@ -54,7 +54,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
             event = await QQAPICapability(
                 self.account.staff.ext({"connection": self.account.connection})
-            ).event_callback("message_create", result["message"])
+            ).event_callback("self_message_create", result)
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target.member(self.account.route["account"]))
@@ -75,7 +75,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 return audit_res.audit.message
             event = await QQAPICapability(
                 self.account.staff.ext({"connection": self.account.connection})
-            ).event_callback("message_create", result["message"])
+            ).event_callback("self_message_create", result["message"])
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target.member(self.account.route["account"]))
@@ -95,7 +95,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         msg = await QQAPICapability(self.account.staff).serialize(message)
         if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
-            msg["event_id"] = event_id
+            msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
@@ -141,7 +141,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         msg = await QQAPICapability(self.account.staff).serialize(message)
         if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
-            msg["event_id"] = event_id
+            msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
@@ -187,7 +187,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         msg = await QQAPICapability(self.account.staff).serialize(message)
         if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
-            msg["event_id"] = event_id
+            msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
@@ -196,7 +196,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         if result is None:
             raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
         event = await QQAPICapability(self.account.staff.ext({"connection": self.account.connection})).event_callback(
-            "direct_message_create", result
+            "self_direct_message_create", result
         )
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)

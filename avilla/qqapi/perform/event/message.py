@@ -52,7 +52,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{channel}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -87,7 +87,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{group}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -123,7 +123,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{author}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -158,7 +158,76 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{friend}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
+        context._collect_metadatas(msg.to_selector(), msg)
+        return MessageReceived(context, msg)
+
+    @m.entity(QQAPICapability.event_callback, event_type="self_message_create")
+    async def self_at_message(self, event_type: ..., raw_event: dict):
+        # TODO: put the author.bot metadata
+        account_route = Selector().land("qq").account(self.connection.account_id)
+        info = self.protocol.avilla.accounts.get(account_route)
+        if info is None:
+            logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
+            return
+        account = info.account
+        guild = Selector().land("qq").guild(raw_event["guild_id"])
+        channel = guild.channel(raw_event["channel_id"])
+        author = channel.member(raw_event["author"]["id"])
+        context = Context(
+            account,
+            author,
+            channel,
+            channel,
+            channel.member(account_route["account"]),
+        )
+        message = await QQAPICapability(account.staff.ext({"context": context})).deserialize(raw_event)
+        reply = None
+        if i := message.get(Reference):
+            reply = channel.message(i[0].message_id)
+            message = message.exclude(Reference)
+        msg = Message(
+            id=raw_event["id"],
+            scene=channel,
+            sender=author,
+            content=message,
+            time=datetime.fromisoformat(raw_event["timestamp"]),
+            reply=reply,
+        )
+        context._collect_metadatas(msg.to_selector(), msg)
+        return MessageReceived(context, msg)
+
+    @m.entity(QQAPICapability.event_callback, event_type="self_direct_message_create")
+    async def self_direct_message(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(self.connection.account_id)
+        info = self.protocol.avilla.accounts.get(account_route)
+        if info is None:
+            logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
+            return
+        account = info.account
+        guild = Selector().land("qq").guild(raw_event["guild_id"])
+        author = guild.user(raw_event["author"]["id"])
+        context = Context(
+            account,
+            author,
+            account_route,
+            author,
+            account_route,
+        )
+        message = await QQAPICapability(account.staff.ext({"context": context})).deserialize(raw_event)
+        reply = None
+        if i := message.get(Reference):
+            reply = guild.message(i[0].message_id)
+            message = message.exclude(Reference)
+
+        msg = Message(
+            id=raw_event["id"],
+            scene=author,
+            sender=author,
+            content=message,
+            time=datetime.fromisoformat(raw_event["timestamp"]),
+            reply=reply,
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
