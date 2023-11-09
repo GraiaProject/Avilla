@@ -7,7 +7,7 @@ includes = [
 
 [project]
 name = "avilla-core"
-version = "1.0.0a9"
+version = "1.0.0a10"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
