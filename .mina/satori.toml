@@ -1,11 +1,11 @@
 includes = ["avilla/satori"]
 raw_dependencies = [
-  "avilla-core >= 1.0.0a10",
+  "avilla-core >= 1.0.0a12",
 ]
 
 [project]
 name = "avilla-satori"
-version = "1.0.0a10"
+version = "1.0.0a12"
 authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
