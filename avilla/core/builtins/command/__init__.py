@@ -46,7 +46,7 @@ from pygtrie import CharTrie
 from tarina.generic import generic_isinstance, generic_issubclass, get_origin
 from tarina.string import split_once
 
-from avilla.core import MessageReceived
+from avilla.core import MessageReceived, Notice, Context
 
 T = TypeVar("T")
 TCallable = TypeVar("TCallable", bound=Callable[..., Any])
@@ -81,6 +81,28 @@ argv_config(
     to_text=lambda x: x.text if x.__class__ is Text else None,
     converter=lambda x: MessageChain(x if isinstance(x, list) else [Text(x)]),
 )
+
+
+def is_tome(message: MessageChain, context: Context):
+    if isinstance(message[0], Notice):
+        notice: Notice = message.get_first(Notice)
+        if notice.target.last_value == context.self.last_value:
+            return True
+    return False
+
+
+def remove_tome(message: MessageChain, context: Context):
+    if is_tome(message, context):
+        message = MessageChain(message.content.copy())
+        message.content.remove(message.get_first(Notice))
+        if message.content and isinstance(message.content[0], Text):
+            text = message.content[0].text.lstrip()  # type: ignore
+            if not text:
+                message.content.pop(0)
+            else:
+                message.content[0] = Text(text)
+        return message
+    return message
 
 
 @dataclass
@@ -121,14 +143,18 @@ class AlconnaDispatcher(BaseDispatcher):
 class AvillaCommands:
     __namespace__ = "Avilla"
 
-    def __init__(self):
+    def __init__(self, need_tome: bool = False, remove_tome: bool = False):
         self.trie: CharTrie = CharTrie()
         self.broadcast = it(Broadcast)
+        self.need_tome = need_tome
+        self.remove_tome = remove_tome
         config.namespaces["Avilla"] = Namespace(self.__namespace__)
 
         @self.broadcast.receiver(MessageReceived)
         async def listener(event: MessageReceived):
             msg = str(event.message.content)
+            if self.need_tome and not is_tome(event.message.content, event.context):
+                return
             if matches := list(self.trie.prefixes(msg)):
                 await asyncio.gather(*(self.execute(res.value[0], res.value[1], event) for res in matches if res.value))
                 return
@@ -151,8 +177,11 @@ class AvillaCommands:
     async def execute(self, command: Alconna, target: ExecTarget, event: MessageReceived):
         with output_manager.capture(command.name) as cap:
             output_manager.set_action(lambda x: x, command.name)
+            msg = event.message.content
+            if self.remove_tome:
+                msg = remove_tome(msg, event.context)
             try:
-                _res = command.parse(event.message.content)
+                _res = command.parse(msg)
             except Exception as e:
                 _res = Arparma(command.path, event.message.content, False, error_info=e)
             may_help_text: Optional[str] = cap.get("output", None)
