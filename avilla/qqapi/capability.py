@@ -37,7 +37,7 @@ class QQAPICapability((m := ApplicationCollector())._):
                 elements.append(await self.deserialize_element(i))
         if attachments := event.get("attachments"):
             for i in attachments:
-                elements.append(await self.deserialize_element({"type": "attachment", "url": i["url"]}))
+                elements.append(await self.deserialize_element({"type": "attachment", **i}))
         if embeds := event.get("embeds"):
             for i in embeds:
                 elements.append(await self.deserialize_element({"type": "embed", **i}))
@@ -49,43 +49,6 @@ class QQAPICapability((m := ApplicationCollector())._):
     async def serialize(self, message: MessageChain):
         res = {}
         content = ""
-
-        # def pro_serialize(message: list[dict]):
-        #     res = {}
-        #     content = ""
-        #     for elem in message:
-        #         if elem["type"] == "mention_everyone":
-        #             content += "@everyone"
-        #         elif elem["type"] == "mention_user":
-        #             content += f"<@{elem['user_id']}>"
-        #         elif elem["type"] == "mention_channel":
-        #             content += f"<#{elem['channel_id']}"
-        #         elif elem["type"] == "emoji":
-        #             content += f"<emoji:{elem['id']}>"
-        #         elif elem["type"] == "text":
-        #             content += escape(elem["text"])
-        #         elif elem["type"] == "attachment":
-        #             res["image"] = elem["url"]
-        #         elif elem["type"] == "local_iamge":
-        #             res["file_image"] = elem["content"]
-        #         elif elem["type"] == "markdown":
-        #             res["markdown"] = elem["content"]
-        #             res["markdown"].pop("type")
-        #         elif elem["type"] == "keyboard":
-        #             res["keyboard"] = elem["content"]
-        #             res["keyboard"].pop("type")
-        #         elif elem["type"] == "embed":
-        #             res["embed"] = elem
-        #             res["embed"].pop("type")
-        #         elif elem["type"] == "ark":
-        #             res["ark"] = elem
-        #             res["ark"].pop("type")
-        #         elif elem["type"] == "message_reference":
-        #             res["message_reference"] = elem
-        #             res["message_reference"].pop("type")
-        #     if content:
-        #         res["content"] = content
-        #     return res
 
         for element in message:
             elem = await self.serialize_element(element)

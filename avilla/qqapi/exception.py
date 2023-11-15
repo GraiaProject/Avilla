@@ -1,4 +1,5 @@
-from typing import Optional
+import json
+from typing import Optional, Mapping
 
 from avilla.core.exceptions import ActionFailed as BaseActionFailed
 from avilla.core.exceptions import HttpRequestError, InvalidAuthentication
@@ -7,17 +8,38 @@ from avilla.qqapi.audit import audit_result
 
 
 class ActionFailed(HttpRequestError, BaseActionFailed):
-    def __init__(self, status: int, body: Optional[dict] = None):
-        self.body = body or {}
-        self.code: Optional[int] = self.body.get("code", None)
-        self.message: Optional[str] = self.body.get("message", None)
-        self.data: Optional[dict] = self.body.get("data", None)
-        super().__init__(status, self.message or "Unknown")
+    def __init__(self, status: int, headers: Mapping, response: Optional[str] = None):
+        self.body = {}
+        self.headers = headers
+        if response:
+            try:
+                self.body = json.loads(response)
+            except json.JSONDecodeError:
+                pass
+        super().__init__(status, self.body.get("message", "Unknown Error"))
+
+    @property
+    def code(self) -> Optional[int]:
+        return None if self.body is None else self.body.get("code", None)
+
+    @property
+    def message(self) -> Optional[str]:
+        return None if self.body is None else self.body.get("message", None)
+
+    @property
+    def data(self) -> Optional[dict]:
+        return None if self.body is None else self.body.get("data", None)
+
+    @property
+    def trace_id(self) -> Optional[str]:
+        return self.headers.get("X-Tps-trace-ID", None)
 
     def __repr__(self) -> str:
+        args = ("code", "message", "data", "trace_id")
         return (
-            f"<{self.__class__.__name__}: {self.status}, code={self.code}, "
-            f"message={self.message}, data={self.data}>"
+            f"<{self.__class__.__name__}: {self.status}, "
+            + ", ".join(f"{k}={v}" for k in args if (v := getattr(self, k)) is not None)
+            + ">"
         )
 
 

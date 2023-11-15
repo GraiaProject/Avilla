@@ -32,14 +32,14 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
             if callable(predicate) and predicate("channel", channel_id) or channel_id == predicate:
                 yield previous.channel(channel_id)
 
-    @m.entity(CoreCapability.query, target="user", previous="land.guild")
+    @m.entity(CoreCapability.query, target="member", previous="land.guild")
     async def query_guild_users(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         result = await self.account.connection.call("get", f"guilds/{previous.pattern['guild']}/members", {})
         result = cast(list, result)
         for i in result:
             user_id = str(i["user"]["id"])
-            if callable(predicate) and predicate("user", user_id) or user_id == predicate:
-                yield previous.user(user_id)
+            if callable(predicate) and predicate("member", user_id) or user_id == predicate:
+                yield previous.member(user_id)
 
     @m.entity(CoreCapability.query, target="member", previous="land.guild.channel")
     async def query_guild_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
@@ -52,22 +52,21 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="member", previous="land.group")
     async def query_group_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.connection.call("get", f"groups/{previous.pattern['group']}/members", {})
-        result = cast(list, result)
-        for i in result:
+        result = await self.account.connection.call("post", f"v2/groups/{previous.pattern['group']}/members", {})
+        for i in result["members"]:
             member_id = str(i["member_openid"])
             if callable(predicate) and predicate("member", member_id) or member_id == predicate:
                 yield previous.member(member_id)
 
-    @m.entity(CoreCapability.query, target="user", previous="land.guild.role")
+    @m.entity(CoreCapability.query, target="member", previous="land.guild.role")
     async def query_guild_role_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         result = await self.account.connection.call(
             "get", f"guilds/{previous.pattern['guild']}/roles/{previous.pattern['role']}/members", {}
         )
         for i in result["data"]:
             user_id = str(i["user"]["id"])
-            if callable(predicate) and predicate("user", user_id) or user_id == predicate:
-                yield Selector().land(self.account.route["land"]).guild(previous.pattern["guild"]).user(user_id)
+            if callable(predicate) and predicate("member", user_id) or user_id == predicate:
+                yield Selector().land(self.account.route["land"]).guild(previous.pattern["guild"]).member(user_id)
 
     @m.entity(CoreCapability.query, target="role", previous="land.guild")
     async def query_guild_roles(self, predicate: Callable[[str, str], bool] | str, previous: Selector):

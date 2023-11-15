@@ -55,7 +55,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
             self._expires_in and datetime.now(timezone.utc) > self._expires_in - timedelta(seconds=30)
         ):
             async with self.session.post(
-                self.config.get_api_base(),
+                self.config.auth_base,
                 json={
                     "appId": self.config.id,
                     "clientSecret": self.config.secret,
@@ -130,9 +130,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                 (self.config.get_api_base() / action).with_query(params),
                 headers=headers,
             ) as resp:
-                result = await resp.json()
-                validate_response(result, resp.status)
-                return result
+                return await validate_response(resp)
 
         if method == "patch":
             async with self.session.patch(
@@ -140,9 +138,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                 json=params,
                 headers=headers,
             ) as resp:
-                result = await resp.json()
-                validate_response(result, resp.status)
-                return result
+                return await validate_response(resp)
 
         if method == "put":
             async with self.session.put(
@@ -150,18 +146,14 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                 json=params,
                 headers=headers,
             ) as resp:
-                result = await resp.json()
-                validate_response(result, resp.status)
-                return result
+                return await validate_response(resp)
 
         if method == "delete":
             async with self.session.delete(
                 (self.config.get_api_base() / action).with_query(params),
                 headers=headers,
             ) as resp:
-                result = await resp.json()
-                validate_response(result, resp.status)
-                return result
+                return await validate_response(resp)
 
         if method in {"post", "update"}:
             async with self.session.post(
@@ -169,9 +161,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                 json=params,
                 headers=headers,
             ) as resp:
-                result = await resp.json()
-                validate_response(result, resp.status)
-                return result
+                return await validate_response(resp)
 
         if method == "multipart":
             if params is None:
@@ -188,9 +178,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                 data=data,
                 headers=headers,
             ) as resp:
-                result = await resp.json()
-                validate_response(result, resp.status)
-                return result
+                return await validate_response(resp)
 
         raise ValueError(f"unknown method {method}")
 

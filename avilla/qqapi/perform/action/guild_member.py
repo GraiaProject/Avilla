@@ -20,10 +20,11 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
     m.namespace = "avilla.protocol/qqapi::action"
     m.identify = "guild_member"
 
-    @m.pull("land.guild.user", Nick)
+    @m.pull("land.guild.member", Nick)
+    @m.pull("land.guild.channel.member", Nick)
     async def get_summary(self, target: Selector, route: ...) -> Nick:
         result = await self.account.connection.call_http(
-            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['user']}", {}
+            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
         )
         return Nick(result["user"]["useranme"], result["nickname"], None)
 
@@ -109,7 +110,8 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
             {"add": 4, "remove": 0},
         )
 
-    @SceneCapability.remove_member.collect(m, target="land.guild.user")
+    @SceneCapability.remove_member.collect(m, target="land.guild.member")
+    @SceneCapability.remove_member.collect(m, target="land.guild.channel.member")
     async def remove_user(self, target: Selector, reason: str | None = None) -> None:
         self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
@@ -118,7 +120,7 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
         if not effective:
             raise PermissionError(permission_error_message(f"remove_member@{target.path}", "read", ["manage"]))
         await self.account.connection.call_http(
-            "delete", f"guilds/{target.pattern['guild']}/members/{target.pattern['user']}", {}
+            "delete", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
         )
 
     @SceneCapability.remove_member.collect(m, target="land.guild.channel.member")

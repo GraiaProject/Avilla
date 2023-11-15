@@ -17,14 +17,13 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         guild = land.guild(str(raw_event["id"]))
-        inviter = guild.user(str(raw_event["op_user_id"]))
+        inviter = guild.member(str(raw_event["op_user_id"]))
         context = Context(
             account,
-            guild.user(account_route["account"]),
+            inviter,
             guild,
             guild,
-            guild.user(account_route["account"]),
-            mediums=[inviter] if inviter else None,
+            guild.member(account_route["account"]),
         )
         return RelationshipCreated(context)
 
@@ -34,13 +33,13 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         guild = land.guild(str(raw_event["id"]))
-        operator = guild.user(str(raw_event["op_user_id"]))
+        operator = guild.member(str(raw_event["op_user_id"]))
         context = Context(
             account,
             operator,
             guild,
             guild,
-            guild.user(account_route["account"]),
+            guild.member(account_route["account"]),
         )
         return RelationshipDestroyed(context, active=False)
 
@@ -84,15 +83,14 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         guild = land.guild(str(raw_event["guild_id"]))
-        user = guild.user(str(raw_event["user"]["id"]))
-        operator = guild.user(str(raw_event["operator_id"]))
+        user = guild.member(str(raw_event["user"]["id"]))
+        operator = guild.member(str(raw_event["operator_id"]))
         context = Context(
             account,
+            operator,
             user,
             guild,
-            guild,
-            guild.user(account_route["account"]),
-            mediums=[operator],
+            guild.member(account_route["account"]),
         )
         return RelationshipCreated(context)
 
@@ -102,16 +100,15 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         guild = land.guild(str(raw_event["guild_id"]))
-        user = guild.user(str(raw_event["user"]["id"]))
-        operator = guild.user(str(raw_event["operator_id"]))
+        user = guild.member(str(raw_event["user"]["id"]))
+        operator = guild.member(str(raw_event["operator_id"]))
         if raw_event["operator_id"] != raw_event["user"]["id"]:
             context = Context(
                 account,
+                operator,
                 user,
                 guild,
-                guild,
-                guild.user(account_route["account"]),
-                mediums=[operator],
+                guild.member(account_route["account"]),
             )
             return RelationshipDestroyed(context, active=False)
         else:
@@ -123,3 +120,65 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
                 guild.user(account_route["account"]),
             )
             return RelationshipDestroyed(context, active=True)
+
+    @m.entity(QQAPICapability.event_callback, event_type="group_add_robot")
+    async def group_add_robot(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        group = land.group(str(raw_event["group_openid"]))
+        operator = group.member(str(raw_event["op_member_openid"]))
+        context = Context(
+            account,
+            operator,
+            group,
+            group,
+            group.member(account_route["account"]),
+        )
+        return RelationshipCreated(context)
+
+    @m.entity(QQAPICapability.event_callback, event_type="group_del_robot")
+    async def group_del_robot(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        group = land.group(str(raw_event["group_openid"]))
+        operator = group.member(str(raw_event["op_member_openid"]))
+        context = Context(
+            account,
+            operator,
+            group,
+            group,
+            group.member(account_route["account"]),
+        )
+        return RelationshipDestroyed(context, active=False)
+
+    @m.entity(QQAPICapability.event_callback, event_type="friend_add")
+    async def friend_add(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+
+        user = Selector().land("qq").friend(str(raw_event["openid"]))
+        context = Context(
+            account,
+            user,
+            user,
+            user,
+            account_route,
+        )
+        return RelationshipCreated(context)
+
+    @m.entity(QQAPICapability.event_callback, event_type="friend_del")
+    async def friend_del(self, event_type: ..., raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+
+        user = Selector().land("qq").friend(str(raw_event["openid"]))
+        context = Context(
+            account,
+            user,
+            user,
+            user,
+            account_route,
+        )
+        return RelationshipDestroyed(context, active=False)

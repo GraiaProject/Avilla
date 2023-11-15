@@ -122,13 +122,13 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             )
             if result is None:
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
-            return target.message(result["id"])
+            return target.message(result.get("id", "UNKNOWN"))
         msg["msg_type"] = msg_type
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
         if result is None:
             raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
-        return target.message(result["id"])
+        return target.message(result.get("id", "UNKNOWN"))
 
     @MessageSend.send.collect(m, target="land.friend")
     async def send_friend_msg(
@@ -168,13 +168,13 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             )
             if result is None:
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
-            return target.message(result["id"])
+            return target.message(result.get("id", "UNKNOWN"))
         msg["msg_type"] = msg_type
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
         if result is None:
             raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
-        return target.message(result["id"])
+        return target.message(result.get("id", "UNKNOWN"))
 
     @MessageSend.send.collect(m, target="land.guild.user")
     async def send_direct_msg(

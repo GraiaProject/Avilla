@@ -52,7 +52,9 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(
+            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -65,7 +67,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
-        group = Selector().land("qq").guild(raw_event["group_id"])
+        group = Selector().land("qq").group(raw_event["group_id"])
         author = group.member(raw_event["author"]["id"])
         context = Context(
             account,
@@ -87,7 +89,9 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(
+            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -123,7 +127,9 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(
+            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -158,7 +164,9 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5))
+        await cache.set(
+            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 

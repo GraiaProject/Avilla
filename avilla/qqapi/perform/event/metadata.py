@@ -18,13 +18,13 @@ class QQAPIEventMetadataPerform((m := ConnectionCollector())._):
         account = self.protocol.avilla.accounts[account_route].account
         land = Selector().land("qq")
         guild = land.guild(str(raw_event["id"]))
-        operator = guild.user(str(raw_event["op_user_id"]))
+        operator = guild.member(str(raw_event["op_user_id"]))
         context = Context(
             account,
             operator,
             guild,
             guild,
-            guild.user(account_route["account"]),
+            guild.member(account_route["account"]),
         )
         return MetadataModified(
             context,
