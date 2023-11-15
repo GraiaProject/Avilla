@@ -31,4 +31,5 @@ class BaseProtocol:
         with cx_avilla.use(self.avilla), cx_protocol.use(self), (
             cx_context.use(context) if context is not None else nullcontext()
         ):
+            self.avilla.event_record(event)
             return self.avilla.broadcast.postEvent(event)

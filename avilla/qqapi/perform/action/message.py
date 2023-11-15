@@ -59,6 +59,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 assert isinstance(event, MessageReceived)
             event.context = self.account.get_context(target.member(self.account.route["account"]))
             event.message.scene = target
+            event.message.content = message
             event.message.sender = target.member(self.account.route["account"])
             self.protocol.post_event(MessageSent(event.context, event.message, self.account))
             return event.message.to_selector()
@@ -122,6 +123,15 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             )
             if result is None:
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
+            context = self.account.get_context(target)
+            msg = Message(
+                target.message(result.get("id", "UNKNOWN")),
+                target,
+                target.member(self.account.route["account"]),
+                message,
+                datetime.now(timezone.utc),
+            )
+            self.protocol.post_event(MessageSent(context, msg, self.account))
             return target.message(result.get("id", "UNKNOWN"))
         msg["msg_type"] = msg_type
         if "file_image" in msg:
@@ -130,6 +140,15 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
         if result is None:
             raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
+        context = self.account.get_context(target)
+        msg = Message(
+            target.message(result.get("id", "UNKNOWN")),
+            target,
+            target.member(self.account.route["account"]),
+            message,
+            datetime.now(timezone.utc),
+        )
+        self.protocol.post_event(MessageSent(context, msg, self.account))
         return target.message(result.get("id", "UNKNOWN"))
 
     @MessageSend.send.collect(m, target="land.friend")
@@ -170,6 +189,15 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             )
             if result is None:
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
+            context = self.account.get_context(target)
+            msg = Message(
+                target.message(result.get("id", "UNKNOWN")),
+                target,
+                target.member(self.account.route["account"]),
+                message,
+                datetime.now(timezone.utc),
+            )
+            self.protocol.post_event(MessageSent(context, msg, self.account))
             return target.message(result.get("id", "UNKNOWN"))
         msg["msg_type"] = msg_type
         if "file_image" in msg:
@@ -178,6 +206,15 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
         if result is None:
             raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
+        context = self.account.get_context(target)
+        msg = Message(
+            target.message(result.get("id", "UNKNOWN")),
+            target,
+            target.member(self.account.route["account"]),
+            message,
+            datetime.now(timezone.utc),
+        )
+        self.protocol.post_event(MessageSent(context, msg, self.account))
         return target.message(result.get("id", "UNKNOWN"))
 
     @MessageSend.send.collect(m, target="land.guild.user")
@@ -204,8 +241,9 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         )
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)
-        event.context = self.account.get_context(target, via=self.account.route)
+        event.context = self.account.get_context(target)
         event.message.scene = target
+        event.message.content = message
         event.message.sender = self.account.route
         self.protocol.post_event(MessageSent(event.context, event.message, self.account))
         return event.message.to_selector()

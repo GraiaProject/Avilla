@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from typing import TYPE_CHECKING, Any, Iterable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Iterable, TypeVar, overload, Callable
 
 from creart import it
 from graia.amnesia.builtins.memcache import MemcacheService
@@ -22,10 +22,12 @@ from avilla.core.utilles import identity
 
 if TYPE_CHECKING:
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
+    from avilla.core.event import AvillaEvent
 
     from .resource import Resource
 
 T = TypeVar("T")
+TE = TypeVar("TE", bound="AvillaEvent")
 TP = TypeVar("TP", bound=BaseProtocol)
 
 
@@ -94,6 +96,56 @@ class Avilla:
                 )
 
             message_sender.__annotations__ = {"context": Context, "message": Message}
+
+        self.custom_event_recorder: dict[type[AvillaEvent], Callable[[AvillaEvent], None]] = {}
+
+    def event_record(self, event: AvillaEvent):
+        from avilla.standard.core.message import MessageReceived, MessageEdited, MessageSent
+
+        context = event.context
+        scene = f"{'.'.join(f'{k}({v})' for k, v in context.scene.items())}"
+
+        if isinstance(event, MessageSent):
+            return
+
+        if type(event) in self.custom_event_recorder:
+            self.custom_event_recorder[type(event)](event)
+
+        elif isinstance(event, MessageReceived):
+            logger.info(
+                f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                f"{context.account.route['account']}]: "
+                f"{scene} -> {str(event.message.content)!r}"
+            )
+        elif isinstance(event, MessageEdited):
+            logger.info(
+                f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                f"{context.account.route['account']}]: "
+                f"{scene} => {str(event.past)!r} -> {str(event.current)!r}"
+            )
+        else:
+            logger.info(
+                f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                f"{context.account.route['account']}]: "
+                f"{event.__class__.__name__} from {scene}"
+            )
+
+    @overload
+    def add_event_recorder(self, event_type: type[TE]) -> Callable[[Callable[[TE], None]], Callable[[TE], None]]:
+        ...
+
+    @overload
+    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None]) -> Callable[[TE], None]:
+        ...
+
+    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None] | None = None):
+        if recorder is None:
+            def wrapper(func: Callable[[TE], None]):
+                self.custom_event_recorder[event_type] = func
+                return func
+            return wrapper
+        self.custom_event_recorder[event_type] = recorder
+        return recorder
 
     def __init_isolate__(self):
         from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform

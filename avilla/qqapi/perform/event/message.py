@@ -6,12 +6,35 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 
 from avilla.core.context import Context
-from avilla.core.message import Message
+from avilla.core.message import Message, MessageChain
+from avilla.core.elements import Text, Notice
 from avilla.core.selector import Selector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.collector.connection import ConnectionCollector
 from avilla.qqapi.element import Reference
 from avilla.standard.core.message import MessageReceived, MessageRevoked
+
+
+def is_tome(message: MessageChain, context: Context):
+    if isinstance(message[0], Notice):
+        notice: Notice = message.get_first(Notice)
+        if notice.target.last_value == context.self.last_value:
+            return True
+    return False
+
+
+def remove_tome(message: MessageChain, context: Context):
+    if is_tome(message, context):
+        message = MessageChain(message.content.copy())
+        message.content.remove(message.get_first(Notice))
+        if message.content and isinstance(message.content[0], Text):
+            text = message.content[0].text.lstrip()  # type: ignore
+            if not text:
+                message.content.pop(0)
+            else:
+                message.content[0] = Text(text)
+        return message
+    return message
 
 
 class QQAPIEventMessagePerform((m := ConnectionCollector())._):
@@ -20,7 +43,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="at_message_create")
     @m.entity(QQAPICapability.event_callback, event_type="message_create")
-    async def at_message(self, event_type: ..., raw_event: dict):
+    async def at_message(self, event_type: str, raw_event: dict):
         # TODO: put the author.bot metadata
         account_route = Selector().land("qq").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
@@ -44,6 +67,8 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = channel.message(i[0].message_id)
             message = message.exclude(Reference)
+        if event_type == "at_message_create":
+            message = remove_tome(message, context)
         msg = Message(
             id=raw_event["id"],
             scene=channel,
