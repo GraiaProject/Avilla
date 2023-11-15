@@ -124,6 +124,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
             return target.message(result.get("id", "UNKNOWN"))
         msg["msg_type"] = msg_type
+        if "file_image" in msg:
+            raise NotImplementedError("file_image is not supported yet")
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
         if result is None:
@@ -170,6 +172,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
             return target.message(result.get("id", "UNKNOWN"))
         msg["msg_type"] = msg_type
+        if "file_image" in msg:
+            raise NotImplementedError("file_image is not supported yet")
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
         if result is None:

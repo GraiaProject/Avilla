@@ -18,7 +18,6 @@ async def validate_response(resp: ClientResponse):
     status = resp.status
     if status == 200 or 203 <= status < 300:
         data = await resp.json()
-        print(resp.headers)
         return data.get("data", data)
     if status in {201, 202}:
         data = await resp.json()
