@@ -7,7 +7,7 @@ includes = [
 
 [project]
 name = "avilla-core"
-version = "1.0.0a10"
+version = "1.0.0a11"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
@@ -32,7 +32,7 @@ repository = "https://github.com/GraiaProject/Avilla"
 
 [project.optional-dependencies]
 alconna = [
-    "arclet-alconna<2.0,>=1.7.19",
+    "arclet-alconna<2.0,>=1.7.34",
     "arclet-alconna-tools>=0.6.6",
     "pygtrie"
 ]
