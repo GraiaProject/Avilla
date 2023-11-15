@@ -88,14 +88,14 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
                 "key": slot[0],
                 "value": slot[1],
             }
-            if (slot := element.params.popitem())
+            if element.params and (slot := element.params.popitem())
             else None,
         }
 
     @m.entity(QQAPICapability.serialize_element, element=Keyboard)
     async def keyboard(self, element: Keyboard):
         content = {"rows": []}
-        for row in element.content:
+        for row in element.content or []:
             buttons = {"buttons": []}
             for button in row:
                 raw = asdict(button)

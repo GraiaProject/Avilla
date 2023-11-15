@@ -60,8 +60,8 @@ class QQAPICapability((m := ApplicationCollector())._):
             res["content"] = content
         return res
 
-    async def handle_event(self, event: dict):
-        maybe_event = await self.event_callback(event)
+    async def handle_event(self, etype: str, event: dict):
+        maybe_event = await self.event_callback(etype, event)
 
         if maybe_event is not None:
             self.avilla.broadcast.postEvent(maybe_event)

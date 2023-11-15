@@ -100,7 +100,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
         return Notice(Selector().land("qqguild").member(raw_element["user_id"]))
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="mention_channel")
-    async def mention(self, raw_element: dict) -> Notice:
+    async def mention_channel(self, raw_element: dict) -> Notice:
         if self.context:
             return Notice(
                 Selector().land("qqguild").guild(self.context.scene["guild"]).channel(raw_element["channel_id"])

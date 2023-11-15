@@ -15,8 +15,8 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
     m.namespace = "avilla.protocol/qqapi::query"
 
     @m.entity(CoreCapability.query, target="land.guild")
-    async def query_guild_channels(self, predicate: Callable[[str, str], bool] | str, previous: None):
-        result = await self.account.connection.call("get", f"users/@me/guilds", {})
+    async def query_guilds(self, predicate: Callable[[str, str], bool] | str, previous: None):
+        result = await self.account.connection.call_http("get", f"users/@me/guilds", {})
         result = cast(list, result)
         for i in result:
             guild_id = str(i["id"])
@@ -25,7 +25,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="channel", previous="land.guild")
     async def query_guild_channels(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.connection.call("get", f"guilds/{previous.pattern['guild']}/channels", {})
+        result = await self.account.connection.call_http("get", f"guilds/{previous.pattern['guild']}/channels", {})
         result = cast(list, result)
         for i in result:
             channel_id = str(i["id"])
@@ -34,7 +34,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="member", previous="land.guild")
     async def query_guild_users(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.connection.call("get", f"guilds/{previous.pattern['guild']}/members", {})
+        result = await self.account.connection.call_http("get", f"guilds/{previous.pattern['guild']}/members", {})
         result = cast(list, result)
         for i in result:
             user_id = str(i["user"]["id"])
@@ -43,7 +43,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="member", previous="land.guild.channel")
     async def query_guild_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.connection.call("get", f"guilds/{previous.pattern['guild']}/members", {})
+        result = await self.account.connection.call_http("get", f"guilds/{previous.pattern['guild']}/members", {})
         result = cast(list, result)
         for i in result:
             user_id = str(i["user"]["id"])
@@ -52,7 +52,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="member", previous="land.group")
     async def query_group_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.connection.call("post", f"v2/groups/{previous.pattern['group']}/members", {})
+        result = await self.account.connection.call_http("post", f"v2/groups/{previous.pattern['group']}/members", {})
         for i in result["members"]:
             member_id = str(i["member_openid"])
             if callable(predicate) and predicate("member", member_id) or member_id == predicate:
@@ -60,7 +60,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="member", previous="land.guild.role")
     async def query_guild_role_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.connection.call(
+        result = await self.account.connection.call_http(
             "get", f"guilds/{previous.pattern['guild']}/roles/{previous.pattern['role']}/members", {}
         )
         for i in result["data"]:
@@ -70,7 +70,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="role", previous="land.guild")
     async def query_guild_roles(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.connection.call("get", f"guilds/{previous.pattern['guild']}/roles", {})
+        result = await self.account.connection.call_http("get", f"guilds/{previous.pattern['guild']}/roles", {})
         for i in result["roles"]:
             role_id = str(i["id"])
             if callable(predicate) and predicate("role", role_id) or role_id == predicate:
@@ -78,7 +78,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @m.entity(CoreCapability.query, target="role", previous="land.guild.user")
     async def query_guild_user_roles(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        user = await self.account.connection.call(
+        user = await self.account.connection.call_http(
             "get", f"guilds/{previous.pattern['guild']}/members/{previous.pattern['user']}", {}
         )
         for i in user["roles"]:

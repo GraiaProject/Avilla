@@ -82,7 +82,7 @@ class QQAPINetworking:
                     if event is not None:
                         if isinstance(event, MessageAudited):
                             audit_result.add_result(event)
-                        await self.protocol.post_event(event)
+                        await self.protocol.post_event(event)  # type: ignore
                     return
                 logger.warning(f"received unsupported event {event_type.lower()}: {_data.data}")
                 return

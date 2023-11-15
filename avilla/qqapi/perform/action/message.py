@@ -234,7 +234,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         )
         if result is None:
             raise RuntimeError(f"Failed to get message from {target.pattern['channel']}: {target}")
-        event = await self.account.staff.ext({"connection": self.account.connection}).parse_event(
+        event = await QQAPICapability(self.account.staff.ext({"connection": self.account.connection})).event_callback(
             "message_create", result
         )
         if TYPE_CHECKING:
