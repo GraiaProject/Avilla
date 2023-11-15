@@ -18,7 +18,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/elizabeth::event"
     m.identify = "group"
 
-    @m.entity(ElizabethCapability.event_callback, event="BotGroupPermissionChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="BotGroupPermissionChangeEvent")
     async def bot_group_permission_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -69,7 +69,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="BotMuteEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="BotMuteEvent")
     async def bot_mute(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -121,7 +121,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="BotUnmuteEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="BotUnmuteEvent")
     async def bot_unmute(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -171,7 +171,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="GroupNameChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="GroupNameChangeEvent")
     async def group_name_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -218,7 +218,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="GroupMuteAllEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="GroupMuteAllEvent")
     async def group_mute_all(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -267,7 +267,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="GroupEntranceAnnouncementChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="GroupEntranceAnnouncementChangeEvent")
     async def group_entrance_announcement_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

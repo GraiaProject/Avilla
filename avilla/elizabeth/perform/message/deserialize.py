@@ -150,7 +150,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
                     node["senderName"],
                     str(node["senderId"]),
                     datetime.fromtimestamp(node["time"]),
-                    await self.cap.deserialize_chain(node["messageChain"]),
+                    await ElizabethCapability(self.account.staff).deserialize_chain((node["messageChain"])),
                 )
             )
         return elem

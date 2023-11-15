@@ -13,7 +13,7 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/elizabeth::event"
     m.identify = "friend"
 
-    @m.entity(ElizabethCapability.event_callback, event="FriendInputStatusChangedEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="FriendInputStatusChangedEvent")
     async def friend_input_status_changed(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -45,7 +45,7 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
             scene=friend,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="FriendNickChangedEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="FriendNickChangedEvent")
     async def friend_nick_changed(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

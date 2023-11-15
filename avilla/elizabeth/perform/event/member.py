@@ -18,7 +18,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/elizabeth::event"
     m.identify = "member"
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberCardChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberCardChangeEvent")
     async def member_card_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -81,7 +81,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberSpecialTitleChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberSpecialTitleChangeEvent")
     async def member_special_title_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -147,7 +147,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberPermissionChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberPermissionChangeEvent")
     async def member_permission_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -217,7 +217,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberMuteEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberMuteEvent")
     async def member_mute(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -285,7 +285,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberUnmuteEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberUnmuteEvent")
     async def member_unmute(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -351,7 +351,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberHonorChangeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberHonorChangeEvent")
     async def member_honor_change(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
