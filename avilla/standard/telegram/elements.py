@@ -2,25 +2,45 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Final
+from pathlib import Path
+from typing import IO, Final
 
 from graia.amnesia.message.element import Element, Text
 
 from avilla.core import Audio, Notice, Video
 
 
-@dataclass
 class FileObject:
     file_id: str
     file_unique_id: str
 
 
-@dataclass
 class Animation(FileObject, Element):
     width: int
     height: int
     is_animated: bool
     is_video: bool
+
+    def __init__(
+        self,
+        /,
+        file_id: str = None,
+        file_unique_id: str = None,
+        width: int = None,
+        height: int = None,
+        is_animated: bool = None,
+        is_video: bool = None,
+        from_input: IO[bytes] | bytes | str | Path = None,
+    ) -> None:
+        if not any((file_id, file_unique_id, width, height, is_animated, is_video, from_input)):
+            raise ValueError("At least one argument should be provided.")
+        self.file_id = file_id
+        self.file_unique_id = file_unique_id
+        self.width = width
+        self.height = height
+        self.is_animated = is_animated
+        self.is_video = is_video
+        self.from_input = from_input
 
     def __str__(self) -> str:
         return f"[$Animation]"
@@ -38,8 +58,20 @@ class Contact(Element):
         return f"[$Contact]"
 
 
-@dataclass
 class Document(FileObject, Element):
+    def __init__(
+        self,
+        /,
+        file_id: str = None,
+        file_unique_id: str = None,
+        from_input: IO[bytes] | bytes | str | Path = None,
+    ) -> None:
+        if not any((file_id, file_unique_id, from_input)):
+            raise ValueError("At least one argument should be provided.")
+        self.file_id = file_id
+        self.file_unique_id = file_unique_id
+        self.from_input = from_input
+
     def __str__(self) -> str:
         return f"[$Document]"
 
