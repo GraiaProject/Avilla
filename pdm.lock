@@ -783,7 +783,7 @@ files = [
 
 [[package]]
 name = "launart"
-version = "0.8.1"
+version = "0.8.2"
 requires_python = ">=3.8"
 summary = "Component lifetime manager for runtime."
 dependencies = [
@@ -792,8 +792,8 @@ dependencies = [
     "statv>=0.2.2",
 ]
 files = [
-    {file = "launart-0.8.1-py3-none-any.whl", hash = "sha256:192a1fbae0d489e4c10e3e861901024ad55a76d4cdf7218f2f34e942b5645b77"},
-    {file = "launart-0.8.1.tar.gz", hash = "sha256:82c8d457e098abd654ab93f071ec5c3779b99b6eaa7a4575e733d39a3acca4b4"},
+    {file = "launart-0.8.2-py3-none-any.whl", hash = "sha256:081bcfdeb6db747cd96e479dae23c3c918ad4d570c4078a8adffcf81aeecea0c"},
+    {file = "launart-0.8.2.tar.gz", hash = "sha256:b1ba35d79a7cb6e3cb09195ef3b7cdf47ecaefb7838020607a0c371e188cc96c"},
 ]
 
 [[package]]
@@ -1582,21 +1582,21 @@ files = [
 
 [[package]]
 name = "satori-python"
-version = "0.7.0"
+version = "0.8.0"
 requires_python = ">=3.8"
 summary = "Satori Protocol SDK for python"
 dependencies = [
     "aiohttp>=3.8.6",
     "graia-amnesia>=0.8.2",
-    "launart>=0.8.1",
+    "launart>=0.8.2",
     "loguru>=0.7.2",
-    "starlette>=0.31.1",
+    "starlette>=0.32.0.post1",
     "typing-extensions>=4.8.0",
-    "uvicorn[standard]>=0.23.2",
+    "uvicorn[standard]>=0.24.0.post1",
 ]
 files = [
-    {file = "satori_python-0.7.0-py3-none-any.whl", hash = "sha256:c9ade4d3f6305442753a96fc625e76eb0cf7bd5988d71f83dcacde3011ef89d0"},
-    {file = "satori_python-0.7.0.tar.gz", hash = "sha256:53d6fdccbaae0f6d7b32150c64e053bb1b8b33aaaec8a5c1e4202b7837be9c08"},
+    {file = "satori_python-0.8.0-py3-none-any.whl", hash = "sha256:5faab8999af532102f5fe0f82a0f32d11aa91338aaab6cd08a5c71daacb7d547"},
+    {file = "satori_python-0.8.0.tar.gz", hash = "sha256:d35fca71e8859b8701eb9fb5240bc9e19254a9847be152b4fa069f451b4fe3fb"},
 ]
 
 [[package]]
