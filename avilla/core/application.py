@@ -101,7 +101,19 @@ class Avilla:
 
     def event_record(self, event: AvillaEvent):
         from avilla.standard.core.message import MessageReceived, MessageEdited, MessageSent
+        from avilla.standard.core.application import AvillaLifecycleEvent
+        from avilla.standard.core.account.event import AccountStatusChanged
 
+        if isinstance(event, AccountStatusChanged):
+            logger.debug(
+                f"[{event.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                f"{event.account.route['account']}]: "
+                f"{event.__class__.__name__}"
+            )
+            return
+        if isinstance(event, AvillaLifecycleEvent):
+            logger.debug(event.__class__.__name__)
+            return
         context = event.context
         scene = f"{'.'.join(f'{k}({v})' for k, v in context.scene.items())}"
 
