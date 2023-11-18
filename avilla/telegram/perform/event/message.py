@@ -4,18 +4,19 @@ from telegram import Update
 
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
+from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.collector.instance import InstanceCollector
 from avilla.telegram.fragments import MessageFragment
 
 
 class TelegramEventMessagePerform((m := InstanceCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/telegram::event"
+    m.identify = "message"
 
-    @EventParse.collect(m, "message.private")
-    async def message_private(self, raw_event: Update):
+    @m.entity(TelegramCapability.event_callback, event_type="message.private")
+    async def message_private(self, event_type: ..., raw_event: Update):
         self_id = raw_event.get_bot().id
         account = self.account
         chat = Selector().land(account.route["land"]).chat(str(raw_event.message.from_user.id))
@@ -26,7 +27,7 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
             chat,
             Selector().land(account.route["land"]).account(self_id),
         )
-        message = await account.staff.ext({"context": context}).deserialize_message(
+        message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(
             MessageFragment.decompose(raw_event)
         )
         reply = raw_event.message.reply_to_message
@@ -43,8 +44,8 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "message.group")
-    async def message_group(self, raw_event: Update):
+    @m.entity(TelegramCapability.event_callback, event_type="message.group")
+    async def message_group(self, event_type: ..., raw_event: Update):
         self_id = raw_event.get_bot().id
         account = self.account
         chat = Selector().land(account.route["land"]).chat(str(raw_event.message.chat.id))
@@ -56,7 +57,7 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
             chat,
             chat.member(str(self_id)),
         )
-        message = await account.staff.ext({"context": context}).deserialize_message(
+        message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(
             MessageFragment.decompose(raw_event)
         )
         reply = raw_event.message.reply_to_message

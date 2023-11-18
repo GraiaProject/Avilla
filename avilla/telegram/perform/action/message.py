@@ -9,6 +9,7 @@ from avilla.core import Context, Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend, MessageSent
+from avilla.telegram.capability import TelegramCapability
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa
@@ -16,9 +17,10 @@ if TYPE_CHECKING:
 
 
 class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "TelegramAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/telegram::action"
+    m.identify = "message"
 
-    @MessageSend.send.collect(m, "land.chat")
+    @m.entity(MessageSend.send, target="land.chat")
     async def send_msg(
         self,
         target: Selector,
@@ -26,7 +28,8 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        message = await self.account.staff.serialize_message(message)
+        message = await TelegramCapability(self.account.staff).serialize(message)
+        print(message)
         result = await self.account.instance.send(target, message)
         context = Context(
             account=self.account,

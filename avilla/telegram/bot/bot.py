@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
 
 
-class TelegramBot(TelegramBase["TelegramBot"], Service):
+class TelegramBot(TelegramBase, Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking"}
 

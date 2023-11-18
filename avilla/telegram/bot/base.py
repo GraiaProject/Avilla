@@ -5,9 +5,11 @@ from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
 
 from loguru import logger
 from telegram import Update
+from typing_extensions import Self
 
 from avilla.core import Selector
 from avilla.core.ryanvk.staff import Staff
+from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.fragments import MessageFragment
 from avilla.telegram.utilities import telegram_event_type
 
@@ -17,10 +19,7 @@ if TYPE_CHECKING:
     from avilla.telegram.protocol import TelegramProtocol  # noqa
 
 
-T = TypeVar("T", bound="SupportsStaff")
-
-
-class TelegramBase(Generic[T]):
+class TelegramBase:
     account: TelegramAccount | None
     protocol: TelegramProtocol
     timeout_signal: asyncio.Event
@@ -33,7 +32,17 @@ class TelegramBase(Generic[T]):
         self.timeout_signal = asyncio.Event()
         self.kill_switch = asyncio.Event()
 
-    def message_receive(self) -> AsyncIterator[tuple[T, Update]]:
+    def get_staff_components(self):
+        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
+
+    def get_staff_artifacts(self):
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
+
+    @property
+    def staff(self):
+        return Staff(self.get_staff_artifacts(), self.get_staff_components())
+
+    def message_receive(self) -> AsyncIterator[tuple[Self, Update]]:
         ...
 
     @property
@@ -51,7 +60,7 @@ class TelegramBase(Generic[T]):
 
             async def event_parse_task(_data: Update):
                 event_type = telegram_event_type(_data)
-                event = await Staff.focus(instance).parse_event(event_type, _data)
+                event = await TelegramCapability(instance.staff).handle_event(event_type, _data)
                 if event == "non-implemented":
                     logger.warning(f"received unsupported event: {_data}")
                     return

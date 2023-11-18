@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, cast
 
 from avilla.core.elements import Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
+from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.fragments import (
     MessageFragment,
     MessageFragmentPhoto,
@@ -16,19 +16,18 @@ if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa
     from avilla.telegram.protocol import TelegramProtocol  # noqa
 
-TelegramMessageSerialize = MessageSerialize[MessageFragment]
-
 
 class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol", "TelegramAccount"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/telegram::message"
+    m.identify = "serialize"
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @TelegramMessageSerialize.collect(m, Text)
+    @m.entity(TelegramCapability.serialize_element, element=Text)
     async def text(self, element: Text) -> MessageFragment:
         return MessageFragmentText(element.text)
 
-    @TelegramMessageSerialize.collect(m, Picture)
+    @m.entity(TelegramCapability.serialize_element, element=Picture)
     async def picture(self, element: Picture) -> MessageFragment:
         return MessageFragmentPhoto(
             resource.file
