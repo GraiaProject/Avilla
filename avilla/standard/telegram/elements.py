@@ -3,44 +3,62 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import IO, Final
+from typing import IO, Literal, overload
 
-from graia.amnesia.message.element import Element, Text
+from graia.amnesia.message.element import Element
 
-from avilla.core import Audio, Notice, Video
+from avilla.core import Audio, Video
 
 
-class FileObject:
+class _TObject:
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+class _FileObject(_TObject):
     file_id: str
     file_unique_id: str
 
+    def __hash__(self):
+        return hash(f"[{self.__class__.__name__}:file_unique_id={self.file_unique_id}]")
 
-class Animation(FileObject, Element):
+    def __eq__(self, other):
+        if not getattr(other, "file_unique_id", None):
+            return False
+        return self.file_unique_id == other.file_unique_id
+
+
+class Animation(_FileObject, Element):
     width: int
     height: int
     is_animated: bool
     is_video: bool
+    from_input: IO[bytes] | bytes | str | Path
 
+    @overload
     def __init__(
         self,
         /,
-        file_id: str = None,
-        file_unique_id: str = None,
+        file_id: str,
+        file_unique_id: str,
         width: int = None,
         height: int = None,
         is_animated: bool = None,
         is_video: bool = None,
-        from_input: IO[bytes] | bytes | str | Path = None,
-    ) -> None:
-        if not any((file_id, file_unique_id, width, height, is_animated, is_video, from_input)):
-            raise ValueError("At least one argument should be provided.")
-        self.file_id = file_id
-        self.file_unique_id = file_unique_id
-        self.width = width
-        self.height = height
-        self.is_animated = is_animated
-        self.is_video = is_video
-        self.from_input = from_input
+    ):
+        ...
+
+    @overload
+    def __init__(
+        self,
+        /,
+        from_input: IO[bytes] | bytes | str | Path,
+    ):
+        ...
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def __str__(self) -> str:
         return f"[$Animation]"
@@ -58,19 +76,28 @@ class Contact(Element):
         return f"[$Contact]"
 
 
-class Document(FileObject, Element):
+class Document(_FileObject, Element):
+    from_input: IO[bytes] | bytes | str | Path
+
+    @overload
     def __init__(
         self,
         /,
-        file_id: str = None,
-        file_unique_id: str = None,
-        from_input: IO[bytes] | bytes | str | Path = None,
-    ) -> None:
-        if not any((file_id, file_unique_id, from_input)):
-            raise ValueError("At least one argument should be provided.")
-        self.file_id = file_id
-        self.file_unique_id = file_unique_id
-        self.from_input = from_input
+        file_id: str,
+        file_unique_id: str,
+    ):
+        ...
+
+    @overload
+    def __init__(
+        self,
+        /,
+        from_input: IO[bytes] | bytes | str | Path,
+    ):
+        ...
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
     def __str__(self) -> str:
         return f"[$Document]"
@@ -86,7 +113,7 @@ class Location(Element):
 
 
 @dataclass
-class Sticker(FileObject, Element):
+class Sticker(_FileObject, Element):
     width: int
     height: int
     is_animated: bool
@@ -147,11 +174,12 @@ class DiceLimit(int, Enum):
     MAX_VALUE_BOWLING = 6
 
 
-class _Dice(Element):
-    value: int
+class Dice(Element):
+    value: int | None
     emoji: DiceEmoji
 
-    def __init__(self, value: int) -> None:
+    def __init__(self, emoji: DiceEmoji = DiceEmoji.DICE, value: int = None):
+        self.emoji = emoji
         self.value = value
 
     @property
@@ -164,30 +192,6 @@ class _Dice(Element):
 
     def __str__(self) -> str:
         return f"[${self.emoji.value}:value={self.value}]"
-
-
-class Dice(_Dice):
-    emoji: Final[DiceEmoji] = DiceEmoji.DICE
-
-
-class Darts(_Dice):
-    emoji: Final[DiceEmoji] = DiceEmoji.DARTS
-
-
-class Basketball(_Dice):
-    emoji: Final[DiceEmoji] = DiceEmoji.BASKETBALL
-
-
-class Football(_Dice):
-    emoji: Final[DiceEmoji] = DiceEmoji.FOOTBALL
-
-
-class SlotMachine(_Dice):
-    emoji: Final[DiceEmoji] = DiceEmoji.SLOT_MACHINE
-
-
-class Bowling(_Dice):
-    emoji: Final[DiceEmoji] = DiceEmoji.BOWLING
 
 
 class Story(Element):
@@ -214,102 +218,35 @@ class MessageEntityType(str, Enum):
     CUSTOM_EMOJI = "custom_emoji"
 
 
-@dataclass
-class _Entity(Text, Element):
-    text: str
-    type: MessageEntityType
+class Entity(_TObject, Element):
+    text: str = None
+    language: str = None
+    url: str = None
+    user: str = None
+    custom_emoji_id: str = None
 
-    def __str__(self):
-        return f"[${self.type.value}:text={self.text}]"
+    @overload
+    def __init__(self, kind: Literal[MessageEntityType.PRE], text: str, language: str):
+        ...
 
+    @overload
+    def __init__(self, kind: Literal[MessageEntityType.TEXT_LINK], text: str, url: str):
+        ...
 
-@dataclass
-class Mention(Notice, _Entity):
-    type: Final[MessageEntityType] = MessageEntityType.MENTION
+    @overload
+    def __init__(self, kind: Literal[MessageEntityType.TEXT_MENTION], text: str, user: ...):
+        ...
 
+    @overload
+    def __init__(self, kind: Literal[MessageEntityType.CUSTOM_EMOJI], text: str, custom_emoji_id: str):
+        ...
 
-@dataclass
-class HashTag(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.HASH_TAG
+    @overload
+    def __init__(self, kind: MessageEntityType, text: str):
+        ...
 
-
-@dataclass
-class Cashtag(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.CASHTAG
-
-
-@dataclass
-class PhoneNumber(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.PHONE_NUMBER
-
-
-@dataclass
-class BotCommand(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.BOT_COMMAND
-
-
-@dataclass
-class Url(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.URL
-
-
-@dataclass
-class Email(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.EMAIL
-
-
-@dataclass
-class Bold(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.BOLD
-
-
-@dataclass
-class Italic(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.ITALIC
-
-
-@dataclass
-class Code(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.CODE
-
-
-@dataclass
-class Pre(_Entity):
-    language: str
-    type: Final[MessageEntityType] = MessageEntityType.PRE
-
-
-@dataclass
-class TextLink(_Entity):
-    url: str
-    type: Final[MessageEntityType] = MessageEntityType.TEXT_LINK
-
-
-@dataclass
-class TextMention(_Entity):
-    user: ...
-    type: Final[MessageEntityType] = MessageEntityType.TEXT_MENTION
-
-
-@dataclass
-class Underline(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.UNDERLINE
-
-
-@dataclass
-class Strikethrough(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.STRIKETHROUGH
-
-
-@dataclass
-class Spoiler(_Entity):
-    type: Final[MessageEntityType] = MessageEntityType.SPOILER
-
-
-@dataclass
-class CustomEmoji(_Entity):
-    custom_emoji_id: str
-    type: Final[MessageEntityType] = MessageEntityType.CUSTOM_EMOJI
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
 class Invoice(Element):

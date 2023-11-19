@@ -6,7 +6,7 @@ from enum import Enum
 from avilla.core import Land, Metadata, Selector
 
 
-class PollType(str, Enum):
+class PollKind(str, Enum):
     REGULAR = "regular"
     QUIZ = "quiz"
 
@@ -20,7 +20,7 @@ class Poll(Metadata):
     total_voter_count: int
     is_closed: bool
     is_anonymous: bool
-    type: PollType
+    kind: PollKind
 
     @property
     def land(self):
