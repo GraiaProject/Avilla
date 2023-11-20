@@ -42,3 +42,13 @@ class RawResource(Resource[T]):
     @property
     def selector(self):
         return Selector().land("avilla-core").raw_data(str(id(self)))
+
+
+class UrlResource(Resource[str]):
+
+    def __init__(self, url: str):
+        self.url = url
+
+    @property
+    def selector(self):
+        return Selector().land("avilla-core").url(self.url)

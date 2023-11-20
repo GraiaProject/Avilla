@@ -141,7 +141,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             member,
-            member,
+            group,
             group,
             group.member(account_route["account"]),
         )
@@ -180,7 +180,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             group.member(account_route["account"]),
-            group,
+            group.member(account_route["account"]),
             group,
             group.member(account_route["account"]),
             mediums=[inviter] if inviter else None,

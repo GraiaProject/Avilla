@@ -3,11 +3,12 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
+from avilla.core.resource import UrlResource, LocalFileResource, RawResource
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text, Audio, Video
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.element import Ark, Embed, Keyboard, Markdown, Reference
-from avilla.qqapi.resource import QQAPIImageResource
+from avilla.qqapi.resource import QQAPIImageResource, QQAPIAudioResource, QQAPIVideoResource
 from avilla.qqapi.utils import escape
 
 if TYPE_CHECKING:
@@ -41,9 +42,25 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
 
     @m.entity(QQAPICapability.serialize_element, element=Picture)
     async def picture(self, element: Picture):
-        if isinstance(element.resource, QQAPIImageResource):
+        if isinstance(element.resource, (QQAPIImageResource, UrlResource)):
             return "image", element.resource.url
+        if isinstance(element.resource, LocalFileResource):
+            return "file_image", element.resource.file.read_bytes()
+        if isinstance(element.resource, RawResource):
+            return "file_image", element.resource.data
         return "file_image", await self.account.staff.fetch_resource(element.resource)
+
+    @m.entity(QQAPICapability.serialize_element, element=Audio)
+    async def audio(self, element: Audio):
+        if isinstance(element.resource, (QQAPIAudioResource, UrlResource)):
+            return "audio", element.resource.url
+        raise NotImplementedError
+
+    @m.entity(QQAPICapability.serialize_element, element=Video)
+    async def video(self, element: Video):
+        if isinstance(element.resource, (QQAPIVideoResource, UrlResource)):
+            return "video", element.resource.url
+        raise NotImplementedError
 
     @m.entity(QQAPICapability.serialize_element, element=Reference)
     async def reference(self, element: Reference):
@@ -80,16 +97,15 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
 
     @m.entity(QQAPICapability.serialize_element, element=Markdown)
     async def markdown(self, element: Markdown):
+        if element.params and (slot := element.params.popitem()):
+            param = {"key": slot[0], "value": slot[1]}
+        else:
+            param = None
         return "markdown", {
             "template_id": element.template_id,
             "content": element.content,
             "custom_template_id": element.custom_template_id,
-            "params": {
-                "key": slot[0],
-                "value": slot[1],
-            }
-            if element.params and (slot := element.params.popitem())
-            else None,
+            "params": param
         }
 
     @m.entity(QQAPICapability.serialize_element, element=Keyboard)

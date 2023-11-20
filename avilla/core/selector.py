@@ -77,11 +77,11 @@ class Selector:
     pattern: Mapping[str, str]
 
     def __init__(self, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
-        self.pattern = MappingProxyType({**pattern})
+        self.pattern = MappingProxyType({k: str(v) for k ,v in pattern.items()})
 
     def __getattr__(self, name: str) -> Callable[[str], Self]:
         def wrapper(content: str) -> Self:
-            return Selector(pattern={**self.pattern, name: content})
+            return Selector(pattern={**self.pattern, name: str(content)})
 
         return wrapper
 
@@ -124,7 +124,7 @@ class Selector:
         return self.pattern.items()
 
     def appendix(self, key: str, value: str):
-        return Selector(pattern={**self.pattern, key: value})
+        return Selector(pattern={**self.pattern, key: str(value)})
 
     def land(self, land: Land | str):
         if isinstance(land, Land):

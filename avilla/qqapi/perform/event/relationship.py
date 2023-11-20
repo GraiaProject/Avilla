@@ -21,7 +21,7 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             inviter,
-            guild,
+            guild.member(account_route["account"]),
             guild,
             guild.member(account_route["account"]),
         )
@@ -54,7 +54,7 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             operator,
-            channel,
+            channel.member(account_route["account"]),
             channel,
             channel.member(account_route["account"]),
         )
@@ -131,7 +131,7 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             operator,
-            group,
+            group.member(account_route["account"]),
             group,
             group.member(account_route["account"]),
         )
@@ -147,7 +147,7 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             operator,
-            group,
+            group.member(account_route["account"]),
             group,
             group.member(account_route["account"]),
         )
@@ -162,7 +162,7 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             user,
-            user,
+            account_route,
             user,
             account_route,
         )
@@ -177,7 +177,7 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             user,
-            user,
+            account_route,
             user,
             account_route,
         )

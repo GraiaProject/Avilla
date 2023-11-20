@@ -26,7 +26,15 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
         result = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
         )
-        return Nick(result["user"]["useranme"], result["nickname"], None)
+        return Nick(result["user"]["username"], result["nick"], None)
+
+    @m.pull("land.guild.member", Summary)
+    @m.pull("land.guild.channel.member", Summary)
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
+        result = await self.account.connection.call_http(
+            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
+        )
+        return Summary(result["user"]["username"], result["nick"])
 
     @m.pull("land.guild.channel.member", Privilege)
     async def get_privilege(self, target: Selector, route: ...) -> Privilege:

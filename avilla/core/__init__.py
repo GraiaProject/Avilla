@@ -42,6 +42,7 @@ from avilla.core.protocol import BaseProtocol as BaseProtocol
 from avilla.core.resource import LocalFileResource as LocalFileResource
 from avilla.core.resource import RawResource as RawResource
 from avilla.core.resource import Resource as Resource
+from avilla.core.resource import UrlResource as UrlResource
 from avilla.core.selector import Selectable as Selectable
 from avilla.core.selector import Selector as Selector
 from avilla.core.service import AvillaService as AvillaService
