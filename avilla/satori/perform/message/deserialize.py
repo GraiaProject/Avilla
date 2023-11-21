@@ -73,7 +73,7 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Link)
     async def a(self, raw_element: Link) -> Text:
-        return Text(raw_element.text, style="link")
+        return Text(raw_element.url, style="link")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Image)
     async def img(self, raw_element: Image) -> Picture:

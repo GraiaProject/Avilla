@@ -125,7 +125,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
             context = self.account.get_context(target)
             msg = Message(
-                target.message(result.get("id", "UNKNOWN")),
+                result.get("id", "UNKNOWN"),
                 target,
                 target.member(self.account.route["account"]),
                 message,
@@ -156,7 +156,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
         context = self.account.get_context(target)
         msg = Message(
-            target.message(result.get("id", "UNKNOWN")),
+            result.get("id", "UNKNOWN"),
             target,
             target.member(self.account.route["account"]),
             message,
@@ -205,7 +205,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
             context = self.account.get_context(target)
             msg = Message(
-                target.message(result.get("id", "UNKNOWN")),
+                result.get("id", "UNKNOWN"),
                 target,
                 target.member(self.account.route["account"]),
                 message,
@@ -236,7 +236,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
         context = self.account.get_context(target)
         msg = Message(
-            target.message(result.get("id", "UNKNOWN")),
+            result.get("id", "UNKNOWN"),
             target,
             target.member(self.account.route["account"]),
             message,

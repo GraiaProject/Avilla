@@ -85,7 +85,6 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="group_at_message_create")
     async def group_at_message(self, event_type: ..., raw_event: dict):
-        print(raw_event)
         account_route = Selector().land("qq").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:

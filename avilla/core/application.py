@@ -23,7 +23,7 @@ from avilla.core.utilles import identity
 if TYPE_CHECKING:
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
     from avilla.core.event import AvillaEvent
-
+    from avilla.standard.core.application import AvillaLifecycleEvent
     from .resource import Resource
 
 T = TypeVar("T")
@@ -99,7 +99,7 @@ class Avilla:
 
         self.custom_event_recorder: dict[type[AvillaEvent], Callable[[AvillaEvent], None]] = {}
 
-    def event_record(self, event: AvillaEvent):
+    def event_record(self, event: AvillaEvent | AvillaLifecycleEvent):
         from avilla.standard.core.message import MessageReceived, MessageEdited, MessageSent
         from avilla.standard.core.application import AvillaLifecycleEvent
         from avilla.standard.core.account.event import AccountStatusChanged
@@ -150,13 +150,13 @@ class Avilla:
     def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None]) -> Callable[[TE], None]:
         ...
 
-    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None] | None = None):
+    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None] | None = None) -> Callable[..., Callable[[TE], None]] | Callable[[TE], None]:
         if recorder is None:
             def wrapper(func: Callable[[TE], None]):
-                self.custom_event_recorder[event_type] = func
+                self.custom_event_recorder[event_type] = func  # type: ignore
                 return func
             return wrapper
-        self.custom_event_recorder[event_type] = recorder
+        self.custom_event_recorder[event_type] = recorder  # type: ignore
         return recorder
 
     def __init_isolate__(self):
