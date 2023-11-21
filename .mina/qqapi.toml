@@ -6,7 +6,7 @@ raw_dependencies = [
 
 [project]
 name = "avilla-qqapi"
-version = "1.0.0a16"
+version = "1.0.0a17"
 authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
