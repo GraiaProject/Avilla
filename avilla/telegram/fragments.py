@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import IO
 
-from telegram import InputFile, PhotoSize, Update, Message
+from telegram import InputFile, Message, PhotoSize, Update
 from telegram.constants import MessageType
 from telegram.ext import ExtBot
 from typing_extensions import Self
@@ -20,6 +20,10 @@ class MessageFragment:
 
     async def send(self, bot: ExtBot, chat: int) -> Message:
         ...
+
+    @classmethod
+    def sort(cls, *fragments: Self):
+        return sorted(fragments, key=lambda f: PRIORITIES[f.__class__])
 
     @classmethod
     def compose(cls, *fragments: Self):
@@ -77,3 +81,9 @@ class MessageFragmentPhoto(MessageFragment):
 
     async def send(self, bot: ExtBot, chat: int) -> Message:
         return await bot.send_photo(chat, photo=self.file, caption=self.caption)
+
+
+PRIORITIES: dict[type[MessageFragment], int] = {
+    MessageFragmentPhoto: 0,
+    MessageFragmentText: float("inf"),  # Always at the end
+}

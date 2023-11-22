@@ -17,6 +17,7 @@ class TelegramBotConfig(ProtocolConfig):
     base_url: URL = URL("https://api.telegram.org/bot")
     base_file_url: URL = URL("https://api.telegram.org/file/bot")
     timeout: int = 15
+    reformat: bool = False
 
 
 def _import_performs():
