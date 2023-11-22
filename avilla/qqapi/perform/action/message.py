@@ -100,6 +100,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
+        if "file_image" in msg:
+            raise NotImplementedError("file_image is not supported yet")
         if msg.get("embed"):
             msg_type = 4
         elif msg.get("ark"):
@@ -118,35 +120,39 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 {
                     "file_type": 1,
                     "url": msg["image"],
-                    "srv_send_msg": True,
+                    "srv_send_msg": "msg_id" not in msg,
                 },
             )
             if result is None:
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
-            context = self.account.get_context(target)
-            msg = Message(
-                result.get("id", "UNKNOWN"),
-                target,
-                target.member(self.account.route["account"]),
-                message,
-                datetime.now(timezone.utc),
-            )
-            self.protocol.post_event(MessageSent(context, msg, self.account))
-            return target.message(result.get("id", "UNKNOWN"))
+            if "msg_id" not in msg:
+                context = self.account.get_context(target)
+                msg = Message(
+                    result.get("id", "UNKNOWN"),
+                    target,
+                    target.member(self.account.route["account"]),
+                    message,
+                    datetime.now(timezone.utc),
+                )
+                self.protocol.post_event(MessageSent(context, msg, self.account))
+                return target.message(result.get("id", "UNKNOWN"))
+            msg_type = 7
+            msg["media"] = {"file_info": result["file_info"]}
+            if "content" not in msg or not msg["content"]:
+                msg["content"] = " "
         msg["msg_type"] = msg_type
-        if "file_image" in msg:
-            raise NotImplementedError("file_image is not supported yet")
-        if seq := await cache.get(f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg['msg_id']}"):
+
+        if seq := await cache.get(f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}"):
             msg["msg_seq"] = seq
             await cache.set(
-                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg['msg_id']}",
+                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
                 seq+1,
                 expire=timedelta(minutes=5)
             )
         else:
             msg["msg_seq"] = 1
             await cache.set(
-                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg['msg_id']}",
+                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
                 2,
                 expire=timedelta(minutes=5)
             )
@@ -180,6 +186,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
+        if "file_image" in msg:
+            raise NotImplementedError("file_image is not supported yet")
         if msg.get("embed"):
             msg_type = 4
         elif msg.get("ark"):
@@ -198,35 +206,40 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 {
                     "file_type": 1,
                     "url": msg["image"],
-                    "srv_send_msg": True,
+                    "srv_send_msg": "msg_id" not in msg,
                 },
             )
             if result is None:
                 raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
-            context = self.account.get_context(target)
-            msg = Message(
-                result.get("id", "UNKNOWN"),
-                target,
-                target.member(self.account.route["account"]),
-                message,
-                datetime.now(timezone.utc),
-            )
-            self.protocol.post_event(MessageSent(context, msg, self.account))
-            return target.message(result.get("id", "UNKNOWN"))
+            if "msg_id" not in msg:
+                context = self.account.get_context(target)
+                msg = Message(
+                    result.get("id", "UNKNOWN"),
+                    target,
+                    target.member(self.account.route["account"]),
+                    message,
+                    datetime.now(timezone.utc),
+                )
+                self.protocol.post_event(MessageSent(context, msg, self.account))
+                return target.message(result.get("id", "UNKNOWN"))
+            msg_type = 7
+            msg["media"] = {"file_info": result["file_info"]}
+            if "content" not in msg or not msg["content"]:
+                msg["content"] = " "
         msg["msg_type"] = msg_type
         if "file_image" in msg:
             raise NotImplementedError("file_image is not supported yet")
-        if seq := await cache.get(f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg['msg_id']}"):
+        if seq := await cache.get(f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}"):
             msg["msg_seq"] = seq
             await cache.set(
-                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg['msg_id']}",
+                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
                 seq+1,
                 expire=timedelta(minutes=5)
             )
         else:
             msg["msg_seq"] = 1
             await cache.set(
-                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg['msg_id']}",
+                f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
                 2,
                 expire=timedelta(minutes=5)
             )

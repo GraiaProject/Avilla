@@ -102,7 +102,7 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
         guild = land.guild(str(raw_event["guild_id"]))
         user = guild.member(str(raw_event["user"]["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
-        if raw_event["operator_id"] != raw_event["user"]["id"]:
+        if raw_event["op_user_id"] != raw_event["user"]["id"]:
             context = Context(
                 account,
                 operator,

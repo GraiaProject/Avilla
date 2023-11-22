@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from graia.amnesia.message import Element
-from graia.amnesia.message import Text as Text
+from graia.amnesia.message import Text as Text  # noqa
 
 from avilla.core.resource import LocalFileResource, Resource
 from avilla.core.selector import Selector
@@ -43,9 +43,9 @@ class NoticeAll(Element):
 
 
 class Picture(Element):
-    resource: Resource[bytes]
+    resource: Resource[bytes] | Resource[str]
 
-    def __init__(self, resource: Resource[bytes] | Path | str):
+    def __init__(self, resource: Resource[bytes] | Resource[str] | Path | str):
         if isinstance(resource, Path):
             resource = LocalFileResource(resource)
         elif isinstance(resource, str):

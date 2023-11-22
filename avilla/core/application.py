@@ -115,7 +115,9 @@ class Avilla:
             logger.debug(event.__class__.__name__)
             return
         context = event.context
+        client = f"{'.'.join(f'{k}({v})' for k, v in context.client.items())}"
         scene = f"{'.'.join(f'{k}({v})' for k, v in context.scene.items())}"
+        endpoint = f"{'.'.join(f'{k}({v})' for k, v in context.endpoint.items())}"
 
         if isinstance(event, MessageSent):
             return
@@ -139,7 +141,7 @@ class Avilla:
             logger.info(
                 f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
                 f"{context.account.route['account']}]: "
-                f"{event.__class__.__name__} from {scene}"
+                f"{event.__class__.__name__} from {client} to {endpoint} in {scene}"
             )
 
     @overload
