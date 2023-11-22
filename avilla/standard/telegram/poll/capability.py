@@ -27,5 +27,5 @@ class PollPublish(Capability):
 
 class PollStop(Capability):
     @Fn.complex({TargetOverload(): ["target"]})
-    async def delete(self, target: Selector) -> None:
+    async def stop(self, target: Selector) -> None:
         ...
