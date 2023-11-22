@@ -20,6 +20,7 @@ from avilla.telegram.account import TelegramAccount
 from avilla.telegram.bot.base import TelegramBase
 from avilla.telegram.const import PLATFORM
 from avilla.telegram.exception import InvalidToken
+from avilla.telegram.fragments import MessageFragment
 
 if TYPE_CHECKING:
     from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
@@ -106,6 +107,8 @@ class TelegramBot(TelegramBase, Service):
                 break
 
     async def send(self, target, fragments):
+        if self.config.reformat:
+            fragments = MessageFragment.sort(*fragments)
         chat = int(target.pattern["chat"])
         sent_ids = []
         for fragment in fragments:

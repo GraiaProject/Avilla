@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
+from typing import TYPE_CHECKING, AsyncIterator
 
 from loguru import logger
 from telegram import Update
