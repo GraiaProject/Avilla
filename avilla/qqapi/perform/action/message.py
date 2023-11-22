@@ -45,6 +45,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
+        if media := msg.get("media"):
+            msg[media[0]] = media[1]
         method, data = form_data(msg)
         try:
             result = await self.account.connection.call_http(
@@ -273,6 +275,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         if reply:
             msg["msg_id"] = reply.pattern["message"]
             msg["message_reference"] = {"message_id": reply.pattern["message"]}
+        if media := msg.get("media"):
+            msg[media[0]] = media[1]
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"dms/{target.pattern['guild']}/messages", data)
         if result is None:
