@@ -8,6 +8,7 @@ from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.resource import SatoriResource
+from avilla.satori.element import Button
 
 if TYPE_CHECKING:
     from avilla.satori.account import SatoriAccount  # noqa
@@ -94,3 +95,7 @@ class SatoriMessageSerializePerform((m := AccountCollector["SatoriProtocol", "Sa
         if not isinstance(res, SatoriResource):
             raise NotImplementedError("Only SatoriResource is supported.")
         return f'<file src="{res.src}" {"cache" if res.cache else ""}/>'
+
+    @m.entity(SatoriCapability.serialize_element, element=Button)
+    async def button(self, element: Button) -> str:
+        return str(element)

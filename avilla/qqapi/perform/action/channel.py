@@ -46,13 +46,13 @@ class QQAPIChannelActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         raise PermissionError(permission_error_message(f"set_name@{target.path}", "read", ["manage"]))
 
     @MuteAllCapability.mute_all.collect(m, target="land.guild.channel")
-    async def channel_mute_all(self, target: Selector, route: ...):
+    async def channel_mute_all(self, target: Selector):
         await self.account.connection.call_http(
             "patch", f"channels/{target.pattern['channel']}", {"speak_permission": 2}
         )
 
     @MuteAllCapability.unmute_all.collect(m, target="land.guild.channel")
-    async def channel_unmute_all(self, target: Selector, route: ...):
+    async def channel_unmute_all(self, target: Selector):
         await self.account.connection.call_http(
             "patch", f"channels/{target.pattern['channel']}", {"speak_permission": 1}
         )

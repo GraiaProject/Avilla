@@ -23,7 +23,7 @@ alc = Alconna(
 
 avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
-cmd = AvillaCommands()
+cmd = AvillaCommands(need_tome=True, remove_tome=True)
 
 @cmd.on("ping")
 async def ping(ctx: Context):

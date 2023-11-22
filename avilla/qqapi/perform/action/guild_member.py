@@ -20,12 +20,21 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
     m.namespace = "avilla.protocol/qqapi::action"
     m.identify = "guild_member"
 
-    @m.pull("land.guild.user", Nick)
-    async def get_summary(self, target: Selector, route: ...) -> Nick:
+    @m.pull("land.guild.member", Nick)
+    @m.pull("land.guild.channel.member", Nick)
+    async def get_nick(self, target: Selector, route: ...) -> Nick:
         result = await self.account.connection.call_http(
-            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['user']}", {}
+            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
         )
-        return Nick(result["user"]["useranme"], result["nickname"], None)
+        return Nick(result["user"]["username"], result["nick"], None)
+
+    @m.pull("land.guild.member", Summary)
+    @m.pull("land.guild.channel.member", Summary)
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
+        result = await self.account.connection.call_http(
+            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
+        )
+        return Summary(result["user"]["username"], result["nick"])
 
     @m.pull("land.guild.channel.member", Privilege)
     async def get_privilege(self, target: Selector, route: ...) -> Privilege:
@@ -89,8 +98,8 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
 
     @MuteCapability.mute.collect(m, target="land.guild.channel.member")
     async def mute(self, target: Selector, duration: timedelta) -> None:
-        if not (await self.get_privilege(target)).effective:
-            self_info = await self.get_privilege_summary(target.into(f"~.member{self.account.route['account']}"))
+        if not (await self.get_privilege(target, Privilege)).effective:
+            self_info = await self.get_privilege_summary(target.into(f"~.member{self.account.route['account']}"), Summary)
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", self_info.name, ["manage"]))
         await self.account.connection.call_http(
             "put",
@@ -100,8 +109,8 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
 
     @MuteCapability.unmute.collect(m, target="land.guild.channel.member")
     async def unmute(self, target: Selector) -> None:
-        if not (await self.get_privilege(target)).effective:
-            self_info = await self.get_privilege_summary(target.into(f"~.member{self.account.route['account']}"))
+        if not (await self.get_privilege(target, Privilege)).effective:
+            self_info = await self.get_privilege_summary(target.into(f"~.member{self.account.route['account']}"), Summary)
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", self_info.name, ["manage"]))
         await self.account.connection.call_http(
             "put",
@@ -109,7 +118,8 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
             {"add": 4, "remove": 0},
         )
 
-    @SceneCapability.remove_member.collect(m, target="land.guild.user")
+    @SceneCapability.remove_member.collect(m, target="land.guild.member")
+    @SceneCapability.remove_member.collect(m, target="land.guild.channel.member")
     async def remove_user(self, target: Selector, reason: str | None = None) -> None:
         self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
@@ -118,7 +128,7 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
         if not effective:
             raise PermissionError(permission_error_message(f"remove_member@{target.path}", "read", ["manage"]))
         await self.account.connection.call_http(
-            "delete", f"guilds/{target.pattern['guild']}/members/{target.pattern['user']}", {}
+            "delete", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
         )
 
     @SceneCapability.remove_member.collect(m, target="land.guild.channel.member")

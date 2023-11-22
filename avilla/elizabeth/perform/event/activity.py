@@ -11,7 +11,7 @@ class ElizabethEventActivityPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/elizabeth::event"
     m.identify = "activity"
 
-    @m.entity(ElizabethCapability.event_callback, event="NudgeEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="NudgeEvent")
     async def nudge(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

@@ -38,13 +38,13 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
     @m.pull("land.guild.role", Summary)
     async def get_role_summary(self, target: Selector, route: ...) -> Summary:
         return Summary(
-            (await self.get_role(target)).name,
+            (await self.get_role(target, Role)).name,
             "name of role",
         )
 
     @m.pull("land.guild.role", Role >> Summary)
     async def get_role_summary1(self, target: Selector, route: ...) -> Summary:
-        return (await self.get_role_summary(target)).infers(Role >> Summary)
+        return (await self.get_role_summary(target, Summary)).infers(Role >> Summary)
 
     @m.pull("land.guild.role", Count)
     async def get_role_count(self, target: Selector, route: ...) -> Count:
@@ -56,7 +56,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
 
     @m.pull("land.guild.role", Role >> Count)
     async def get_role_count1(self, target: Selector, route: ...) -> Count:
-        return (await self.get_role_count(target)).infers(Role >> Count)
+        return (await self.get_role_count(target, Count)).infers(Role >> Count)
 
     @m.pull("land.guild.role", Privilege)
     async def get_privilege(self, target: Selector, route: ...) -> Privilege:
@@ -78,7 +78,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
 
     @m.pull("land.guild.role", Role >> Privilege)
     async def get_privilege1(self, target: Selector, route: ...) -> Privilege:
-        return (await self.get_privilege(target)).infers(Role >> Privilege)
+        return (await self.get_privilege(target, Privilege)).infers(Role >> Privilege)
 
     @m.pull("land.guild.role", Privilege >> Summary)
     async def get_privilege_summary(self, target: Selector, route: ...) -> Summary:
@@ -96,7 +96,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
 
     @m.pull("land.guild.role", Role >> Privilege >> Summary)
     async def get_privilege_summary1(self, target: Selector, route: ...) -> Summary:
-        return (await self.get_privilege_summary(target)).infers(Role >> Privilege >> Summary)
+        return (await self.get_privilege_summary(target, Summary)).infers(Role >> Privilege >> Summary)
 
     @m.pull("land.guild.role", MuteInfo)
     async def get_mute_info(self, target: Selector, route: ...) -> MuteInfo:
@@ -114,7 +114,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
 
     @MuteCapability.mute.collect(m, target="land.guild.role")
     async def mute(self, target: Selector, duration: timedelta) -> None:
-        if not (await self.get_privilege(target)).effective:
+        if not (await self.get_privilege(target, Privilege)).effective:
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", "read", ["manage"]))
         await self.account.connection.call_http(
             "put",
@@ -124,7 +124,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
 
     @MuteCapability.unmute.collect(m, target="land.guild.role")
     async def unmute(self, target: Selector) -> None:
-        if not (await self.get_privilege(target)).effective:
+        if not (await self.get_privilege(target, Privilege)).effective:
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", "read", ["manage"]))
         await self.account.connection.call_http(
             "put",

@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Literal, overload
+from typing import Literal
+from aiohttp import ClientResponse
 
 from avilla.qqapi.exception import (
     ActionFailed,
@@ -13,35 +14,26 @@ from avilla.qqapi.exception import (
 )
 
 
-@overload
-def validate_response(data: Any, code: int, raising: Literal[False]) -> Any | Exception:
-    ...
-
-
-@overload
-def validate_response(data: Any, code: int, raising: Literal[True] = True) -> Any:
-    ...
-
-
-def validate_response(data: dict, code: int, raising: bool = True):
-    if code == 200 or 203 <= code < 300:
+async def validate_response(resp: ClientResponse):
+    status = resp.status
+    if status == 200 or 203 <= status < 300:
+        data = await resp.json()
         return data.get("data", data)
-    if code in {201, 202}:
+    if status in {201, 202}:
+        data = await resp.json()
         if data and (audit_id := data.get("data", {}).get("message_audit", {}).get("audit_id")):
             exc = AuditException(audit_id)
         else:
-            exc = ActionFailed(code, data)
-    elif code == 401:
-        exc = UnauthorizedException(code, data)
-    elif code in {404, 405}:
-        exc = ApiNotAvailable(code, data)
-    elif code == 429:
-        exc = RateLimitException(code, data)
+            exc = ActionFailed(status, resp.headers, await resp.text())
+    elif status == 401:
+        exc = UnauthorizedException(status, resp.headers, await resp.text())
+    elif status in {404, 405}:
+        exc = ApiNotAvailable(status, resp.headers, await resp.text())
+    elif status == 429:
+        exc = RateLimitException(status, resp.headers, await resp.text())
     else:
-        exc = ActionFailed(code, data)
-    if raising:
-        raise exc
-    return exc
+        exc = ActionFailed(status, resp.headers, await resp.text())
+    raise exc
 
 
 CallMethod = Literal["get", "post", "fetch", "update", "multipart"]

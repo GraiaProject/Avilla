@@ -4,6 +4,8 @@ import random
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
+from avilla.core.resource import RawResource, LocalFileResource, UrlResource
 from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.red.capability import RedCapability
@@ -45,7 +47,14 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
 
     @m.entity(RedCapability.serialize_element, element=Picture)
     async def picture(self, element: Picture) -> dict:
-        data = await self.account.staff.fetch_resource(element.resource)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
+        else:
+            data = await self.account.staff.fetch_resource(element.resource)
         resp = await self.account.websocket_client.call_http(
             "multipart",
             "api/upload",
@@ -85,7 +94,14 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
 
     @m.entity(RedCapability.serialize_element, element=Audio)
     async def audio(self, element: Audio) -> dict:
-        data = await self.account.staff.fetch_resource(element.resource)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
+        else:
+            data = await self.account.staff.fetch_resource(element.resource)
         resp = await self.account.websocket_client.call_http(
             "multipart",
             "api/upload",
@@ -129,7 +145,14 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
 
     @m.entity(RedCapability.forward_export, element=Picture)
     async def forward_picture(self, element: Picture) -> dict:
-        data = await self.account.staff.fetch_resource(element.resource)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
+        else:
+            data = await self.account.staff.fetch_resource(element.resource)
         resp = await self.account.websocket_client.call_http(
             "multipart",
             "api/upload",

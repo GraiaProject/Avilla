@@ -16,7 +16,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/elizabeth::event"
     m.identify = "relationship"
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberJoinEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberJoinEvent")
     async def member_join(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -73,7 +73,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberLeaveEventKick")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberLeaveEventKick")
     async def member_leave_kick(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -129,7 +129,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=False)
 
-    @m.entity(ElizabethCapability.event_callback, event="MemberLeaveEventQuit")
+    @m.entity(ElizabethCapability.event_callback, raw_event="MemberLeaveEventQuit")
     async def member_leave_quit(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -141,7 +141,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             member,
-            member,
+            group,
             group,
             group.member(account_route["account"]),
         )
@@ -169,7 +169,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=True)
 
-    @m.entity(ElizabethCapability.event_callback, event="BotJoinGroupEvent")
+    @m.entity(ElizabethCapability.event_callback, raw_event="BotJoinGroupEvent")
     async def bot_join_group(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -180,7 +180,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             group.member(account_route["account"]),
-            group,
+            group.member(account_route["account"]),
             group,
             group.member(account_route["account"]),
             mediums=[inviter] if inviter else None,
@@ -210,7 +210,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @m.entity(ElizabethCapability.event_callback, event="BotLeaveEventActive")
+    @m.entity(ElizabethCapability.event_callback, raw_event="BotLeaveEventActive")
     async def bot_leave_active(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -234,7 +234,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=True)
 
-    @m.entity(ElizabethCapability.event_callback, event="BotLeaveEventKick")
+    @m.entity(ElizabethCapability.event_callback, raw_event="BotLeaveEventKick")
     async def bot_leave_kick(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
@@ -274,7 +274,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RelationshipDestroyed(context, active=False)
 
-    @m.entity(ElizabethCapability.event_callback, event="BotLeaveEventDisband")
+    @m.entity(ElizabethCapability.event_callback, raw_event="BotLeaveEventDisband")
     async def bot_leave_disband(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account

@@ -43,49 +43,49 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Plain")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Plain")
     async def text(self, raw_element: dict) -> Text:
         return Text(raw_element["text"])
 
-    @m.entity(ElizabethCapability.deserialize_element, element="At")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="At")
     async def at(self, raw_element: dict) -> Notice:
         if self.context:
             return Notice(self.context.scene.member(raw_element["target"]))
         return Notice(Selector().land("qq").member(raw_element["target"]))
 
-    @m.entity(ElizabethCapability.deserialize_element, element="AtAll")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="AtAll")
     async def at_all(self, raw_element: dict) -> NoticeAll:
         return NoticeAll()
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Face")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Face")
     async def face(self, raw_element: dict) -> Face:
         return Face(raw_element["faceId"], raw_element["name"])
 
-    @m.entity(ElizabethCapability.deserialize_element, element="MarketFace")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="MarketFace")
     async def market_face(self, raw_element: dict) -> MarketFace:
         return MarketFace(raw_element["id"], raw_element["name"])
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Xml")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Xml")
     async def xml(self, raw_element: dict) -> Xml:
         return Xml(raw_element["xml"])
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Json")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Json")
     async def json(self, raw_element: dict) -> Json:
         return Json(raw_element["json"])
 
-    @m.entity(ElizabethCapability.deserialize_element, element="App")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="App")
     async def app(self, raw_element: dict) -> App:
         return App(raw_element["content"])
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Poke")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Poke")
     async def poke(self, raw_element: dict) -> Poke:
         return Poke(PokeKind(raw_element["name"]))
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Dice")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Dice")
     async def dice(self, raw_element: dict) -> Dice:
         return Dice(int(raw_element["value"]))
 
-    @m.entity(ElizabethCapability.deserialize_element, element="MusicShare")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="MusicShare")
     async def music_share(self, raw_element: dict) -> MusicShare:
         return MusicShare(
             MusicShareKind(raw_element["kind"]),
@@ -97,7 +97,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["brief"],
         )
 
-    @m.entity(ElizabethCapability.deserialize_element, element="File")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="File")
     async def file(self, raw_element: dict) -> File:
         return File(
             ElizabethFileResource(
@@ -109,7 +109,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             )
         )
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Image")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Image")
     async def image(self, raw_element: dict) -> Picture:
         resource = ElizabethImageResource(
             Selector().land("qq").picture(raw_element["imageId"]),
@@ -118,7 +118,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         )
         return Picture(resource)
 
-    @m.entity(ElizabethCapability.deserialize_element, element="FlashImage")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="FlashImage")
     async def flash_image(self, raw_element: dict) -> FlashImage:
         resource = ElizabethImageResource(
             Selector().land("qq").picture(raw_element["imageId"]),
@@ -127,7 +127,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         )
         return FlashImage(resource)
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Voice")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Voice")
     async def voice(self, raw_element: dict) -> Audio:
         resource = ElizabethVoiceResource(
             Selector().land("qq").voice(raw_element["voiceId"]),
@@ -136,7 +136,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
         )
         return Audio(resource, int(raw_element["length"]))
 
-    @m.entity(ElizabethCapability.deserialize_element, element="Forward")
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="Forward")
     async def forward(self, raw_element: dict) -> Forward:
         elem = Forward()
         if raw_element.get("display"):
@@ -150,7 +150,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
                     node["senderName"],
                     str(node["senderId"]),
                     datetime.fromtimestamp(node["time"]),
-                    await self.cap.deserialize_chain(node["messageChain"]),
+                    await ElizabethCapability(self.account.staff).deserialize_chain((node["messageChain"])),
                 )
             )
         return elem

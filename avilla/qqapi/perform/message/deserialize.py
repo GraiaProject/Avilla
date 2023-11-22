@@ -2,12 +2,26 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import (
+    Audio,
+    Face,
+    File,
+    Notice,
+    NoticeAll,
+    Picture,
+    Text,
+    Video,
+)
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.element import Ark, ArkKv, Embed, Reference
-from avilla.qqapi.resource import QQAPIImageResource
+from avilla.qqapi.resource import (
+    QQAPIAudioResource,
+    QQAPIFileResource,
+    QQAPIImageResource,
+    QQAPIVideoResource,
+)
 from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
@@ -30,8 +44,53 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
         return Face(raw_element["id"])
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="attachment")
-    async def attachment(self, raw_element: dict) -> Picture:
-        resource = QQAPIImageResource(Selector().land("qqguild").picture(url := raw_element["url"]), url)
+    async def attachment(self, raw_element: dict):
+        if "content_type" not in raw_element:
+            resource = QQAPIImageResource(Selector().land("qqguild").picture(url := raw_element["url"]), "image", url)
+            return Picture(resource)
+        content_type = raw_element["content_type"]
+        if content_type == "file":
+            resource = QQAPIFileResource(
+                Selector().land("qqguild").file(url := raw_element["url"]),
+                content_type,
+                url,
+                raw_element.get("filename"),
+                raw_element.get("height"),
+                raw_element.get("width"),
+                raw_element.get("size"),
+            )
+            return File(resource)
+        if content_type == "audio":
+            resource = QQAPIAudioResource(
+                Selector().land("qqguild").audio(url := raw_element["url"]),
+                content_type,
+                url,
+                raw_element.get("filename"),
+                raw_element.get("height"),
+                raw_element.get("width"),
+                raw_element.get("size"),
+            )
+            return Audio(resource)
+        if content_type == "video":
+            resource = QQAPIVideoResource(
+                Selector().land("qqguild").video(url := raw_element["url"]),
+                content_type,
+                url,
+                raw_element.get("filename"),
+                raw_element.get("height"),
+                raw_element.get("width"),
+                raw_element.get("size"),
+            )
+            return Video(resource)
+        resource = QQAPIImageResource(
+            Selector().land("qqguild").picture(url := raw_element["url"]),
+            content_type,
+            url,
+            raw_element.get("filename"),
+            raw_element.get("height"),
+            raw_element.get("width"),
+            raw_element.get("size"),
+        )
         return Picture(resource)
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="mention_user")
@@ -41,7 +100,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
         return Notice(Selector().land("qqguild").member(raw_element["user_id"]))
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="mention_channel")
-    async def mention(self, raw_element: dict) -> Notice:
+    async def mention_channel(self, raw_element: dict) -> Notice:
         if self.context:
             return Notice(
                 Selector().land("qqguild").guild(self.context.scene["guild"]).channel(raw_element["channel_id"])

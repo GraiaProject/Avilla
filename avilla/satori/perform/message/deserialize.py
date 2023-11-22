@@ -3,15 +3,18 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from satori.element import At
 from satori.element import Audio as SatoriAudio
-from satori.element import Bold, Br, Code
 from satori.element import File as SatoriFile
 from satori.element import (
+    At,
+    Bold,
+    Br,
+    Code,
     Image,
     Italic,
     Link,
     Paragraph,
+    Underline,
     Quote,
     Sharp,
     Spoiler,
@@ -20,14 +23,14 @@ from satori.element import (
     Superscript,
 )
 from satori.element import Text as SatoriText
-from satori.element import Underline
 from satori.element import Video as SatoriVideo
+from satori.element import Button as SatoriButton
 
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
-from avilla.satori.element import Reply
+from avilla.satori.element import Reply, Button
 from avilla.satori.resource import (
     SatoriAudioResource,
     SatoriFileResource,
@@ -70,7 +73,7 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Link)
     async def a(self, raw_element: Link) -> Text:
-        return Text(raw_element.text, style="link")
+        return Text(raw_element.url, style="link")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Image)
     async def img(self, raw_element: Image) -> Picture:
@@ -143,3 +146,7 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(SatoriCapability.deserialize_element, raw_element=Paragraph)
     async def paragraph(self, raw_element: Paragraph) -> Text:
         return Text(raw_element.text, style="paragraph")
+
+    @m.entity(SatoriCapability.deserialize_element, raw_element=SatoriButton)
+    async def button(self, raw_element: SatoriButton) -> Button:
+        return Button(**asdict(raw_element))
