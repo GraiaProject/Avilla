@@ -108,18 +108,19 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             msg_type = 3
         elif msg.get("markdown"):
             msg_type = 2
-        elif msg.get("image"):
-            msg_type = 1
+        elif msg.get("media"):
+            msg_type = 7
         else:
             msg_type = 0
         msg["timestamp"] = int(datetime.now(timezone.utc).timestamp())
-        if msg_type == 1:
+        if msg_type == 7:
+            file_types = {"image": 1, "video": 2, "audio": 3}
             result = await self.account.connection.call_http(
                 "post",
                 f"v2/groups/{target.pattern['group']}/files",
                 {
-                    "file_type": 1,
-                    "url": msg["image"],
+                    "file_type": file_types.get(msg["media"][0], 1),
+                    "url": msg["media"][1],
                     "srv_send_msg": "msg_id" not in msg,
                 },
             )
@@ -136,7 +137,6 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 )
                 self.protocol.post_event(MessageSent(context, msg, self.account))
                 return target.message(result.get("id", "UNKNOWN"))
-            msg_type = 7
             msg["media"] = {"file_info": result["file_info"]}
             if "content" not in msg or not msg["content"]:
                 msg["content"] = " "
@@ -194,18 +194,19 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             msg_type = 3
         elif msg.get("markdown"):
             msg_type = 2
-        elif msg.get("image"):
+        elif msg.get("media"):
             msg_type = 1
         else:
             msg_type = 0
         msg["timestamp"] = int(datetime.now(timezone.utc).timestamp())
         if msg_type == 1:
+            file_types = {"image": 1, "video": 2, "audio": 3}
             result = await self.account.connection.call_http(
                 "post",
                 f"v2/users/{target.pattern['friend']}/files",
                 {
-                    "file_type": 1,
-                    "url": msg["image"],
+                    "file_type": file_types.get(msg["media"][0], 1),
+                    "url": msg["media"][1],
                     "srv_send_msg": "msg_id" not in msg,
                 },
             )
@@ -222,7 +223,6 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 )
                 self.protocol.post_event(MessageSent(context, msg, self.account))
                 return target.message(result.get("id", "UNKNOWN"))
-            msg_type = 7
             msg["media"] = {"file_info": result["file_info"]}
             if "content" not in msg or not msg["content"]:
                 msg["content"] = " "

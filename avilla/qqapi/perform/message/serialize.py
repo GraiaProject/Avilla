@@ -43,7 +43,7 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
     @m.entity(QQAPICapability.serialize_element, element=Picture)
     async def picture(self, element: Picture):
         if isinstance(element.resource, (QQAPIImageResource, UrlResource)):
-            return "image", element.resource.url
+            return "media", ("image", element.resource.url)
         if isinstance(element.resource, LocalFileResource):
             return "file_image", element.resource.file.read_bytes()
         if isinstance(element.resource, RawResource):
@@ -53,13 +53,13 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
     @m.entity(QQAPICapability.serialize_element, element=Audio)
     async def audio(self, element: Audio):
         if isinstance(element.resource, (QQAPIAudioResource, UrlResource)):
-            return "audio", element.resource.url
+            return "media", ("audio", element.resource.url)
         raise NotImplementedError
 
     @m.entity(QQAPICapability.serialize_element, element=Video)
     async def video(self, element: Video):
         if isinstance(element.resource, (QQAPIVideoResource, UrlResource)):
-            return "video", element.resource.url
+            return "media", ("video", element.resource.url)
         raise NotImplementedError
 
     @m.entity(QQAPICapability.serialize_element, element=Reference)
