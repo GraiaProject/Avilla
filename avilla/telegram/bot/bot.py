@@ -109,6 +109,7 @@ class TelegramBot(TelegramBase, Service):
     async def send(self, target, fragments):
         if self.config.reformat:
             fragments = MessageFragment.sort(*fragments)
+        fragments = MessageFragment.compose(*fragments)
         chat = int(target.pattern["chat"])
         sent_ids = []
         for fragment in fragments:

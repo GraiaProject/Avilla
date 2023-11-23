@@ -39,17 +39,31 @@ class MessageFragment:
         return sorted(fragments, key=lambda f: PRIORITIES[f.__class__])
 
     @classmethod
-    def compose(cls, *fragments: Self):
+    def compose(cls, *fragments: Self) -> list[Self]:
         composed = []
         for fragment in fragments:
-            if isinstance(fragment, MessageFragmentPhoto):
+            if not composed:
                 composed.append(fragment)
+            elif isinstance(
+                fragment, (MessageFragmentPhoto, MessageFragmentAudio, MessageFragmentDocument, MessageFragmentVideo)
+            ):
+                if isinstance(composed[-1], (MessageFragmentPhoto, MessageFragmentAudio, MessageFragmentDocument)):
+                    composed.append(MessageFragmentMediaGroup([composed.pop(), fragment]))
+                elif isinstance(composed[-1], MessageFragmentMediaGroup):
+                    composed[-1].media.append(fragment)
             elif isinstance(fragment, MessageFragmentText):
-                if not composed:
-                    composed.append(fragment)
-                elif composed[-1].type == MessageType.TEXT:
+                if composed[-1].type == MessageType.TEXT:
                     composed[-1].text += fragment.text
-                elif composed[-1].type == MessageType.PHOTO:
+                elif isinstance(
+                    composed[-1],
+                    (
+                        MessageFragmentPhoto,
+                        MessageFragmentAudio,
+                        MessageFragmentDocument,
+                        MessageFragmentVideo,
+                        MessageFragmentMediaGroup,
+                    ),
+                ):
                     composed[-1].caption = composed[-1].caption or "" + fragment.text
         return composed
 
@@ -196,14 +210,17 @@ class MessageFragmentVideo(MessageFragment):
 
 class MessageFragmentMediaGroup(MessageFragment):
     media: list[MessageFragmentAudio | MessageFragmentDocument | MessageFragmentPhoto | MessageFragmentVideo]
+    caption: str | None
 
     def __init__(
         self,
         media: list[MessageFragmentAudio | MessageFragmentDocument | MessageFragmentPhoto | MessageFragmentVideo],
+        caption: str = None,
         update: Update | None = None,
     ):
         super().__init__(_MISSING, update)
         self.media = media
+        self.caption = caption
 
     async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> tuple[Message]:
         media = []
