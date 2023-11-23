@@ -28,8 +28,8 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        message = await TelegramCapability(self.account.staff).serialize(message)
-        result = await self.account.instance.send(target, message)
+        s_message = await TelegramCapability(self.account.staff).serialize(message)
+        result = await self.account.instance.send(target, s_message)
         context = Context(
             account=self.account,
             client=self.account.route,

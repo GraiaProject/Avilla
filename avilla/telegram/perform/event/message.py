@@ -45,6 +45,7 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
         )
 
     @m.entity(TelegramCapability.event_callback, event_type="message.group")
+    @m.entity(TelegramCapability.event_callback, event_type="message.super_group")
     async def message_group(self, event_type: ..., raw_event: Update):
         self_id = raw_event.get_bot().id
         account = self.account
