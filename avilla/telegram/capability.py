@@ -43,4 +43,5 @@ class TelegramCapability((m := ApplicationCollector())._):
         maybe_event = await self.event_callback(event_type, payload)
 
         if maybe_event is not None:
+            self.avilla.event_record(maybe_event)
             self.avilla.broadcast.postEvent(maybe_event)
