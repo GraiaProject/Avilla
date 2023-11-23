@@ -114,7 +114,11 @@ class TelegramBot(TelegramBase, Service):
         sent_ids = []
         for fragment in fragments:
             msg = await fragment.send(self.bot, chat)
-            sent_ids.append(msg.message_id)
+            if type(msg) is int:
+                sent_ids.append(msg.message_id)
+            else:
+                sent_ids.extend([m.message_id for m in msg])
+
         return sent_ids
 
     async def wait_for_available(self):

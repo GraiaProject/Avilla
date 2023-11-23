@@ -17,7 +17,7 @@ from typing_extensions import Self
 
 from avilla.standard.telegram.elements import Contact
 
-_MISSING = object()  # Used for elements that are not in MessageType but in API
+_MISSING = type("_MISSING", (), {})  # Used for elements that are not in MessageType but in API
 
 
 class MessageFragment:
@@ -232,7 +232,7 @@ class MessageFragmentMediaGroup(MessageFragment):
         }
         for m in self.media:
             media.append(cord[m.type](m.file))  # Captions should be discarded
-        return await bot.send_media_group(chat, media=media)
+        return await bot.send_media_group(chat, media=media, caption=self.caption)
 
 
 class MessageFragmentSticker(MessageFragment):

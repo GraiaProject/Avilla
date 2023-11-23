@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from telegram import File, PhotoSize
+from telegram import Audio, Document, File, PhotoSize, Video
 
 from avilla.core.resource import Resource
 from avilla.core.selector import Selector
@@ -26,13 +26,11 @@ class TelegramPhotoResource(TelegramResource):
         return self.photo[-1]
 
 
-class TelegramRecordResource(TelegramResource):
-    pass
+class TelegramThumbedResource(TelegramResource):
+    media: Audio | Video | Document
+    photo: tuple[PhotoSize] | None
 
-
-class TelegramVideoResource(TelegramResource):
-    pass
-
-
-class TelegramFileResource(TelegramResource):
-    pass
+    def __init__(self, selector: Selector, file: File, media: Audio | Video | Document, photo: tuple[PhotoSize] = None):
+        super().__init__(selector, file)
+        self.media = media
+        self.photo = photo
