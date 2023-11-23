@@ -1,6 +1,6 @@
 includes = ["avilla/qqapi"]
 raw_dependencies = [
-  "avilla-core >= 1.0.0a14",
+  "avilla-core >= 1.0.0a15",
   "avilla-standard-qq >= 1.0.0a7"
 ]
 

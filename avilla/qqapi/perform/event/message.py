@@ -314,9 +314,21 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         context = Context(
             account,
             operator,
-            channel,
+            author,
             channel,
             channel.member(account_route["account"]),
+        )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["message"]["author"]["username"],
+                raw_event["message"]["author"]["username"],
+                None
+            ),
+            Summary(
+                raw_event["message"]["author"]["username"],
+                "channel member"
+            ),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)
 
@@ -337,5 +349,17 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             author,
             author,
             account_route,
+        )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["message"]["author"]["username"],
+                raw_event["message"]["author"]["username"],
+                None
+            ),
+            Summary(
+                raw_event["message"]["author"]["username"],
+                "channel member"
+            ),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)
