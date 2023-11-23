@@ -34,14 +34,16 @@ if TYPE_CHECKING:
 
 
 class QQAPIWsClientNetworking(QQAPINetworking, Service):
-    id = "qqapi/connection/client"
-
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     config: QQAPIConfig
     connections: dict[tuple[int, int], aiohttp.ClientWebSocketResponse]
     session: aiohttp.ClientSession
+
+    @property
+    def id(self):
+        return f"qqapi/connection/client#{self.config.id}"
 
     def __init__(self, protocol: QQAPIProtocol, config: QQAPIConfig) -> None:
         super().__init__(protocol)
@@ -312,7 +314,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
             try:
                 async with session.ws_connect(url, timeout=30) as conn:
                     self.connections[shard] = conn
-                    logger.info(f"{self} Websocket client connected")
+                    logger.info(f"{self.id} Websocket client connected")
                     heartbeat_interval = await self._hello(shard)
                     if not heartbeat_interval:
                         await asyncio.sleep(3)

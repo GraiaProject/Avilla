@@ -13,6 +13,7 @@ from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.collector.connection import ConnectionCollector
 from avilla.qqapi.element import Reference
 from avilla.standard.core.message import MessageReceived, MessageRevoked
+from avilla.standard.core.profile import Nick, Summary
 
 
 def is_tome(message: MessageChain, context: Context):
@@ -80,6 +81,18 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         await cache.set(
             f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
         )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["author"]["username"],
+                raw_event["member"].get("nick", raw_event["author"]["username"]),
+                None
+            ),
+            Summary(
+                raw_event["author"]["username"],
+                "channel member"
+            ),
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -92,8 +105,14 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
-        group = Selector().land("qq").group(raw_event["group_id"])
-        author = group.member(raw_event["author"]["id"])
+        if "group_openid" in raw_event:
+            group = Selector().land("qq").group(raw_event["group_openid"])
+        else:
+            group = Selector().land("qq").group(raw_event["group_id"])
+        if "member_openid" in raw_event["author"]:
+            author = group.member(raw_event["author"]["member_openid"])
+        else:
+            author = group.member(raw_event["author"]["id"])
         context = Context(
             account,
             author,
@@ -155,6 +174,18 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         await cache.set(
             f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
         )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["author"]["username"],
+                raw_event["member"].get("nick", raw_event["author"]["username"]),
+                None
+            ),
+            Summary(
+                raw_event["author"]["username"],
+                "channel member"
+            ),
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -167,7 +198,10 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
-        friend = Selector().land("qq").friend(raw_event["author"]["id"])
+        if "user_openid" in raw_event["author"]:
+            friend = Selector().land("qq").friend(raw_event["author"]["user_openid"])
+        else:
+            friend = Selector().land("qq").friend(raw_event["author"]["id"])
         context = Context(
             account,
             friend,
