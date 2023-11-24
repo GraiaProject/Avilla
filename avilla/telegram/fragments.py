@@ -50,7 +50,10 @@ class MessageFragment:
                 if isinstance(composed[-1], (MessageFragmentPhoto, MessageFragmentAudio, MessageFragmentDocument)):
                     composed.append(MessageFragmentMediaGroup([composed.pop(), fragment]))
                 elif isinstance(composed[-1], MessageFragmentMediaGroup):
-                    composed[-1].media.append(fragment)
+                    if len(composed[-1].media) < 9:
+                        composed[-1].media.append(fragment)
+                    else:
+                        composed.append(MessageFragmentMediaGroup([fragment]))
             elif isinstance(fragment, MessageFragmentText):
                 if composed[-1].type == MessageType.TEXT:
                     composed[-1].text += fragment.text
