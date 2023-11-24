@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from telegram import Update
 
 from avilla.core.context import Context
@@ -27,9 +28,13 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
             chat,
             Selector().land(account.route["land"]).account(self_id),
         )
-        message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(
-            MessageFragment.decompose(raw_event)
-        )
+        if media_group_id := raw_event.message.media_group_id:
+            cache: Memcache = self.instance.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+            cached = await cache.get(f"telegram/update(media_group):{media_group_id}")
+            decomposed = MessageFragment.sort(*cached)
+        else:
+            decomposed = MessageFragment.decompose(raw_event)
+        message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(decomposed)
         reply = raw_event.message.reply_to_message
 
         return MessageReceived(
@@ -58,10 +63,15 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
             chat,
             chat.member(str(self_id)),
         )
-        message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(
-            MessageFragment.decompose(raw_event)
-        )
+        if media_group_id := raw_event.message.media_group_id:
+            cache: Memcache = self.instance.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+            cached = await cache.get(f"telegram/update(media_group):{media_group_id}")
+            decomposed = MessageFragment.sort(*cached)
+        else:
+            decomposed = MessageFragment.decompose(raw_event)
+        message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(decomposed)
         reply = raw_event.message.reply_to_message
+
         return MessageReceived(
             context,
             Message(

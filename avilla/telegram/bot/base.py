@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import asyncio
+from datetime import timedelta
 from typing import TYPE_CHECKING, AsyncIterator
 
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 from telegram import Update
 from typing_extensions import Self
@@ -58,13 +60,39 @@ class TelegramBase:
     async def message_handle(self):
         async for instance, data in self.message_receive():
 
-            async def event_parse_task(_data: Update):
-                event_type = telegram_event_type(_data)
+            async def process_media_group(event_type: str, _data: Update):
+                cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+                cached = await cache.get(f"telegram/update(media_group):{_data.message.media_group_id}")
+                cached = cached or []
+                cached.extend(MessageFragment.decompose(_data))
+                await cache.set(
+                    f"telegram/update(media_group):{_data.message.media_group_id}", cached, timedelta(minutes=1)
+                )
+                if handle := await cache.get(f"telegram/update(media_group):{_data.message.media_group_id}:handle"):
+                    handle.cancel()
+                handle = asyncio.get_running_loop().call_later(
+                    1,
+                    lambda: asyncio.create_task(process_media_group_callback(event_type, _data)),
+                )
+                await cache.set(
+                    f"telegram/update(media_group):{_data.message.media_group_id}:handle",
+                    handle,
+                    timedelta(minutes=1),
+                )
+
+            async def process_media_group_callback(event_type: str, _data: Update):
                 event = await TelegramCapability(instance.staff).handle_event(event_type, _data)
-                if event == "non-implemented":
+                if event is not None:
+                    await self.protocol.post_event(event)
+
+            async def event_parse_task(_data: Update):
+                if (event_type := telegram_event_type(_data)) == "non-implemented":
                     logger.warning(f"received unsupported event: {_data}")
                     return
-                elif event is not None:
+                if _data.message is not None and _data.message.media_group_id is not None:
+                    return await process_media_group(event_type, _data)
+                event = await TelegramCapability(instance.staff).handle_event(event_type, _data)
+                if event is not None:
                     await self.protocol.post_event(event)
 
             asyncio.create_task(event_parse_task(data))
