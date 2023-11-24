@@ -15,24 +15,15 @@ avilla.apply_protocols(TelegramProtocol().configure(config))
 @avilla.listen(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     print(repr(event))
-    await cx.scene.send_message(
-        MessageChain(
-            [
-                Text("Hello, Avilla!"),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Picture(Path("test.jpg")),
-                Video(Path("test.mp4")),
-            ]
-        )
-    )
+    # await cx.scene.send_message(
+    #     MessageChain(
+    #         [
+    #             Text("Hello, Avilla!"),
+    #             Picture(Path("test.jpg")),
+    #             Video(Path("test.mp4")),
+    #         ]
+    #     )
+    # )
 
 
 @avilla.listen(MessageSent)

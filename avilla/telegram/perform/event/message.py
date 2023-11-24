@@ -17,51 +17,22 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
     m.identify = "message"
 
     @m.entity(TelegramCapability.event_callback, event_type="message.private")
-    async def message_private(self, event_type: ..., raw_event: Update):
-        self_id = raw_event.get_bot().id
-        account = self.account
-        chat = Selector().land(account.route["land"]).chat(str(raw_event.message.from_user.id))
-        context = Context(
-            account,
-            chat,
-            chat,
-            chat,
-            Selector().land(account.route["land"]).account(self_id),
-        )
-        if media_group_id := raw_event.message.media_group_id:
-            cache: Memcache = self.instance.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-            cached = await cache.get(f"telegram/update(media_group):{media_group_id}")
-            decomposed = MessageFragment.sort(*cached)
-        else:
-            decomposed = MessageFragment.decompose(raw_event)
-        message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(decomposed)
-        reply = raw_event.message.reply_to_message
-
-        return MessageReceived(
-            context,
-            Message(
-                id=str(raw_event.message.message_id),
-                scene=chat,
-                sender=chat,
-                content=message,
-                time=raw_event.message.date,
-                reply=reply,
-            ),
-        )
-
     @m.entity(TelegramCapability.event_callback, event_type="message.group")
     @m.entity(TelegramCapability.event_callback, event_type="message.super_group")
-    async def message_group(self, event_type: ..., raw_event: Update):
+    async def message_private(self, event_type: str, raw_event: Update):
         self_id = raw_event.get_bot().id
         account = self.account
         chat = Selector().land(account.route["land"]).chat(str(raw_event.message.chat.id))
-        member = chat.member(raw_event.message.from_user.id)
+        if chat == "message.super_group" and raw_event.message.message_thread_id:
+            chat = chat.thread(str(raw_event.message.message_thread_id))
         context = Context(
             account,
-            member,
+            chat.member(raw_event.message.from_user.id) if event_type == "message.private" else chat,
             chat,
             chat,
-            chat.member(str(self_id)),
+            Selector().land(account.route["land"]).account(self_id)
+            if event_type == "message.private"
+            else chat.member(str(self_id)),
         )
         if media_group_id := raw_event.message.media_group_id:
             cache: Memcache = self.instance.protocol.avilla.launch_manager.get_component(MemcacheService).cache
@@ -77,7 +48,7 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
             Message(
                 id=str(raw_event.message.message_id),
                 scene=chat,
-                sender=member,
+                sender=chat.member(raw_event.message.from_user.id) if event_type == "message.private" else chat,
                 content=message,
                 time=raw_event.message.date,
                 reply=reply,
