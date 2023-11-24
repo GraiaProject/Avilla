@@ -31,7 +31,9 @@ class MessageFragment:
     def __getitem__(self, item):
         return self.__getattribute__(item)
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
+    async def send(
+        self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None
+    ) -> Message | tuple[Message, ...]:
         ...
 
     @classmethod
@@ -91,8 +93,8 @@ class MessageFragmentText(MessageFragment):
         super().__init__(MessageType.TEXT, update)
         self.text = text
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_message(chat, text=self.text)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_message(chat, text=self.text, reply_to_message_id=reply_to, message_thread_id=thread)
 
 
 class MessageFragmentPhoto(MessageFragment):
@@ -109,8 +111,10 @@ class MessageFragmentPhoto(MessageFragment):
         self.file = file
         self.caption = caption
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_photo(chat, photo=self.file, caption=self.caption)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_photo(
+            chat, photo=self.file, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
+        )
 
 
 class MessageFragmentAnimation(MessageFragment):
@@ -120,8 +124,10 @@ class MessageFragmentAnimation(MessageFragment):
         super().__init__(MessageType.ANIMATION, update)
         self.file = file
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_animation(chat, animation=self.file)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_animation(
+            chat, animation=self.file, reply_to_message_id=reply_to, message_thread_id=thread
+        )
 
 
 class MessageFragmentAudio(MessageFragment):
@@ -131,8 +137,8 @@ class MessageFragmentAudio(MessageFragment):
         super().__init__(MessageType.AUDIO, update)
         self.file = file
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_audio(chat, audio=self.file)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_audio(chat, audio=self.file, reply_to_message_id=reply_to, message_thread_id=thread)
 
 
 class MessageFragmentContact(MessageFragment):
@@ -142,12 +148,14 @@ class MessageFragmentContact(MessageFragment):
         super().__init__(MessageType.CONTACT, update)
         self.contact = contact
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
         return await bot.send_contact(
             chat,
             phone_number=self.contact.phone_number,
             first_name=self.contact.first_name,
             last_name=self.contact.last_name,
+            reply_to_message_id=reply_to,
+            message_thread_id=thread,
         )
 
 
@@ -158,8 +166,8 @@ class MessageFragmentDice(MessageFragment):
         super().__init__(MessageType.DICE, update)
         self.emoji = emoji
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_dice(chat, emoji=self.emoji)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_dice(chat, emoji=self.emoji, reply_to_message_id=reply_to, message_thread_id=thread)
 
 
 class MessageFragmentDocument(MessageFragment):
@@ -176,8 +184,10 @@ class MessageFragmentDocument(MessageFragment):
         self.file = file
         self.caption = caption
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_document(chat, document=self.file, caption=self.caption)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_document(
+            chat, document=self.file, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
+        )
 
 
 class MessageFragmentLocation(MessageFragment):
@@ -189,8 +199,14 @@ class MessageFragmentLocation(MessageFragment):
         self.latitude = latitude
         self.longitude = longitude
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_location(chat, latitude=self.latitude, longitude=self.longitude)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_location(
+            chat,
+            latitude=self.latitude,
+            longitude=self.longitude,
+            reply_to_message_id=reply_to,
+            message_thread_id=thread,
+        )
 
 
 class MessageFragmentVideo(MessageFragment):
@@ -207,8 +223,10 @@ class MessageFragmentVideo(MessageFragment):
         self.file = file
         self.caption = caption
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_video(chat, video=self.file, caption=self.caption)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_video(
+            chat, video=self.file, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
+        )
 
 
 class MessageFragmentMediaGroup(MessageFragment):
@@ -225,7 +243,7 @@ class MessageFragmentMediaGroup(MessageFragment):
         self.media = media
         self.caption = caption
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> tuple[Message]:
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> tuple[Message, ...]:
         media = []
         cord = {
             "photo": InputMediaPhoto,
@@ -235,7 +253,9 @@ class MessageFragmentMediaGroup(MessageFragment):
         }
         for m in self.media:
             media.append(cord[m.type](m.file))  # Captions should be discarded
-        return await bot.send_media_group(chat, media=media, caption=self.caption)
+        return await bot.send_media_group(
+            chat, media=media, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
+        )
 
 
 class MessageFragmentSticker(MessageFragment):
@@ -245,8 +265,8 @@ class MessageFragmentSticker(MessageFragment):
         super().__init__(MessageType.STICKER, update)
         self.file = file
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
-        return await bot.send_sticker(chat, sticker=self.file)
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
+        return await bot.send_sticker(chat, sticker=self.file, reply_to_message_id=reply_to, message_thread_id=thread)
 
 
 class MessageFragmentVenue(MessageFragment):
@@ -269,13 +289,15 @@ class MessageFragmentVenue(MessageFragment):
         self.title = title
         self.address = address
 
-    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None) -> Message:
+    async def send(self, bot: ExtBot, chat: int, /, reply_to: int = None, thread: int = None) -> Message:
         return await bot.send_venue(
             chat,
             latitude=self.latitude,
             longitude=self.longitude,
             title=self.title,
             address=self.address,
+            reply_to_message_id=reply_to,
+            message_thread_id=thread,
         )
 
 

@@ -5,6 +5,7 @@ from graia.amnesia.message import MessageChain
 
 from avilla.core import Avilla, Context, MessageReceived, Picture, Text, Video
 from avilla.standard.core.message import MessageSent
+from avilla.standard.telegram.event import ForumTopicClosed, ForumTopicCreated
 from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
 
 config = TelegramBotConfig(os.environ["TELEGRAM_TOKEN"], reformat=True)
@@ -24,6 +25,16 @@ async def on_message_received(cx: Context, event: MessageReceived):
     #         ]
     #     )
     # )
+
+
+@avilla.listen(ForumTopicCreated)
+async def forum_topic_created(cx: Context):
+    await cx.scene.send_message(MessageChain([Text("Event: ForumTopicCreated")]))
+
+
+@avilla.listen(ForumTopicClosed)
+async def forum_topic_closed(cx: Context):
+    await cx.scene.send_message(MessageChain([Text("Event: ForumTopicClosed")]))
 
 
 @avilla.listen(MessageSent)

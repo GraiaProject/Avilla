@@ -29,6 +29,7 @@ def _import_performs():
 
     # :: Event
     from .perform.event.message import TelegramEventMessagePerform  # noqa: F401
+    from .perform.event.service import TelegramEventServicePerform  # noqa: F401
 
     # :: Action
     from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
@@ -45,38 +46,15 @@ class TelegramProtocol(BaseProtocol):
         **merge(
             ref("avilla.protocol/telegram::resource_fetch"),
             ref("avilla.protocol/telegram::action", "message"),
-            ref("avilla.protocol/telegram::action", "friend"),
-            ref("avilla.protocol/telegram::action", "group"),
-            ref("avilla.protocol/telegram::action", "member"),
             ref("avilla.protocol/telegram::message", "deserialize"),
             ref("avilla.protocol/telegram::message", "serialize"),
             ref("avilla.protocol/telegram::event", "message"),
-            ref("avilla.protocol/telegram::event", "lifespan"),
-            ref("avilla.protocol/telegram::event", "relationship"),
-            ref("avilla.protocol/telegram::event", "group"),
-            ref("avilla.protocol/telegram::event", "member"),
+            ref("avilla.protocol/telegram::event", "service"),
         ),
     }
 
     def __init__(self):
         self.service = TelegramService(self)
-
-    @classmethod
-    def __init_isolate__(cls):
-        # isort: off
-
-        # :: Message
-        from .perform.message.deserialize import TelegramMessageDeserializePerform  # noqa: F401
-        from .perform.message.serialize import TelegramMessageSerializePerform  # noqa: F401
-
-        # :: Event
-        from .perform.event.message import TelegramEventMessagePerform  # noqa: F401
-
-        # :: Action
-        from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
-
-        # :: Resource Fetch
-        from .perform.resource_fetch import TelegramResourceFetchPerform  # noqa: F401
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla

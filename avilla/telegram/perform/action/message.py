@@ -21,6 +21,7 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
     m.identify = "message"
 
     @m.entity(MessageSend.send, target="land.chat")
+    @m.entity(MessageSend.send, target="land.chat.thread")
     async def send_msg(
         self,
         target: Selector,

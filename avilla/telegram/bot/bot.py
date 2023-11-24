@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, cast
 
 from launart import Launart, Service, any_completed
 from loguru import logger
+from telegram import Message
 from telegram.error import InvalidToken as InvalidTokenOrigin
 from telegram.error import NetworkError, TimedOut
 from telegram.ext import ExtBot
@@ -111,10 +112,12 @@ class TelegramBot(TelegramBase, Service):
             fragments = MessageFragment.sort(*fragments)
         fragments = MessageFragment.compose(*fragments)
         chat = int(target.pattern["chat"])
+        thread = target.pattern.get("thread", None)
+        thread = int(thread) if thread else None
         sent_ids = []
         for fragment in fragments:
-            msg = await fragment.send(self.bot, chat)
-            if type(msg) is int:
+            msg = await fragment.send(self.bot, chat, thread=thread)
+            if isinstance(msg, Message):
                 sent_ids.append(msg.message_id)
             else:
                 sent_ids.extend([m.message_id for m in msg])
