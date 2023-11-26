@@ -83,16 +83,16 @@ argv_config(
 )
 
 
-def is_tome(message: MessageChain, context: Context):
-    if isinstance(message[0], Notice):
+def _is_tome(message: MessageChain, context: Context):
+    if message.content and isinstance(message[0], Notice):
         notice: Notice = message.get_first(Notice)
         if notice.target.last_value == context.self.last_value:
             return True
     return False
 
 
-def remove_tome(message: MessageChain, context: Context):
-    if is_tome(message, context):
+def _remove_tome(message: MessageChain, context: Context):
+    if _is_tome(message, context):
         message = MessageChain(message.content.copy())
         message.content.remove(message.get_first(Notice))
         if message.content and isinstance(message.content[0], Text):
@@ -152,20 +152,18 @@ class AvillaCommands:
 
         @self.broadcast.receiver(MessageReceived)
         async def listener(event: MessageReceived):
-            msg = str(event.message.content)
-            if self.need_tome and not is_tome(event.message.content, event.context):
-                return
+            msg = str(event.message.content.exclude(Notice)).lstrip()
             if matches := list(self.trie.prefixes(msg)):
-                await asyncio.gather(*(self.execute(res.value[0], res.value[1], event) for res in matches if res.value))
+                await asyncio.gather(*(self.execute(*res.value, event) for res in matches if res.value))
                 return
             # shortcut
             head, _ = split_once(msg, (" ",))
-            for cmd, target in self.trie.values():
+            for value in self.trie.values():
                 try:
-                    command_manager.find_shortcut(cmd, head)
+                    command_manager.find_shortcut(value[0], head)
                 except ValueError:
                     continue
-                await self.execute(cmd, target, event)
+                await self.execute(*value, event)
 
     @property
     def all_helps(self) -> str:
@@ -174,12 +172,21 @@ class AvillaCommands:
     def get_help(self, command: str) -> str:
         return command_manager.get_command(f"{self.__namespace__}::{command}").get_help()
 
-    async def execute(self, command: Alconna, target: ExecTarget, event: MessageReceived):
+    async def execute(
+        self, 
+        command: Alconna, 
+        target: ExecTarget,
+        need_tome: bool,
+        remove_tome: bool,
+        event: MessageReceived
+    ):
+        if (need_tome or self.need_tome) and not _is_tome(event.message.content, event.context):
+            return
         with output_manager.capture(command.name) as cap:
             output_manager.set_action(lambda x: x, command.name)
             msg = event.message.content
-            if self.remove_tome:
-                msg = remove_tome(msg, event.context)
+            if remove_tome or self.remove_tome:
+                msg = _remove_tome(msg, event.context)
             try:
                 _res = command.parse(msg)
             except Exception as e:
@@ -195,12 +202,14 @@ class AvillaCommands:
         self,
         command: str,
         help_text: Optional[str] = None,
+        need_tome: bool = False,
+        remove_tome: bool = False,
         dispatchers: Optional[list[T_Dispatcher]] = None,
         decorators: Optional[list[Decorator]] = None,
     ):
         class Command(AlconnaString):
             def __call__(_cmd_self, func: TCallable) -> TCallable:
-                return self.on(_cmd_self.build(), dispatchers, decorators)(func)
+                return self.on(_cmd_self.build(), need_tome, remove_tome, dispatchers, decorators)(func)
 
         return Command(command, help_text)
 
@@ -208,6 +217,8 @@ class AvillaCommands:
     def on(
         self,
         command: Alconna,
+        need_tome: bool = False,
+        remove_tome: bool = False,
         dispatchers: Optional[list[T_Dispatcher]] = None,
         decorators: Optional[list[Decorator]] = None,
     ) -> Callable[[TCallable], TCallable]:
@@ -217,6 +228,8 @@ class AvillaCommands:
     def on(
         self,
         command: str,
+        need_tome: bool = False,
+        remove_tome: bool = False,
         dispatchers: Optional[list[T_Dispatcher]] = None,
         decorators: Optional[list[Decorator]] = None,
         *,
@@ -228,6 +241,8 @@ class AvillaCommands:
     def on(
         self,
         command: Union[Alconna, str],
+        need_tome: bool = False,
+        remove_tome: bool = False,
         dispatchers: Optional[list[T_Dispatcher]] = None,
         decorators: Optional[list[Decorator]] = None,
         *,
@@ -244,17 +259,17 @@ class AvillaCommands:
                 key = _command.name + "".join(
                     f" {arg.value.target}" for arg in _command.args if isinstance(arg.value, DirectPattern)
                 )
-                self.trie[key] = (_command, target)
+                self.trie[key] = (_command, target, need_tome, remove_tome)
             else:
                 if not isinstance(command.command, str):
                     raise TypeError("Command name must be a string.")
                 if not command.prefixes:
-                    self.trie[command.command] = (command, target)
+                    self.trie[command.command] = (command, target, need_tome, remove_tome)
                 elif not all(isinstance(i, str) for i in command.prefixes):
                     raise TypeError("Command prefixes must be a list of string.")
                 else:
                     for prefix in cast(list[str], command.prefixes):
-                        self.trie[prefix + command.command] = (command, target)
+                        self.trie[prefix + command.command] = (command, target, need_tome, remove_tome)
                 command.reset_namespace(self.__namespace__)
             return func
 
