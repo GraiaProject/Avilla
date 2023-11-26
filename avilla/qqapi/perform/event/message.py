@@ -46,6 +46,12 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = channel.message(i[0].message_id)
             message = message.exclude(Reference)
+        if event_type == "at_message_create" and message.content and isinstance(message.content[1], Text):
+            text = message.content[1].text.lstrip()  # type: ignore
+            if not text:
+                message.content.pop(1)
+            else:
+                message.content[1] = Text(text)
         msg = Message(
             id=raw_event["id"],
             scene=channel,
