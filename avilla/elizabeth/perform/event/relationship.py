@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import timedelta
 
 from avilla.core.context import Context
-from avilla.core.event import RelationshipCreated, RelationshipDestroyed
+from avilla.core.event import SceneCreated, MemberCreated, SceneDestroyed, MemberDestroyed
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
@@ -71,7 +71,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
-        return RelationshipCreated(context)
+        return MemberCreated(context)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="MemberLeaveEventKick")
     async def member_leave_kick(self, raw_event: dict):
@@ -127,7 +127,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
-        return RelationshipDestroyed(context, active=False)
+        return MemberDestroyed(context, active=False)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="MemberLeaveEventQuit")
     async def member_leave_quit(self, raw_event: dict):
@@ -141,7 +141,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             member,
-            group,
+            member,
             group,
             group.member(account_route["account"]),
         )
@@ -167,7 +167,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
-        return RelationshipDestroyed(context, active=True)
+        return MemberDestroyed(context, active=True)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="BotJoinGroupEvent")
     async def bot_join_group(self, raw_event: dict):
@@ -180,7 +180,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             group.member(account_route["account"]),
-            group.member(account_route["account"]),
+            group,
             group,
             group.member(account_route["account"]),
             mediums=[inviter] if inviter else None,
@@ -208,7 +208,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
-        return RelationshipCreated(context)
+        return SceneCreated(context)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="BotLeaveEventActive")
     async def bot_leave_active(self, raw_event: dict):
@@ -220,7 +220,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             group.member(account_route["account"]),
-            group.member(account_route["account"]),
+            group,
             group,
             group.member(account_route["account"]),
         )
@@ -232,7 +232,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
-        return RelationshipDestroyed(context, active=True)
+        return SceneDestroyed(context, active=True)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="BotLeaveEventKick")
     async def bot_leave_kick(self, raw_event: dict):
@@ -246,7 +246,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
         context = Context(
             account,
             operator,
-            group.member(account_route["account"]),
+            group,
             group,
             group.member(account_route["account"]),
         )
@@ -272,7 +272,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
-        return RelationshipDestroyed(context, active=False)
+        return SceneDestroyed(context, active=False)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="BotLeaveEventDisband")
     async def bot_leave_disband(self, raw_event: dict):
@@ -312,4 +312,4 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
-        return RelationshipDestroyed(context, active=False, indirect=True)
+        return SceneDestroyed(context, active=False, indirect=True)

@@ -101,7 +101,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
-            msg["message_reference"] = {"message_id": reply.pattern["message"]}
+            # TODO: wait for api upgrade
+            # msg["message_reference"] = {"message_id": reply.pattern["message"]}
         if "file_image" in msg:
             raise NotImplementedError("file_image is not supported yet")
         if msg.get("embed"):
@@ -187,7 +188,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
-            msg["message_reference"] = {"message_id": reply.pattern["message"]}
+            # TODO: wait for api upgrade
+            # msg["message_reference"] = {"message_id": reply.pattern["message"]}
         if "file_image" in msg:
             raise NotImplementedError("file_image is not supported yet")
         if msg.get("embed"):

@@ -62,14 +62,49 @@ class AvillaEvent(Dispatchable):
 
 
 @dataclass
-class RelationshipCreated(AvillaEvent):
+class RelationshipEvent(AvillaEvent):
     ...
 
 
 @dataclass
-class RelationshipDestroyed(AvillaEvent):
+class RelationshipCreated(RelationshipEvent):
+    ...
+
+
+@dataclass
+class DirectSessionCreated(RelationshipCreated):
+    ...
+
+
+@dataclass
+class SceneCreated(RelationshipCreated):
+    ...
+
+
+@dataclass
+class MemberCreated(RelationshipEvent):
+    ...
+
+
+@dataclass
+class RelationshipDestroyed(RelationshipEvent):
     active: bool
     indirect: bool = False
+
+
+@dataclass
+class DirectSessionDestroyed(RelationshipDestroyed):
+    ...
+
+
+@dataclass
+class SceneDestroyed(RelationshipDestroyed):
+    ...
+
+
+@dataclass
+class MemberDestroyed(RelationshipDestroyed):
+    ...
 
 
 @dataclass
