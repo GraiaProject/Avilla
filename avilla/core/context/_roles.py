@@ -38,6 +38,11 @@ class ContextEndpointSelector(ContextSelector):
         raise ValueError(f"endpoint {self!r} is not a request endpoint")
 
 
+class ContextSelfSelector(ContextSelector):
+    def trigger_activity(self, activity: str):
+        return self.context[ActivityTrigger.trigger](self.activity(activity))
+
+
 class ContextSceneSelector(ContextSelector):
     def leave_scene(self):
         return self.context[SceneCapability.leave](self)

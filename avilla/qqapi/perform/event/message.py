@@ -125,6 +125,12 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = group.message(i[0].message_id)
             message = message.exclude(Reference)
+        if message.content and isinstance(message.content[0], Text):
+            text = message.content[0].text.lstrip()  # type: ignore
+            if not text:
+                message.content.pop(0)
+            else:
+                message.content[0] = Text(text)
         msg = Message(
             id=raw_event["id"],
             scene=group,
@@ -214,7 +220,12 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = friend.message(i[0].message_id)
             message = message.exclude(Reference)
-
+        if message.content and isinstance(message.content[0], Text):
+            text = message.content[0].text.lstrip()  # type: ignore
+            if not text:
+                message.content.pop(0)
+            else:
+                message.content[0] = Text(text)
         msg = Message(
             id=raw_event["id"],
             scene=friend,
