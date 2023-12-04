@@ -1,21 +1,27 @@
-from ._runtime import GLOBAL_GALLERY as GLOBAL_GALLERY
-from ._runtime import merge as merge
-from ._runtime import ref as ref
+from ._runtime import targets_artifact_map as targets_artifact_map
+from ._runtime import upstream_staff as upstream_staff
+from .collector import BaseCollector as BaseCollector
+from .fn import Fn as Fn
+from .fn import FnCompose as FnCompose
+from .fn import FnImplement as FnImplement
+from .fn import FnOverload as FnOverload
+from .overloads import (
+    SimpleOverload as SimpleOverload,
+)
+from .overloads import (
+    SingletonOverload as SingletonOverload,
+)
+from .overloads import (
+    TypeOverload as TypeOverload,
+)
+from .perform import BasePerform as BasePerform
+from .perform import namespace_generate as namespace_generate
+from .staff import Staff as Staff
+from .topic import PileTopic as PileTopic
+from .topic import Topic as Topic
+from .topic import merge_topics_if_possible as merge_topics_if_possible
+
+# Ryanvk for Avilla
+from .endpoint import Endpoint as Endpoint
 from .access import Access as Access
 from .access import OptionalAccess as OptionalAccess
-from .behavior import OverloadBehavior as OverloadBehavior
-from .capability import Capability as Capability
-from .collector import BaseCollector as BaseCollector
-from .endpoint import Endpoint as Endpoint
-from .fn import Fn as Fn
-from .gateway import GLOBAL_GATEWAY as GLOBAL_GATEWAY
-from .gateway import Gateway as Gateway
-from .overload import FnOverload as FnOverload
-from .overload import PredicateOverload as PredicateOverload
-from .overload import SimpleOverload as SimpleOverload
-from .overload import TypeOverload as TypeOverload
-from .override import OverridePerformEntity as OverridePerformEntity
-from .perform import BasePerform as BasePerform
-from .staff import Staff as Staff
-from .typing import SupportsCollect as SupportsCollect
-from .typing import SupportsMerge as SupportsMerge
