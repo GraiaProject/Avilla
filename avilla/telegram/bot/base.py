@@ -16,7 +16,6 @@ from avilla.telegram.fragments import MessageFragment
 from avilla.telegram.utilities import telegram_event_type
 
 if TYPE_CHECKING:
-    from avilla.core.ryanvk.protocol import SupportsStaff  # noqa
     from avilla.telegram.account import TelegramAccount  # noqa
     from avilla.telegram.protocol import TelegramProtocol  # noqa
 
@@ -61,6 +60,7 @@ class TelegramBase:
         async for instance, data in self.message_receive():
 
             async def process_media_group(event_type: str, _data: Update):
+                assert _data.message
                 cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
                 cached = await cache.get(f"telegram/update(media_group):{_data.message.media_group_id}")
                 cached = cached or []
