@@ -96,6 +96,7 @@ avilla.launch()
 无论如何, Avilla 都是 Graia Project 下的一个子项目, 以下项目均在不同层面上支持了 Avilla 的开发:
   + [ `Broadcast Control` ](https://github.com/GraiaProject/BroadcastControl): 事件系统实现, 最为锋利的魔剑(Magic Sword).
   + [ `Ariadne` ](https://github.com/GraiaProject/Ariadne): 继承了前作的衣钵, 在 Avilla 尚未成熟之际撑起大梁的后续作品, 同样进行了可贵的创新.
+  + [ `Ryanvk` ](https://github.com/GreyElaina/Ryanvk): 支撑了整个 Avilla 的 "手杖"。*手杖闷闷作响，空气振振有声。星荧随挥舞而生，散落空中，颤颤作动。*
 
 <div align="center">
 
