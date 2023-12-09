@@ -18,7 +18,7 @@ _follows_pattern = re.compile(r"(?P<name>(\w+?|[*~]))(#(?P<predicate>\w+))?(\((?
 FollowsPredicater: TypeAlias = "Callable[[str], bool]"
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class _FollowItem:
     name: str
     literal: str | None = None
@@ -79,9 +79,9 @@ class Selector:
     def __init__(self, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
         self.pattern = MappingProxyType({k: str(v) for k ,v in pattern.items()})
 
-    def __getattr__(self, name: str) -> Callable[[str], Self]:
-        def wrapper(content: str) -> Self:
-            return Selector(pattern={**self.pattern, name: str(content)})
+    def __getattr__(self, name: str):
+        def wrapper(content: str):
+            return type(self)(pattern={**self.pattern, name: str(content)})
 
         return wrapper
 
