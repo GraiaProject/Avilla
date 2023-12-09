@@ -1,155 +1,96 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable
+from types import MappingProxyType
+from typing import TYPE_CHECKING, AbstractSet, Any, Callable, Literal, Mapping, MutableSet, Union
 
 from typing_extensions import TypeAlias
 
-from avilla.core.selector import FollowsPredicater, Selector, _parse_follows
+from avilla.core.selector import _FollowItem, FollowsPredicater, Selector, _parse_follows
 from graia.ryanvk.collector import BaseCollector
-from graia.ryanvk.overload import FnOverload
+from graia.ryanvk import FnOverload
+
+from graia.ryanvk.typing import Twin
+
+
+TargetScopeRoot: TypeAlias = dict[str, 'TargetScopeBranch']
+
+@dataclass
+class TargetScopeHit:
+    store: MutableSet[Twin]
+    children: TargetScopeRoot
 
 
 @dataclass
-class LookupBranchMetadata:
-    ...
+class TargetScopeBranch:
+    literal: dict[str, TargetScopeHit]
+    predicator: dict[FollowsPredicater, TargetScopeHit]
 
 
-@dataclass
-class LookupBranch:
-    metadata: LookupBranchMetadata
-    levels: LookupCollection
-    bind: set[tuple[BaseCollector, Callable]] = field(default_factory=set)
+@dataclass(eq=True, frozen=True)
+class TargetOverloadSignature:
+    pattern: tuple[_FollowItem, ...]
 
 
-LookupBranches: TypeAlias = "dict[str | FollowsPredicater | None, LookupBranch]"
-LookupCollection: TypeAlias = "dict[str, LookupBranches]"
+class TargetOverload(FnOverload[TargetOverloadSignature, str, Selector]):
+    def digest(self, collect_value: str) -> TargetOverloadSignature:
+        return TargetOverloadSignature((*_parse_follows(collect_value),))
 
+    def collect(self, scope: TargetScopeRoot, signature: TargetOverloadSignature) -> MutableSet[Twin]:
+        processing = scope
+        target = None
+        
+        for item in signature.pattern:
+            target = None
+            if item.name not in processing:
+                processing[item.name] = TargetScopeBranch({}, {})
+            
+            branch = processing[item.name]
+            
+            if item.literal is not None:
+                if item.literal not in branch.literal:
+                    branch.literal[item.literal] = TargetScopeHit(set(), {})
 
-@dataclass
-class TargetOverloadConfig:
-    pattern: str
-    predicators: dict[str, FollowsPredicater]
+                target = branch.literal[item.literal]
+            elif item.predicate is not None:
+                if item.predicate not in branch.predicator:
+                    branch.predicator[item.predicate] = TargetScopeHit(set(), {})
 
-    def __init__(self, pattern: str, **predicators: FollowsPredicater):
-        self.pattern = pattern
-        self.predicators = predicators
+                target = branch.predicator[item.predicate]
+            else:
+                assert target is not None
 
+            processing = target.children
+        
+        assert target is not None
+        
+        return target.store
 
-def _merge_lookup_collection(current: LookupCollection, other: LookupCollection):
-    for key, branches in current.items():
-        if (other_branches := other.pop(key, None)) is None:
-            continue
-
-        for header, branch in branches.items():
-            if (other_branch := other_branches.pop(header, None)) is None:
-                continue
-
-            _merge_lookup_collection(branch.levels, other_branch.levels)
-            branch.bind |= other_branch.bind
-
-        branches |= other_branches
-
-    current |= other
-
-
-class TargetOverload(FnOverload):
-    def collect_entity(
-        self,
-        collector: BaseCollector,
-        scope: dict[Any, Any],
-        entity: Any,
-        params: dict[str, str | TargetOverloadConfig],
-    ) -> None:
-        record = (collector, entity)
-
-        for param, pattern in params.items():
-            param_scope = scope.setdefault(param, {})
-
-            if isinstance(pattern, str):
-                pattern = TargetOverloadConfig(pattern)
-
-            pattern_items = _parse_follows(pattern.pattern, **pattern.predicators)
-            if not pattern_items:
-                raise ValueError("invalid target pattern")
-
-            processing_level = param_scope
-
-            if TYPE_CHECKING:
-                branch = LookupBranch(LookupBranchMetadata(), {})
-
-            for item in pattern_items:
-                if item.name not in processing_level:
-                    processing_level[item.name] = {}
-
-                branches = processing_level[item.name]
-                if (item.literal or item.predicate) in branches:
-                    branch = branches[item.literal or item.predicate]
+    def harvest(self, scope: TargetScopeRoot, value: Selector) -> AbstractSet[Twin]:
+        processing = scope
+        store = None
+        
+        for lhs, rhs in value.items():
+            if lhs not in processing:
+                return frozenset()
+        
+            branch = processing[lhs]
+            if rhs in branch.literal:
+                hit = branch.literal[rhs]
+            else:
+                for predicator, hit in branch.predicator.items():
+                    if predicator(rhs):
+                        break
                 else:
-                    branch = LookupBranch(LookupBranchMetadata(), {})
-                    branches[item.literal or item.predicate] = branch
-
-                processing_level = branch.levels
-
-            branch.bind.add(record)
-
-    def get_entities(self, scope: dict[Any, Any], args: dict[str, Selector]) -> set[tuple[BaseCollector, Callable]]:
-        bind_sets: list[set] = []
-
-        for arg_name, selector in args.items():
-            if arg_name not in scope:
-                raise NotImplementedError
-
-            def get_bind_set():
-                processing_scope: LookupCollection = scope[arg_name]
-                branch = None
-                for key, value in selector.pattern.items():
-                    if (branches := processing_scope.get(key)) is None:
-                        raise NotImplementedError
-
-                    if value in branches:
-                        header = value
+                    if '*' in branch.literal:
+                        hit = branch.literal['*']
                     else:
-                        for _key, branch in branches.items():
-                            if callable(_key) and _key(value):
-                                header = _key
-                                break  # hit predicate
-                        else:
-                            if None in branches:
-                                header = None  # hit default
-                            elif "*" in branches:
-                                return branches["*"].bind  # hit wildcard
-                            else:
-                                raise NotImplementedError
+                        return frozenset()
 
-                    branch = branches[header]
-                    processing_scope = branch.levels
+            processing = hit.children
+            store = hit.store
+        
+        if store is None:
+            return frozenset()
 
-                    if header is not None and None in branches:
-                        processing_scope = branches[None].levels | processing_scope
-                if branch is not None and branch.bind:
-                    # branch has bind
-                    return branch.bind
-
-                raise NotImplementedError
-
-            bind_sets.append(get_bind_set())
-        return bind_sets.pop().intersection(*bind_sets)
-
-    def merge_scopes(self, *scopes: dict[Any, Any]):
-        # scope layout: {
-        #   <param_name: str>: LookupCollection
-        # }
-        param_collections: dict[str, list[LookupCollection]] = {}
-        result = {}
-
-        for scope in scopes:
-            for param, collection in scope.items():
-                param_collections.setdefault(param, []).append(collection)
-
-        for param, collections in param_collections.items():
-            result[param] = current = collections.pop(0)
-            for other in collections:
-                _merge_lookup_collection(current, other)
-
-        return result
+        return store
