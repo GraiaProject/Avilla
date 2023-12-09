@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from dataclasses import dataclass
 from itertools import filterfalse
 from types import MappingProxyType
-from typing import Protocol, runtime_checkable
+from typing import Mapping, Protocol, TypeVar, overload, runtime_checkable
 
 from typing_extensions import Self, TypeAlias
 
@@ -14,6 +14,7 @@ from avilla.core.platform import Land
 EMPTY_MAP = MappingProxyType({})
 ESCAPE = {")": "\\)", "(": "\\(", "]": "\\]", "[": "\\[", "}": "\\}", "{": "\\{"}
 
+_T = TypeVar("_T")
 _follows_pattern = re.compile(r"(?P<name>(\w+?|[*~]))(#(?P<predicate>\w+))?(\((?P<literal>[^#]+?)\))?")
 FollowsPredicater: TypeAlias = "Callable[[str], bool]"
 
@@ -73,7 +74,7 @@ def _parse_follows(pattern: str, **kwargs: FollowsPredicater) -> list[_FollowIte
     return list(items.values())
 
 
-class Selector:
+class Selector(Mapping[str, str]):
     pattern: Mapping[str, str]
 
     def __init__(self, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
@@ -109,19 +110,26 @@ class Selector:
         return ".".join(self.pattern)
 
     @property
-    def path_without_land(self) -> str:
+    def path_noland(self) -> str:
         return ".".join(filterfalse(lambda x: x == "land", self.pattern))
-
-    @property
-    def last_key(self) -> str:
-        return next(reversed(self.pattern.keys()))
-
-    @property
-    def last_value(self) -> str:
-        return next(reversed(self.pattern.values()))
 
     def items(self):
         return self.pattern.items()
+
+    def keys(self):
+        return self.pattern.keys()
+
+    def values(self):
+        return self.pattern.values()
+
+    @overload
+    def get(self, __key: str) -> str | None: ...
+
+    @overload
+    def get(self, __key: str, default: str | _T) -> str | _T: ...
+
+    def get(self, __key: str, default: ... = None):
+        return self.pattern.get(__key, default)
 
     def appendix(self, key: str, value: str):
         return Selector(pattern={**self.pattern, key: str(value)})
@@ -136,7 +144,7 @@ class Selector:
         return self
 
     @classmethod
-    def from_follows_pattern(cls, pattern: str):
+    def from_follows(cls, pattern: str):
         items = _parse_follows(pattern)
         mapping = {}
         for i in items:
@@ -145,8 +153,8 @@ class Selector:
             mapping[i.name] = i.literal
         return cls(mapping)
 
-    def follows(self, pattern: str, **kwargs: FollowsPredicater) -> bool:
-        items = _parse_follows(pattern, **kwargs)
+    def follows(self, pattern: str, **predicators: FollowsPredicater) -> bool:
+        items = _parse_follows(pattern, **predicators)
         index = 0
         for index, (item, name, value) in enumerate(zip(items, self.pattern.keys(), self.pattern.values())):
             if item.name == "*":
@@ -159,17 +167,17 @@ class Selector:
                 return False
         return index + 1 == len(self.pattern)
 
-    def into(self, pattern: str, **kwargs: str) -> Selector:
+    def into(self, pattern: str, **overrides: str) -> Selector:
         items = _parse_follows(pattern)
         new_patterns = {}
         iterator = iter(self.pattern)
         if items and items[0].name == "~":
-            if not all(item.literal or kwargs.get(item.name) for item in items[1:]):
+            if not all(item.literal or overrides.get(item.name) for item in items[1:]):
                 raise ValueError("expected specific literals in follows pattern")
             return Selector(
                 {
                     **self.pattern,
-                    **{item.name: kwargs.get(item.name) or item.literal for item in items[1:]},
+                    **{item.name: overrides.get(item.name) or item.literal for item in items[1:]},
                 }  # type: ignore
             )
         for item in items:
@@ -178,7 +186,7 @@ class Selector:
             current_key = next(iterator)
             if item.name != current_key:
                 raise ValueError(f"expected {'.'.join(new_patterns)}.{item.name}, got {current_key}")
-            new_patterns[current_key] = kwargs.get(item.name) or item.literal or self.pattern[current_key]
+            new_patterns[current_key] = overrides.get(item.name) or item.literal or self.pattern[current_key]
         return Selector(new_patterns)
 
     def expects(
@@ -192,7 +200,6 @@ class Selector:
             raise exception_type(f"Selector {self} does not follow {pattern}")
 
         return self
-
 
 @runtime_checkable
 class Selectable(Protocol):
