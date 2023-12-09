@@ -8,15 +8,18 @@ from .capability import CoreCapability
 
 
 class CoreResourceFetchPerform((m := ApplicationCollector())._):
-    @m.entity(CoreCapability.fetch, resource=LocalFileResource)
+    @m.entity
+    @CoreCapability.fetch.implements(LocalFileResource)
     async def fetch_localfile(self, resource: LocalFileResource):
         return resource.file.read_bytes()
 
-    @m.entity(CoreCapability.fetch, resource=RawResource)
+    @m.entity
+    @CoreCapability.fetch.implements(RawResource)
     async def fetch_raw(self, resource: RawResource):
         return resource.data
 
-    @m.entity(CoreCapability.fetch, resource=UrlResource)
+    @m.entity
+    @CoreCapability.fetch.implements(UrlResource)
     async def fetch_url(self, resource: UrlResource):
         async with ClientSession() as session:
             async with session.get(resource.url) as resp:
