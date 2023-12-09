@@ -130,6 +130,9 @@ def _get_win_folder_from_registry(
     registry for this guarantees us the correct answer for all CSIDL_*
     names.
     """
+    if sys.platform == "darwin" or sys.platform == "linux":
+        raise RuntimeError("this function available only for windows/nt.")
+
     import winreg
 
     shell_folder_name = {
@@ -149,6 +152,9 @@ def _get_win_folder_from_registry(
 def _get_win_folder_with_ctypes(
     csidl_name: Literal["CSIDL_APPDATA", "CSIDL_COMMON_APPDATA", "CSIDL_LOCAL_APPDATA"]
 ) -> Path:
+    if sys.platform == "darwin" or sys.platform == "linux":
+        raise RuntimeError("this function available only for windows/nt.")
+
     import ctypes
 
     csidl_const = {
@@ -180,11 +186,6 @@ if WINDOWS:
 
 P = ParamSpec("P")
 
-APP_NAME = "avilla"
-BASE_CACHE_DIR = user_cache_dir(APP_NAME).resolve()
-BASE_CONFIG_DIR = user_config_dir(APP_NAME).resolve()
-BASE_DATA_DIR = user_data_dir(APP_NAME).resolve()
-
 
 def _ensure_dir(path: Path) -> None:
     if not path.exists():
@@ -202,78 +203,101 @@ def _auto_create_dir(func: Callable[P, Path]) -> Callable[P, Path]:
     return wrapper
 
 
-@_auto_create_dir
-def get_cache_dir(plugin_name: Optional[str]) -> Path:
-    """
-    macOS: ~/Library/Caches/<AppName>
+class StoreEndpoint:
+    app_name: str
+    plugin_name: Optional[str]
 
-    Unix: ~/.cache/<AppName> (XDG default)
+    def __init__(self, app_name: str, plugin_name: Optional[str] = None):
+        self.name = app_name
+        self.plugin_name = plugin_name
 
-    Windows: C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
-    """
-    return BASE_CACHE_DIR / plugin_name if plugin_name else BASE_CACHE_DIR
+        self.base_cache_dir = user_cache_dir(app_name).resolve()
+        self.base_config_dir = user_config_dir(app_name).resolve()
+        self.base_data_dir = user_data_dir(app_name).resolve()
 
+    @property
+    @_auto_create_dir
+    def cache_dir(self) -> Path:
+        """
+        macOS: ~/Library/Caches/<AppName>
 
-def get_cache_file(plugin_name: Optional[str], filename: str) -> Path:
-    """
-    macOS: ~/Library/Caches/<AppName>
+        Unix: ~/.cache/<AppName> (XDG default)
 
-    Unix: ~/.cache/<AppName> (XDG default)
+        Windows: C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
+        """
+        return (
+            self.base_cache_dir / self.plugin_name
+            if self.plugin_name is not None
+            else self.base_cache_dir
+        )
 
-    Windows: C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
-    """
-    return get_cache_dir(plugin_name) / filename
+    @property
+    @_auto_create_dir
+    def config_dir(self) -> Path:
+        """
+        macOS: same as user_data_dir
 
+        Unix: ~/.config/<AppName>
 
-@_auto_create_dir
-def get_config_dir(plugin_name: Optional[str]) -> Path:
-    """
-    macOS: same as user_data_dir
+        Win XP (roaming): C:\\Documents and Settings\\<username>\\Local Settings\\Application Data\\<AppName>
 
-    Unix: ~/.config/<AppName>
+        Win 7 (roaming): C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
+        """
+        return (
+            self.base_config_dir / self.plugin_name
+            if self.plugin_name is not None
+            else self.base_config_dir
+        )
 
-    Win XP (roaming): C:\\Documents and Settings\\<username>\\Local Settings\\Application Data\\<AppName>
+    @property
+    @_auto_create_dir
+    def data_dir(self) -> Path:
+        """
+        macOS: ~/Library/Application Support/<AppName>
 
-    Win 7 (roaming): C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
-    """
-    return BASE_CONFIG_DIR / plugin_name if plugin_name else BASE_CONFIG_DIR
+        Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
 
+        Win XP (not roaming): C:\\Documents and Settings\\<username>\\Application Data\\<AppName>
 
-def get_config_file(plugin_name: Optional[str], filename: str) -> Path:
-    """
-    macOS: same as user_data_dir
+        Win 7 (not roaming): C:\\Users\\<username>\\AppData\\Local\\<AppName>
+        """
+        return (
+            self.base_data_dir / self.plugin_name
+            if self.plugin_name is not None
+            else self.base_data_dir
+        )
 
-    Unix: ~/.config/<AppName>
+    def get_cache_file(self, filename: str) -> Path:
+        """
+        macOS: ~/Library/Caches/<AppName>
 
-    Win XP (roaming): C:\\Documents and Settings\\<username>\\Local Settings\\Application Data\\<AppName>
+        Unix: ~/.cache/<AppName> (XDG default)
 
-    Win 7 (roaming): C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
-    """
-    return get_config_dir(plugin_name) / filename
+        Windows: C:\\Users\\<username>\\AppData\\Local\\<AppName>\\Cache
+        """
+        return self.cache_dir / filename
 
+    def get_config_file(self, filename: str) -> Path:
+        """
+        macOS: same as user_data_dir
 
-@_auto_create_dir
-def get_data_dir(plugin_name: Optional[str]) -> Path:
-    """
-    macOS: ~/Library/Application Support/<AppName>
+        Unix: ~/.config/<AppName>
 
-    Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
+        Win XP (roaming): C:\\Documents and Settings\\<username>\\Local Settings\\Application Data\\<AppName>
 
-    Win XP (not roaming): C:\\Documents and Settings\\<username>\\Application Data\\<AppName>
+        Win 7 (roaming): C:\\Users\\<username>\\AppData\\Roaming\\<AppName>
+        """
+        return self.config_dir / filename
 
-    Win 7 (not roaming): C:\\Users\\<username>\\AppData\\Local\\<AppName>
-    """
-    return BASE_DATA_DIR / plugin_name if plugin_name else BASE_DATA_DIR
+    def get_data_file(self, filename: str) -> Path:
+        """
+        macOS: ~/Library/Application Support/<AppName>
 
+        Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
 
-def get_data_file(plugin_name: Optional[str], filename: str) -> Path:
-    """
-    macOS: ~/Library/Application Support/<AppName>
+        Win XP (not roaming): C:\\Documents and Settings\\<username>\\Application Data\\<AppName>
 
-    Unix: ~/.local/share/<AppName> or in $XDG_DATA_HOME, if defined
+        Win 7 (not roaming): C:\\Users\\<username>\\AppData\\Local\\<AppName>
+        """
 
-    Win XP (not roaming): C:\\Documents and Settings\\<username>\\Application Data\\<AppName>
-
-    Win 7 (not roaming): C:\\Users\\<username>\\AppData\\Local\\<AppName>
-    """
-    return get_data_dir(plugin_name) / filename
+        return self.data_dir / filename
