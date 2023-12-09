@@ -37,10 +37,10 @@ class Staff(BaseStaff):
     """手杖与核心工艺 (Staff & Focus Craft)."""
 
     def get_context(self, target: Selector, *, via: Selector | None = None):
-        return self.call_fn(CoreCapability.get_context, target, via=via)
+        return CoreCapability.get_context.call1(self)(target, via=via)
 
     async def fetch_resource(self, resource: Resource[T]) -> T:
-        return await self.get_fn_call(CoreCapability.fetch)(resource)
+        return await CoreCapability.fetch.call1(self)(resource)
 
     @overload
     async def pull_metadata(
@@ -63,7 +63,7 @@ class Staff(BaseStaff):
         target: Selector,
         route: ...,
     ):
-        return await self.call_fn(CoreCapability.pull, target, route)
+        return await CoreCapability.pull.call1(self)(target, route)
 
     async def query_entities(self, pattern: str, **predicators: FollowsPredicater):
         items = _parse_follows(pattern, **predicators)
