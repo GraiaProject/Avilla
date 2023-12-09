@@ -32,9 +32,6 @@ class SimpleOverload(FnOverload[SimpleOverloadSignature, type[Any], Any]):
 
         return set()
 
-    def track(self, scope: dict, signature: SimpleOverloadSignature) -> MutableSet[Twin]:
-        return scope[signature]
-
 
 @dataclass(eq=True, frozen=True)
 class TypeOverloadSignature:
@@ -60,9 +57,6 @@ class TypeOverload(FnOverload[TypeOverloadSignature, type[Any], Any]):
 
         return set()
 
-    def track(self, scope: dict, signature: TypeOverloadSignature) -> MutableSet[Twin]:
-        return scope[signature.type]
-
 
 class _SingletonOverloadSignature:
     ...
@@ -80,7 +74,4 @@ class SingletonOverload(FnOverload[None, None, None]):
         return s
 
     def harvest(self, scope: dict, value: None) -> AbstractSet[Twin]:
-        return scope[None]
-
-    def track(self, scope: dict, signature: None) -> MutableSet[Twin]:
         return scope[None]

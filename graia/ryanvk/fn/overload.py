@@ -40,9 +40,6 @@ class FnOverload(Generic[TSignature, TCollectValue, TCallValue]):
     def harvest(self, scope: dict, value: TCallValue) -> AbstractSet[Twin]:
         ...
 
-    def track(self, scope: dict, signature: TSignature) -> MutableSet[Twin]:
-        ...
-
 
 class FnOverloadAgent(Generic[On]):
     name: str
