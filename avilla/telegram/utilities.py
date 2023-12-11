@@ -49,4 +49,6 @@ _dispatchers: dict[str, Callable[[Update], str]] = {
 
 def telegram_event_type(raw: Update) -> str:
     update_type = list(raw.to_dict().keys())[1]
-    return _dispatchers[update_type](raw)
+    if update_type in _dispatchers:
+        return _dispatchers[update_type](raw)
+    return "non-implemented"

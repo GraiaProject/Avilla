@@ -15,9 +15,9 @@ class TelegramResource(Resource[bytes]):
 
 
 class TelegramPhotoResource(TelegramResource):
-    photo: tuple[PhotoSize]
+    photo: tuple[PhotoSize, ...]
 
-    def __init__(self, selector: Selector, file: File, photo: tuple[PhotoSize]):
+    def __init__(self, selector: Selector, file: File, photo: tuple[PhotoSize, ...]):
         super().__init__(selector, file)
         self.photo = photo
 
@@ -28,9 +28,11 @@ class TelegramPhotoResource(TelegramResource):
 
 class TelegramThumbedResource(TelegramResource):
     media: Audio | Video | Document
-    photo: tuple[PhotoSize] | None
+    photo: tuple[PhotoSize, ...] | None
 
-    def __init__(self, selector: Selector, file: File, media: Audio | Video | Document, photo: tuple[PhotoSize] = None):
+    def __init__(
+        self, selector: Selector, file: File, media: Audio | Video | Document, photo: tuple[PhotoSize, ...] = None
+    ):
         super().__init__(selector, file)
         self.media = media
         self.photo = photo

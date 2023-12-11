@@ -145,23 +145,12 @@ class Voice(Audio):
 
 
 class DiceEmoji(str, Enum):
-    DICE = "Dice"
-    """ 🎲 """
-
-    DARTS = "Darts"
-    """ 🎯 """
-
-    BASKETBALL = "Basketball"
-    """ 🏀 """
-
-    FOOTBALL = "Football"
-    """ ⚽ """
-
-    SLOT_MACHINE = "SlotMachine"
-    """ 🎰 """
-
-    BOWLING = "Bowling"
-    """ 🎳 """
+    DICE = "🎲"
+    DARTS = "🎯"
+    BASKETBALL = "🏀"
+    FOOTBALL = "⚽"
+    SLOT_MACHINE = "🎰"
+    BOWLING = "🎳"
 
 
 class DiceLimit(int, Enum):
