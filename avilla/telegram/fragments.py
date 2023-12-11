@@ -19,14 +19,12 @@ from typing_extensions import Self
 
 from avilla.standard.telegram.elements import Contact
 
-_MISSING = type("_MISSING", (MessageType,), {})  # Used for elements that are not in MessageType but in API
-
 
 class MessageFragment:
     type: MessageType
     update: Update | None
 
-    def __init__(self, msg_type: MessageType | _MISSING, update: Update | None = None):
+    def __init__(self, msg_type: MessageType | None, update: Update | None = None):
         self.type = msg_type
         self.update = update
 
@@ -242,7 +240,7 @@ class MessageFragmentMediaGroup(MessageFragment):
         caption: str | None = None,
         update: Update | None = None,
     ):
-        super().__init__(_MISSING(), update)
+        super().__init__(None, update)
         self.media = media
         self.caption = caption
 

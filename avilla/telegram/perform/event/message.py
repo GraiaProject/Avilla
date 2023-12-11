@@ -18,12 +18,12 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
 
     @m.entity(TelegramCapability.event_callback, event_type="message.private")
     @m.entity(TelegramCapability.event_callback, event_type="message.group")
-    @m.entity(TelegramCapability.event_callback, event_type="message.super_group")
+    @m.entity(TelegramCapability.event_callback, event_type="message.supergroup")
     async def message_private(self, event_type: str, raw_event: Update):
         self_id = raw_event.get_bot().id
         account = self.account
         chat = Selector().land(account.route["land"]).chat(str(raw_event.message.chat.id))
-        if chat == "message.super_group" and raw_event.message.message_thread_id:
+        if chat == "message.supergroup" and raw_event.message.message_thread_id:
             chat = chat.thread(str(raw_event.message.message_thread_id))
         context = Context(
             account,
