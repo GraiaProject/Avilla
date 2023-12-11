@@ -64,7 +64,7 @@ class TelegramBase:
                 cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
                 cached = await cache.get(f"telegram/update(media_group):{_data.message.media_group_id}")
                 cached = cached or []
-                cached.extend(MessageFragment.decompose(_data))
+                cached.extend(MessageFragment.decompose(_data.message, _data))
                 await cache.set(
                     f"telegram/update(media_group):{_data.message.media_group_id}", cached, timedelta(minutes=1)
                 )

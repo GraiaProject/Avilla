@@ -107,7 +107,7 @@ class TelegramBot(TelegramBase, Service):
                 self.timeout_signal.set()
                 break
 
-    async def send(self, target, fragments):
+    async def send(self, target, fragments) -> list[Message]:
         if self.config.reformat:
             fragments = MessageFragment.sort(*fragments)
         fragments = MessageFragment.compose(*fragments)
@@ -115,14 +115,13 @@ class TelegramBot(TelegramBase, Service):
         thread = target.pattern.get("thread", None)
         thread = int(thread) if thread else None
         sent_ids = []
+        sent_messages: list[Message] = []
         for fragment in fragments:
             msg = await fragment.send(self.bot, chat, thread=thread)
-            if isinstance(msg, Message):
-                sent_ids.append(msg.message_id)
-            else:
-                sent_ids.extend([m.message_id for m in msg])
+            sent_ids.extend([m.message_id for m in msg])
+            sent_messages.extend(msg)
 
-        return sent_ids
+        return sent_messages
 
     async def wait_for_available(self):
         await self.status.wait_for_available()

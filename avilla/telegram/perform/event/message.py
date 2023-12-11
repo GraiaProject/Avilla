@@ -39,7 +39,7 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
             cached = await cache.get(f"telegram/update(media_group):{media_group_id}")
             decomposed = MessageFragment.sort(*cached)
         else:
-            decomposed = MessageFragment.decompose(raw_event)
+            decomposed = MessageFragment.decompose(raw_event.message, raw_event)
         message = await TelegramCapability(account.staff.ext({"context": context})).deserialize(decomposed)
         reply = raw_event.message.reply_to_message
 
