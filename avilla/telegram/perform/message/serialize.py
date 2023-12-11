@@ -6,12 +6,17 @@ from avilla.core import LocalFileResource, RawResource, UrlResource
 from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
 from avilla.core.elements import Audio, Picture, Text, Video
 from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.standard.telegram.elements import Contact, Dice, Location, Venue
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.fragments import (
     MessageFragment,
     MessageFragmentAudio,
+    MessageFragmentContact,
+    MessageFragmentDice,
+    MessageFragmentLocation,
     MessageFragmentPhoto,
     MessageFragmentText,
+    MessageFragmentVenue,
     MessageFragmentVideo,
 )
 from avilla.telegram.resource import TelegramPhotoResource, TelegramThumbedResource
@@ -72,5 +77,26 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         else:
             data = await self.account.staff.fetch_resource(element.resource)
         return MessageFragmentVideo(cast(bytes, data))
+
+    @m.entity(TelegramCapability.serialize_element, element=Contact)
+    async def contact(self, element: Contact) -> MessageFragment:
+        return MessageFragmentContact(element)
+
+    @m.entity(TelegramCapability.serialize_element, element=Dice)
+    async def dice(self, element: Dice) -> MessageFragment:
+        return MessageFragmentDice(element.emoji.value)
+
+    @m.entity(TelegramCapability.serialize_element, element=Location)
+    async def location(self, element: Location) -> MessageFragment:
+        return MessageFragmentLocation(element.latitude, element.longitude)
+
+    @m.entity(TelegramCapability.serialize_element, element=Venue)
+    async def venue(self, element: Venue) -> MessageFragment:
+        return MessageFragmentVenue(
+            element.latitude,
+            element.longitude,
+            element.title,
+            element.address,
+        )
 
     # TODO
