@@ -108,8 +108,11 @@ class TelegramBot(TelegramBase, Service):
                 break
 
     async def send(self, target, fragments) -> list[Message]:
+        params: dict[str, ...] = {}
         if self.config.reformat:
             fragments = MessageFragment.sort(*fragments)
+        for fragment in fragments.copy():
+            fragment.hook(fragments, params)
         fragments = MessageFragment.compose(*fragments)
         chat = int(target.pattern["chat"])
         thread = target.pattern.get("thread", None)
@@ -117,7 +120,7 @@ class TelegramBot(TelegramBase, Service):
         sent_ids = []
         sent_messages: list[Message] = []
         for fragment in fragments:
-            msg = await fragment.send(self.bot, chat, thread=thread)
+            msg = await fragment.send(self.bot, chat, thread=thread, params=params)
             sent_ids.extend([m.message_id for m in msg])
             sent_messages.extend(msg)
 

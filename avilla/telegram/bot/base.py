@@ -13,7 +13,7 @@ from avilla.core import Selector
 from avilla.core.ryanvk.staff import Staff
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.fragments import MessageFragment
-from avilla.telegram.utilities import telegram_event_type
+from avilla.telegram.utilities import reveal_event_type
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa
@@ -86,7 +86,7 @@ class TelegramBase:
                     await self.protocol.post_event(event)
 
             async def event_parse_task(_data: Update):
-                if (event_type := telegram_event_type(_data)) == "non-implemented":
+                if (event_type := reveal_event_type(_data)) == "non-implemented":
                     logger.warning(f"received unsupported event: {_data}")
                     return
                 if _data.message is not None and _data.message.media_group_id is not None:

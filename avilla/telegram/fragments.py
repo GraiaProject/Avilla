@@ -17,9 +17,8 @@ from telegram.constants import MessageType
 from telegram.ext import ExtBot
 from typing_extensions import Final, Self
 
-
-class _WrongFragment(Exception):
-    ...
+from avilla.core import Selector
+from avilla.telegram.exception import WrongFragment
 
 
 class MessageFragment:
@@ -34,7 +33,7 @@ class MessageFragment:
         return self.__getattribute__(item)
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
         ...
 
@@ -79,10 +78,31 @@ class MessageFragment:
         fragments = []
         for sub in cls.__subclasses__():
             try:
-                fragments.extend(sub.decompose(message, update=update))
-            except _WrongFragment:
+                if frag := sub.decompose(message, update=update):
+                    fragments.extend(frag)
+            except WrongFragment:
                 pass
         return fragments
+
+    def hook(self, fragments: list[Self], params: dict[str, ...] | None = None):
+        pass
+
+
+class MessageFragmentReply(MessageFragment):
+    reply_to: Selector
+    original: Message
+
+    def __init__(self, reply_to: Selector):
+        super().__init__(None)
+        self.reply_to = reply_to
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        raise WrongFragment
+
+    def hook(self, fragments: list[MessageFragment], params: dict[str, ...] | None = None):
+        params["reply_to_message_id"] = self.reply_to.pattern["message"]
+        fragments.remove(self)
 
 
 class MessageFragmentText(MessageFragment):
@@ -96,12 +116,16 @@ class MessageFragmentText(MessageFragment):
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         if message.text:
             return [cls(message.text, update=update)]
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
-        return (await bot.send_message(chat, text=self.text, reply_to_message_id=reply_to, message_thread_id=thread),)
+        if not params:
+            params = {}
+        if not params:
+            params = {}
+        return (await bot.send_message(chat, text=self.text, message_thread_id=thread, **params),)
 
 
 class MessageFragmentPhoto(MessageFragment):
@@ -125,14 +149,22 @@ class MessageFragmentPhoto(MessageFragment):
                 return [cls(message.photo[-1], update=update), MessageFragmentText(message.caption, update=update)]
             else:
                 return [MessageFragmentPhoto(message.photo[-1], update=update)]
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
+        if not params:
+            params = {}
         return (
             await bot.send_photo(
-                chat, photo=self.file, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
+                chat,
+                photo=self.file,
+                caption=self.caption,
+                message_thread_id=thread,
+                **params,
             ),
         )
 
@@ -146,14 +178,14 @@ class MessageFragmentAnimation(MessageFragment):
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
-        return (
-            await bot.send_animation(chat, animation=self.file, reply_to_message_id=reply_to, message_thread_id=thread),
-        )
+        if not params:
+            params = {}
+        return (await bot.send_animation(chat, animation=self.file, message_thread_id=thread, **params),)
 
 
 class MessageFragmentAudio(MessageFragment):
@@ -165,12 +197,14 @@ class MessageFragmentAudio(MessageFragment):
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
-        return (await bot.send_audio(chat, audio=self.file, reply_to_message_id=reply_to, message_thread_id=thread),)
+        if not params:
+            params = {}
+        return (await bot.send_audio(chat, audio=self.file, message_thread_id=thread, **params),)
 
 
 class MessageFragmentContact(MessageFragment):
@@ -209,11 +243,13 @@ class MessageFragmentContact(MessageFragment):
                     update=update,
                 )
             ]
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
         return (
             await bot.send_contact(
                 chat,
@@ -221,7 +257,6 @@ class MessageFragmentContact(MessageFragment):
                 first_name=self.first_name,
                 last_name=self.last_name,
                 vcard=self.vcard,
-                reply_to_message_id=reply_to,
                 message_thread_id=thread,
             ),
         )
@@ -240,12 +275,14 @@ class MessageFragmentDice(MessageFragment):
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         if message.dice:
             return [cls(message.dice.emoji, message.dice.value, update=update)]
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
-        return (await bot.send_dice(chat, emoji=self.emoji, reply_to_message_id=reply_to, message_thread_id=thread),)
+        if not params:
+            params = {}
+        return (await bot.send_dice(chat, emoji=self.emoji, message_thread_id=thread, **params),)
 
 
 class MessageFragmentDocument(MessageFragment):
@@ -264,16 +301,14 @@ class MessageFragmentDocument(MessageFragment):
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
-        return (
-            await bot.send_document(
-                chat, document=self.file, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
-            ),
-        )
+        if not params:
+            params = {}
+        return (await bot.send_document(chat, document=self.file, caption=self.caption, message_thread_id=thread),)
 
 
 class MessageFragmentLocation(MessageFragment):
@@ -289,17 +324,18 @@ class MessageFragmentLocation(MessageFragment):
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         if message.location:
             return [cls(message.location.latitude, message.location.longitude, update=update)]
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
         return (
             await bot.send_location(
                 chat,
                 latitude=self.latitude,
                 longitude=self.longitude,
-                reply_to_message_id=reply_to,
                 message_thread_id=thread,
             ),
         )
@@ -321,16 +357,14 @@ class MessageFragmentVideo(MessageFragment):
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
-        return (
-            await bot.send_video(
-                chat, video=self.file, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
-            ),
-        )
+        if not params:
+            params = {}
+        return (await bot.send_video(chat, video=self.file, caption=self.caption, message_thread_id=thread),)
 
 
 class MessageFragmentMediaGroup(MessageFragment):
@@ -350,11 +384,13 @@ class MessageFragmentMediaGroup(MessageFragment):
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
         media = []
         cord = {
             "photo": InputMediaPhoto,
@@ -364,9 +400,7 @@ class MessageFragmentMediaGroup(MessageFragment):
         }
         for m in self.media:
             media.append(cord[m.type](m.file))  # Captions should be discarded
-        return await bot.send_media_group(
-            chat, media=media, caption=self.caption, reply_to_message_id=reply_to, message_thread_id=thread
-        )
+        return await bot.send_media_group(chat, media=media, caption=self.caption, message_thread_id=thread)
 
 
 class MessageFragmentSticker(MessageFragment):
@@ -378,14 +412,14 @@ class MessageFragmentSticker(MessageFragment):
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
-        return (
-            await bot.send_sticker(chat, sticker=self.file, reply_to_message_id=reply_to, message_thread_id=thread),
-        )
+        if not params:
+            params = {}
+        return (await bot.send_sticker(chat, sticker=self.file, message_thread_id=thread, **params),)
 
 
 class MessageFragmentVenue(MessageFragment):
@@ -420,11 +454,13 @@ class MessageFragmentVenue(MessageFragment):
                     update=update,
                 )
             ]
-        raise _WrongFragment
+        raise WrongFragment
 
     async def send(
-        self, bot: ExtBot, chat: int, /, reply_to: int | None = None, thread: int | None = None
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
     ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
         return (
             await bot.send_venue(
                 chat,
@@ -432,13 +468,14 @@ class MessageFragmentVenue(MessageFragment):
                 longitude=self.longitude,
                 title=self.title,
                 address=self.address,
-                reply_to_message_id=reply_to,
                 message_thread_id=thread,
             ),
         )
 
 
 PRIORITIES: dict[type[MessageFragment], int | float] = {
+    # Reply Hook (Non-telegram standard)
+    MessageFragmentReply: -1,  # Anywhere is fine
     # Others
     MessageFragmentAnimation: 0,
     MessageFragmentContact: 0,

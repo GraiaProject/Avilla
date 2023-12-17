@@ -11,7 +11,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend, MessageSent
 from avilla.telegram.capability import TelegramCapability
-from avilla.telegram.fragments import MessageFragment
+from avilla.telegram.fragments import MessageFragment, MessageFragmentReply
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa
@@ -32,6 +32,8 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         reply: Selector | None = None,
     ) -> Selector:
         s_message = await TelegramCapability(self.account.staff).serialize(message)
+        if reply is not None:
+            s_message.insert(0, MessageFragmentReply(reply))
         result: list[TelegramMessage] = await self.account.instance.send(target, s_message)
         d_message = [
             await TelegramCapability(self.account.staff).deserialize(MessageFragment.decompose(m)) for m in result

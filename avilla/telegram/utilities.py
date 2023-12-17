@@ -3,7 +3,7 @@ from typing import Callable
 
 from telegram import Update
 
-_sub_event = [
+_message_events = [
     "poll",
     "pinned_message",
     "new_chat_members",
@@ -20,19 +20,19 @@ _sub_event = [
 ]
 
 
-def _message_dispatcher(name: str, raw: Update) -> str:
+def _message_event_type(name: str, raw: Update) -> str:
     obj: dict[str, ...] = raw.to_dict()["message"]
-    for sub in _sub_event:
-        if sub in obj and obj[sub] is not False:
-            return f"event.{sub}"
+    for event in _message_events:
+        if event in obj and obj[event] is not False:
+            return f"event.{event}"
 
     return f"{name}.{raw.message.chat.type}"
 
 
-_dispatchers: dict[str, Callable[[Update], str]] = {
-    "message": partial(_message_dispatcher, "message"),
+_event_types: dict[str, Callable[[Update], str]] = {
+    "message": partial(_message_event_type, "message"),
     "edited_message": lambda raw: f"edited_message.{raw.edited_message.chat.type}",
-    "channel_post": partial(_message_dispatcher, "channel_post"),
+    "channel_post": partial(_message_event_type, "channel_post"),
     "edited_channel_post": lambda raw: f"edited_channel_post.{raw.edited_channel_post.chat.type}",
     "inline_query": lambda _: "inline.query",
     "chosen_inline_result": lambda _: "inline.chosen_result",
@@ -47,8 +47,8 @@ _dispatchers: dict[str, Callable[[Update], str]] = {
 }
 
 
-def telegram_event_type(raw: Update) -> str:
+def reveal_event_type(raw: Update) -> str:
     update_type = list(raw.to_dict().keys())[1]
-    if update_type in _dispatchers:
-        return _dispatchers[update_type](raw)
+    if update_type in _event_types:
+        return _event_types[update_type](raw)
     return "non-implemented"
