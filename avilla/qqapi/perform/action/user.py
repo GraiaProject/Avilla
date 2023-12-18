@@ -15,12 +15,16 @@ class QQAPIUserActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
     m.namespace = "avilla.protocol/qqapi::action"
     m.identify = "user"
 
-    @m.pull("land.guild.user", Summary)
-    async def get_summary(self, target: Selector, route: ...) -> Summary:
-        result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}", {})
-        return Summary(result["name"], result["description"])
-
     @m.pull("land.guild.user", Nick)
     async def get_nick(self, target: Selector, route: ...) -> Nick:
-        result = await self.account.connection.call_http("get", f"guilds/{target.pattern['guild']}", {})
-        return Nick(result["name"], result["name"], None)
+        result = await self.account.connection.call_http(
+            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['user']}", {}
+        )
+        return Nick(result["user"]["username"], result["nick"], None)
+
+    @m.pull("land.guild.user", Summary)
+    async def get_summary(self, target: Selector, route: ...) -> Summary:
+        result = await self.account.connection.call_http(
+            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['user']}", {}
+        )
+        return Summary(result["user"]["username"], result["nick"])

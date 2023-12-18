@@ -162,7 +162,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
         if result is None:
-            raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
+            raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
         context = self.account.get_context(target)
         msg = Message(
             result.get("id", "UNKNOWN"),
@@ -215,7 +215,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 },
             )
             if result is None:
-                raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
+                raise ActionFailed(f"Failed to send message to {target.pattern['friend']}: {message}")
             if "msg_id" not in msg:
                 context = self.account.get_context(target)
                 msg = Message(
@@ -250,7 +250,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
         if result is None:
-            raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
+            raise ActionFailed(f"Failed to send message to {target.pattern['friend']}: {message}")
         context = self.account.get_context(target)
         msg = Message(
             result.get("id", "UNKNOWN"),
@@ -262,6 +262,31 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         self.protocol.post_event(MessageSent(context, msg, self.account))
         return target.message(result.get("id", "UNKNOWN"))
 
+    @QQAPICapability.create_dms.collect(m, target="land.guild.user")
+    async def create_dms_user(self, target: Selector) -> Selector:
+        result = await self.account.connection.call_http(
+            "post",
+            "users/@me/dms",
+            {
+                "recipient_id": target.pattern["user"],
+                "source_guild_id": target.pattern["guild"],
+            }
+        )
+        return target.into(f"land.guild({result['guild_id']})")
+
+    @QQAPICapability.create_dms.collect(m, target="land.guild.member")
+    @QQAPICapability.create_dms.collect(m, target="land.guild.channel.member")
+    async def create_dms_member(self, target: Selector) -> Selector:
+        result = await self.account.connection.call_http(
+            "post",
+            "users/@me/dms",
+            {
+                "recipient_id": target.pattern["member"],
+                "source_guild_id": target.pattern["guild"],
+            }
+        )
+        return target.into(f"land.guild({result['guild_id']})")
+
     @MessageSend.send.collect(m, target="land.guild.user")
     async def send_direct_msg(
         self,
@@ -272,6 +297,13 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
     ) -> Selector:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         msg = await QQAPICapability(self.account.staff).serialize(message)
+        if not (send_guild_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}#dms")):
+            send_guild_id = (await self.create_dms_user(target)).pattern["guild"]
+            await cache.set(
+                f"qqapi/account({self.account.route['account']}):{target}#dms",
+                send_guild_id,
+                expire=timedelta(minutes=20)
+            )
         if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
             msg["msg_id"] = event_id
         if reply:
@@ -280,9 +312,9 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         if media := msg.get("media"):
             msg[media[0]] = media[1]
         method, data = form_data(msg)
-        result = await self.account.connection.call_http(method, f"dms/{target.pattern['guild']}/messages", data)
+        result = await self.account.connection.call_http(method, f"dms/{send_guild_id}/messages", data)
         if result is None:
-            raise ActionFailed(f"Failed to send message to {target.pattern['channel']}: {message}")
+            raise ActionFailed(f"Failed to send message to {target.pattern['user']}: {message}")
         event = await QQAPICapability(self.account.staff.ext({"connection": self.account.connection})).event_callback(
             "self_direct_message_create", result
         )
@@ -305,9 +337,12 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
 
     @MessageRevoke.revoke.collect(m, target="land.guild.user.message")
     async def delete_direct_msg(self, target: Selector):
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if not (send_guild_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}#dms")):
+            return
         await self.account.connection.call_http(
             "delete",
-            f"dms/{target.pattern['guild']}/messages/{target.pattern['message']}",
+            f"dms/{send_guild_id}/messages/{target.pattern['message']}",
             {"hidetip": str(False).lower()},
         )
 

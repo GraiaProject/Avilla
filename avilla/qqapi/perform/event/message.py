@@ -138,7 +138,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["guild_id"])
+        guild = Selector().land("qq").guild(raw_event["src_guild_id"])
         author = guild.user(raw_event["author"]["id"])
         context = Context(
             account,
@@ -163,6 +163,11 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         )
         await cache.set(
             f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
+        )
+        await cache.set(
+            f"qqapi/account({account_route['account']}):{context.scene}#dms",
+            raw_event["guild_id"],
+            timedelta(minutes=5)
         )
         context._collect_metadatas(
             author,
