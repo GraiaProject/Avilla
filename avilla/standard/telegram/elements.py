@@ -7,7 +7,10 @@ from typing import IO, Literal, overload
 
 from graia.amnesia.message.element import Element
 
-from avilla.core import Audio, Video
+from avilla.core import Audio, LocalFileResource
+from avilla.core import Picture as CorePicture
+from avilla.core import Resource
+from avilla.core import Video as CoreVideo
 
 
 class _TObject:
@@ -29,12 +32,43 @@ class _FileObject(_TObject):
         return self.file_unique_id == other.file_unique_id
 
 
+class Picture(CorePicture):
+    has_spoiler: bool
+
+    def __init__(self, resource: Resource[bytes] | Resource[str] | Path | str, has_spoiler: bool = False):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
+        self.has_spoiler = has_spoiler
+
+    def __repr__(self):
+        return f"[$Picture:resource={self.resource.to_selector()};has_spoiler={self.has_spoiler}]"
+
+
+class Video(CoreVideo):
+    has_spoiler: bool
+
+    def __init__(self, resource: Resource[bytes] | Path | str, has_spoiler: bool = False):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
+        self.has_spoiler = has_spoiler
+
+    def __repr__(self):
+        return f"[$Video:resource={self.resource.to_selector()};has_spoiler={self.has_spoiler}]"
+
+
 class Animation(_FileObject, Element):
     width: int
     height: int
     is_animated: bool
     is_video: bool
     from_input: IO[bytes] | bytes | str | Path
+    has_spoiler: bool
 
     @overload
     def __init__(
@@ -46,15 +80,12 @@ class Animation(_FileObject, Element):
         height: int = None,
         is_animated: bool = None,
         is_video: bool = None,
+        has_spoiler: bool = False,
     ):
         ...
 
     @overload
-    def __init__(
-        self,
-        /,
-        from_input: IO[bytes] | bytes | str | Path,
-    ):
+    def __init__(self, /, from_input: IO[bytes] | bytes | str | Path, has_spoiler: bool = False):
         ...
 
     def __init__(self, **kwargs):

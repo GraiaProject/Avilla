@@ -3,9 +3,9 @@ from pathlib import Path
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core import Avilla, Context, MessageReceived, Picture, Text, Video
+from avilla.core import Avilla, Context, MessageReceived, Text
 from avilla.standard.core.message import MessageSent
-from avilla.standard.telegram.elements import Dice, DiceEmoji
+from avilla.standard.telegram.elements import Dice, DiceEmoji, Picture, Video
 from avilla.standard.telegram.event import ForumTopicClosed, ForumTopicCreated
 from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
 
@@ -22,9 +22,9 @@ async def on_message_received(cx: Context, event: MessageReceived, msg: MessageC
         MessageChain(
             [
                 # Dice(DiceEmoji.SLOT_MACHINE),
-                Text("Hello, Avilla!"),
-                Picture(Path("test.jpg")),
-                Video(Path("test.mp4")),
+                # Text("Hello, Avilla!"),
+                # Picture(Path("test.jpg"), has_spoiler=True),
+                Video(Path("test.mp4"), has_spoiler=True),
             ]
         ),
         reply=event.message,

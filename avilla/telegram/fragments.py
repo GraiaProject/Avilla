@@ -148,22 +148,25 @@ class MessageFragmentText(MessageFragment):
 
 class MessageFragmentPhoto(MessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | PhotoSize
+    has_spoiler: bool
     caption: str | None
 
     def __init__(
         self,
         file: str | Path | IO[bytes] | InputFile | bytes | PhotoSize,
+        has_spoiler: bool,
         caption: str | None = None,
         update: Update | None = None,
     ):
         super().__init__(MessageType.PHOTO, update)
         self.file = file
+        self.has_spoiler = has_spoiler
         self.caption = caption
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         if message.photo:
-            return [MessageFragmentPhoto(message.photo[-1], update=update)]
+            return [MessageFragmentPhoto(message.photo[-1], has_spoiler=message.has_media_spoiler, update=update)]
         raise WrongFragment
 
     async def send(
@@ -179,6 +182,7 @@ class MessageFragmentPhoto(MessageFragment):
                 photo=self.file,
                 caption=self.caption,
                 message_thread_id=thread,
+                has_spoiler=self.has_spoiler,
                 **params,
             ),
         )
@@ -186,15 +190,22 @@ class MessageFragmentPhoto(MessageFragment):
 
 class MessageFragmentAnimation(MessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | Animation
+    has_spoiler: bool
 
-    def __init__(self, file: str | Path | IO[bytes] | InputFile | bytes | Animation, update: Update | None = None):
+    def __init__(
+        self,
+        file: str | Path | IO[bytes] | InputFile | bytes | Animation,
+        has_spoiler: bool,
+        update: Update | None = None,
+    ):
         super().__init__(MessageType.ANIMATION, update)
         self.file = file
+        self.has_spoiler = has_spoiler
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         if message.animation:
-            return [cls(message.animation, update=update)]
+            return [cls(message.animation, has_spoiler=message.has_media_spoiler, update=update)]
         raise WrongFragment
 
     async def send(
@@ -202,7 +213,11 @@ class MessageFragmentAnimation(MessageFragment):
     ) -> tuple[Message, ...]:
         if not params:
             params = {}
-        return (await bot.send_animation(chat, animation=self.file, message_thread_id=thread, **params),)
+        return (
+            await bot.send_animation(
+                chat, animation=self.file, message_thread_id=thread, has_spoiler=self.has_spoiler, **params
+            ),
+        )
 
 
 class MessageFragmentAudio(MessageFragment):
@@ -368,22 +383,25 @@ class MessageFragmentLocation(MessageFragment):
 
 class MessageFragmentVideo(MessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | Video
+    has_spoiler: bool
     caption: str | None
 
     def __init__(
         self,
         file: str | Path | IO[bytes] | InputFile | bytes | Video,
+        has_spoiler: bool,
         caption: str | None = None,
         update: Update | None = None,
     ):
         super().__init__(MessageType.VIDEO, update)
         self.file = file
+        self.has_spoiler = has_spoiler
         self.caption = caption
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         if message.video:
-            return [cls(message.video, update=update)]
+            return [cls(message.video, has_spoiler=message.has_media_spoiler, update=update)]
         raise WrongFragment
 
     async def send(
@@ -391,7 +409,16 @@ class MessageFragmentVideo(MessageFragment):
     ) -> tuple[Message, ...]:
         if not params:
             params = {}
-        return (await bot.send_video(chat, video=self.file, caption=self.caption, message_thread_id=thread, **params),)
+        return (
+            await bot.send_video(
+                chat,
+                video=self.file,
+                caption=self.caption,
+                message_thread_id=thread,
+                has_spoiler=self.has_spoiler,
+                **params,
+            ),
+        )
 
 
 class MessageFragmentMediaGroup(MessageFragment):
