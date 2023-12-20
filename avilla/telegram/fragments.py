@@ -459,9 +459,9 @@ class MessageFragmentMediaGroup(MessageFragment):
 
 
 class MessageFragmentSticker(MessageFragment):
-    file: Sticker
+    file: str | Path | IO[bytes] | InputFile | bytes | Sticker
 
-    def __init__(self, file: Sticker, update: Update | None = None):
+    def __init__(self, file: str | Path | IO[bytes] | InputFile | bytes | Sticker, update: Update | None = None):
         super().__init__(MessageType.STICKER, update)
         self.file = file
 
