@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import IO, Literal, overload
+from typing import Literal, overload
 
 from graia.amnesia.message.element import Element
 
@@ -11,25 +11,6 @@ from avilla.core import Audio, LocalFileResource
 from avilla.core import Picture as CorePicture
 from avilla.core import Resource
 from avilla.core import Video as CoreVideo
-
-
-class _TObject:
-    def __init__(self, **kwargs):
-        for k, v in kwargs.items():
-            setattr(self, k, v)
-
-
-class _FileObject(_TObject):
-    file_id: str
-    file_unique_id: str
-
-    def __hash__(self):
-        return hash(f"[{self.__class__.__name__}:file_unique_id={self.file_unique_id}]")
-
-    def __eq__(self, other):
-        if not getattr(other, "file_unique_id", None):
-            return False
-        return self.file_unique_id == other.file_unique_id
 
 
 class Picture(CorePicture):
@@ -62,34 +43,30 @@ class Video(CoreVideo):
         return f"[$Video:resource={self.resource.to_selector()};has_spoiler={self.has_spoiler}]"
 
 
-class Animation(_FileObject, Element):
+class Animation(Element):
+    resource: Resource[bytes] | Path | str
     width: int
     height: int
-    is_animated: bool
-    is_video: bool
-    from_input: IO[bytes] | bytes | str | Path
+    duration: int
     has_spoiler: bool
 
-    @overload
     def __init__(
         self,
-        /,
-        file_id: str,
-        file_unique_id: str,
-        width: int = None,
-        height: int = None,
-        is_animated: bool = None,
-        is_video: bool = None,
-        has_spoiler: bool = False,
+        resource: Resource[bytes] | Path | str,
+        width: int = -1,
+        height: int = -1,
+        duration: int = -1,
+        has_spoiler: bool = None,
     ):
-        ...
-
-    @overload
-    def __init__(self, /, from_input: IO[bytes] | bytes | str | Path, has_spoiler: bool = False):
-        ...
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
+        self.width = width
+        self.height = height
+        self.duration = duration
+        self.has_spoiler = has_spoiler
 
     def __str__(self) -> str:
         return f"[$Animation]"
@@ -107,28 +84,15 @@ class Contact(Element):
         return f"[$Contact]"
 
 
-class Document(_FileObject, Element):
-    from_input: IO[bytes] | bytes | str | Path
+class Document(Element):
+    resource: Resource[bytes] | Path | str
 
-    @overload
-    def __init__(
-        self,
-        /,
-        file_id: str,
-        file_unique_id: str,
-    ):
-        ...
-
-    @overload
-    def __init__(
-        self,
-        /,
-        from_input: IO[bytes] | bytes | str | Path,
-    ):
-        ...
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, resource: Resource[bytes] | Path | str):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
 
     def __str__(self) -> str:
         return f"[$Document]"
@@ -144,11 +108,12 @@ class Location(Element):
 
 
 @dataclass
-class Sticker(_FileObject, Element):
-    width: int
-    height: int
-    is_animated: bool
-    is_video: bool
+class Sticker(Element):
+    resource: Resource[bytes] | Path | str
+    width: int = -1
+    height: int = -1
+    is_animated: bool = None
+    is_video: bool = None
 
     def __str__(self) -> str:
         return f"[$Sticker]"
@@ -238,7 +203,7 @@ class MessageEntityType(str, Enum):
     CUSTOM_EMOJI = "custom_emoji"
 
 
-class Entity(_TObject, Element):
+class Entity(Element):
     text: str = None
     language: str = None
     url: str = None
