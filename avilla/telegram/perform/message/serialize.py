@@ -19,7 +19,7 @@ from avilla.telegram.fragments import (
     MessageFragmentVenue,
     MessageFragmentVideo,
 )
-from avilla.telegram.resource import TelegramPhotoResource, TelegramThumbedResource
+from avilla.telegram.resource import TelegramResource
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa
@@ -38,7 +38,7 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
 
     @m.entity(TelegramCapability.serialize_element, element=Picture)
     async def picture(self, element: Picture) -> MessageFragment:
-        if isinstance(resource := element.resource, TelegramPhotoResource):
+        if isinstance(resource := element.resource, TelegramResource):
             return MessageFragmentPhoto(resource.file)
         if isinstance(element.resource, RawResource):
             data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
@@ -52,7 +52,7 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
 
     @m.entity(TelegramCapability.serialize_element, element=Audio)
     async def audio(self, element: Audio) -> MessageFragment:
-        if isinstance(resource := element.resource, TelegramThumbedResource):
+        if isinstance(resource := element.resource, TelegramResource):
             return MessageFragmentAudio(resource.file)
         if isinstance(element.resource, RawResource):
             data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
@@ -66,7 +66,7 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
 
     @m.entity(TelegramCapability.serialize_element, element=Video)
     async def video(self, element: Video) -> MessageFragment:
-        if isinstance(resource := element.resource, TelegramThumbedResource):
+        if isinstance(resource := element.resource, TelegramResource):
             return MessageFragmentVideo(resource.file)
         if isinstance(element.resource, RawResource):
             data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
@@ -80,7 +80,13 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
 
     @m.entity(TelegramCapability.serialize_element, element=Contact)
     async def contact(self, element: Contact) -> MessageFragment:
-        return MessageFragmentContact(element)
+        return MessageFragmentContact(
+            element.phone_number,
+            element.first_name,
+            element.last_name,
+            element.user_id,
+            element.vcard,
+        )
 
     @m.entity(TelegramCapability.serialize_element, element=Dice)
     async def dice(self, element: Dice) -> MessageFragment:
@@ -98,5 +104,3 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
             element.title,
             element.address,
         )
-
-    # TODO

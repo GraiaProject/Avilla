@@ -4,20 +4,23 @@ from typing import TYPE_CHECKING
 
 from telegram import File
 
-from avilla.core.elements import Picture, Text
+from avilla.core import RawResource
+from avilla.core.elements import Audio, Picture, Text, Video
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.standard.telegram.elements import Contact, Dice, DiceEmoji, Location, Venue
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.fragments import (
+    MessageFragmentAudio,
     MessageFragmentContact,
     MessageFragmentDice,
     MessageFragmentLocation,
     MessageFragmentPhoto,
     MessageFragmentText,
     MessageFragmentVenue,
+    MessageFragmentVideo,
 )
-from avilla.telegram.resource import TelegramPhotoResource
+from avilla.telegram.resource import TelegramResource
 from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
@@ -39,9 +42,42 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(TelegramCapability.deserialize_element, element="photo")
     async def photo(self, element: MessageFragmentPhoto) -> Picture:
-        file: File = await element.file.get_file()
-        resource = TelegramPhotoResource(Selector().land("telegram").picture(file), file, element.update.message.photo)
-        return Picture(resource)
+        if element.update:
+            file: File = await element.file.get_file()
+            resource = TelegramResource(
+                Selector().land("telegram").picture(file),
+                file,
+                element.update.message.photo[-1],
+                element.update.message.photo,
+            )
+            return Picture(resource)
+        return Picture(RawResource(element.file))
+
+    @m.entity(TelegramCapability.deserialize_element, element="audio")
+    async def audio(self, element: MessageFragmentAudio) -> Audio:
+        if element.update:
+            file: File = await element.update.message.audio.get_file()
+            resource = TelegramResource(
+                Selector().land("telegram").audio(file),
+                file,
+                element.update.message.audio,
+                (element.update.message.audio.thumbnail,),
+            )
+            return Audio(resource, duration=element.update.message.audio.duration)
+        return Audio(RawResource(element.file))
+
+    @m.entity(TelegramCapability.deserialize_element, element="video")
+    async def video(self, element: MessageFragmentVideo) -> Video:
+        if element.update:
+            file: File = await element.update.message.video.get_file()
+            resource = TelegramResource(
+                Selector().land("telegram").video(file),
+                file,
+                element.update.message.video,
+                (element.update.message.video.thumbnail,),
+            )
+            return Video(resource)
+        return Video(RawResource(element.file))
 
     @m.entity(TelegramCapability.deserialize_element, element="contact")
     async def contact(self, element: MessageFragmentContact) -> Contact:
@@ -58,5 +94,3 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(TelegramCapability.deserialize_element, element="venue")
     async def venue(self, element: MessageFragmentVenue) -> Venue:
         return Venue(element.latitude, element.longitude, element.title, element.address)
-
-    # TODO

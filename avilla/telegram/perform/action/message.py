@@ -35,11 +35,13 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         if reply is not None:
             s_message.insert(0, MessageFragmentReply(reply))
         result: list[TelegramMessage] = await self.account.instance.send(target, s_message)
-        d_message = [
-            await TelegramCapability(self.account.staff).deserialize(MessageFragment.decompose(m)) for m in result
-        ]
-        sent_chain = d_message[0]
-        for m in d_message[1:]:
+        d_result = [MessageFragment.decompose(m) for m in result]
+        if self.account.instance.config.reformat:
+            # MediaGroup may be out of order
+            d_result = [MessageFragment.sort(*[frag for frags in d_result for frag in frags])]
+        decomposed = [await TelegramCapability(self.account.staff).deserialize(frag) for frag in d_result]
+        sent_chain = decomposed[0]
+        for m in decomposed[1:]:
             sent_chain.extend(m)
         context = Context(
             account=self.account,
