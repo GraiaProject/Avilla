@@ -454,7 +454,7 @@ class MessageFragmentMediaGroup(MessageFragment):
             "video": InputMediaVideo,
         }
         for m in self.media:
-            media.append(cord[m.type](m.file))  # Captions should be discarded
+            media.append(cord[m.type](m.file, has_spoiler=m.has_spoiler))  # Captions should be discarded
         return await bot.send_media_group(chat, media=media, caption=self.caption, message_thread_id=thread, **params)
 
 
