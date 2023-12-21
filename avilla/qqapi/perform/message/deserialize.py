@@ -48,11 +48,11 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
         if "content_type" not in raw_element:
             resource = QQAPIImageResource(Selector().land("qqguild").picture(url := raw_element["url"]), "image", url)
             return Picture(resource)
-        content_type = raw_element["content_type"]
+        content_type = raw_element["content_type"].split("/")[0]
         if content_type == "file":
             resource = QQAPIFileResource(
                 Selector().land("qqguild").file(url := raw_element["url"]),
-                content_type,
+                raw_element["content_type"],
                 url,
                 raw_element.get("filename"),
                 raw_element.get("height"),
@@ -63,7 +63,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
         if content_type == "audio":
             resource = QQAPIAudioResource(
                 Selector().land("qqguild").audio(url := raw_element["url"]),
-                content_type,
+                raw_element["content_type"],
                 url,
                 raw_element.get("filename"),
                 raw_element.get("height"),
@@ -74,7 +74,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
         if content_type == "video":
             resource = QQAPIVideoResource(
                 Selector().land("qqguild").video(url := raw_element["url"]),
-                content_type,
+                raw_element["content_type"],
                 url,
                 raw_element.get("filename"),
                 raw_element.get("height"),
@@ -84,7 +84,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
             return Video(resource)
         resource = QQAPIImageResource(
             Selector().land("qqguild").picture(url := raw_element["url"]),
-            content_type,
+            raw_element["content_type"],
             url,
             raw_element.get("filename"),
             raw_element.get("height"),

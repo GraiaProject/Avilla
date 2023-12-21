@@ -6,35 +6,14 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 
 from avilla.core.context import Context
-from avilla.core.message import Message, MessageChain
+from avilla.core.message import Message
 from avilla.core.elements import Text, Notice
 from avilla.core.selector import Selector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.collector.connection import ConnectionCollector
 from avilla.qqapi.element import Reference
 from avilla.standard.core.message import MessageReceived, MessageRevoked
-
-
-def is_tome(message: MessageChain, context: Context):
-    if isinstance(message[0], Notice):
-        notice: Notice = message.get_first(Notice)
-        if notice.target.last_value == context.self.last_value:
-            return True
-    return False
-
-
-def remove_tome(message: MessageChain, context: Context):
-    if is_tome(message, context):
-        message = MessageChain(message.content.copy())
-        message.content.remove(message.get_first(Notice))
-        if message.content and isinstance(message.content[0], Text):
-            text = message.content[0].text.lstrip()  # type: ignore
-            if not text:
-                message.content.pop(0)
-            else:
-                message.content[0] = Text(text)
-        return message
-    return message
+from avilla.standard.core.profile import Nick, Summary
 
 
 class QQAPIEventMessagePerform((m := ConnectionCollector())._):
@@ -67,8 +46,12 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = channel.message(i[0].message_id)
             message = message.exclude(Reference)
-        if event_type == "at_message_create":
-            message = remove_tome(message, context)
+        if event_type == "at_message_create" and message.content and isinstance(message.content[1], Text):
+            text = message.content[1].text.lstrip()  # type: ignore
+            if not text:
+                message.content.pop(1)
+            else:
+                message.content[1] = Text(text)
         msg = Message(
             id=raw_event["id"],
             scene=channel,
@@ -79,6 +62,18 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         )
         await cache.set(
             f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
+        )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["author"]["username"],
+                raw_event["member"].get("nick", raw_event["author"]["username"]),
+                None
+            ),
+            Summary(
+                raw_event["author"]["username"],
+                "channel member"
+            ),
         )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
@@ -92,8 +87,14 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
-        group = Selector().land("qq").group(raw_event["group_id"])
-        author = group.member(raw_event["author"]["id"])
+        if "group_openid" in raw_event:
+            group = Selector().land("qq").group(raw_event["group_openid"])
+        else:
+            group = Selector().land("qq").group(raw_event["group_id"])
+        if "member_openid" in raw_event["author"]:
+            author = group.member(raw_event["author"]["member_openid"])
+        else:
+            author = group.member(raw_event["author"]["id"])
         context = Context(
             account,
             author,
@@ -103,9 +104,17 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         )
         message = await QQAPICapability(account.staff.ext({"context": context})).deserialize(raw_event)
         reply = None
-        if i := message.get(Reference):
-            reply = group.message(i[0].message_id)
-            message = message.exclude(Reference)
+        # TODO: wait for qqapi upgrade
+        # if i := message.get(Reference):
+        #     reply = group.message(i[0].message_id)
+        #     message = message.exclude(Reference)
+        message.content.insert(0, Notice(group.member(account_route["account"])))
+        if message.content and isinstance(message.content[1], Text):
+            text = message.content[1].text.lstrip()  # type: ignore
+            if not text:
+                message.content.pop(1)
+            else:
+                message.content[1] = Text(text)
         msg = Message(
             id=raw_event["id"],
             scene=group,
@@ -129,7 +138,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["guild_id"])
+        guild = Selector().land("qq").guild(raw_event["src_guild_id"])
         author = guild.user(raw_event["author"]["id"])
         context = Context(
             account,
@@ -155,6 +164,23 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         await cache.set(
             f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
         )
+        await cache.set(
+            f"qqapi/account({account_route['account']}):{context.scene}#dms",
+            raw_event["guild_id"],
+            timedelta(minutes=5)
+        )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["author"]["username"],
+                raw_event["member"].get("nick", raw_event["author"]["username"]),
+                None
+            ),
+            Summary(
+                raw_event["author"]["username"],
+                "channel member"
+            ),
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -167,7 +193,10 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
-        friend = Selector().land("qq").friend(raw_event["author"]["id"])
+        if "user_openid" in raw_event["author"]:
+            friend = Selector().land("qq").friend(raw_event["author"]["user_openid"])
+        else:
+            friend = Selector().land("qq").friend(raw_event["author"]["id"])
         context = Context(
             account,
             friend,
@@ -180,7 +209,6 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if i := message.get(Reference):
             reply = friend.message(i[0].message_id)
             message = message.exclude(Reference)
-
         msg = Message(
             id=raw_event["id"],
             scene=friend,
@@ -280,9 +308,21 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         context = Context(
             account,
             operator,
-            channel,
+            author,
             channel,
             channel.member(account_route["account"]),
+        )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["message"]["author"]["username"],
+                raw_event["message"]["author"]["username"],
+                None
+            ),
+            Summary(
+                raw_event["message"]["author"]["username"],
+                "channel member"
+            ),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)
 
@@ -303,5 +343,17 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             author,
             author,
             account_route,
+        )
+        context._collect_metadatas(
+            author,
+            Nick(
+                raw_event["message"]["author"]["username"],
+                raw_event["message"]["author"]["username"],
+                None
+            ),
+            Summary(
+                raw_event["message"]["author"]["username"],
+                "channel member"
+            ),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)

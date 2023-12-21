@@ -29,6 +29,17 @@ from avilla.core.exceptions import TooLongMessage as TooLongMessage
 from avilla.core.exceptions import UnknownError as UnknownError
 from avilla.core.exceptions import UnknownTarget as UnknownTarget
 from avilla.core.exceptions import UnsupportedOperation as UnsupportedOperation
+from avilla.core.event import MetadataModified as MetadataModified
+from avilla.core.event import AvillaEvent as AvillaEvent
+from avilla.core.event import RelationshipEvent as RelationshipEvent
+from avilla.core.event import RelationshipCreated as RelationshipCreated
+from avilla.core.event import RelationshipDestroyed as RelationshipDestroyed
+from avilla.core.event import DirectSessionCreated as DirectSessionCreated
+from avilla.core.event import DirectSessionDestroyed as DirectSessionDestroyed
+from avilla.core.event import SceneCreated as SceneCreated
+from avilla.core.event import SceneDestroyed as SceneDestroyed
+from avilla.core.event import MemberCreated as MemberCreated
+from avilla.core.event import MemberDestroyed as MemberDestroyed
 from avilla.core.message import Message as Message
 from avilla.core.metadata import Metadata as Metadata
 from avilla.core.platform import Abstract as Abstract

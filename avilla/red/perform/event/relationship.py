@@ -4,7 +4,7 @@ from loguru import logger
 from selectolax.parser import HTMLParser
 
 from avilla.core.context import Context
-from avilla.core.event import RelationshipCreated
+from avilla.core.event import MemberCreated
 from avilla.core.selector import Selector
 from avilla.red.capability import RedCapability
 from avilla.red.collector.connection import ConnectionCollector
@@ -44,7 +44,7 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         member = group.member(str(group_data["memberUin"]))
         operator = group.member(str(group_data["adminUin"]))
         context = Context(account, member, group, group, group.member(account.route["account"]), mediums=[operator])
-        return RelationshipCreated(context)
+        return MemberCreated(context)
 
     @m.entity(RedCapability.event_callback, event_type="group::member::legacy::add::invited")
     async def member_join_invited(self, event_type: ..., raw_event: dict):
@@ -58,4 +58,4 @@ class RedEventRelationshipPerform((m := ConnectionCollector())._):
         operator = group.member(root.tags("qq")[0].attributes["jp"])  # type: ignore
         member = group.member(root.tags("qq")[1].attributes["jp"])  # type: ignore
         context = Context(account, member, group, group, group.member(account.route["account"]), mediums=[operator])
-        return RelationshipCreated(context)
+        return MemberCreated(context)

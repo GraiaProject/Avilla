@@ -85,3 +85,13 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
             role_id = str(i)
             if callable(predicate) and predicate("role", role_id) or role_id == predicate:
                 yield previous.into("land.guild").role(role_id)
+
+    @m.entity(CoreCapability.query, target="role", previous="land.guild.member")
+    async def query_guild_member_roles(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
+        user = await self.account.connection.call_http(
+            "get", f"guilds/{previous.pattern['guild']}/members/{previous.pattern['member']}", {}
+        )
+        for i in user["roles"]:
+            role_id = str(i)
+            if callable(predicate) and predicate("role", role_id) or role_id == predicate:
+                yield previous.into("land.guild").role(role_id)

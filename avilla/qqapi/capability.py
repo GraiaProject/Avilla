@@ -4,8 +4,10 @@ from typing import Any
 
 from graia.amnesia.message import Element, MessageChain
 
+from avilla.core.selector import Selector
 from avilla.core.event import AvillaEvent
 from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk.overload.target import TargetOverload
 from avilla.standard.core.application.event import AvillaLifecycleEvent
 from graia.ryanvk import Fn, PredicateOverload, SimpleOverload, TypeOverload
 
@@ -23,6 +25,11 @@ class QQAPICapability((m := ApplicationCollector())._):
 
     @Fn.complex({TypeOverload(): ["element"]})
     async def serialize_element(self, element: Any) -> str | tuple[str, Any]:
+        ...
+
+    @Fn.complex({TypeOverload(): ["target"]})
+    async def create_dms(self, target: Selector) -> Selector:
+        """主动创建私聊会话，返回临时的 Guild"""
         ...
 
     async def deserialize(self, event: dict):

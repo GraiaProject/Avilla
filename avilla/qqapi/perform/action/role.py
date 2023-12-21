@@ -204,6 +204,15 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
             "put", f"guilds/{target.pattern['guild']}/members/{member.pattern['user']}/roles/{role_id}", {}
         )
 
+    @RoleMemberCapability.add.collect(m, target="land.guild.member")
+    async def add_role_member(self, target: Selector, member: Selector) -> None:
+        role_id = target.pattern["role"]
+        if role_id == "5":
+            raise ValueError("missing target: channel")
+        await self.account.connection.call_http(
+            "put", f"guilds/{target.pattern['guild']}/members/{member.pattern['member']}/roles/{role_id}", {}
+        )
+
     @RoleMemberCapability.add.collect(m, target="land.guild.channel.member")
     async def add_role_member(self, target: Selector, member: Selector) -> None:
         role_id = target.pattern["role"]
@@ -220,6 +229,15 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
             raise ValueError("missing target: channel")
         await self.account.connection.call_http(
             "delete", f"guilds/{target.pattern['guild']}/members/{member.pattern['user']}/roles/{role_id}", {}
+        )
+
+    @RoleMemberCapability.remove.collect(m, target="land.guild.member")
+    async def remove_role_member(self, target: Selector, member: Selector) -> None:
+        role_id = target.pattern["role"]
+        if role_id == "5":
+            raise ValueError("missing target: channel")
+        await self.account.connection.call_http(
+            "delete", f"guilds/{target.pattern['guild']}/members/{member.pattern['member']}/roles/{role_id}", {}
         )
 
     @RoleMemberCapability.remove.collect(m, target="land.guild.channel.member")

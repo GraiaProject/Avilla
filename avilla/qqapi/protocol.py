@@ -88,6 +88,7 @@ def _import_performs():  # noqa: F401
     import avilla.qqapi.perform.message.serialize  # noqa: F401
 
     ## :: Action
+    import avilla.qqapi.perform.action.user  # noqa: F401
     import avilla.qqapi.perform.action.channel  # noqa: F401
     import avilla.qqapi.perform.action.guild  # noqa: F401
     import avilla.qqapi.perform.action.guild_member  # noqa: F401
@@ -128,6 +129,7 @@ class QQAPIProtocol(BaseProtocol):
             ref("avilla.protocol/qqapi::action", "guild"),
             ref("avilla.protocol/qqapi::action", "guild_member"),
             ref("avilla.protocol/qqapi::action", "role"),
+            ref("avilla.protocol/qqapi::action", "user"),
             ref("avilla.protocol/qqapi::message", "deserialize"),
             ref("avilla.protocol/qqapi::message", "serialize"),
             ref("avilla.protocol/qqapi::event", "message"),

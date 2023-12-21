@@ -21,6 +21,7 @@ from ._roles import (
     ContextMedium,
     ContextRequestSelector,
     ContextSceneSelector,
+    ContextSelfSelector,
 )
 from ._selector import ContextSelector
 
@@ -43,7 +44,7 @@ class Context:
     client: ContextClientSelector
     endpoint: ContextEndpointSelector
     scene: ContextSceneSelector
-    self: Selector
+    self: ContextSelfSelector
     mediums: list[ContextMedium]
 
     cache: ContextCache | dict[str, Any]
@@ -70,7 +71,7 @@ class Context:
         self.client = ContextClientSelector.from_selector(self, client)
         self.endpoint = ContextEndpointSelector.from_selector(self, endpoint)
         self.scene = ContextSceneSelector.from_selector(self, scene)
-        self.self = selft
+        self.self = ContextSelfSelector.from_selector(self, selft)
         self.mediums = [ContextMedium(ContextSelector.from_selector(self, medium)) for medium in mediums or []]
 
         self.cache = {"meta": prelude_metadatas or {}}

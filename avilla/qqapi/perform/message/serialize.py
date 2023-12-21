@@ -97,8 +97,8 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
 
     @m.entity(QQAPICapability.serialize_element, element=Markdown)
     async def markdown(self, element: Markdown):
-        if element.params and (slot := element.params.popitem()):
-            param = {"key": slot[0], "value": slot[1]}
+        if element.params:
+            param = [{"key": k, "values": v} for k, v in element.params.items()]
         else:
             param = None
         return "markdown", {
