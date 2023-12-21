@@ -17,6 +17,7 @@ from telegram import (
     Sticker,
     Update,
     Video,
+    VideoNote,
 )
 from telegram.constants import MessageType
 from telegram.ext import ExtBot
@@ -421,6 +422,38 @@ class MessageFragmentVideo(MessageFragment):
         )
 
 
+class MessageFragmentVideoNote(MessageFragment):
+    file: str | Path | IO[bytes] | InputFile | bytes | VideoNote
+
+    def __init__(
+        self,
+        file: str | Path | IO[bytes] | InputFile | bytes | VideoNote,
+        update: Update | None = None,
+    ):
+        super().__init__(MessageType.VIDEO_NOTE, update)
+        self.file = file
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        if message.video_note:
+            return [cls(message.video_note, update=update)]
+        raise WrongFragment
+
+    async def send(
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
+    ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
+        return (
+            await bot.send_video_note(
+                chat,
+                video_note=self.file,
+                message_thread_id=thread,
+                **params,
+            ),
+        )
+
+
 class MessageFragmentMediaGroup(MessageFragment):
     SIZE_LIMIT: Final[int] = 9
     media: list[MessageFragmentAudio | MessageFragmentDocument | MessageFragmentPhoto | MessageFragmentVideo]
@@ -546,6 +579,7 @@ PRIORITIES: dict[type[MessageFragment], int | float] = {
     MessageFragmentAudio: 1,
     MessageFragmentDocument: 1,
     MessageFragmentVideo: 1,
+    MessageFragmentVideoNote: 1,
     MessageFragmentMediaGroup: 1,
     # Text
     MessageFragmentText: float("inf"),  # Always at the end

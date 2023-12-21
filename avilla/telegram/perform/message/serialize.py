@@ -16,6 +16,7 @@ from avilla.standard.telegram.elements import (
     Sticker,
     Venue,
     Video,
+    VideoNote,
 )
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.fragments import (
@@ -31,6 +32,7 @@ from avilla.telegram.fragments import (
     MessageFragmentText,
     MessageFragmentVenue,
     MessageFragmentVideo,
+    MessageFragmentVideoNote,
 )
 from avilla.telegram.perform.resource_fetch import TelegramResourceFetchPerform
 from avilla.telegram.resource import TelegramResource
@@ -111,6 +113,21 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         else:
             data = await self.account.staff.fetch_resource(element.resource)
         return MessageFragmentVideo(cast(bytes, data), has_spoiler)
+
+    @m.entity(TelegramCapability.serialize_element, element=VideoNote)
+    async def video_note(self, element: VideoNote) -> MessageFragment:
+        resource = element.resource
+        if isinstance(resource, TelegramResource):
+            data = await TelegramResourceFetchPerform(self.account.staff).fetch_resource(resource)
+        elif isinstance(resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
+        elif isinstance(resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
+        elif isinstance(resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+        else:
+            data = await self.account.staff.fetch_resource(element.resource)
+        return MessageFragmentVideoNote(cast(bytes, data))
 
     @m.entity(TelegramCapability.serialize_element, element=Contact)
     async def contact(self, element: Contact) -> MessageFragment:

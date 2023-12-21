@@ -139,7 +139,7 @@ class Venue(Element):
         return f"[$Venue]"
 
 
-class VideoNote(Video):
+class VideoNote(CoreVideo):
     def __str__(self) -> str:
         return f"[$VideoNote]"
 
