@@ -5,7 +5,7 @@ from graia.amnesia.message import MessageChain
 
 from avilla.core import Avilla, Context, MessageReceived, Text
 from avilla.standard.core.message import MessageSent
-from avilla.standard.telegram.elements import Dice, DiceEmoji, Picture, Video, VideoNote
+from avilla.standard.telegram.elements import Dice, DiceEmoji, Picture, Video
 from avilla.standard.telegram.event import ForumTopicClosed, ForumTopicCreated
 from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
 
@@ -19,15 +19,15 @@ async def on_message_received(cx: Context, event: MessageReceived, msg: MessageC
     # print(repr(event))
     print(f"{event.message.to_selector() = }")
     await cx.scene.send_message(
-        # MessageChain(
-        #     [
-        #         # Dice(DiceEmoji.SLOT_MACHINE),
-        #         # Text("Hello, Avilla!"),
-        #         # Picture(Path("test.jpg"), has_spoiler=False),
-        #         VideoNote(Path("test.mp4")),
-        #     ]
-        # ),
-        msg,
+        MessageChain(
+            [
+                # Dice(DiceEmoji.SLOT_MACHINE),
+                Text("Hello, Avilla!"),
+                Picture(Path("test.jpg"), has_spoiler=False),
+                Video(Path("test.mp4"), has_spoiler=True),
+            ]
+        ),
+        # msg,
         reply=event.message,
     )
 

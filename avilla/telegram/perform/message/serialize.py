@@ -34,7 +34,6 @@ from avilla.telegram.fragments import (
     MessageFragmentVideo,
     MessageFragmentVideoNote,
 )
-from avilla.telegram.perform.resource_fetch import TelegramResourceFetchPerform
 from avilla.telegram.resource import TelegramResource
 
 if TYPE_CHECKING:
@@ -55,45 +54,42 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
     @m.entity(TelegramCapability.serialize_element, element=Picture)
     async def picture(self, element: Picture) -> MessageFragment:
         has_spoiler = getattr(element, "has_spoiler", False)
-        resource = element.resource
-        if isinstance(resource, TelegramResource):
-            data = await TelegramResourceFetchPerform(self.account.staff).fetch_resource(resource)
-        elif isinstance(resource, RawResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
-        elif isinstance(resource, UrlResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
-        elif isinstance(resource, LocalFileResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+        if isinstance(resource := element.resource, TelegramResource):
+            return MessageFragmentPhoto(resource.file, has_spoiler)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
         else:
             data = await self.account.staff.fetch_resource(element.resource)
         return MessageFragmentPhoto(cast(bytes, data), has_spoiler)
 
     @m.entity(TelegramCapability.serialize_element, element=Animation)
     async def animation(self, element: Animation) -> MessageFragment:
-        resource = element.resource
-        if isinstance(resource, TelegramResource):
-            data = await TelegramResourceFetchPerform(self.account.staff).fetch_resource(resource)
-        elif isinstance(resource, RawResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
-        elif isinstance(resource, UrlResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
-        elif isinstance(resource, LocalFileResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+        if isinstance(resource := element.resource, TelegramResource):
+            return MessageFragmentAnimation(resource.file, element.has_spoiler)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
         else:
             data = await self.account.staff.fetch_resource(element.resource)
         return MessageFragmentAnimation(cast(bytes, data), element.has_spoiler)
 
     @m.entity(TelegramCapability.serialize_element, element=Audio)
     async def audio(self, element: Audio) -> MessageFragment:
-        resource = element.resource
-        if isinstance(resource, TelegramResource):
-            data = await TelegramResourceFetchPerform(self.account.staff).fetch_resource(resource)
-        elif isinstance(resource, RawResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
-        elif isinstance(resource, UrlResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
-        elif isinstance(resource, LocalFileResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+        if isinstance(resource := element.resource, TelegramResource):
+            return MessageFragmentAudio(resource.file)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
         else:
             data = await self.account.staff.fetch_resource(element.resource)
         return MessageFragmentAudio(cast(bytes, data))
@@ -101,15 +97,14 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
     @m.entity(TelegramCapability.serialize_element, element=Video)
     async def video(self, element: Video) -> MessageFragment:
         has_spoiler = getattr(element, "has_spoiler", False)
-        resource = element.resource
-        if isinstance(resource, TelegramResource):
-            data = await TelegramResourceFetchPerform(self.account.staff).fetch_resource(resource)
-        elif isinstance(resource, RawResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
-        elif isinstance(resource, UrlResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
-        elif isinstance(resource, LocalFileResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+        if isinstance(resource := element.resource, TelegramResource):
+            return MessageFragmentVideo(resource.file, has_spoiler)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
         else:
             data = await self.account.staff.fetch_resource(element.resource)
         return MessageFragmentVideo(cast(bytes, data), has_spoiler)
@@ -144,16 +139,15 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         return MessageFragmentDice(element.emoji.value)
 
     @m.entity(TelegramCapability.serialize_element, element=Document)
-    async def document(self, element: Document) -> MessageFragment:
-        resource = element.resource
-        if isinstance(resource, TelegramResource):
-            data = await TelegramResourceFetchPerform(self.account.staff).fetch_resource(resource)
-        elif isinstance(resource, RawResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
-        elif isinstance(resource, UrlResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
-        elif isinstance(resource, LocalFileResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+    async def audio(self, element: Document) -> MessageFragment:
+        if isinstance(resource := element.resource, TelegramResource):
+            return MessageFragmentDocument(resource.file)
+        if isinstance(element.resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(element.resource)
+        elif isinstance(element.resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(element.resource)
+        elif isinstance(element.resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(element.resource)
         else:
             data = await self.account.staff.fetch_resource(element.resource)
         return MessageFragmentDocument(cast(bytes, data))
@@ -163,19 +157,8 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         return MessageFragmentLocation(element.latitude, element.longitude)
 
     @m.entity(TelegramCapability.serialize_element, element=Sticker)
-    async def sticker(self, element: Sticker) -> MessageFragment:
-        resource = element.resource
-        if isinstance(resource, TelegramResource):
-            data = await TelegramResourceFetchPerform(self.account.staff).fetch_resource(resource)
-        elif isinstance(resource, RawResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
-        elif isinstance(resource, UrlResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
-        elif isinstance(resource, LocalFileResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
-        else:
-            data = await self.account.staff.fetch_resource(element.resource)
-        return MessageFragmentSticker(cast(bytes, data))
+    async def audio(self, element: Sticker) -> MessageFragment:
+        return MessageFragmentSticker(element.resource.file)
 
     @m.entity(TelegramCapability.serialize_element, element=Venue)
     async def venue(self, element: Venue) -> MessageFragment:
