@@ -87,23 +87,6 @@ class Contact(Element):
         return "[$Contact]"
 
 
-class Document(Element):
-    resource: Resource[bytes] | Path | str
-
-    def __init__(self, resource: Resource[bytes] | Path | str):
-        if isinstance(resource, Path):
-            resource = LocalFileResource(resource)
-        elif isinstance(resource, str):
-            resource = LocalFileResource(Path(resource))
-        self.resource = resource
-
-    def __str__(self) -> str:
-        return "[$Document]"
-
-    def __repr__(self):
-        return f"[$Document:resource={self.resource.to_selector()}]"
-
-
 @dataclass
 class Location(Element):
     latitude: float
