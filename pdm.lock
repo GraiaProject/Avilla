@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:d69bf7a8cdd632c96bbe0df30d5cc39125855067f28e8555acdda3d98fb8d850"
+content_hash = "sha256:ce171db2a31348270a0d3baa6f7407f3db0c72aa177494a472a10a3a313056eb"
 
 [[package]]
 name = "aiohttp"
@@ -668,19 +668,19 @@ files = [
 
 [[package]]
 name = "httpx"
-version = "0.25.1"
+version = "0.25.2"
 requires_python = ">=3.8"
 summary = "The next generation HTTP client."
 dependencies = [
     "anyio",
     "certifi",
-    "httpcore",
+    "httpcore==1.*",
     "idna",
     "sniffio",
 ]
 files = [
-    {file = "httpx-0.25.1-py3-none-any.whl", hash = "sha256:fec7d6cc5c27c578a391f7e87b9aa7d3d8fbcd034f6399f9f79b45bcc12a866a"},
-    {file = "httpx-0.25.1.tar.gz", hash = "sha256:ffd96d5cf901e63863d9f1b4b6807861dbea4d301613415d9e6e57ead15fc5d0"},
+    {file = "httpx-0.25.2-py3-none-any.whl", hash = "sha256:a05d3d052d9b2dfce0e3896636467f8a5342fb2b902c819428e1ac65413ca118"},
+    {file = "httpx-0.25.2.tar.gz", hash = "sha256:8b8fcaa0c8ea7b05edd69a094e63a2094c4efcb48129fb757361bc423c0ad9e8"},
 ]
 
 [[package]]
@@ -1406,15 +1406,15 @@ files = [
 
 [[package]]
 name = "python-telegram-bot"
-version = "20.6"
+version = "20.7"
 requires_python = ">=3.8"
 summary = "We have made you a wrapper you can't refuse"
 dependencies = [
-    "httpx~=0.25.0",
+    "httpx~=0.25.2",
 ]
 files = [
-    {file = "python-telegram-bot-20.6.tar.gz", hash = "sha256:c6951dc6b9368d80a17b5d0496ced39bca2c9bafab06cbfdae6226493d8b06fe"},
-    {file = "python_telegram_bot-20.6-py3-none-any.whl", hash = "sha256:be8ebda350fd0c69c3ebdd7ce87b1e6f8b3fb1d218a193dd821d1d6285b9f649"},
+    {file = "python-telegram-bot-20.7.tar.gz", hash = "sha256:4f146c39de5f5e0b3723c2abedaf78046ebd30a6a49d2281ee4b3af5eb116b68"},
+    {file = "python_telegram_bot-20.7-py3-none-any.whl", hash = "sha256:462326c65671c8c39e76c8c96756ee918be6797d225f8db84d2ec0f883383b8c"},
 ]
 
 [[package]]
