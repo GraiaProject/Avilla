@@ -7,10 +7,15 @@ from typing import Literal, overload
 
 from graia.amnesia.message.element import Element
 
-from avilla.core import Audio, LocalFileResource
-from avilla.core import Picture as CorePicture
-from avilla.core import Resource
-from avilla.core import Video as CoreVideo
+from avilla.core.elements import Audio
+from avilla.core.elements import Picture as CorePicture
+from avilla.core.elements import Reference as CoreReference
+from avilla.core.elements import Video as CoreVideo
+from avilla.core.resource import LocalFileResource, Resource
+
+
+class Reference(CoreReference):
+    original: ...
 
 
 class Picture(CorePicture):
