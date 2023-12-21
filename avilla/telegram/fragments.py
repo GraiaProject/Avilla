@@ -15,6 +15,7 @@ from telegram import (
     InputMediaPhoto,
     InputMediaVideo,
     Message,
+    MessageEntity,
     PhotoSize,
     Sticker,
     Update,
@@ -34,6 +35,7 @@ class _FragmentType(str, Enum):
     """Internal use only"""
 
     REFERENCE = "reference"
+    ENTITY = "entity"
 
 
 class MessageFragment:
@@ -108,7 +110,12 @@ class MessageFragment:
                 if frag := sub.decompose(message, update=update):
                     fragments.extend(frag)
         if message.caption:
-            fragments.append(MessageFragmentText(message.caption, update=update))
+            if message.caption_entities:
+                fragments.extend(
+                    MessageFragmentEntity.extract(message.caption, message.caption_entities, update=update)
+                )
+            else:
+                fragments.append(MessageFragmentText(message.caption, update=update))
         return fragments
 
     def hook(self, fragments: list[Self], params: dict[str, ...] | None = None):
@@ -148,6 +155,8 @@ class MessageFragmentText(MessageFragment):
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         if message.text:
+            if message.entities:
+                return MessageFragmentEntity.extract(message.text, message.entities, update)
             return [cls(message.text, update=update)]
         raise WrongFragment
 
@@ -636,6 +645,56 @@ class MessageFragmentVoice(MessageFragment):
         if not params:
             params = {}
         return (await bot.send_voice(chat, voice=self.file, caption=self.caption, message_thread_id=thread, **params),)
+
+
+class MessageFragmentEntity(MessageFragment):
+    entity: MessageEntity
+    text: str
+
+    @property
+    def type(self):
+        return f"entity.{self.entity.type}"
+
+    @type.setter
+    def type(self, value):
+        return
+
+    def __init__(
+        self,
+        text: str,
+        raw: MessageEntity,
+        update: Update | None = None,
+    ):
+        super().__init__(_FragmentType.ENTITY, update)
+        self.text = text
+        self.entity = raw
+
+    @classmethod
+    def extract(
+        cls, text: str, entities: tuple[MessageEntity, ...], update: Update | None = None
+    ) -> list[Self | MessageFragmentText]:
+        result = []
+        remaining = text
+        offset = 0
+        for entity in entities:
+            if left := remaining[: entity.offset - offset]:
+                result.append(MessageFragmentText(left, update))
+            result.append(
+                MessageFragmentEntity(
+                    remaining[entity.offset - offset : entity.offset - offset + entity.length],
+                    entity,
+                    update,
+                )
+            )
+            remaining = remaining[entity.offset - offset + entity.length :]
+            offset = entity.offset + entity.length
+        if remaining:
+            result.append(MessageFragmentText(remaining, update))
+        return result
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        raise WrongFragment
 
 
 PRIORITIES: dict[type[MessageFragment], int | float] = {

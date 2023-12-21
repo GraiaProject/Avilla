@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
-from typing import Literal, overload
+from typing import Final
 
 from graia.amnesia.message.element import Element
 
@@ -200,35 +200,89 @@ class MessageEntityType(str, Enum):
     CUSTOM_EMOJI = "custom_emoji"
 
 
+@dataclass
 class Entity(Element):
-    text: str = None
-    language: str = None
-    url: str = None
-    user: str = None
-    custom_emoji_id: str = None
+    offset: int
+    length: int
+    text: str
 
-    @overload
-    def __init__(self, kind: Literal[MessageEntityType.PRE], text: str, language: str):
-        ...
+    def __str__(self):
+        return f"[${self.__class__.__name__}]"
 
-    @overload
-    def __init__(self, kind: Literal[MessageEntityType.TEXT_LINK], text: str, url: str):
-        ...
+    def __repr__(self):
+        return f"[${self.__class__.__name__}:offset={self.offset};length={self.length};text={self.text}]"
 
-    @overload
-    def __init__(self, kind: Literal[MessageEntityType.TEXT_MENTION], text: str, user: ...):
-        ...
 
-    @overload
-    def __init__(self, kind: Literal[MessageEntityType.CUSTOM_EMOJI], text: str, custom_emoji_id: str):
-        ...
+@dataclass
+class EntityHashTag(Entity):
+    type: Final[str] = MessageEntityType.HASH_TAG
 
-    @overload
-    def __init__(self, kind: MessageEntityType, text: str):
-        ...
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+@dataclass
+class EntityCashTag(Entity):
+    type: Final[str] = MessageEntityType.CASHTAG
+
+
+@dataclass
+class EntityPhoneNumber(Entity):
+    type: Final[str] = MessageEntityType.PHONE_NUMBER
+
+
+@dataclass
+class EntityBotCommand(Entity):
+    type: Final[str] = MessageEntityType.BOT_COMMAND
+
+
+@dataclass
+class EntityUrl(Entity):
+    type: Final[str] = MessageEntityType.URL
+
+
+@dataclass
+class EntityEmail(Entity):
+    type: Final[str] = MessageEntityType.EMAIL
+
+
+@dataclass
+class EntityBold(Entity):
+    type: Final[str] = MessageEntityType.BOLD
+
+
+@dataclass
+class EntityItalic(Entity):
+    type: Final[str] = MessageEntityType.ITALIC
+
+
+@dataclass
+class EntityCode(Entity):
+    type: Final[str] = MessageEntityType.CODE
+
+
+@dataclass
+class EntityPre(Entity):
+    language: str
+    type: Final[str] = MessageEntityType.PRE
+
+
+@dataclass
+class EntityTextLink(Entity):
+    url: str
+    type: Final[str] = MessageEntityType.TEXT_LINK
+
+
+@dataclass
+class EntityUnderline(Entity):
+    type: Final[str] = MessageEntityType.UNDERLINE
+
+
+@dataclass
+class EntityStrikeThrough(Entity):
+    type: Final[str] = MessageEntityType.STRIKETHROUGH
+
+
+@dataclass
+class EntitySpoiler(Entity):
+    type: Final[str] = MessageEntityType.SPOILER
 
 
 class Invoice(Element):

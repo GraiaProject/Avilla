@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from avilla.core import RawResource
-from avilla.core.elements import Audio, File, Text
+from avilla.core.elements import Audio, Face, File, Notice, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.standard.telegram.elements import (
@@ -11,6 +11,7 @@ from avilla.standard.telegram.elements import (
     Contact,
     Dice,
     DiceEmoji,
+    Entity,
     Location,
     Picture,
     Reference,
@@ -27,6 +28,7 @@ from avilla.telegram.fragments import (
     MessageFragmentContact,
     MessageFragmentDice,
     MessageFragmentDocument,
+    MessageFragmentEntity,
     MessageFragmentLocation,
     MessageFragmentPhoto,
     MessageFragmentReference,
@@ -241,3 +243,36 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
             )
             return Voice(resource, duration=voice.duration)
         return Voice(RawResource(element.file))
+
+    @m.entity(TelegramCapability.deserialize_element, element="entity.hash_tag")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.cash_tag")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.phone_number")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.bot_command")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.url")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.email")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.bold")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.italic")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.code")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.pre")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.text_link")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.underline")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.strikethrough")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.spoiler")
+    async def entity(self, element: MessageFragmentEntity) -> Entity:
+        for subclass in Entity.__subclasses__():
+            if subclass.__name__.lstrip("Entity").lower() == element.entity.type.replace("_", ""):
+                params = {"offset": element.entity.offset, "length": element.entity.length, "text": element.text}
+                params |= element.entity.to_dict()
+                return subclass(**params)  # type: ignore
+
+    @m.entity(TelegramCapability.deserialize_element, element="entity.mention")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.text_mention")
+    async def entity_mention(self, element: MessageFragmentEntity) -> Notice:
+        target = Selector().land("telegram").user(element.text[1:])
+        if getattr(element.entity, "user", None) is not None:
+            target = target.id(element.entity.user.id)
+        return Notice(target, display=element.text)
+
+    @m.entity(TelegramCapability.deserialize_element, element="entity.custom_emoji")
+    async def entity_custom_emoji(self, element: MessageFragmentEntity) -> Face:
+        return Face(element.entity.custom_emoji_id, element.text)
