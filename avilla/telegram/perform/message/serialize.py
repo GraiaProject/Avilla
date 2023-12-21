@@ -4,13 +4,12 @@ from typing import TYPE_CHECKING, cast
 
 from avilla.core import LocalFileResource, RawResource, UrlResource
 from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
-from avilla.core.elements import Audio, Text
+from avilla.core.elements import Audio, File, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.standard.telegram.elements import (
     Animation,
     Contact,
     Dice,
-    Document,
     Location,
     Picture,
     Sticker,
@@ -129,8 +128,8 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
     async def dice(self, element: Dice) -> MessageFragment:
         return MessageFragmentDice(element.emoji.value)
 
-    @m.entity(TelegramCapability.serialize_element, element=Document)
-    async def document(self, element: Document) -> MessageFragment:
+    @m.entity(TelegramCapability.serialize_element, element=File)
+    async def document(self, element: File) -> MessageFragment:
         resource = element.resource
         if isinstance(resource, TelegramResource):
             return MessageFragmentDocument(resource.media)

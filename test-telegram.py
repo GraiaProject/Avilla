@@ -17,19 +17,19 @@ avilla.apply_protocols(TelegramProtocol().configure(config))
 @avilla.listen(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived, msg: MessageChain):
     # print(repr(event))
-    print(f"{event.message.to_selector() = }")
+    print(f"{msg = }")
     await cx.scene.send_message(
-        MessageChain(
-            [
-                # Dice(DiceEmoji.SLOT_MACHINE),
-                # Picture(Path("test.jpg"), has_spoiler=False),
-                # Text("Hello, Avilla!"),
-                # Video(Path("test.mp4"), has_spoiler=True),
-                # Text("Hello, Avilla!"),
-                Voice(Path("test.mp3")),
-            ]
-        ),
-        # msg,
+        # MessageChain(
+        #     [
+        #         # Dice(DiceEmoji.SLOT_MACHINE),
+        #         # Picture(Path("test.jpg"), has_spoiler=False),
+        #         # Text("Hello, Avilla!"),
+        #         # Video(Path("test.mp4"), has_spoiler=True),
+        #         # Text("Hello, Avilla!"),
+        #         Voice(Path("test.mp3")),
+        #     ]
+        # ),
+        msg,
         reply=event.message,
     )
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from avilla.core import RawResource
-from avilla.core.elements import Audio, Text
+from avilla.core.elements import Audio, File, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.standard.telegram.elements import (
@@ -11,7 +11,6 @@ from avilla.standard.telegram.elements import (
     Contact,
     Dice,
     DiceEmoji,
-    Document,
     Location,
     Picture,
     Sticker,
@@ -141,7 +140,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         return Dice(DiceEmoji(element.emoji), element.value)
 
     @m.entity(TelegramCapability.deserialize_element, element="document")
-    async def document(self, element: MessageFragmentDocument) -> Document:
+    async def document(self, element: MessageFragmentDocument) -> File:
         if element.update:
             document = element.update.message.document
             file = await document.get_file()
@@ -156,8 +155,8 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
                 element.update.message.document,
                 (element.update.message.document.thumbnail,),
             )
-            return Document(resource)
-        return Document(RawResource(element.file))
+            return File(resource)
+        return File(RawResource(element.file))
 
     @m.entity(TelegramCapability.deserialize_element, element="location")
     async def location(self, element: MessageFragmentLocation) -> Location:
