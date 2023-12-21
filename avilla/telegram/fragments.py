@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from pathlib import Path
 from typing import IO
 
@@ -18,6 +19,7 @@ from telegram import (
     Update,
     Video,
     VideoNote,
+    Voice,
 )
 from telegram.constants import MessageType
 from telegram.ext import ExtBot
@@ -49,58 +51,55 @@ class MessageFragment:
 
     @classmethod
     def compose(cls, *fragments: Self) -> list[Self]:
+        text_type = (MessageFragmentText,)
+
+        mapping = {
+            MessageFragmentPhoto: MessageFragmentMediaGroup,
+            MessageFragmentAudio: MessageFragmentAudioGroup,
+            MessageFragmentDocument: MessageFragmentMediaGroup,
+            MessageFragmentVideo: MessageFragmentMediaGroup,
+        }
+
         composed = []
         for fragment in fragments:
-            if not composed or not isinstance(
-                fragment,
-                (
-                    MessageFragmentPhoto,
-                    MessageFragmentAudio,
-                    MessageFragmentDocument,
-                    MessageFragmentVideo,
-                    MessageFragmentText,
-                ),
-            ):
+            if not composed or not isinstance(fragment, tuple(mapping.keys()) + text_type):
                 composed.append(fragment)
-            else:
-                last_fragment = composed[-1]
-                if isinstance(
-                    fragment,
-                    (MessageFragmentPhoto, MessageFragmentAudio, MessageFragmentDocument, MessageFragmentVideo),
-                ):
-                    if isinstance(last_fragment, (MessageFragmentPhoto, MessageFragmentAudio, MessageFragmentDocument)):
-                        composed[-1] = MessageFragmentMediaGroup([last_fragment, fragment])
-                    elif (
-                        isinstance(last_fragment, MessageFragmentMediaGroup)
-                        and len(last_fragment.media) < MessageFragmentMediaGroup.SIZE_LIMIT
-                    ):
-                        last_fragment.media.append(fragment)
-                    else:
-                        composed.append(MessageFragmentMediaGroup([fragment]))
-                elif isinstance(fragment, MessageFragmentText) and last_fragment.type == MessageType.TEXT:
+                continue
+            last_fragment = composed[-1]
+            if isinstance(fragment, text_type):
+                if last_fragment.type == MessageType.TEXT:
                     last_fragment.text += fragment.text
-                elif isinstance(
-                    last_fragment,
-                    (
-                        MessageFragmentPhoto,
-                        MessageFragmentAudio,
-                        MessageFragmentDocument,
-                        MessageFragmentVideo,
-                        MessageFragmentMediaGroup,
-                    ),
-                ):
+                elif getattr(last_fragment, "caption", -1) != -1:
                     last_fragment.caption = (last_fragment.caption or "") + fragment.text
+                else:
+                    composed.append(fragment)
+            elif isinstance(last_fragment, tuple(set(mapping.values()))):
+                if (
+                    type(last_fragment) is mapping[type(fragment)]
+                    and len(last_fragment.media) < last_fragment.SIZE_LIMIT
+                ):
+                    last_fragment.media.append(fragment)
+                    last_fragment.caption = (last_fragment.caption or "") + (fragment.caption or "") or None
+                else:
+                    composed.append(fragment)
+            elif mapping.get(type(last_fragment)) == mapping[type(fragment)]:
+                pop = composed.pop()
+                composed.append(
+                    mapping[type(fragment)](
+                        media=[pop, fragment], caption=(pop.caption or "") + (fragment.caption or "") or None
+                    )
+                )
+            else:
+                composed.append(fragment)
         return composed
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         fragments = []
         for sub in cls.__subclasses__():
-            try:
+            with suppress(WrongFragment):
                 if frag := sub.decompose(message, update=update):
                     fragments.extend(frag)
-            except WrongFragment:
-                pass
         if message.caption:
             fragments.append(MessageFragmentText(message.caption, update=update))
         return fragments
@@ -175,12 +174,78 @@ class MessageFragmentPhoto(MessageFragment):
     ) -> tuple[Message, ...]:
         if not params:
             params = {}
-        if not params:
-            params = {}
         return (
             await bot.send_photo(
                 chat,
                 photo=self.file,
+                caption=self.caption,
+                message_thread_id=thread,
+                has_spoiler=self.has_spoiler,
+                **params,
+            ),
+        )
+
+
+class MessageFragmentAudio(MessageFragment):
+    file: str | Path | IO[bytes] | InputFile | bytes | Audio
+    caption: str | None
+
+    def __init__(
+        self,
+        file: str | Path | IO[bytes] | InputFile | bytes | Audio,
+        caption: str | None = None,
+        update: Update | None = None,
+    ):
+        super().__init__(MessageType.AUDIO, update)
+        self.file = file
+        self.caption = caption
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        if message.audio:
+            return [cls(message.audio, update=update)]
+        raise WrongFragment
+
+    async def send(
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
+    ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
+        return (await bot.send_audio(chat, audio=self.file, caption=self.caption, message_thread_id=thread, **params),)
+
+
+class MessageFragmentVideo(MessageFragment):
+    file: str | Path | IO[bytes] | InputFile | bytes | Video
+    has_spoiler: bool
+    caption: str | None
+
+    def __init__(
+        self,
+        file: str | Path | IO[bytes] | InputFile | bytes | Video,
+        has_spoiler: bool,
+        caption: str | None = None,
+        update: Update | None = None,
+    ):
+        super().__init__(MessageType.VIDEO, update)
+        self.file = file
+        self.has_spoiler = has_spoiler
+        self.caption = caption
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        if message.video:
+            return [cls(message.video, has_spoiler=message.has_media_spoiler, update=update)]
+        raise WrongFragment
+
+    async def send(
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
+    ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
+        return (
+            await bot.send_video(
+                chat,
+                video=self.file,
                 caption=self.caption,
                 message_thread_id=thread,
                 has_spoiler=self.has_spoiler,
@@ -219,27 +284,6 @@ class MessageFragmentAnimation(MessageFragment):
                 chat, animation=self.file, message_thread_id=thread, has_spoiler=self.has_spoiler, **params
             ),
         )
-
-
-class MessageFragmentAudio(MessageFragment):
-    file: str | Path | IO[bytes] | InputFile | bytes | Audio
-
-    def __init__(self, file: str | Path | IO[bytes] | InputFile | bytes | Audio, update: Update | None = None):
-        super().__init__(MessageType.AUDIO, update)
-        self.file = file
-
-    @classmethod
-    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        if message.audio:
-            return [cls(message.audio, update=update)]
-        raise WrongFragment
-
-    async def send(
-        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
-    ) -> tuple[Message, ...]:
-        if not params:
-            params = {}
-        return (await bot.send_audio(chat, audio=self.file, message_thread_id=thread, **params),)
 
 
 class MessageFragmentContact(MessageFragment):
@@ -382,86 +426,18 @@ class MessageFragmentLocation(MessageFragment):
         )
 
 
-class MessageFragmentVideo(MessageFragment):
-    file: str | Path | IO[bytes] | InputFile | bytes | Video
-    has_spoiler: bool
-    caption: str | None
-
-    def __init__(
-        self,
-        file: str | Path | IO[bytes] | InputFile | bytes | Video,
-        has_spoiler: bool,
-        caption: str | None = None,
-        update: Update | None = None,
-    ):
-        super().__init__(MessageType.VIDEO, update)
-        self.file = file
-        self.has_spoiler = has_spoiler
-        self.caption = caption
-
-    @classmethod
-    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        if message.video:
-            return [cls(message.video, has_spoiler=message.has_media_spoiler, update=update)]
-        raise WrongFragment
-
-    async def send(
-        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
-    ) -> tuple[Message, ...]:
-        if not params:
-            params = {}
-        return (
-            await bot.send_video(
-                chat,
-                video=self.file,
-                caption=self.caption,
-                message_thread_id=thread,
-                has_spoiler=self.has_spoiler,
-                **params,
-            ),
-        )
-
-
-class MessageFragmentVideoNote(MessageFragment):
-    file: str | Path | IO[bytes] | InputFile | bytes | VideoNote
-
-    def __init__(
-        self,
-        file: str | Path | IO[bytes] | InputFile | bytes | VideoNote,
-        update: Update | None = None,
-    ):
-        super().__init__(MessageType.VIDEO_NOTE, update)
-        self.file = file
-
-    @classmethod
-    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
-        if message.video_note:
-            return [cls(message.video_note, update=update)]
-        raise WrongFragment
-
-    async def send(
-        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
-    ) -> tuple[Message, ...]:
-        if not params:
-            params = {}
-        return (
-            await bot.send_video_note(
-                chat,
-                video_note=self.file,
-                message_thread_id=thread,
-                **params,
-            ),
-        )
-
-
-class MessageFragmentMediaGroup(MessageFragment):
+class MessageFragmentGroup(MessageFragment):
     SIZE_LIMIT: Final[int] = 9
-    media: list[MessageFragmentAudio | MessageFragmentDocument | MessageFragmentPhoto | MessageFragmentVideo]
+    media: list[MessageFragment]
+
+
+class MessageFragmentMediaGroup(MessageFragmentGroup):
+    media: list[MessageFragmentDocument | MessageFragmentPhoto | MessageFragmentVideo]
     caption: str | None
 
     def __init__(
         self,
-        media: list[MessageFragmentAudio | MessageFragmentDocument | MessageFragmentPhoto | MessageFragmentVideo],
+        media: list[MessageFragmentDocument | MessageFragmentPhoto | MessageFragmentVideo],
         caption: str | None = None,
         update: Update | None = None,
     ):
@@ -479,15 +455,40 @@ class MessageFragmentMediaGroup(MessageFragment):
     ) -> tuple[Message, ...]:
         if not params:
             params = {}
-        media = []
-        cord = {
-            "photo": InputMediaPhoto,
-            "audio": InputMediaAudio,
-            "document": InputMediaDocument,
-            "video": InputMediaVideo,
+        mapping = {
+            MessageType.PHOTO: InputMediaPhoto,
+            MessageType.DOCUMENT: InputMediaDocument,
+            MessageType.VIDEO: InputMediaVideo,
         }
-        for m in self.media:
-            media.append(cord[m.type](m.file, has_spoiler=m.has_spoiler))  # Captions should be discarded
+        media = [mapping[m.type](m.file, has_spoiler=m.has_spoiler) for m in self.media]  # Captions should be discarded
+        return await bot.send_media_group(chat, media=media, caption=self.caption, message_thread_id=thread, **params)
+
+
+class MessageFragmentAudioGroup(MessageFragmentGroup):
+    media: list[MessageFragmentAudio]
+    caption: str | None
+
+    def __init__(
+        self,
+        media: list[MessageFragmentAudio],
+        caption: str | None = None,
+        update: Update | None = None,
+    ):
+        super().__init__(None, update)
+        self.media = media
+        self.caption = caption
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        # Media Group is not meant to be decomposed, since it's already decomposed upon receiving
+        raise WrongFragment
+
+    async def send(
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
+    ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
+        media = [InputMediaAudio(m.file) for m in self.media]
         return await bot.send_media_group(chat, media=media, caption=self.caption, message_thread_id=thread, **params)
 
 
@@ -564,6 +565,66 @@ class MessageFragmentVenue(MessageFragment):
         )
 
 
+class MessageFragmentVideoNote(MessageFragment):
+    file: str | Path | IO[bytes] | InputFile | bytes | VideoNote
+
+    def __init__(
+        self,
+        file: str | Path | IO[bytes] | InputFile | bytes | VideoNote,
+        update: Update | None = None,
+    ):
+        super().__init__(MessageType.VIDEO_NOTE, update)
+        self.file = file
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        if message.video_note:
+            return [cls(message.video_note, update=update)]
+        raise WrongFragment
+
+    async def send(
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
+    ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
+        return (
+            await bot.send_video_note(
+                chat,
+                video_note=self.file,
+                message_thread_id=thread,
+                **params,
+            ),
+        )
+
+
+class MessageFragmentVoice(MessageFragment):
+    file: str | Path | IO[bytes] | InputFile | bytes | Voice
+    caption: str | None
+
+    def __init__(
+        self,
+        file: str | Path | IO[bytes] | InputFile | bytes | Voice,
+        caption: str | None = None,
+        update: Update | None = None,
+    ):
+        super().__init__(MessageType.VOICE, update)
+        self.file = file
+        self.caption = caption
+
+    @classmethod
+    def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        if message.voice:
+            return [cls(message.voice, update=update)]
+        raise WrongFragment
+
+    async def send(
+        self, bot: ExtBot, chat: int, /, thread: int | None = None, params: dict[str, ...] | None = None
+    ) -> tuple[Message, ...]:
+        if not params:
+            params = {}
+        return (await bot.send_voice(chat, voice=self.file, caption=self.caption, message_thread_id=thread, **params),)
+
+
 PRIORITIES: dict[type[MessageFragment], int | float] = {
     # Reply Hook (Non-telegram standard)
     MessageFragmentReply: -1,  # Anywhere is fine
@@ -576,11 +637,15 @@ PRIORITIES: dict[type[MessageFragment], int | float] = {
     MessageFragmentVenue: 0,
     # Media Group
     MessageFragmentPhoto: 1,
-    MessageFragmentAudio: 1,
     MessageFragmentDocument: 1,
     MessageFragmentVideo: 1,
     MessageFragmentVideoNote: 1,
+    MessageFragmentVoice: 1,
+    MessageFragmentGroup: 1,
     MessageFragmentMediaGroup: 1,
+    # Audio Group
+    MessageFragmentAudio: 2,
+    MessageFragmentAudioGroup: 2,
     # Text
     MessageFragmentText: float("inf"),  # Always at the end
 }

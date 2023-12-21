@@ -17,6 +17,7 @@ from avilla.standard.telegram.elements import (
     Venue,
     Video,
     VideoNote,
+    Voice,
 )
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.fragments import (
@@ -33,6 +34,7 @@ from avilla.telegram.fragments import (
     MessageFragmentVenue,
     MessageFragmentVideo,
     MessageFragmentVideoNote,
+    MessageFragmentVoice,
 )
 from avilla.telegram.resource import TelegramResource
 
@@ -67,21 +69,6 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
             data = await self.account.staff.fetch_resource(resource)
         return MessageFragmentPhoto(cast(bytes, data), has_spoiler)
 
-    @m.entity(TelegramCapability.serialize_element, element=Animation)
-    async def animation(self, element: Animation) -> MessageFragment:
-        resource = element.resource
-        if isinstance(resource, TelegramResource):
-            return MessageFragmentAnimation(resource.media, element.has_spoiler)
-        if isinstance(resource, RawResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
-        elif isinstance(resource, UrlResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
-        elif isinstance(resource, LocalFileResource):
-            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
-        else:
-            data = await self.account.staff.fetch_resource(resource)
-        return MessageFragmentAnimation(cast(bytes, data), element.has_spoiler)
-
     @m.entity(TelegramCapability.serialize_element, element=Audio)
     async def audio(self, element: Audio) -> MessageFragment:
         resource = element.resource
@@ -112,6 +99,21 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         else:
             data = await self.account.staff.fetch_resource(resource)
         return MessageFragmentVideo(cast(bytes, data), has_spoiler)
+
+    @m.entity(TelegramCapability.serialize_element, element=Animation)
+    async def animation(self, element: Animation) -> MessageFragment:
+        resource = element.resource
+        if isinstance(resource, TelegramResource):
+            return MessageFragmentAnimation(resource.media, element.has_spoiler)
+        if isinstance(resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
+        elif isinstance(resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
+        elif isinstance(resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+        else:
+            data = await self.account.staff.fetch_resource(resource)
+        return MessageFragmentAnimation(cast(bytes, data), element.has_spoiler)
 
     @m.entity(TelegramCapability.serialize_element, element=Contact)
     async def contact(self, element: Contact) -> MessageFragment:
@@ -184,3 +186,18 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         else:
             data = await self.account.staff.fetch_resource(resource)
         return MessageFragmentVideoNote(cast(bytes, data))
+
+    @m.entity(TelegramCapability.serialize_element, element=Voice)
+    async def voice(self, element: Voice) -> MessageFragment:
+        resource = element.resource
+        if isinstance(resource, TelegramResource):
+            return MessageFragmentVoice(resource.media)
+        elif isinstance(resource, RawResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_raw(resource)
+        elif isinstance(resource, UrlResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_url(resource)
+        elif isinstance(resource, LocalFileResource):
+            data = await CoreResourceFetchPerform(self.account.staff).fetch_localfile(resource)
+        else:
+            data = await self.account.staff.fetch_resource(resource)
+        return MessageFragmentVoice(cast(bytes, data))

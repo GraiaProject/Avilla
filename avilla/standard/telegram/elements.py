@@ -69,7 +69,7 @@ class Animation(Element):
         self.has_spoiler = has_spoiler
 
     def __str__(self) -> str:
-        return f"[$Animation]"
+        return "[$Animation]"
 
     def __repr__(self):
         return f"[$Animation:resource={self.resource.to_selector()};has_spoiler={self.has_spoiler}]"
@@ -84,7 +84,7 @@ class Contact(Element):
     vcard: str | None = None
 
     def __str__(self) -> str:
-        return f"[$Contact]"
+        return "[$Contact]"
 
 
 class Document(Element):
@@ -98,7 +98,7 @@ class Document(Element):
         self.resource = resource
 
     def __str__(self) -> str:
-        return f"[$Document]"
+        return "[$Document]"
 
     def __repr__(self):
         return f"[$Document:resource={self.resource.to_selector()}]"
@@ -110,7 +110,7 @@ class Location(Element):
     longitude: float
 
     def __str__(self) -> str:
-        return f"[$Location]"
+        return "[$Location]"
 
 
 @dataclass
@@ -122,7 +122,7 @@ class Sticker(Element):
     is_video: bool = None
 
     def __str__(self) -> str:
-        return f"[$Sticker]"
+        return "[$Sticker]"
 
     def __repr__(self):
         return f"[$Sticker:resource={self.resource.to_selector()}]"
@@ -136,17 +136,17 @@ class Venue(Element):
     address: str
 
     def __str__(self) -> str:
-        return f"[$Venue]"
+        return "[$Venue]"
 
 
 class VideoNote(CoreVideo):
     def __str__(self) -> str:
-        return f"[$VideoNote]"
+        return "[$VideoNote]"
 
 
 class Voice(Audio):
     def __str__(self) -> str:
-        return f"[$Voice]"
+        return "[$Voice]"
 
 
 class DiceEmoji(str, Enum):

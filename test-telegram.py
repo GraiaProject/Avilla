@@ -3,13 +3,13 @@ from pathlib import Path
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core import Avilla, Context, MessageReceived, Text
+from avilla.core import Audio, Avilla, Context, MessageReceived, Text
 from avilla.standard.core.message import MessageSent
-from avilla.standard.telegram.elements import Dice, DiceEmoji, Picture, Video
+from avilla.standard.telegram.elements import Dice, DiceEmoji, Picture, Video, Voice
 from avilla.standard.telegram.event import ForumTopicClosed, ForumTopicCreated
 from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
 
-config = TelegramBotConfig(os.environ["TELEGRAM_TOKEN"], reformat=True)
+config = TelegramBotConfig(os.environ["TELEGRAM_TOKEN"], reformat=False)
 avilla = Avilla(message_cache_size=0)
 avilla.apply_protocols(TelegramProtocol().configure(config))
 
@@ -19,15 +19,17 @@ async def on_message_received(cx: Context, event: MessageReceived, msg: MessageC
     # print(repr(event))
     print(f"{event.message.to_selector() = }")
     await cx.scene.send_message(
-        # MessageChain(
-        #     [
-        #         # Dice(DiceEmoji.SLOT_MACHINE),
-        #         Text("Hello, Avilla!"),
-        #         Picture(Path("test.jpg"), has_spoiler=False),
-        #         Video(Path("test.mp4"), has_spoiler=True),
-        #     ]
-        # ),
-        msg,
+        MessageChain(
+            [
+                # Dice(DiceEmoji.SLOT_MACHINE),
+                # Picture(Path("test.jpg"), has_spoiler=False),
+                # Text("Hello, Avilla!"),
+                # Video(Path("test.mp4"), has_spoiler=True),
+                # Text("Hello, Avilla!"),
+                Voice(Path("test.mp3")),
+            ]
+        ),
+        # msg,
         reply=event.message,
     )
 
