@@ -13,6 +13,7 @@ from avilla.standard.telegram.elements import (
     DiceEmoji,
     Location,
     Picture,
+    Reference,
     Sticker,
     Venue,
     Video,
@@ -28,6 +29,7 @@ from avilla.telegram.fragments import (
     MessageFragmentDocument,
     MessageFragmentLocation,
     MessageFragmentPhoto,
+    MessageFragmentReference,
     MessageFragmentSticker,
     MessageFragmentText,
     MessageFragmentVenue,
@@ -50,6 +52,17 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
     context: OptionalAccess[Context] = OptionalAccess()
     account: OptionalAccess[TelegramAccount] = OptionalAccess()
     # LINK: https://github.com/microsoft/pyright/issues/5409
+
+    @m.entity(TelegramCapability.deserialize_element, element="reference")
+    async def reference(self, element: MessageFragmentReference) -> Reference:
+        if element.update:
+            return Reference(
+                Selector()
+                .land(self.account.route["land"])
+                .chat(element.update.message.chat_id)
+                .message(element.original.message_id)
+            )
+        return Reference(element.selector)
 
     @m.entity(TelegramCapability.deserialize_element, element="text")
     async def text(self, element: MessageFragmentText) -> Text:

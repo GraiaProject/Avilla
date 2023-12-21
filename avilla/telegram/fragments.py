@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import suppress
+from enum import Enum
 from pathlib import Path
 from typing import IO
 
@@ -29,11 +30,17 @@ from avilla.core import Selector
 from avilla.telegram.exception import WrongFragment
 
 
+class _FragmentType(str, Enum):
+    """Internal use only"""
+
+    REFERENCE = "reference"
+
+
 class MessageFragment:
     type: MessageType
     update: Update | None
 
-    def __init__(self, msg_type: MessageType | None, update: Update | None = None):
+    def __init__(self, msg_type: MessageType | _FragmentType | None, update: Update | None = None):
         self.type = msg_type
         self.update = update
 
@@ -108,20 +115,26 @@ class MessageFragment:
         pass
 
 
-class MessageFragmentReply(MessageFragment):
-    reply_to: Selector
-    original: Message
+class MessageFragmentReference(MessageFragment):
+    selector: Selector | None
+    original: Message | None
 
-    def __init__(self, reply_to: Selector):
-        super().__init__(None)
-        self.reply_to = reply_to
+    def __init__(self, selector: Selector | None = None, original: Message | None = None, update: Update | None = None):
+        super().__init__(_FragmentType.REFERENCE, update)
+        self.selector = selector
+        self.original = original
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
+        if message.reply_to_message:
+            return [cls(None, original=message.reply_to_message, update=update)]
         raise WrongFragment
 
     def hook(self, fragments: list[MessageFragment], params: dict[str, ...] | None = None):
-        params["reply_to_message_id"] = self.reply_to.pattern["message"]
+        if self.selector:
+            params["reply_to_message_id"] = self.selector.pattern["message"].split(",")[0]
+        elif self.original:
+            params["reply_to_message_id"] = self.original.message_id
         fragments.remove(self)
 
 
@@ -627,7 +640,7 @@ class MessageFragmentVoice(MessageFragment):
 
 PRIORITIES: dict[type[MessageFragment], int | float] = {
     # Reply Hook (Non-telegram standard)
-    MessageFragmentReply: -1,  # Anywhere is fine
+    MessageFragmentReference: -1,  # Anywhere is fine
     # Others
     MessageFragmentAnimation: 0,
     MessageFragmentContact: 0,

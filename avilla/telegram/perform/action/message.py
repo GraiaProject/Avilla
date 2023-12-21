@@ -11,7 +11,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend, MessageSent
 from avilla.telegram.capability import TelegramCapability
-from avilla.telegram.fragments import MessageFragment, MessageFragmentReply
+from avilla.telegram.fragments import MessageFragment, MessageFragmentReference
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa
@@ -33,7 +33,7 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
     ) -> Selector:
         s_message = await TelegramCapability(self.account.staff).serialize(message)
         if reply is not None:
-            s_message.insert(0, MessageFragmentReply(reply))
+            s_message.insert(0, MessageFragmentReference(reply))
         result: list[TelegramMessage] = await self.account.instance.send(target, s_message)
         d_result = [MessageFragment.decompose(m) for m in result]
         if self.account.instance.config.reformat:
@@ -50,6 +50,7 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
             scene=target,
             selft=self.account.route,
         )
+        message_ids = ",".join(map(str, [m.message_id for m in result]))
         event = MessageSent(
             context,
             Message(
@@ -62,4 +63,4 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
             self.account,
         )
         self.protocol.post_event(event)
-        return Selector().land(self.account.route["land"]).chat(target.pattern["chat"]).message(result)
+        return Selector().land(self.account.route["land"]).chat(target.pattern["chat"]).message(message_ids)

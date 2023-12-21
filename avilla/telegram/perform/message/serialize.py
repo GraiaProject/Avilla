@@ -12,6 +12,7 @@ from avilla.standard.telegram.elements import (
     Dice,
     Location,
     Picture,
+    Reference,
     Sticker,
     Venue,
     Video,
@@ -28,6 +29,7 @@ from avilla.telegram.fragments import (
     MessageFragmentDocument,
     MessageFragmentLocation,
     MessageFragmentPhoto,
+    MessageFragmentReference,
     MessageFragmentSticker,
     MessageFragmentText,
     MessageFragmentVenue,
@@ -47,6 +49,10 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
     m.identify = "serialize"
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
+
+    @m.entity(TelegramCapability.serialize_element, element=Reference)
+    async def reference(self, element: Reference) -> MessageFragment:
+        return MessageFragmentReference(element.message)
 
     @m.entity(TelegramCapability.serialize_element, element=Text)
     async def text(self, element: Text) -> MessageFragment:
