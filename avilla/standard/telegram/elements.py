@@ -71,6 +71,9 @@ class Animation(Element):
     def __str__(self) -> str:
         return f"[$Animation]"
 
+    def __repr__(self):
+        return f"[$Animation:resource={self.resource.to_selector()};has_spoiler={self.has_spoiler}]"
+
 
 @dataclass
 class Contact(Element):
@@ -97,6 +100,9 @@ class Document(Element):
     def __str__(self) -> str:
         return f"[$Document]"
 
+    def __repr__(self):
+        return f"[$Document:resource={self.resource.to_selector()}]"
+
 
 @dataclass
 class Location(Element):
@@ -117,6 +123,9 @@ class Sticker(Element):
 
     def __str__(self) -> str:
         return f"[$Sticker]"
+
+    def __repr__(self):
+        return f"[$Sticker:resource={self.resource.to_selector()}]"
 
 
 @dataclass
