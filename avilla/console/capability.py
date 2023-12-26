@@ -7,14 +7,15 @@ from nonechat.info import Event as ConsoleEvent
 from nonechat.message import Element as ConsoleElement
 
 from avilla.core.event import AvillaEvent
-from graia.ryanvk import Capability, Fn, TypeOverload
+from avilla.core.ryanvk.collector.application import ApplicationCollector
+from graia.ryanvk import Fn, TypeOverload
 
 CE = TypeVar("CE", bound=ConsoleElement)
 GE = TypeVar("GE", bound=GraiaElement)
 CV = TypeVar("CV", bound=ConsoleEvent)
 
 
-class ConsoleCapability(Capability):
+class ConsoleCapability((m := ApplicationCollector())._):
     @Fn.complex({TypeOverload(): ["event"]})
     async def event_callback(self, event: Any) -> AvillaEvent:
         ...

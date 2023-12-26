@@ -64,7 +64,7 @@ class AvillaConsoleBackend(Backend):
             )
             self._should_restore_logger = False
         self.account.status.enabled = False
-        del self._service.protocol.avilla.accounts[self.account.route]
+        self._service.protocol.avilla.accounts.pop(self.account.route, None)
         self._service.protocol.avilla.broadcast.postEvent(
             AccountUnavailable(self._service.protocol.avilla, self.account)
         )
@@ -73,7 +73,7 @@ class AvillaConsoleBackend(Backend):
 
     async def post_event(self, event: Event):
         with suppress(NotImplementedError):
-            res = await self.account.staff.call_fn(ConsoleCapability.event_callback, event)
+            res = await ConsoleCapability(self.account.staff).event_callback(event)
             self._service.protocol.post_event(res)
             return
 

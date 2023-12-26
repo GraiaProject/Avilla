@@ -8,7 +8,7 @@ from nonechat.app import Frontend
 from nonechat.setting import ConsoleSetting
 from textual.color import Color
 
-from avilla.standard.core.account import AccountUnavailable
+from avilla.standard.core.account import AccountUnregistered
 
 from .backend import AvillaConsoleBackend
 
@@ -52,4 +52,4 @@ class ConsoleService(Service):
             self.app.exit()
             if task:
                 await task
-            self.protocol.avilla.broadcast.postEvent(AccountUnavailable(self.protocol.avilla, self.app.backend.account))
+            self.protocol.avilla.broadcast.postEvent(AccountUnregistered(self.protocol.avilla, self.app.backend.account))

@@ -27,7 +27,7 @@ class QQAPICapability((m := ApplicationCollector())._):
     async def serialize_element(self, element: Any) -> str | tuple[str, Any]:
         ...
 
-    @Fn.complex({TypeOverload(): ["target"]})
+    @Fn.complex({TargetOverload(): ["target"]})
     async def create_dms(self, target: Selector) -> Selector:
         """主动创建私聊会话，返回临时的 Guild"""
         ...

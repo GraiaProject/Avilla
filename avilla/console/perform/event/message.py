@@ -25,7 +25,7 @@ class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "Cons
     async def console_message(self, event: MessageEvent):
         console = Selector().land(self.account.route["land"]).user(str(event.user.id))
         message = MessageChain(
-            [await self.staff.call_fn(ConsoleCapability.deserialize_element, i) for i in event.message.content]
+            [await ConsoleCapability(self.account.staff).deserialize_element(i) for i in event.message.content]
         )
         context = Context(
             account=self.account,
