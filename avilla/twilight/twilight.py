@@ -237,28 +237,30 @@ class UnionMatch(RegexMatch):
 
     def __init__(
         self,
-        *pattern: Union[str, Iterable[str]],
+        *pattern: Union[str, Iterable[str], RegexMatch],
         optional: bool = False,
     ) -> None:
         """初始化 UnionMatch 对象.
 
         Args:
-            *pattern (Union[str, Iterable[str]]): 匹配的选择项.
+            *pattern (Union[str, Iterable[str], RegexMatch]): 匹配的选择项.
             optional (bool, optional): 匹配是否可选. Defaults to False.
         """
         super().__init__("", optional)
         self.pattern: List[str] = []
         for p in pattern:
             if isinstance(p, str):
-                self.pattern.append(p)
+                self.pattern.append(re.escape(p))
+            elif isinstance(p, RegexMatch):
+                self.pattern.append(p._src)
             else:
-                self.pattern.extend(p)
+                self.pattern.extend([re.escape(i) for i in p])
         self.optional = optional
         self.help(f"在 {self.pattern} 中选择一项")
 
     @property
     def _src(self) -> str:
-        return f"{'|'.join(re.escape(i) for i in self.pattern)}"
+        return f"{'|'.join(i for i in self.pattern)}"
 
 
 class ElementMatch(RegexMatch):
@@ -318,23 +320,6 @@ class WildcardMatch(RegexMatch):
             optional (bool, optional): 匹配是否可选. Defaults to False.
         """
         super().__init__(f".*{'' if greed else'?'}", optional)
-
-
-class MatchUnion(RegexMatch):
-    """浠庡涓?RegexMatch 涓崟鑾风粨鏋?"""
-
-    def __init__(self, *match: RegexMatch) -> None:
-        """初始化 MatchUnion 对象.
-
-        Args:
-            *match (RegexMatch): RegexMatch 实例.
-        """
-        super().__init__()
-        self.matches = match
-
-    @property
-    def _src(self) -> str:
-        return f"({'|'.join(i._src for i in self.matches)})"
 
 
 class ArgumentMatch(Match, Generic[T]):
