@@ -7,16 +7,17 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 
 if TYPE_CHECKING:
-    from ...account import OneBot11Account  # noqa
-    from ...protocol import OneBot11Protocol  # noqa
+    from avilla.onebot.v11.account import OneBot11Account  # noqa
+    from avilla.onebot.v11.protocol import OneBot11Protocol  # noqa
 
 
 class OneBot11GroupQueryPerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::query"
+    m.identify = "group"
 
     @CoreCapability.query.collect(m, "land.group")
     async def query_group(self, predicate: Callable[[str, str], bool] | str, previous: None):
-        result = await self.account.call("get_group_list", {})
+        result = await self.account.connection.call("get_group_list", {})
         result = cast(list, result)
         for i in result:
             group_id = str(i["group_id"])
@@ -25,7 +26,7 @@ class OneBot11GroupQueryPerform((m := AccountCollector["OneBot11Protocol", "OneB
 
     @CoreCapability.query.collect(m, "member", "land.group")
     async def query_group_members(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
-        result = await self.account.call("get_group_member_list", {"group_id": int(previous["group"])})
+        result = await self.account.connection.call("get_group_member_list", {"group_id": int(previous["group"])})
         result = cast(list, result)
         for i in result:
             member_id = str(i["user_id"])

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from avilla.core.elements import Element
+from avilla.core.elements import Element, Reference as _Reference
 
 
 @dataclass
@@ -39,15 +39,11 @@ class Ark(Element):
 
 
 @dataclass
-class Reference(Element):
-    message_id: str
+class Reference(_Reference):
     ignore_get_message_error: bool = False
 
-    def __str__(self):
-        return "[$Reference:id={self.message_id}]"
-
     def __repr__(self):
-        return f"[$Reference:id={self.message_id};ignore_error={self.ignore_get_message_error}]"
+        return f"[$Reference:id={self.message};ignore_error={self.ignore_get_message_error}]"
 
 
 @dataclass

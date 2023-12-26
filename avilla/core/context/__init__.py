@@ -160,19 +160,3 @@ class Context:
 
     def __staff_generic__(self, element_type: dict, event_type: dict):
         ...
-
-    @property
-    def channel(self) -> str:
-        return self.context.staff.call_fn(SelectorCapability.channel, self)
-
-    @property
-    def guild(self) -> str:
-        return self.context.staff.call_fn(SelectorCapability.guild, self)
-
-    @property
-    def user(self) -> str:
-        return self.context.staff.call_fn(SelectorCapability.user, self)
-
-    @property
-    def member(self) -> str:
-        return self.context.staff.call_fn(SelectorCapability.member, self)

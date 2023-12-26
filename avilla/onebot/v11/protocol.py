@@ -6,6 +6,7 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
+from graia.ryanvk import merge, ref
 
 from .net.ws_client import OneBot11WsClientNetworking
 from .net.ws_server import OneBot11WsServerNetworking
@@ -24,39 +25,53 @@ class OneBot11ReverseConfig:
     access_token: str | None = None
 
 
+def _import_performs():
+    from avilla.onebot.v11.perform import context, resource_fetch  # noqa: F401
+
+    from avilla.onebot.v11.perform.action import admin  # noqa: F401
+    from avilla.onebot.v11.perform.action import ban  # noqa: F401
+    from avilla.onebot.v11.perform.action import leave  # noqa: F401
+    from avilla.onebot.v11.perform.action import message  # noqa: F401
+    from avilla.onebot.v11.perform.action import mute  # noqa: F401
+
+    from avilla.onebot.v11.perform.event import message  # noqa: F401
+    from avilla.onebot.v11.perform.event import lifespan  # noqa: F401
+    from avilla.onebot.v11.perform.event import notice  # noqa: F401
+    from avilla.onebot.v11.perform.event import request  # noqa: F401
+
+    from avilla.onebot.v11.perform.message import deserialize  # noqa: F401
+    from avilla.onebot.v11.perform.message import serialize  # noqa: F401
+
+    from avilla.onebot.v11.perform.query import group  # noqa: F401
+
+
+_import_performs()
+
+
 class OneBot11Protocol(BaseProtocol):
     service: OneBot11Service
 
+    artifacts = {
+        **merge(
+            ref("avilla.protocol/onebot11::context"),
+            ref("avilla.protocol/onebot11::resource_fetch"),
+            ref("avilla.protocol/onebot11::action", "admin"),
+            ref("avilla.protocol/onebot11::action", "ban"),
+            ref("avilla.protocol/onebot11::action", "leave"),
+            ref("avilla.protocol/onebot11::action", "message"),
+            ref("avilla.protocol/onebot11::action", "mute"),
+            ref("avilla.protocol/onebot11::event", "message"),
+            ref("avilla.protocol/onebot11::event", "lifespan"),
+            ref("avilla.protocol/onebot11::event", "notice"),
+            ref("avilla.protocol/onebot11::event", "request"),
+            ref("avilla.protocol/onebot11::message", "deserialize"),
+            ref("avilla.protocol/onebot11::message", "serialize"),
+            ref("avilla.protocol/onebot11::query", "group"),
+        ),
+    }
+
     def __init__(self):
         self.service = OneBot11Service(self)
-
-    @classmethod
-    def __init_isolate__(cls):
-        # isort: off
-
-        # :: Message
-        from .perform.message.deserialize import OneBot11MessageDeserializePerform  # noqa: F401
-        from .perform.message.serialize import OneBot11MessageSerializePerform  # noqa: F401
-
-        # :: Action
-        from .perform.action.message import OneBot11MessageActionPerform  # noqa: F401
-        from .perform.action.admin import OneBot11PrivilegeActionPerform  # noqa: F401
-        from .perform.action.ban import OneBot11BanActionPerform  # noqa: F401
-        from .perform.action.leave import OneBot11LeaveActionPerform  # noqa: F401
-        from .perform.action.mute import OneBot11MuteActionPerform  # noqa: F401
-
-        # :: Context
-        from .perform.context import OneBot11ContextPerform  # noqa: F401
-
-        # :: Event
-        from .perform.event.message import OneBot11EventMessagePerform  # noqa: F401
-        from .perform.event.lifespan import OneBot11EventLifespanPerform  # noqa: F401
-
-        # :: Resource Fetch
-        from .perform.resource_fetch import OneBot11ResourceFetchPerform  # noqa: F401
-
-        # :: Query
-        from .perform.query.group import OneBot11GroupQueryPerform  # noqa: F401
 
     def ensure(self, avilla: Avilla):
         self.avilla = avilla

@@ -6,29 +6,30 @@ from loguru import logger
 
 from avilla.core.context import Context
 from avilla.core.request import Request
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
+from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.standard.core.request import RequestEvent
 
 
 class OneBot11EventRequestPerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::event"
+    m.identify = "request"
 
-    @EventParse.collect(m, "request.friend")
-    async def friend(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="request.friend")
+    async def friend(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         request = Request(
-            raw["flag"],
+            raw_event["flag"],
             account.info.platform.land,
-            Selector().land("qq").user(str(raw["user_id"])),
-            Selector().land("qq").user(str(raw["user_id"])),
+            Selector().land("qq").user(str(raw_event["user_id"])),
+            Selector().land("qq").user(str(raw_event["user_id"])),
             account,
-            datetime.fromtimestamp(raw["time"]),
+            datetime.fromtimestamp(raw_event["time"]),
         )
         return RequestEvent(
             Context(
@@ -41,21 +42,21 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             request,
         )
 
-    @EventParse.collect(m, "request.group.add")
-    @EventParse.collect(m, "request.group.invite")
-    async def group(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="request.group.add")
+    @m.entity(OneBot11Capability.event_callback, raw_event="request.group.invite")
+    async def group(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         request = Request(
-            raw["flag"],
+            raw_event["flag"],
             account.info.platform.land,
-            Selector().land("qq").group(str(raw["group_id"])),
-            Selector().land("qq").user(str(raw["user_id"])),
+            Selector().land("qq").group(str(raw_event["group_id"])),
+            Selector().land("qq").user(str(raw_event["user_id"])),
             account,
-            datetime.fromtimestamp(raw["time"]),
+            datetime.fromtimestamp(raw_event["time"]),
         )
         return RequestEvent(
             Context(

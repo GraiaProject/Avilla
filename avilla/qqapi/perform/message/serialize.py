@@ -64,7 +64,10 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
 
     @m.entity(QQAPICapability.serialize_element, element=Reference)
     async def reference(self, element: Reference):
-        return "message_reference", asdict(element)
+        return "message_reference", {
+            "message_id": element.message["message"],
+            "ignore_get_message_error": element.ignore_get_message_error
+        }
 
     @m.entity(QQAPICapability.serialize_element, element=Embed)
     async def embed(self, element: Embed):

@@ -81,7 +81,7 @@ class Selector:
         self._hash = hash(("Selector", *self.pattern.items()))
 
     def modify(self, pattern: Mapping[str, str]) -> Self:
-        return Selector(pattern=pattern)
+        return self.__class__(pattern=pattern)
 
     def __getattr__(self, name: str) -> Callable[[str], Self]:
         def wrapper(content: str) -> Self:

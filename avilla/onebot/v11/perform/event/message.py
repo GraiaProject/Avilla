@@ -6,17 +6,18 @@ from loguru import logger
 
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk.descriptor.event import EventParse
+from avilla.core.elements import Reference
+from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.core.selector import Selector
 from avilla.onebot.v11.collector.connection import ConnectionCollector
-from avilla.onebot.v11.element import Reply
 from avilla.standard.core.message import MessageReceived, MessageRevoked, MessageSent
 
 
 class OneBot11EventMessagePerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::event"
+    m.identify = "message"
 
-    @EventParse.collect(m, "message.private.friend")
+    @m.entity(OneBot11Capability.event_callback, raw_event="message.private.friend")
     async def private_friend(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -31,11 +32,11 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             friend,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
-        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
         reply = None
-        if i := message.get(Reply):
-            reply = friend.message(i[0].id)
-            message = message.exclude(Reply)
+        if i := message.get(Reference):
+            reply = i[0].message
+            message = message.exclude(Reference)
 
         return MessageReceived(
             context,
@@ -49,7 +50,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "message.private.group")
+    @m.entity(OneBot11Capability.event_callback, raw_event="message.private.group")
     async def private_group(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -66,11 +67,11 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             member,
             group.member(str(raw_event["self_id"])),
         )
-        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
         reply = None
-        if i := message.get(Reply):
-            reply = member.message(i[0].id)
-            message = message.exclude(Reply)
+        if i := message.get(Reference):
+            reply = i[0].message
+            message = message.exclude(Reference)
         return MessageReceived(
             context,
             Message(
@@ -83,8 +84,8 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "message.group.normal")
-    @EventParse.collect(m, "message.group.notice")
+    @m.entity(OneBot11Capability.event_callback, raw_event="message.group.normal")
+    @m.entity(OneBot11Capability.event_callback, raw_event="message.group.notice")
     async def group(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -100,11 +101,11 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(str(raw_event["self_id"])),
         )
-        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
         reply = None
-        if i := message.get(Reply):
-            reply = group.message(i[0].id)
-            message = message.exclude(Reply)
+        if i := message.get(Reference):
+            reply = i[0].message
+            message = message.exclude(Reference)
         return MessageReceived(
             context,
             Message(
@@ -117,7 +118,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "message.private.other")
+    @m.entity(OneBot11Capability.event_callback, raw_event="message.private.other")
     async def private_other(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -132,11 +133,11 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             stranger,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
-        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
         reply = None
-        if i := message.get(Reply):
-            reply = stranger.message(i[0].id)
-            message = message.exclude(Reply)
+        if i := message.get(Reference):
+            reply = i[0].message
+            message = message.exclude(Reference)
         return MessageReceived(
             context,
             Message(
@@ -149,7 +150,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "message.group.anonymous")
+    @m.entity(OneBot11Capability.event_callback, raw_event="message.group.anonymous")
     async def group_anonymous(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -165,11 +166,11 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(str(raw_event["self_id"])),
         )
-        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
         reply = None
-        if i := message.get(Reply):
-            reply = group.message(i[0].id)
-            message = message.exclude(Reply)
+        if i := message.get(Reference):
+            reply = i[0].message
+            message = message.exclude(Reference)
         return MessageReceived(
             context,
             Message(
@@ -182,7 +183,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             ),
         )
 
-    @EventParse.collect(m, "message_sent.group.normal")
+    @m.entity(OneBot11Capability.event_callback, raw_event="message_sent.group.normal")
     async def message_sent(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -193,11 +194,11 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         member = group.member(str(raw_event["user_id"]))
         context = Context(account, member, group, group, member)
-        message = await account.staff.ext({"context": context}).deserialize_message(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
         reply = None
-        if i := message.get(Reply):
-            reply = member.message(i[0].id)
-            message = message.exclude(Reply)
+        if i := message.get(Reference):
+            reply = i[0].message
+            message = message.exclude(Reference)
         return MessageSent(
             context,
             Message(
@@ -211,7 +212,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             account,
         )
 
-    @EventParse.collect(m, "notice.group_recall")
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_recall")
     async def group_message_recall(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -226,7 +227,7 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
         context = Context(account, operator, message, group, group.member(str(self_id)))
         return MessageRevoked(context, message, operator, sender)
 
-    @EventParse.collect(m, "notice.friend_recall")
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.friend_recall")
     async def friend_message_recall(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)

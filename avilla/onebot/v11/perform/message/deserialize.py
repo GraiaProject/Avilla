@@ -3,12 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text, Reference
 from avilla.core.ryanvk.collector.application import ApplicationCollector
-from avilla.core.ryanvk.descriptor.message.deserialize import MessageDeserialize
 from avilla.core.selector import Selector
-from avilla.onebot.v11.element import Reply
 from avilla.onebot.v11.resource import OneBot11ImageResource
+from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.standard.qq.elements import (
     Dice,
     FlashImage,
@@ -25,31 +24,30 @@ if TYPE_CHECKING:
     from avilla.core.context import Context
     from avilla.onebot.v11.account import OneBot11Account
 
-OneBot11MessageDeserialize = MessageDeserialize[dict]
-
 
 class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::message"
+    m.identify = "deserialize"
 
     context: OptionalAccess[Context] = OptionalAccess()
     account: OptionalAccess[OneBot11Account] = OptionalAccess()
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @OneBot11MessageDeserialize.collect(m, "text")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="text")
     async def text(self, raw_element: dict) -> Text:
         return Text(raw_element["data"]["text"])
 
-    @OneBot11MessageDeserialize.collect(m, "face")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="face")
     async def face(self, raw_element: dict) -> Face:
         return Face(raw_element["data"]["id"])
 
-    @OneBot11MessageDeserialize.collect(m, "image")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="image")
     async def image(self, raw_element: dict) -> Picture | FlashImage:
         data: dict = raw_element["data"]
         resource = OneBot11ImageResource(Selector().land("qq").picture(file := data["file"]), file, data["url"])
         return FlashImage(resource) if raw_element.get("type") == "flash" else Picture(resource)
 
-    @OneBot11MessageDeserialize.collect(m, "at")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="at")
     async def at(self, raw_element: dict) -> Notice | NoticeAll:
         if raw_element["data"]["qq"] == "all":
             return NoticeAll()
@@ -57,27 +55,29 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
             return Notice(self.context.scene.member(raw_element["data"]["qq"]))
         return Notice(Selector().land("qq").member(raw_element["data"]["qq"]))
 
-    @OneBot11MessageDeserialize.collect(m, "reply")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="reply")
     async def reply(self, raw_element: dict):
-        return Reply(raw_element["data"]["id"])
+        if self.context:
+            return Reference(self.context.scene.message(raw_element["data"]["id"]))
+        return Reference(Selector().land("qq").message(raw_element["data"]["id"]))
 
-    @OneBot11MessageDeserialize.collect(m, "dice")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="dice")
     async def dice(self, raw_element: dict):
         return Dice()
 
-    @OneBot11MessageDeserialize.collect(m, "shake")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="shake")
     async def shake(self, raw_element: dict):
         return Poke()
 
-    @OneBot11MessageDeserialize.collect(m, "json")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="json")
     async def json(self, raw_element: dict):
         return Json(raw_element["data"]["content"])
 
-    @OneBot11MessageDeserialize.collect(m, "xml")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="xml")
     async def xml(self, raw_element: dict):
         return Xml(raw_element["data"]["content"])
 
-    @OneBot11MessageDeserialize.collect(m, "share")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="share")
     async def share(self, raw_element: dict):
         return Share(
             raw_element["data"]["url"],
@@ -86,12 +86,12 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["data"].get("image", None),
         )
 
-    @OneBot11MessageDeserialize.collect(m, "forward")
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="forward")
     async def forward(self, raw_element: dict):
         elem = Forward(raw_element["data"]["id"])
         if not self.account:
             return elem
-        result = await self.account.call(
+        result = await self.account.connection.call(
             "get_forward_msg",
             {
                 "message_id": raw_element["data"]["id"],
@@ -104,7 +104,7 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
                 name=msg["sender"]["nickname"],
                 uid=str(msg["sender"]["user_id"]),
                 time=datetime.fromtimestamp(msg["time"]),
-                content=(await self.account.staff.ext({"context": self.context}).deserialize_message(msg["content"])),
+                content=await OneBot11Capability(self.account.staff).deserialize_chain(msg["content"]),
             )
             elem.nodes.append(node)
         return elem

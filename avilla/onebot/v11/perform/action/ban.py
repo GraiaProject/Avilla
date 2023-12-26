@@ -13,11 +13,12 @@ if TYPE_CHECKING:
 
 
 class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::action"
+    m.identify = "ban"
 
-    @BanCapability.ban.collect(m, "land.group.member")
+    @BanCapability.ban.collect(m, target="land.group.member")
     async def ban_member(self, target: Selector, *, duration: timedelta | None = None, reason: str | None = None):
-        result = await self.account.call(
+        result = await self.account.connection.call(
             "set_group_kick",
             {
                 "group_id": int(target["group"]),

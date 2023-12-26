@@ -8,7 +8,7 @@ from graia.amnesia.builtins.asgi import UvicornASGIService
 
 import nonebot
 
-from avilla.core.elements import Emoji
+from avilla.core.elements import Face
 
 avilla = Avilla()
 
@@ -68,7 +68,7 @@ launart.launch_blocking(loop=broadcast.loop)
             )]
         )
     elif msg == "/emoji":
-        await ctx.scene.send_message([Emoji("art"), " | this is apple -> ", Emoji("apple")])
+        await ctx.scene.send_message([Face("art"), " | this is apple -> ", Face("apple")])
     else:
         await ctx.scene.send_message("Hello, Avilla!")
 

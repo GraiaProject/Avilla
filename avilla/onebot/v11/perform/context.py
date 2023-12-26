@@ -13,9 +13,9 @@ if TYPE_CHECKING:
 
 
 class OneBot11ContextPerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::context"
 
-    @CoreCapability.get_context.collect(m, "land.group")
+    @m.entity(CoreCapability.get_context, target="land.group")
     def get_context_from_group(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
@@ -25,15 +25,23 @@ class OneBot11ContextPerform((m := AccountCollector["OneBot11Protocol", "OneBot1
             target.member(self.account.route["account"]),
         )
 
-    @CoreCapability.get_context.collect(m, "land.friend")
+    @m.entity(CoreCapability.get_context, target="land.friend")
     def get_context_from_friend(self, target: Selector, *, via: Selector | None = None):
+        if via:
+            return Context(
+                self.account,
+                via,
+                target,
+                target,
+                self.account.route,
+            )
         return Context(self.account, target, self.account.route, target, self.account.route)
 
-    @CoreCapability.get_context.collect(m, "land.stranger")
+    @m.entity(CoreCapability.get_context, target="land.stranger")
     def get_context_from_stranger(self, target: Selector, *, via: Selector | None = None):
         return Context(self.account, target, self.account.route, target, self.account.route)
 
-    @CoreCapability.get_context.collect(m, "land.group.member")
+    @m.entity(CoreCapability.get_context, target="land.group.member")
     def get_context_from_member(self, target: Selector, *, via: Selector | None = None):
         return Context(
             self.account,
@@ -42,3 +50,27 @@ class OneBot11ContextPerform((m := AccountCollector["OneBot11Protocol", "OneBot1
             target.into("::group"),
             target.into(f"~.member({self.account.route['account']})"),
         )
+
+    @m.entity(CoreCapability.channel, target="land.group")
+    @m.entity(CoreCapability.channel, target="land.group.member")
+    def channel_from_group(self, target: Selector):
+        return target["group"]
+
+    @m.entity(CoreCapability.guild, target="land.group")
+    @m.entity(CoreCapability.guild, target="land.group.member")
+    def guild_from_group(self, target: Selector):
+        return target["group"]
+
+    @m.entity(CoreCapability.user, target="land.group.member")
+    def user_from_member(self, target: Selector):
+        return target["member"]
+
+    @m.entity(CoreCapability.user, target="land.friend")
+    @m.entity(CoreCapability.channel, target="land.friend")
+    def user_from_friend(self, target: Selector):
+        return target["friend"]
+
+    @m.entity(CoreCapability.user, target="land.stranger")
+    @m.entity(CoreCapability.channel, target="land.stranger")
+    def user_from_stranger(self, target: Selector):
+        return target["stranger"]

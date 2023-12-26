@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 
 from aiohttp import ClientSession
 
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.protocol import ProtocolCollector
-from avilla.core.ryanvk.descriptor.fetch import Fetch
 from avilla.onebot.v11.resource import (
     OneBot11FileResource,
     OneBot11ImageResource,
@@ -19,13 +19,13 @@ if TYPE_CHECKING:
 
 
 class OneBot11ResourceFetchPerform((m := ProtocolCollector["OneBot11Protocol"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::resource_fetch"
 
-    @Fetch.collect(m, OneBot11Resource)
-    @Fetch.collect(m, OneBot11RecordResource)
-    @Fetch.collect(m, OneBot11FileResource)
-    @Fetch.collect(m, OneBot11ImageResource)
-    @Fetch.collect(m, OneBot11VideoResource)
+    @m.entity(CoreCapability.fetch, resource=OneBot11Resource)
+    @m.entity(CoreCapability.fetch, resource=OneBot11RecordResource)
+    @m.entity(CoreCapability.fetch, resource=OneBot11FileResource)
+    @m.entity(CoreCapability.fetch, resource=OneBot11ImageResource)
+    @m.entity(CoreCapability.fetch, resource=OneBot11VideoResource)
     async def fetch_resource(self, resource: OneBot11Resource) -> bytes:
         async with ClientSession() as session:
             async with session.get(resource.url) as resp:

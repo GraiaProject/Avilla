@@ -26,11 +26,11 @@ from satori.element import Text as SatoriText
 from satori.element import Video as SatoriVideo
 from satori.element import Button as SatoriButton
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
+from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Reference
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
-from avilla.satori.element import Reply, Button
+from avilla.satori.element import Button
 from avilla.satori.resource import (
     SatoriAudioResource,
     SatoriFileResource,
@@ -104,8 +104,9 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
         return File(res)
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Quote)
-    async def quote(self, raw_element: Quote) -> Reply:
-        return Reply(raw_element.id)  # type: ignore
+    async def quote(self, raw_element: Quote) -> Reference:
+        scene = self.context.scene if self.context else Selector().land("satori")
+        return Reference(scene.message(raw_element.id))  # type: ignore
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Bold)
     async def bold(self, raw_element: Bold) -> Text:
