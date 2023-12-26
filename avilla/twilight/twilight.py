@@ -232,7 +232,7 @@ class FullMatch(RegexMatch):
 class UnionMatch(RegexMatch):
     """多重匹配"""
 
-    pattern: List[str]
+    pattern: List[Union[str, RegexMatch]]
     """匹配的选择项"""
 
     def __init__(
@@ -247,12 +247,12 @@ class UnionMatch(RegexMatch):
             optional (bool, optional): 匹配是否可选. Defaults to False.
         """
         super().__init__("", optional)
-        self.pattern: List[str] = []
+        self.pattern: List[Union[str, RegexMatch]] = []
         for p in pattern:
             if isinstance(p, str):
                 self.pattern.append(re.escape(p))
             elif isinstance(p, RegexMatch):
-                self.pattern.append(p._src)
+                self.pattern.append(p)
             else:
                 self.pattern.extend([re.escape(i) for i in p])
         self.optional = optional
@@ -260,7 +260,7 @@ class UnionMatch(RegexMatch):
 
     @property
     def _src(self) -> str:
-        return f"{'|'.join(i for i in self.pattern)}"
+        return f"{'|'.join(i if isinstance(i, str) else i._src for i in self.pattern)}"
 
 
 class ElementMatch(RegexMatch):
@@ -557,7 +557,7 @@ class TwilightMatcher:
                 res = None
             else:
                 accept_element = isinstance(match, ElementMatch) or (
-                    isinstance(match, MatchUnion) and any(isinstance(i, ElementMatch) for i in match.matches)
+                    isinstance(match, UnionMatch) and any(isinstance(i, ElementMatch) for i in match.pattern)
                 )
                 if group[0] == "\x02" and group[-1] == "\x03" and accept_element:
                     res = elem_mapping[group[1:-1].split("_")[0]]
