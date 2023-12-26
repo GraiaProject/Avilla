@@ -320,6 +320,23 @@ class WildcardMatch(RegexMatch):
         super().__init__(f".*{'' if greed else'?'}", optional)
 
 
+class MatchUnion(RegexMatch):
+    """浠庡涓?RegexMatch 涓崟鑾风粨鏋?"""
+
+    def __init__(self, *match: RegexMatch) -> None:
+        """初始化 MatchUnion 对象.
+
+        Args:
+            *match (RegexMatch): RegexMatch 实例.
+        """
+        super().__init__()
+        self.matches = match
+
+    @property
+    def _src(self) -> str:
+        return f"({'|'.join(i._src for i in self.matches)})"
+
+
 class ArgumentMatch(Match, Generic[T]):
     """参数匹配"""
 
@@ -554,11 +571,13 @@ class TwilightMatcher:
             if group is None:
                 res = None
             else:
-                res = (
-                    elem_mapping[group[1:-1].split("_")[0]]
-                    if isinstance(match, ElementMatch)
-                    else _from_mapping_string(group, elem_mapping)
+                accept_element = isinstance(match, ElementMatch) or (
+                    isinstance(match, MatchUnion) and any(isinstance(i, ElementMatch) for i in match.matches)
                 )
+                if group[0] == "\x02" and group[-1] == "\x03" and accept_element:
+                    res = elem_mapping[group[1:-1].split("_")[0]]
+                else:
+                    res = _from_mapping_string(group, elem_mapping)
 
             if match.dest:
                 if isinstance(match, WildcardMatch):
