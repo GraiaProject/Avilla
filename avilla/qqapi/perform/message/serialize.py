@@ -109,7 +109,6 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
         else:
             param = None
         return "markdown", {
-            "template_id": element.template_id,
             "content": element.content,
             "custom_template_id": element.custom_template_id,
             "params": param,
@@ -122,12 +121,9 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
             buttons = {"buttons": []}
             for button in row:
                 raw = asdict(button)
-                if button.render_data:
-                    raw["render_data"] = asdict(button.render_data)
-                if button.action:
-                    raw["action"] = asdict(button.action)
-                    if button.action.permission:
-                        raw["action"]["permission"] = asdict(button.action.permission)
+                raw["render_data"] = asdict(button.render_data)
+                raw["action"] = asdict(button.action)
+                raw["action"]["permission"] = asdict(button.action.permission)
                 buttons["buttons"].append(raw)
             content["rows"].append(buttons)
 

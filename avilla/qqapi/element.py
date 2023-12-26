@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from avilla.core.elements import Element
 from avilla.core.elements import Reference as _Reference
@@ -49,7 +49,6 @@ class Reference(_Reference):
 
 @dataclass
 class Markdown(Element):
-    template_id: int | None = None
     content: str | None = None
     custom_template_id: int | None = None
     params: dict[str, list[str]] | None = None
@@ -63,33 +62,35 @@ class Markdown(Element):
 
 @dataclass
 class ActionPermission:
-    type: int | None = None
+    type: int
     specify_role_ids: list[str] | None = None
     specify_user_ids: list[str] | None = None
 
 
 @dataclass
 class Action:
-    type: int | None = None
-    permission: ActionPermission | None = None
+    type: int
+    data: str
+    permission: ActionPermission = field(default_factory=lambda: ActionPermission(0))
+    reply: bool | None = None
+    enter: bool | None = None
+    anchor: bool | None = None
     click_limit: int | None = None
-    unsupport_tips: str | None = None
-    data: str | None = None
-    at_bot_show_channel_list: bool | None = None
+    unsupport_tips: str = "该版本暂不支持查看此消息，请升级至最新版本。"
 
 
 @dataclass
 class RenderData:
-    label: str | None = None
-    visited_label: str | None = None
-    style: int | None = None
+    label: str
+    visited_label: str
+    style: int
 
 
 @dataclass
 class Button:
+    render_data: RenderData
+    action: Action
     id: str | None = None
-    render_data: RenderData | None = None
-    action: Action | None = None
 
 
 @dataclass
