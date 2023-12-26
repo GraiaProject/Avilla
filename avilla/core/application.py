@@ -115,9 +115,9 @@ class Avilla:
             logger.debug(event.__class__.__name__)
             return
         context = event.context
-        client = f"{'.'.join(f'{k}({v})' for k, v in context.client.items())}"
-        scene = f"{'.'.join(f'{k}({v})' for k, v in context.scene.items())}"
-        endpoint = f"{'.'.join(f'{k}({v})' for k, v in context.endpoint.items())}"
+        client = context.client.display
+        scene = context.scene.display
+        endpoint = context.endpoint.display
 
         if isinstance(event, MessageSent):
             return

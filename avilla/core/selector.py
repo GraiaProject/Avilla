@@ -77,19 +77,23 @@ class Selector:
     pattern: Mapping[str, str]
 
     def __init__(self, pattern: Mapping[str, str] = EMPTY_MAP) -> None:
-        self.pattern = MappingProxyType({k: str(v) for k ,v in pattern.items()})
+        self.pattern = MappingProxyType({k: str(v) for k, v in pattern.items()})
+        self._hash = hash(("Selector", *self.pattern.items()))
+
+    def modify(self, pattern: Mapping[str, str]) -> Self:
+        return Selector(pattern=pattern)
 
     def __getattr__(self, name: str) -> Callable[[str], Self]:
         def wrapper(content: str) -> Self:
-            return Selector(pattern={**self.pattern, name: str(content)})
+            return self.modify({**self.pattern, name: str(content)})
 
         return wrapper
 
     def __hash__(self) -> int:
-        return hash(("Selector", *self.pattern.items()))
+        return self._hash
 
     def __eq__(self, o: object) -> bool:
-        return isinstance(o, Selector) and o.pattern == self.pattern
+        return isinstance(o, self.__class__) and o._hash == self._hash
 
     def __contains__(self, key: str) -> bool:
         return key in self.pattern
@@ -113,6 +117,14 @@ class Selector:
         return ".".join(filterfalse(lambda x: x == "land", self.pattern))
 
     @property
+    def display(self) -> str:
+        return ".".join(f"{k}({v})" for k, v in self.pattern.items())
+
+    @property
+    def display_without_land(self) -> str:
+        return ".".join(f"{k}({v})" for k, v in self.pattern.items() if k != "land")
+
+    @property
     def last_key(self) -> str:
         return next(reversed(self.pattern.keys()))
 
@@ -124,19 +136,19 @@ class Selector:
         return self.pattern.items()
 
     def appendix(self, key: str, value: str):
-        return Selector(pattern={**self.pattern, key: str(value)})
+        return self.modify({**self.pattern, key: str(value)})
 
     def land(self, land: Land | str):
         if isinstance(land, Land):
             land = land.name
 
-        return Selector({"land": land, **{k: v for k, v in self.pattern.items() if k != "land"}})
+        return self.modify({"land": land, **{k: v for k, v in self.pattern.items() if k != "land"}})
 
     def to_selector(self):
         return self
 
     @classmethod
-    def from_follows_pattern(cls, pattern: str):
+    def from_follows(cls, pattern: str):
         items = _parse_follows(pattern)
         mapping = {}
         for i in items:
@@ -144,6 +156,8 @@ class Selector:
                 raise ValueError("literal expected")
             mapping[i.name] = i.literal
         return cls(mapping)
+
+    from_follows_pattern = from_follows
 
     def follows(self, pattern: str, **kwargs: FollowsPredicater) -> bool:
         items = _parse_follows(pattern, **kwargs)
@@ -159,14 +173,14 @@ class Selector:
                 return False
         return index + 1 == len(self.pattern)
 
-    def into(self, pattern: str, **kwargs: str) -> Selector:
+    def into(self, pattern: str, **kwargs: str) -> Self:
         items = _parse_follows(pattern)
         new_patterns = {}
         iterator = iter(self.pattern)
         if items and items[0].name == "~":
             if not all(item.literal or kwargs.get(item.name) for item in items[1:]):
                 raise ValueError("expected specific literals in follows pattern")
-            return Selector(
+            return self.modify(
                 {
                     **self.pattern,
                     **{item.name: kwargs.get(item.name) or item.literal for item in items[1:]},
@@ -179,7 +193,7 @@ class Selector:
             if item.name != current_key:
                 raise ValueError(f"expected {'.'.join(new_patterns)}.{item.name}, got {current_key}")
             new_patterns[current_key] = kwargs.get(item.name) or item.literal or self.pattern[current_key]
-        return Selector(new_patterns)
+        return self.modify(new_patterns)
 
     def expects(
         self,

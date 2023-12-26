@@ -10,6 +10,7 @@ from typing_extensions import ParamSpec
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata
 from avilla.core.selector import Selector
+from avilla.core.builtins.capability import CoreCapability
 from avilla.standard.core.activity import ActivityTrigger
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.relation import SceneCapability
@@ -29,6 +30,21 @@ class ContextClientSelector(ContextSelector):
     def trigger_activity(self, activity: str):
         return self.context[ActivityTrigger.trigger](self.activity(activity))
 
+    @property
+    def channel(self) -> str:
+        return self.context.staff.call_fn(CoreCapability.channel, self)
+
+    @property
+    def guild(self) -> str | None:
+        try:
+            return self.context.staff.call_fn(CoreCapability.guild, self)
+        except NotImplementedError:
+            return None
+
+    @property
+    def user(self) -> str:
+        return self.context.staff.call_fn(CoreCapability.user, self)
+
 
 class ContextEndpointSelector(ContextSelector):
     def expects_request(self) -> ContextRequestSelector:
@@ -36,6 +52,21 @@ class ContextEndpointSelector(ContextSelector):
             return ContextRequestSelector.from_selector(self.context, self)
 
         raise ValueError(f"endpoint {self!r} is not a request endpoint")
+
+    @property
+    def channel(self) -> str:
+        return self.context.staff.call_fn(CoreCapability.channel, self)
+
+    @property
+    def guild(self) -> str | None:
+        try:
+            return self.context.staff.call_fn(CoreCapability.guild, self)
+        except NotImplementedError:
+            return None
+
+    @property
+    def user(self) -> str:
+        return self.context.staff.call_fn(CoreCapability.user, self)
 
 
 class ContextSelfSelector(ContextSelector):
@@ -74,6 +105,14 @@ class ContextSceneSelector(ContextSelector):
 
     def remove_member(self, target: Selector, reason: str | None = None):
         return self.context[SceneCapability.remove_member](target, reason)
+
+    @property
+    def channel(self) -> str:
+        return self.context.staff.call_fn(CoreCapability.channel, self)
+
+    @property
+    def guild(self) -> str:
+        return self.context.staff.call_fn(CoreCapability.guild, self)
 
 
 class ContextRequestSelector(ContextEndpointSelector):

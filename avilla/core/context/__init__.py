@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
+from typing import Any, TypedDict, TypeVar, cast, overload
 
 from typing_extensions import ParamSpec, Unpack
 
@@ -25,8 +25,6 @@ from ._roles import (
 )
 from ._selector import ContextSelector
 
-if TYPE_CHECKING:
-    pass
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
@@ -162,3 +160,19 @@ class Context:
 
     def __staff_generic__(self, element_type: dict, event_type: dict):
         ...
+
+    @property
+    def channel(self) -> str:
+        return self.context.staff.call_fn(SelectorCapability.channel, self)
+
+    @property
+    def guild(self) -> str:
+        return self.context.staff.call_fn(SelectorCapability.guild, self)
+
+    @property
+    def user(self) -> str:
+        return self.context.staff.call_fn(SelectorCapability.user, self)
+
+    @property
+    def member(self) -> str:
+        return self.context.staff.call_fn(SelectorCapability.member, self)

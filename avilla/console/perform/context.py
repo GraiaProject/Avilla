@@ -24,3 +24,11 @@ class ConsoleContextPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAc
             scene=target,
             selft=self.account.route,
         )
+
+    @m.entity(CoreCapability.channel, target="land.user")
+    def channel_from_channel(self, target: Selector):
+        return target["user"]
+
+    @m.entity(CoreCapability.user, target="land.user")
+    def user_from_friend(self, target: Selector):
+        return target["user"]

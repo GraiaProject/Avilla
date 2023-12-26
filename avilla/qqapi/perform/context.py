@@ -80,3 +80,40 @@ class QQAPIContextPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"
             target.into("::group"),
             target.into(f"~.member({self.account.route['account']})"),
         )
+
+    @m.entity(CoreCapability.channel, target="land.group")
+    @m.entity(CoreCapability.channel, target="land.group.member")
+    def channel_from_group(self, target: Selector):
+        return target["group"]
+
+    @m.entity(CoreCapability.guild, target="land.group")
+    @m.entity(CoreCapability.guild, target="land.group.member")
+    def guild_from_group(self, target: Selector):
+        return target["group"]
+
+    @m.entity(CoreCapability.channel, target="land.guild.channel")
+    @m.entity(CoreCapability.channel, target="land.guild.channel.member")
+    def channel_from_guild_channel(self, target: Selector):
+        return target["channel"]
+
+    @m.entity(CoreCapability.user, target="land.guild.user")
+    @m.entity(CoreCapability.channel, target="land.guild.user")
+    def user_from_guild_user(self, target: Selector):
+        return target["user"]
+
+    @m.entity(CoreCapability.guild, target="land.guild")
+    @m.entity(CoreCapability.guild, target="land.guild.user")
+    @m.entity(CoreCapability.guild, target="land.guild.member")
+    @m.entity(CoreCapability.guild, target="land.guild.channel")
+    @m.entity(CoreCapability.guild, target="land.guild.channel.member")
+    def guild_from_guild_channel(self, target: Selector):
+        return target["guild"]
+
+    @m.entity(CoreCapability.user, target="land.group.member")
+    def user_from_member(self, target: Selector):
+        return target["member"]
+
+    @m.entity(CoreCapability.user, target="land.friend")
+    @m.entity(CoreCapability.channel, target="land.friend")
+    def user_from_friend(self, target: Selector):
+        return target["friend"]
