@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from copy import deepcopy
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from itertools import filterfalse
@@ -84,6 +85,9 @@ class Selector:
         return self.__class__(pattern=pattern)
 
     def __getattr__(self, name: str) -> Callable[[str], Self]:
+        if name.startswith("__"):
+            return super().__getattribute__(name)  # type: ignore
+
         def wrapper(content: str) -> Self:
             return self.modify({**self.pattern, name: str(content)})
 
@@ -103,6 +107,13 @@ class Selector:
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}().{'.'.join(f'{k}({v})' for k, v in self.pattern.items())}"
+
+    def __copy__(self):
+        return self.modify({**self.pattern})
+
+    def __deepcopy__(self, memo):
+        data = {**self.pattern}
+        return self.__class__(deepcopy(data, memo))
 
     @property
     def empty(self) -> bool:
