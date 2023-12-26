@@ -58,6 +58,8 @@ class OneBot11MuteActionPerform((m := AccountCollector["OneBot11Protocol", "OneB
 
     @MuteAllCapability.unmute_all.collect(m, target="land.group")
     async def unmute_all_group(self, target: Selector):
-        result = self.account.connection.call("set_group_whole_ban", {"group_id": int(target["group"]), "enable": False})
+        result = self.account.connection.call(
+            "set_group_whole_ban", {"group_id": int(target["group"]), "enable": False}
+        )
         if result is None:
             raise RuntimeError(f"Failed to unmute all {target}: {result}")

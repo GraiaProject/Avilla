@@ -5,8 +5,8 @@ from typing import Any
 from graia.amnesia.message import Element, MessageChain
 
 from avilla.core.event import AvillaEvent
-from avilla.standard.core.application import AvillaLifecycleEvent
 from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.standard.core.application import AvillaLifecycleEvent
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 
 SPECIAL_POST_TYPE = {"message_sent": "message"}

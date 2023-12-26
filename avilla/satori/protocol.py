@@ -16,9 +16,9 @@ class SatoriConfig(ProtocolConfig, WebsocketsInfo):
 def _import_performs():  # noqa: F401
     import avilla.satori.perform.action.message
     import avilla.satori.perform.context  # noqa: F401
+    import avilla.satori.perform.event.activity
     import avilla.satori.perform.event.lifespan
     import avilla.satori.perform.event.message
-    import avilla.satori.perform.event.activity
     import avilla.satori.perform.message.deserialize
     import avilla.satori.perform.message.serialize  # noqa
     import avilla.satori.perform.resource_fetch  # noqa: F401

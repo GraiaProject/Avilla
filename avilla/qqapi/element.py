@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from avilla.core.elements import Element, Reference as _Reference
+from avilla.core.elements import Element
+from avilla.core.elements import Reference as _Reference
 
 
 @dataclass

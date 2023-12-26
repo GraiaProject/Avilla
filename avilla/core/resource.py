@@ -45,7 +45,6 @@ class RawResource(Resource[T]):
 
 
 class UrlResource(Resource[bytes]):
-
     def __init__(self, url: str):
         self.url = url
 

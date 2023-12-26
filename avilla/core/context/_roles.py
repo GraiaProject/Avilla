@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING, TypeVar
 from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import ParamSpec
 
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata
 from avilla.core.selector import Selector
-from avilla.core.builtins.capability import CoreCapability
 from avilla.standard.core.activity import ActivityTrigger
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.relation import SceneCapability

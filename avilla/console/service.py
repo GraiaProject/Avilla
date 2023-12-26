@@ -52,4 +52,6 @@ class ConsoleService(Service):
             self.app.exit()
             if task:
                 await task
-            self.protocol.avilla.broadcast.postEvent(AccountUnregistered(self.protocol.avilla, self.app.backend.account))
+            self.protocol.avilla.broadcast.postEvent(
+                AccountUnregistered(self.protocol.avilla, self.app.backend.account)
+            )

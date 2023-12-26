@@ -3,18 +3,17 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
+from satori.element import At
 from satori.element import Audio as SatoriAudio
+from satori.element import Bold, Br
+from satori.element import Button as SatoriButton
+from satori.element import Code
 from satori.element import File as SatoriFile
 from satori.element import (
-    At,
-    Bold,
-    Br,
-    Code,
     Image,
     Italic,
     Link,
     Paragraph,
-    Underline,
     Quote,
     Sharp,
     Spoiler,
@@ -23,10 +22,19 @@ from satori.element import (
     Superscript,
 )
 from satori.element import Text as SatoriText
+from satori.element import Underline
 from satori.element import Video as SatoriVideo
-from satori.element import Button as SatoriButton
 
-from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video, Reference
+from avilla.core.elements import (
+    Audio,
+    File,
+    Notice,
+    NoticeAll,
+    Picture,
+    Reference,
+    Text,
+    Video,
+)
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability

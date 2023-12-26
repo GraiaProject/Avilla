@@ -3,9 +3,9 @@ from __future__ import annotations
 import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING, AsyncIterator
-from typing_extensions import Self
 
 from loguru import logger
+from typing_extensions import Self
 
 from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.staff import Staff

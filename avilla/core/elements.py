@@ -29,7 +29,7 @@ class Notice(Element):
         self.display = display
 
     def __str__(self) -> str:
-        return f"[$Notice]"
+        return "[$Notice]"
 
     def __repr__(self) -> str:
         return f"[$Notice:target={self.target}]"

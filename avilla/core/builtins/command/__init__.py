@@ -46,7 +46,7 @@ from pygtrie import CharTrie
 from tarina.generic import generic_isinstance, generic_issubclass, get_origin
 from tarina.string import split_once
 
-from avilla.core import MessageReceived, Notice, Context
+from avilla.core import Context, MessageReceived, Notice
 
 T = TypeVar("T")
 TCallable = TypeVar("TCallable", bound=Callable[..., Any])
@@ -173,12 +173,7 @@ class AvillaCommands:
         return command_manager.get_command(f"{self.__namespace__}::{command}").get_help()
 
     async def execute(
-        self, 
-        command: Alconna, 
-        target: ExecTarget,
-        need_tome: bool,
-        remove_tome: bool,
-        event: MessageReceived
+        self, command: Alconna, target: ExecTarget, need_tome: bool, remove_tome: bool, event: MessageReceived
     ):
         if (need_tome or self.need_tome) and not _is_tome(event.message.content, event.context):
             return

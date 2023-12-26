@@ -7,8 +7,8 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from satori.model import ChannelType, Event
 
 from avilla.core.context import Context
-from avilla.core.message import Message
 from avilla.core.elements import Reference
+from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.collector.connection import ConnectionCollector

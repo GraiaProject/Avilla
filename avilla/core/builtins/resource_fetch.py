@@ -5,6 +5,7 @@ from avilla.core.ryanvk.collector.application import ApplicationCollector
 
 try:
     from aiohttp import ClientSession
+
     aio = True
 except ImportError:
     ClientSession = None
@@ -23,12 +24,15 @@ class CoreResourceFetchPerform((m := ApplicationCollector())._):
         return resource.data
 
     if aio:
+
         @m.entity(CoreCapability.fetch, resource=UrlResource)
         async def fetch_url(self, resource: UrlResource):
             async with ClientSession() as session:
                 async with session.get(resource.url) as resp:
                     return await resp.read()
+
     else:
+
         @m.entity(CoreCapability.fetch, resource=UrlResource)
         async def fetch_url(self, resource: UrlResource):
             raise NotImplementedError("aiohttp is not installed")

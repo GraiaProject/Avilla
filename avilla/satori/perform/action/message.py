@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from secrets import token_urlsafe
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
 from avilla.core.context import Context
-from avilla.core.message import Message
 from avilla.core.elements import Reference
+from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability

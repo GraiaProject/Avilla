@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
@@ -145,19 +145,21 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 msg["content"] = " "
         msg["msg_type"] = msg_type
 
-        if seq := await cache.get(f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}"):
+        if seq := await cache.get(
+            f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}"
+        ):
             msg["msg_seq"] = seq
             await cache.set(
                 f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
-                seq+1,
-                expire=timedelta(minutes=5)
+                seq + 1,
+                expire=timedelta(minutes=5),
             )
         else:
             msg["msg_seq"] = 1
             await cache.set(
                 f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
                 2,
-                expire=timedelta(minutes=5)
+                expire=timedelta(minutes=5),
             )
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
@@ -233,19 +235,21 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         msg["msg_type"] = msg_type
         if "file_image" in msg:
             raise NotImplementedError("file_image is not supported yet")
-        if seq := await cache.get(f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}"):
+        if seq := await cache.get(
+            f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}"
+        ):
             msg["msg_seq"] = seq
             await cache.set(
                 f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
-                seq+1,
-                expire=timedelta(minutes=5)
+                seq + 1,
+                expire=timedelta(minutes=5),
             )
         else:
             msg["msg_seq"] = 1
             await cache.set(
                 f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}",
                 2,
-                expire=timedelta(minutes=5)
+                expire=timedelta(minutes=5),
             )
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
@@ -270,7 +274,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             {
                 "recipient_id": target.pattern["user"],
                 "source_guild_id": target.pattern["guild"],
-            }
+            },
         )
         return target.into(f"land.guild({result['guild_id']})")
 
@@ -283,7 +287,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             {
                 "recipient_id": target.pattern["member"],
                 "source_guild_id": target.pattern["guild"],
-            }
+            },
         )
         return target.into(f"land.guild({result['guild_id']})")
 
@@ -302,7 +306,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             await cache.set(
                 f"qqapi/account({self.account.route['account']}):{target}#dms",
                 send_guild_id,
-                expire=timedelta(minutes=20)
+                expire=timedelta(minutes=20),
             )
         if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
             msg["msg_id"] = event_id

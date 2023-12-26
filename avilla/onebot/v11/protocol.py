@@ -27,21 +27,17 @@ class OneBot11ReverseConfig:
 
 def _import_performs():
     from avilla.onebot.v11.perform import context, resource_fetch  # noqa: F401
-
     from avilla.onebot.v11.perform.action import admin  # noqa: F401
     from avilla.onebot.v11.perform.action import ban  # noqa: F401
     from avilla.onebot.v11.perform.action import leave  # noqa: F401
     from avilla.onebot.v11.perform.action import message  # noqa: F401
     from avilla.onebot.v11.perform.action import mute  # noqa: F401
-
-    from avilla.onebot.v11.perform.event import message  # noqa: F401
     from avilla.onebot.v11.perform.event import lifespan  # noqa: F401
+    from avilla.onebot.v11.perform.event import message  # noqa: F401, F811
     from avilla.onebot.v11.perform.event import notice  # noqa: F401
     from avilla.onebot.v11.perform.event import request  # noqa: F401
-
     from avilla.onebot.v11.perform.message import deserialize  # noqa: F401
     from avilla.onebot.v11.perform.message import serialize  # noqa: F401
-
     from avilla.onebot.v11.perform.query import group  # noqa: F401
 
 

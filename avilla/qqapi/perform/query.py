@@ -16,7 +16,7 @@ class QQAPIQueryPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"](
 
     @CoreCapability.query.collect(m, "land.guild")
     async def query_guilds(self, predicate: Callable[[str, str], bool] | str, previous: None):
-        result = await self.account.connection.call_http("get", f"users/@me/guilds", {})
+        result = await self.account.connection.call_http("get", "users/@me/guilds", {})
         result = cast(list, result)
         for i in result:
             guild_id = str(i["id"])

@@ -7,8 +7,8 @@ from satori.parser import escape
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.satori.capability import SatoriCapability
-from avilla.satori.resource import SatoriResource
 from avilla.satori.element import Button
+from avilla.satori.resource import SatoriResource
 
 if TYPE_CHECKING:
     from avilla.satori.account import SatoriAccount  # noqa

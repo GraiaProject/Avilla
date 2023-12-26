@@ -5,10 +5,10 @@ from datetime import datetime
 from loguru import logger
 
 from avilla.core.context import Context
-from avilla.core.message import Message
 from avilla.core.elements import Reference
-from avilla.onebot.v11.capability import OneBot11Capability
+from avilla.core.message import Message
 from avilla.core.selector import Selector
+from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.standard.core.message import MessageReceived, MessageRevoked, MessageSent
 
@@ -32,7 +32,9 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             friend,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
-        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
+            raw_event["message"]
+        )
         reply = None
         if i := message.get(Reference):
             reply = i[0].message
@@ -67,7 +69,9 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             member,
             group.member(str(raw_event["self_id"])),
         )
-        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
+            raw_event["message"]
+        )
         reply = None
         if i := message.get(Reference):
             reply = i[0].message
@@ -101,7 +105,9 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(str(raw_event["self_id"])),
         )
-        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
+            raw_event["message"]
+        )
         reply = None
         if i := message.get(Reference):
             reply = i[0].message
@@ -133,7 +139,9 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             stranger,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
-        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
+            raw_event["message"]
+        )
         reply = None
         if i := message.get(Reference):
             reply = i[0].message
@@ -166,7 +174,9 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(str(raw_event["self_id"])),
         )
-        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
+            raw_event["message"]
+        )
         reply = None
         if i := message.get(Reference):
             reply = i[0].message
@@ -194,7 +204,9 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         member = group.member(str(raw_event["user_id"]))
         context = Context(account, member, group, group, member)
-        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(raw_event["message"])
+        message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
+            raw_event["message"]
+        )
         reply = None
         if i := message.get(Reference):
             reply = i[0].message

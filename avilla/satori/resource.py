@@ -8,7 +8,9 @@ from avilla.core.resource import Resource
 
 
 class SatoriResource(Resource[bytes], RawResource):
-    def __init__(self, src: str, extra: dict[str, Any] | None = None, cache: bool | None = None, timeout: str | None = None):
+    def __init__(
+        self, src: str, extra: dict[str, Any] | None = None, cache: bool | None = None, timeout: str | None = None
+    ):
         RawResource.__init__(self, src, extra, cache, timeout)
 
 

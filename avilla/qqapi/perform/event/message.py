@@ -6,8 +6,8 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 
 from avilla.core.context import Context
+from avilla.core.elements import Notice, Text
 from avilla.core.message import Message
-from avilla.core.elements import Text, Notice
 from avilla.core.selector import Selector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.collector.connection import ConnectionCollector
@@ -66,14 +66,9 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         context._collect_metadatas(
             author,
             Nick(
-                raw_event["author"]["username"],
-                raw_event["member"].get("nick", raw_event["author"]["username"]),
-                None
+                raw_event["author"]["username"], raw_event["member"].get("nick", raw_event["author"]["username"]), None
             ),
-            Summary(
-                raw_event["author"]["username"],
-                "channel member"
-            ),
+            Summary(raw_event["author"]["username"], "channel member"),
         )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
@@ -167,19 +162,14 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         await cache.set(
             f"qqapi/account({account_route['account']}):{context.scene}#dms",
             raw_event["guild_id"],
-            timedelta(minutes=5)
+            timedelta(minutes=5),
         )
         context._collect_metadatas(
             author,
             Nick(
-                raw_event["author"]["username"],
-                raw_event["member"].get("nick", raw_event["author"]["username"]),
-                None
+                raw_event["author"]["username"], raw_event["member"].get("nick", raw_event["author"]["username"]), None
             ),
-            Summary(
-                raw_event["author"]["username"],
-                "channel member"
-            ),
+            Summary(raw_event["author"]["username"], "channel member"),
         )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
@@ -314,15 +304,8 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             author,
-            Nick(
-                raw_event["message"]["author"]["username"],
-                raw_event["message"]["author"]["username"],
-                None
-            ),
-            Summary(
-                raw_event["message"]["author"]["username"],
-                "channel member"
-            ),
+            Nick(raw_event["message"]["author"]["username"], raw_event["message"]["author"]["username"], None),
+            Summary(raw_event["message"]["author"]["username"], "channel member"),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)
 
@@ -346,14 +329,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             author,
-            Nick(
-                raw_event["message"]["author"]["username"],
-                raw_event["message"]["author"]["username"],
-                None
-            ),
-            Summary(
-                raw_event["message"]["author"]["username"],
-                "channel member"
-            ),
+            Nick(raw_event["message"]["author"]["username"], raw_event["message"]["author"]["username"], None),
+            Summary(raw_event["message"]["author"]["username"], "channel member"),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)

@@ -8,8 +8,8 @@ from typing_extensions import Concatenate, ParamSpec, Self, Unpack
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.ryanvk import Fn
 from avilla.core.selector import EMPTY_MAP, Selector
-from avilla.standard.core.profile import Nick, Summary
 from avilla.standard.core.privilege import Privilege
+from avilla.standard.core.profile import Nick, Summary
 
 if TYPE_CHECKING:
     from . import Context

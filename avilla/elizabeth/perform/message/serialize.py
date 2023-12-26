@@ -5,8 +5,8 @@ from dataclasses import asdict
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
+from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.resource import UrlResource, LocalFileResource, RawResource
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource
 from avilla.standard.qq.elements import (
@@ -94,15 +94,9 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                 "url": element.resource.url,
             }
         elif isinstance(element.resource, LocalFileResource):
-            return {
-                "type": "Image",
-                "base64": base64.b64encode(element.resource.file.read_bytes()).decode("utf-8")
-            }
+            return {"type": "Image", "base64": base64.b64encode(element.resource.file.read_bytes()).decode("utf-8")}
         elif isinstance(element.resource, RawResource):
-            return {
-                "type": "Image",
-                "base64": base64.b64encode(element.resource.data).decode("utf-8")
-            }
+            return {"type": "Image", "base64": base64.b64encode(element.resource.data).decode("utf-8")}
         else:
             return {
                 "type": "Image",
@@ -129,15 +123,9 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                 "url": element.resource.url,
             }
         elif isinstance(element.resource, LocalFileResource):
-            return {
-                "type": "Voice",
-                "base64": base64.b64encode(element.resource.file.read_bytes()).decode("utf-8")
-            }
+            return {"type": "Voice", "base64": base64.b64encode(element.resource.file.read_bytes()).decode("utf-8")}
         elif isinstance(element.resource, RawResource):
-            return {
-                "type": "Voice",
-                "base64": base64.b64encode(element.resource.data).decode("utf-8")
-            }
+            return {"type": "Voice", "base64": base64.b64encode(element.resource.data).decode("utf-8")}
         else:
             return {
                 "type": "Voice",

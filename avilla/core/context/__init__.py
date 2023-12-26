@@ -25,7 +25,6 @@ from ._roles import (
 )
 from ._selector import ContextSelector
 
-
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)
 _T = TypeVar("_T")

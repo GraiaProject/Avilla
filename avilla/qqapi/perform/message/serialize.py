@@ -3,12 +3,16 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.resource import UrlResource, LocalFileResource, RawResource
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text, Audio, Video
+from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text, Video
+from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.element import Ark, Embed, Keyboard, Markdown, Reference
-from avilla.qqapi.resource import QQAPIImageResource, QQAPIAudioResource, QQAPIVideoResource
+from avilla.qqapi.resource import (
+    QQAPIAudioResource,
+    QQAPIImageResource,
+    QQAPIVideoResource,
+)
 from avilla.qqapi.utils import escape
 
 if TYPE_CHECKING:
@@ -66,7 +70,7 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
     async def reference(self, element: Reference):
         return "message_reference", {
             "message_id": element.message["message"],
-            "ignore_get_message_error": element.ignore_get_message_error
+            "ignore_get_message_error": element.ignore_get_message_error,
         }
 
     @m.entity(QQAPICapability.serialize_element, element=Embed)
@@ -108,7 +112,7 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
             "template_id": element.template_id,
             "content": element.content,
             "custom_template_id": element.custom_template_id,
-            "params": param
+            "params": param,
         }
 
     @m.entity(QQAPICapability.serialize_element, element=Keyboard)

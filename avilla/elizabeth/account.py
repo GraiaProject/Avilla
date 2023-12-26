@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from avilla.core.account import BaseAccount, AccountStatus
+from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.selector import Selector
 from avilla.elizabeth.connection.base import ElizabethNetworking
 

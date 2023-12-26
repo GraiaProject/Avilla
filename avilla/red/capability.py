@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 from graia.amnesia.message import Element, MessageChain
 
 from avilla.core.event import AvillaEvent

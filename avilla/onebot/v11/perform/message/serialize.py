@@ -4,10 +4,10 @@ import base64
 from typing import TYPE_CHECKING, cast
 
 from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
+from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.resource import UrlResource, LocalFileResource, RawResource
-from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.onebot.v11.capability import OneBot11Capability
+from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import (
     App,
     Dice,
@@ -76,7 +76,10 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
             return {
                 "type": "image",
                 "data": {
-                    "file": "base64://" + base64.b64encode(cast(bytes, await self.account.staff.fetch_resource(element.resource))).decode("utf-8"),
+                    "file": "base64://"
+                    + base64.b64encode(cast(bytes, await self.account.staff.fetch_resource(element.resource))).decode(
+                        "utf-8"
+                    ),
                 },
             }
 
