@@ -3,7 +3,12 @@ from __future__ import annotations
 from datetime import timedelta
 
 from avilla.core.context import Context
-from avilla.core.event import SceneCreated, MemberCreated, SceneDestroyed, MemberDestroyed
+from avilla.core.event import (
+    MemberCreated,
+    MemberDestroyed,
+    SceneCreated,
+    SceneDestroyed,
+)
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector

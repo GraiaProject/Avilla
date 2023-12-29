@@ -120,7 +120,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking, Service):
             if account_route in self.protocol.avilla.accounts:
                 account = cast(ElizabethAccount, self.protocol.avilla.accounts[account_route].account)
             else:
-                account = ElizabethAccount(account_route, self.protocol.avilla, self.protocol)
+                account = ElizabethAccount(account_route, self.protocol)
                 self.protocol.avilla.accounts[account_route] = AccountInfo(
                     account_route,
                     account,

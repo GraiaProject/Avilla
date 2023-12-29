@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Mapping
+from typing import Mapping, Optional
 
 from avilla.core.exceptions import ActionFailed as BaseActionFailed
 from avilla.core.exceptions import HttpRequestError, InvalidAuthentication

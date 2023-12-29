@@ -12,8 +12,8 @@ from avilla.core.event import (
     RelationshipCreated,
     RelationshipDestroyed,
 )
-from avilla.core.ryanvk.descriptor.event import EventParse
 from avilla.core.selector import Selector
+from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.standard.core.activity import ActivityTrigged
 from avilla.standard.core.privilege import MuteInfo, Privilege
@@ -22,20 +22,21 @@ from avilla.standard.qq.honor import Honor
 
 
 class OneBot11EventNoticePerform((m := ConnectionCollector())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::event"
+    m.identify = "notice"
 
-    @EventParse.collect(m, "notice.group_admin.set")
-    async def group_admin_set(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_admin.set")
+    async def group_admin_set(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
 
         # get operator(group owner)
-        members = await self.connection.call("get_group_member_list", {"group": raw["group_id"]})
+        members = await self.connection.call("get_group_member_list", {"group": raw_event["group_id"]})
         members = cast("list[dict]", members)
         operator_id = next((d["id"] for d in members if d["role"] == "owner"), None)
         operator = group.member(str(operator_id)) if operator_id else group
@@ -52,18 +53,18 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @EventParse.collect(m, "notice.group_admin.unset")
-    async def group_admin_unset(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_admin.unset")
+    async def group_admin_unset(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
 
         # get operator(group owner)
-        members = await self.connection.call("get_group_member_list", {"group": raw["group_id"]})
+        members = await self.connection.call("get_group_member_list", {"group": raw_event["group_id"]})
         members = cast("list[dict]", members)
         operator_id = next((d["id"] for d in members if d["role"] == "owner"), None)
         operator = group.member(str(operator_id)) if operator_id else group
@@ -80,55 +81,55 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @EventParse.collect(m, "notice.group_decrease.leave")
-    async def member_leave(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_decrease.leave")
+    async def member_leave(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
-        operator = group.member(str(raw["operator_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
         return RelationshipDestroyed(context, True, True)
 
-    @EventParse.collect(m, "notice.group_decrease.kick")
-    async def member_kick(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_decrease.kick")
+    async def member_kick(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
-        operator = group.member(str(raw["operator_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
         return RelationshipDestroyed(context, False, True)
 
-    @EventParse.collect(m, "notice.group_decrease.kick_me")
-    async def member_kick_me(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_decrease.kick_me")
+    async def member_kick_me(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
-        operator = group.member(str(raw["operator_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
         return RelationshipDestroyed(context, False, False)
 
-    @EventParse.collect(m, "notice.group_increase.approve")
-    async def member_increase_approve(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_increase.approve")
+    async def member_increase_approve(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
-        operator = group.member(str(raw["operator_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["operator_id"]))
         context = Context(
             account,
             operator,
@@ -138,29 +139,29 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         )
         return RelationshipCreated(context)
 
-    @EventParse.collect(m, "notice.group_increase.invite")
-    async def member_increase_invite(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_increase.invite")
+    async def member_increase_invite(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
-        operator = group.member(str(raw["operator_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)), mediums=[group])
         return RelationshipCreated(context)
 
-    @EventParse.collect(m, "notice.group_ban.ban")
-    async def member_muted(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_ban.ban")
+    async def member_muted(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
-        operator = group.member(str(raw["operator_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["operator_id"]))
         context = Context(
             account,
             operator,
@@ -174,22 +175,22 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh(lambda x: x.muted): ModifyDetail("set", True),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=raw["duration"])),
+                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=raw_event["duration"])),
             },
             operator=operator,
             scene=group,
         )
 
-    @EventParse.collect(m, "notice.group_ban.lift_ban")
-    async def member_unmuted(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_ban.lift_ban")
+    async def member_unmuted(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        group = Selector().land("qq").group(str(raw["group_id"]))
-        endpoint = group.member(str(raw["user_id"]))
-        operator = group.member(str(raw["operator_id"]))
+        group = Selector().land("qq").group(str(raw_event["group_id"]))
+        endpoint = group.member(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["operator_id"]))
         context = Context(
             account,
             operator,
@@ -209,18 +210,18 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             scene=group,
         )
 
-    @EventParse.collect(m, "notice.friend_add")
-    async def friend_add(self, raw: dict):
-        self_id = raw["self_id"]
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.friend_add")
+    async def friend_add(self, raw_event: dict):
+        self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received message {raw}")
+            logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
-        friend = Selector().land("qq").friend(str(raw["user_id"]))
+        friend = Selector().land("qq").friend(str(raw_event["user_id"]))
         context = Context(account, friend, friend, friend, account.route)
         return RelationshipCreated(context)
 
-    @EventParse.collect(m, "notice.notify.poke")
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.notify.poke")
     async def nudge_received(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -239,7 +240,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             context = Context(account, friend, selft, friend, selft)
             return ActivityTrigged(context, "nudge", friend, friend.nudge("_"), friend)
 
-    @EventParse.collect(m, "notice.notify.lucky_king")
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.notify.lucky_king")
     async def lucky_king_received(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
@@ -253,7 +254,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         context = Context(account, operator, target, group, group.member(str(self_id)))
         return PocketLuckyKingNoticed(context)
 
-    @EventParse.collect(m, "notice.notify.honor")
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.notify.honor")
     async def honor(self, raw_event: dict):
         self_id = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)

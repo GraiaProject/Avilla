@@ -214,7 +214,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
         )
 
     @RoleMemberCapability.add.collect(m, target="land.guild.channel.member")
-    async def add_role_member(self, target: Selector, member: Selector) -> None:
+    async def add_role_member1(self, target: Selector, member: Selector) -> None:
         role_id = target.pattern["role"]
         await self.account.connection.call_http(
             "put",
@@ -241,7 +241,7 @@ class QQAPIRoleActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccou
         )
 
     @RoleMemberCapability.remove.collect(m, target="land.guild.channel.member")
-    async def remove_role_member(self, target: Selector, member: Selector) -> None:
+    async def remove_role_member1(self, target: Selector, member: Selector) -> None:
         role_id = target.pattern["role"]
         await self.account.connection.call_http(
             "delete",

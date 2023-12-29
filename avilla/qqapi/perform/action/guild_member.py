@@ -99,7 +99,9 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
     @MuteCapability.mute.collect(m, target="land.guild.channel.member")
     async def mute(self, target: Selector, duration: timedelta) -> None:
         if not (await self.get_privilege(target, Privilege)).effective:
-            self_info = await self.get_privilege_summary(target.into(f"~.member{self.account.route['account']}"), Summary)
+            self_info = await self.get_privilege_summary(
+                target.into(f"~.member{self.account.route['account']}"), Summary
+            )
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", self_info.name, ["manage"]))
         await self.account.connection.call_http(
             "put",
@@ -110,7 +112,9 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
     @MuteCapability.unmute.collect(m, target="land.guild.channel.member")
     async def unmute(self, target: Selector) -> None:
         if not (await self.get_privilege(target, Privilege)).effective:
-            self_info = await self.get_privilege_summary(target.into(f"~.member{self.account.route['account']}"), Summary)
+            self_info = await self.get_privilege_summary(
+                target.into(f"~.member{self.account.route['account']}"), Summary
+            )
             raise PermissionError(permission_error_message(f"set_permission@{target.path}", self_info.name, ["manage"]))
         await self.account.connection.call_http(
             "put",

@@ -1,7 +1,8 @@
 from arclet.alconna import Alconna, Args, CommandMeta, Option, Subcommand, count
 from avilla.console.protocol import ConsoleProtocol
-from avilla.core import Avilla, Context
+from avilla.core import Avilla, Context, Notice
 from avilla.core.builtins.command import AvillaCommands, Match
+from typing import Union
 
 alc = Alconna(
     "pip",
@@ -23,11 +24,17 @@ alc = Alconna(
 
 avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
-cmd = AvillaCommands(need_tome=True, remove_tome=True)
+cmd = AvillaCommands(need_tome=False, remove_tome=True)
+
 
 @cmd.on("ping")
 async def ping(ctx: Context):
     await ctx.scene.send_message("pong")
+
+
+@cmd.on("转账 {target} {mount}")
+async def ping(ctx: Context, target: Union[str, Notice], mount: int):
+    await ctx.scene.send_message(f"转账给 {target} {mount} 元")
 
 @(
 cmd.command("help [name:str]", "菜单命令")
@@ -42,13 +49,16 @@ async def help_(ctx: Context, name: Match[str]):
     else:
         await ctx.scene.send_message(cmd.all_helps)
 
+
 @cmd.on(alc)
 async def test(package: Match[str], ctx: Context):
     await ctx.scene.send_message(f"installing {package.result}")
 
+
 @cmd.on("add test {a:int} {b:int}")
 async def add_test(ctx: Context, a: int, b: int):
     await ctx.scene.send_message(f"test {a} + {b} = {a + b}")
+
 
 @cmd.on("add {a:int} {b:int}")
 async def add(ctx: Context, a: int, b: int):

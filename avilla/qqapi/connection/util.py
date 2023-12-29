@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from typing import Literal
+
 from aiohttp import ClientResponse
 
 from avilla.qqapi.exception import (

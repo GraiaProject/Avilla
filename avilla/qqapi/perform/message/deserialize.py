@@ -113,7 +113,9 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="message_reference")
     async def message_reference(self, raw_element: dict) -> Reference:
-        return Reference(raw_element["message_id"])
+        if self.context:
+            return Reference(self.context.scene.message(raw_element["message_id"]))
+        return Reference(Selector().land("qqguild").message(raw_element["message_id"]))
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="embed")
     async def embed(self, raw_element: dict) -> Embed:

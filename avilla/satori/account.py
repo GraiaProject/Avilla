@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from satori.account import Account
 
 from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.selector import Selector
-from avilla.standard.core.account import AccountAvailable, AccountUnavailable
 
 if TYPE_CHECKING:
     from .protocol import SatoriProtocol
 
 
+@dataclass
 class SatoriAccount(BaseAccount):
     protocol: SatoriProtocol
     status: AccountStatus
@@ -27,13 +27,13 @@ class SatoriAccount(BaseAccount):
     def identity(self):
         return f"{self.route['land']}/{self.route['account']}"
 
-    @contextmanager
-    def _status_update(self):
-        prev = self.available
-        yield
-        if prev != (curr := self.available):
-            avilla = self.protocol.avilla
-            avilla.broadcast.postEvent((AccountAvailable if curr else AccountUnavailable)(avilla, self))
+    # @contextmanager
+    # def _status_update(self):
+    #     prev = self.available
+    #     yield
+    #     if prev != (curr := self.available):
+    #         avilla = self.protocol.avilla
+    #         avilla.broadcast.postEvent((AccountAvailable if curr else AccountUnavailable)(avilla, self))
 
     @property
     def available(self) -> bool:

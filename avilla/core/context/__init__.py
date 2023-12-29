@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, TypedDict, TypeVar, cast, overload
+from typing import Any, TypedDict, TypeVar, cast, overload
 
 from typing_extensions import ParamSpec, Unpack
 
@@ -24,9 +24,6 @@ from ._roles import (
     ContextSelfSelector,
 )
 from ._selector import ContextSelector
-
-if TYPE_CHECKING:
-    pass
 
 P = ParamSpec("P")
 R = TypeVar("R", covariant=True)

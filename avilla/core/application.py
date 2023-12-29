@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from typing import TYPE_CHECKING, Any, Iterable, TypeVar, overload, Callable
+from typing import TYPE_CHECKING, Any, Callable, Iterable, TypeVar, overload
 
 from creart import it
 from graia.amnesia.builtins.memcache import MemcacheService
@@ -22,8 +22,10 @@ from avilla.core.utilles import identity
 
 if TYPE_CHECKING:
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
+
     from avilla.core.event import AvillaEvent
     from avilla.standard.core.application import AvillaLifecycleEvent
+
     from .resource import Resource
 
 T = TypeVar("T")
@@ -100,9 +102,13 @@ class Avilla:
         self.custom_event_recorder: dict[type[AvillaEvent], Callable[[AvillaEvent], None]] = {}
 
     def event_record(self, event: AvillaEvent | AvillaLifecycleEvent):
-        from avilla.standard.core.message import MessageReceived, MessageEdited, MessageSent
-        from avilla.standard.core.application import AvillaLifecycleEvent
         from avilla.standard.core.account.event import AccountStatusChanged
+        from avilla.standard.core.application import AvillaLifecycleEvent
+        from avilla.standard.core.message import (
+            MessageEdited,
+            MessageReceived,
+            MessageSent,
+        )
 
         if isinstance(event, AccountStatusChanged):
             logger.debug(
@@ -115,9 +121,9 @@ class Avilla:
             logger.debug(event.__class__.__name__)
             return
         context = event.context
-        client = f"{'.'.join(f'{k}({v})' for k, v in context.client.items())}"
-        scene = f"{'.'.join(f'{k}({v})' for k, v in context.scene.items())}"
-        endpoint = f"{'.'.join(f'{k}({v})' for k, v in context.endpoint.items())}"
+        client = context.client.display
+        scene = context.scene.display
+        endpoint = context.endpoint.display
 
         if isinstance(event, MessageSent):
             return
@@ -152,11 +158,15 @@ class Avilla:
     def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None]) -> Callable[[TE], None]:
         ...
 
-    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None] | None = None) -> Callable[..., Callable[[TE], None]] | Callable[[TE], None]:
+    def add_event_recorder(
+        self, event_type: type[TE], recorder: Callable[[TE], None] | None = None
+    ) -> Callable[..., Callable[[TE], None]] | Callable[[TE], None]:
         if recorder is None:
+
             def wrapper(func: Callable[[TE], None]):
                 self.custom_event_recorder[event_type] = func  # type: ignore
                 return func
+
             return wrapper
         self.custom_event_recorder[event_type] = recorder  # type: ignore
         return recorder

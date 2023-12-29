@@ -29,7 +29,7 @@ class Notice(Element):
         self.display = display
 
     def __str__(self) -> str:
-        return f"[$Notice]"
+        return "[$Notice]"
 
     def __repr__(self) -> str:
         return f"[$Notice:target={self.target}]"
@@ -46,9 +46,9 @@ class NoticeAll(Element):
 
 
 class Picture(Element):
-    resource: Resource[bytes] | Resource[str]
+    resource: Resource[bytes]
 
-    def __init__(self, resource: Resource[bytes] | Resource[str] | Path | str):
+    def __init__(self, resource: Resource[bytes] | Path | str):
         if isinstance(resource, Path):
             resource = LocalFileResource(resource)
         elif isinstance(resource, str):
@@ -115,10 +115,13 @@ class File(Element):
         return f"[$File:resource={self.resource.to_selector()}]"
 
 
-@dataclass(frozen=True, eq=True)
+@dataclass
 class Reference(Element):
     message: Selector
     slice: tuple[int, int] | None = None
+
+    def __str__(self):
+        return f"[$Reference:id={self.message}]"
 
 
 @dataclass

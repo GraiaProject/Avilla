@@ -1,18 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
-from loguru import logger
 from satori.model import ChannelType, Event
 
 from avilla.core.context import Context
-from avilla.core.message import Message, MessageChain
+from avilla.core.elements import Reference
+from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.collector.connection import ConnectionCollector
-from avilla.satori.element import Reply
 from avilla.satori.model import OuterEvent
 from avilla.standard.core.message import MessageReceived, MessageSent
 
@@ -41,9 +40,9 @@ class SatoriEventMessagePerform((m := ConnectionCollector())._):
             message = await SatoriCapability(account.staff.ext({"context": context})).deserialize(
                 raw_event.message.content
             )
-            if message.get(Reply):
-                reply = user.message(message.get(Reply)[0].id)
-                message = message.exclude(Reply)
+            if message.get(Reference):
+                reply = message.get_first(Reference).message
+                message = message.exclude(Reference)
             msg = Message(
                 id=f"{raw_event.message.id}",
                 scene=private,
@@ -72,9 +71,9 @@ class SatoriEventMessagePerform((m := ConnectionCollector())._):
             message = await SatoriCapability(account.staff.ext({"context": context})).deserialize(
                 raw_event.message.content
             )
-            if message.get(Reply):
-                reply = channel.message(message.get(Reply)[0].id)
-                message = message.exclude(Reply)
+            if message.get(Reference):
+                reply = message.get_first(Reference).message
+                message = message.exclude(Reference)
             msg = Message(
                 id=f"{raw_event.message.id}",
                 scene=channel,

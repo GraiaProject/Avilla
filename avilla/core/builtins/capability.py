@@ -40,3 +40,15 @@ class CoreCapability(Capability):
     @Fn.complex({TypeOverload(): ["resource"]})
     async def fetch(self, resource: Resource[T]) -> T:
         ...
+
+    @Fn.complex({TargetOverload(): ["target"]})
+    def channel(self, target: Selector) -> str:
+        ...
+
+    @Fn.complex({TargetOverload(): ["target"]})
+    def guild(self, target: Selector) -> str:
+        ...
+
+    @Fn.complex({TargetOverload(): ["target"]})
+    def user(self, target: Selector) -> str:
+        ...

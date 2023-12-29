@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from secrets import token_urlsafe
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
 from avilla.core.context import Context
+from avilla.core.elements import Reference
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
-from avilla.satori.element import Reply
 from avilla.standard.core.message import MessageRevoke, MessageSend, MessageSent
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
     ) -> Selector:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if reply:
-            message = Reply(reply["message"]) + message
+            message = Reference(reply) + message
         result = await self.account.client.message_create(
             channel_id=target["channel"], content=await SatoriCapability(self.account.staff).serialize(message)
         )
@@ -47,7 +47,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 target.member(self.account.route["account"]),
             )
             content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
-            content = content.exclude(Reply)
+            content = content.exclude(Reference)
             _msg = Message(
                 id=f"{msg.id}",
                 scene=target,
@@ -75,7 +75,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
     ) -> Selector:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if reply:
-            message = Reply(reply["message"]) + message
+            message = Reference(reply) + message
         result = await self.account.client.message_create(
             channel_id=target["private"], content=await SatoriCapability(self.account.staff).serialize(message)
         )
@@ -88,7 +88,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 self.account.route,
             )
             content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
-            content = content.exclude(Reply)
+            content = content.exclude(Reference)
             _msg = Message(
                 id=f"{msg.id}",
                 scene=target,
@@ -137,9 +137,9 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         )
         content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
         reply = None
-        if replys := content.get(Reply):
-            reply = message.info(f"~.message({replys[0].id})")
-            content = content.exclude(Reply)
+        if replys := content.get(Reference):
+            reply = message.info(f"~.message({replys[0].message['message']})")
+            content = content.exclude(Reference)
         return Message(
             id=f"{msg.id}",
             scene=message.info("::public.channel"),
@@ -160,9 +160,9 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         _ctx = self.account.get_context(message.info("::private.user"))
         content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
         reply = None
-        if replys := content.get(Reply):
-            reply = message.info(f"~.message({replys[0].id})")
-            content = content.exclude(Reply)
+        if replys := content.get(Reference):
+            reply = message.info(f"~.message({replys[0].message['message']})")
+            content = content.exclude(Reference)
         return Message(
             id=f"{msg.id}",
             scene=message.info("::private.user"),

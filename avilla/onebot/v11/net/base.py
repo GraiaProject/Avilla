@@ -1,22 +1,22 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, AsyncIterator, Generic, TypeVar
+from contextlib import suppress
+from typing import TYPE_CHECKING, AsyncIterator
 
 from loguru import logger
+from typing_extensions import Self
 
 from avilla.core.exceptions import ActionFailed
-from avilla.onebot.v11.utilles import onebot11_event_type
+from avilla.core.ryanvk.staff import Staff
+from avilla.onebot.v11.capability import OneBot11Capability
 
 if TYPE_CHECKING:
     from avilla.onebot.v11.account import OneBot11Account
     from avilla.onebot.v11.protocol import OneBot11Protocol
 
 
-T = TypeVar("T")
-
-
-class OneBot11Networking(Generic[T]):
+class OneBot11Networking:
     protocol: OneBot11Protocol
     accounts: dict[int, OneBot11Account]
     response_waiters: dict[str, asyncio.Future]
@@ -29,7 +29,17 @@ class OneBot11Networking(Generic[T]):
         self.response_waiters = {}
         self.close_signal = asyncio.Event()
 
-    def message_receive(self) -> AsyncIterator[tuple[T, dict]]:
+    def get_staff_components(self):
+        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
+
+    def get_staff_artifacts(self):
+        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
+
+    @property
+    def staff(self):
+        return Staff(self.get_staff_artifacts(), self.get_staff_components())
+
+    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]:
         ...
 
     @property
@@ -49,17 +59,14 @@ class OneBot11Networking(Generic[T]):
                     future.set_result(data)
                 continue
 
-            """
             async def event_parse_task(data: dict):
-                event_type = onebot11_event_type(data)
-                event = await connection.staff.parse_event(event_type, data)
-                if event == "non-implemented":
-                    logger.warning(f"received unsupported event {event_type}: {data}")
+                with suppress(NotImplementedError):
+                    await OneBot11Capability(connection.staff).handle_event(data)
                     return
-                elif event is not None:
-                    await self.protocol.post_event(event)
 
-            asyncio.create_task(event_parse_task(data))"""
+                logger.warning(f"received unsupported event: {data}")
+
+            asyncio.create_task(event_parse_task(data))
 
     async def connection_closed(self):
         self.close_signal.set()

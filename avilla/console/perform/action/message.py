@@ -35,7 +35,7 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
         if TYPE_CHECKING:
             assert isinstance(self.protocol, ConsoleProtocol)
         serialized_msg = ConsoleMessage(
-            [await self.staff.call_fn(ConsoleCapability.serialize_element, i) for i in message]
+            [await ConsoleCapability(self.account.staff).serialize_element(i) for i in message]
         )
 
         await self.account.client.call(

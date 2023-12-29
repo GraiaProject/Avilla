@@ -44,8 +44,7 @@ class RawResource(Resource[T]):
         return Selector().land("avilla-core").raw_data(str(id(self)))
 
 
-class UrlResource(Resource[str]):
-
+class UrlResource(Resource[bytes]):
     def __init__(self, url: str):
         self.url = url
 

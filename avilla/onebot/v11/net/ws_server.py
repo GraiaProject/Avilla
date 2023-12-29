@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ReverseConfig
 
 
-class OneBot11WsServerConnection(OneBot11Networking["OneBot11WsServerConnection"]):
+class OneBot11WsServerConnection(OneBot11Networking):
     connection: WebSocket
 
     def __init__(self, connection: WebSocket, protocol: OneBot11Protocol):
@@ -42,15 +42,6 @@ class OneBot11WsServerConnection(OneBot11Networking["OneBot11WsServerConnection"
 
     async def wait_for_available(self):
         return
-
-    def get_staff_components(self):
-        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
-
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
-
-    def get_staff_artifacts(self):
-        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
     async def send(self, payload: dict) -> None:
         return await self.connection.send_json(payload)

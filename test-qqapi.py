@@ -1,11 +1,9 @@
 import os
 
 from avilla.core import Avilla, Context, MessageReceived
-from avilla.core.builtins.capability import CoreCapability
 from avilla.core.elements import Text
 from avilla.qqapi.element import Reference
 from avilla.qqapi.protocol import QQAPIProtocol, QQAPIConfig, Intents
-from avilla.standard.core.privilege import Privilege
 
 
 config = QQAPIConfig(
@@ -20,12 +18,11 @@ avilla = Avilla(message_cache_size=0)
 avilla.apply_protocols(QQAPIProtocol().configure(config))
 
 
-
-
 @avilla.listen(MessageReceived)
 async def on_message_received(cx: Context, event: MessageReceived):
     # debug(cx.artifacts.maps)
-    print(cx.endpoint, cx.client)
+    print(cx.client.channel)
+    print(cx.client.user)
     print(event.message.content)
     print(
         await cx.scene.send_message(
@@ -41,9 +38,9 @@ async def on_message_received(cx: Context, event: MessageReceived):
             reply=event.message,
         )
     )
-    print(await cx.scene.pull(Privilege))
-    print(await cx.client.pull(Privilege))
-    print(await cx[CoreCapability.pull](cx.self, Privilege))
+    print(await cx.scene.privilege())
+    print(await cx.scene.nick())
+    print(await cx.self.privilege())
 
 
 avilla.launch()

@@ -4,8 +4,9 @@ import base64
 from typing import TYPE_CHECKING, cast
 
 from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
+from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.core.ryanvk.descriptor.message.serialize import MessageSerialize
+from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import (
     App,
@@ -23,53 +24,84 @@ if TYPE_CHECKING:
     from avilla.onebot.v11.account import OneBot11Account  # noqa
     from avilla.onebot.v11.protocol import OneBot11Protocol  # noqa
 
-OneBot11MessageSerialize = MessageSerialize[dict]
-
 
 class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
-    m.post_applying = True
+    m.namespace = "avilla.protocol/onebot11::message"
+    m.identify = "serialize"
 
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @OneBot11MessageSerialize.collect(m, Text)
+    @m.entity(OneBot11Capability.serialize_element, element=Text)
     async def text(self, element: Text) -> dict:
         return {"type": "text", "data": {"text": element.text}}
 
-    @OneBot11MessageSerialize.collect(m, Face)
+    @m.entity(OneBot11Capability.serialize_element, element=Face)
     async def face(self, element: Face) -> dict:
         return {"type": "face", "data": {"id": int(element.id)}}
 
-    @OneBot11MessageSerialize.collect(m, Picture)
+    @m.entity(OneBot11Capability.serialize_element, element=Picture)
     async def picture(self, element: Picture) -> dict:
-        return {
-            "type": "image",
-            "data": {
-                "file": resource.file
-                if isinstance(resource := element.resource, OneBot11ImageResource)
-                else "base64://"
-                + base64.b64encode(cast(bytes, await self.account.staff.fetch_resource(resource))).decode("utf-8")
-            },
-        }
+        if isinstance(element.resource, OneBot11ImageResource):
+            return {
+                "type": "image",
+                "data": {
+                    "file": element.resource.file,
+                    "url": element.resource.url,
+                },
+            }
+        elif isinstance(element.resource, UrlResource):
+            return {
+                "type": "image",
+                "data": {
+                    "url": element.resource.url,
+                },
+            }
+        elif isinstance(element.resource, LocalFileResource):
+            data = base64.b64encode(element.resource.file.read_bytes()).decode("utf-8")
+            return {
+                "type": "image",
+                "data": {
+                    "file": "base64://" + data,
+                },
+            }
+        elif isinstance(element.resource, RawResource):
+            data = base64.b64encode(element.resource.data).decode("utf-8")
+            return {
+                "type": "image",
+                "data": {
+                    "file": "base64://" + data,
+                },
+            }
+        else:
+            return {
+                "type": "image",
+                "data": {
+                    "file": "base64://"
+                    + base64.b64encode(cast(bytes, await self.account.staff.fetch_resource(element.resource))).decode(
+                        "utf-8"
+                    ),
+                },
+            }
 
-    @OneBot11MessageSerialize.collect(m, FlashImage)
+    @m.entity(OneBot11Capability.serialize_element, element=FlashImage)
     async def flash_image(self, element: FlashImage):
         raw = await self.picture(element)
         raw["data"]["type"] = "flash"
         return raw
 
-    @OneBot11MessageSerialize.collect(m, Notice)
+    @m.entity(OneBot11Capability.serialize_element, element=Notice)
     async def notice(self, element: Notice):
         return {"type": "at", "data": {"qq": element.target["member"]}}
 
-    @OneBot11MessageSerialize.collect(m, NoticeAll)
+    @m.entity(OneBot11Capability.serialize_element, element=NoticeAll)
     async def notice_all(self, element: NoticeAll):
         return {"type": "at", "data": {"qq": "all"}}
 
-    @OneBot11MessageSerialize.collect(m, Dice)
+    @m.entity(OneBot11Capability.serialize_element, element=Dice)
     async def dice(self, element: Dice):
         return {"type": "dice", "data": {}}
 
-    @OneBot11MessageSerialize.collect(m, MusicShare)
+    @m.entity(OneBot11Capability.serialize_element, element=MusicShare)
     async def music_share(self, element: MusicShare):
         raw = {
             "type": "music",
@@ -86,23 +118,23 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
             raw["data"]["image"] = element.thumbnail
         return raw
 
-    @OneBot11MessageSerialize.collect(m, Gift)
+    @m.entity(OneBot11Capability.serialize_element, element=Gift)
     async def gift(self, element: Gift):
         return {"type": "gift", "data": {"id": element.kind.value, "qq": element.target["member"]}}
 
-    @OneBot11MessageSerialize.collect(m, Json)
+    @m.entity(OneBot11Capability.serialize_element, element=Json)
     async def json(self, element: Json):
         return {"type": "json", "data": {"data": element.content}}
 
-    @OneBot11MessageSerialize.collect(m, Xml)
+    @m.entity(OneBot11Capability.serialize_element, element=Xml)
     async def xml(self, element: Xml):
         return {"type": "xml", "data": {"data": element.content}}
 
-    @OneBot11MessageSerialize.collect(m, App)
+    @m.entity(OneBot11Capability.serialize_element, element=App)
     async def app(self, element: App):
         return {"type": "json", "data": {"data": element.content}}
 
-    @OneBot11MessageSerialize.collect(m, Share)
+    @m.entity(OneBot11Capability.serialize_element, element=Share)
     async def share(self, element: Share):
         res = {
             "type": "share",
@@ -117,7 +149,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
             res["data"]["image"] = element.thumbnail
         return res
 
-    @OneBot11MessageSerialize.collect(m, Poke)
+    @m.entity(OneBot11Capability.serialize_element, element=Poke)
     async def poke(self, element: Poke):
         return {"type": "shake", "data": {}}
 

@@ -38,3 +38,23 @@ class SatoriContextPerform((m := AccountCollector["SatoriProtocol", "SatoriAccou
             target.into("::public.channel"),
             target.into(f"~.member({self.account.route['account']})"),
         )
+
+    @m.entity(CoreCapability.channel, target="land.private.user")
+    def channel_from_user(self, target: Selector):
+        return target["private"]
+
+    @m.entity(CoreCapability.channel, target="land.public.channel")
+    def channel_from_channel(self, target: Selector):
+        return target["channel"]
+
+    @m.entity(CoreCapability.guild, target="land.public.channel")
+    def guild_from_channel(self, target: Selector):
+        return target["public"]
+
+    @m.entity(CoreCapability.user, target="land.private.user")
+    def user_from_user(self, target: Selector):
+        return target["user"]
+
+    @m.entity(CoreCapability.user, target="land.public.channel.member")
+    def user_from_member(self, target: Selector):
+        return target["member"]

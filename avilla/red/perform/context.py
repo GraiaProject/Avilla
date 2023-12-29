@@ -46,3 +46,22 @@ class RedContextPerform((m := AccountCollector["RedProtocol", "RedAccount"]())._
             target.into("::group"),
             target.into(f"~.member({self.account.route['account']})"),
         )
+
+    @m.entity(CoreCapability.channel, target="land.group")
+    @m.entity(CoreCapability.channel, target="land.group.member")
+    def channel_from_group(self, target: Selector):
+        return target["group"]
+
+    @m.entity(CoreCapability.guild, target="land.group")
+    @m.entity(CoreCapability.guild, target="land.group.member")
+    def guild_from_group(self, target: Selector):
+        return target["group"]
+
+    @m.entity(CoreCapability.user, target="land.group.member")
+    def user_from_member(self, target: Selector):
+        return target["member"]
+
+    @m.entity(CoreCapability.user, target="land.friend")
+    @m.entity(CoreCapability.channel, target="land.friend")
+    def user_from_friend(self, target: Selector):
+        return target["friend"]

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from avilla.core.account import AccountStatus, BaseAccount
@@ -10,6 +11,7 @@ if TYPE_CHECKING:
     from .protocol import RedProtocol
 
 
+@dataclass
 class RedAccount(BaseAccount):
     protocol: RedProtocol
     status: AccountStatus

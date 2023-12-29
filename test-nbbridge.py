@@ -1,13 +1,25 @@
 from avilla.core import Avilla, Context, MessageReceived
-from avilla.console.protocol import ConsoleProtocol
 from avilla.console.element import Markdown
+
+from avilla.nonebridge.service import NoneBridgeService
+from avilla.onebot.v11.protocol import OneBot11Protocol, OneBot11ReverseConfig
+
+from graia.amnesia.builtins.asgi import UvicornASGIService
+
+import nonebot
+
 from avilla.core.elements import Face
 
 avilla = Avilla()
-avilla.apply_protocols(ConsoleProtocol())
 
 
-@avilla.listen(MessageReceived)
+config = OneBot11ReverseConfig("/ob", "dfawdfafergergeaar")
+avilla.apply_protocols(OneBot11Protocol().configure(config))
+avilla.launch_manager.add_component(UvicornASGIService("127.0.0.1", 9090))
+avilla.launch_manager.add_component(NoneBridgeService(avilla))
+nonebot.load_plugin("nonebot_world")
+
+#@avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context, event: MessageReceived):
     msg = str(event.message.content)
     if msg == "/help":
@@ -32,18 +44,25 @@ async def on_message_received(ctx: Context, event: MessageReceived):
 ## 样例
 
 ```python
+from creart import create
+from launart import Launart
+from graia.broadcast import Broadcast
+
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.console.protocol import ConsoleProtocol
 
-avilla = Avilla()
-avilla.apply_protocols(ConsoleProtocol())
+broadcast = create(Broadcast)
+launart = Launart()
+avilla = Avilla(broadcast, launart, [ConsoleProtocol()])
 
 
 @broadcast.receiver(MessageReceived)
 async def on_message_received(ctx: Context):
     await ctx.scene.send_message("Hello, Avilla!")
 
-avilla.launch()
+
+launart.launch_blocking(loop=broadcast.loop)
+
 ```
 """
             )]

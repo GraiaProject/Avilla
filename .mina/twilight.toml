@@ -6,7 +6,7 @@ raw-dependencies = [
 
 [project]
 name = "avilla-twilight"
-version = "0.2.0" # WIP for release.
+version = "0.3.0"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
