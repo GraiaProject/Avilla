@@ -32,6 +32,7 @@ def _import_performs():
     from .perform.event.service import TelegramEventServicePerform  # noqa: F401
 
     # :: Action
+    from .perform.action.forum import TelegramForumActionPerform  # noqa: F401
     from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
 
     # :: Resource Fetch
@@ -45,6 +46,7 @@ class TelegramProtocol(BaseProtocol):
     artifacts = {
         **merge(
             ref("avilla.protocol/telegram::resource_fetch"),
+            ref("avilla.protocol/telegram::action", "forum"),
             ref("avilla.protocol/telegram::action", "message"),
             ref("avilla.protocol/telegram::message", "deserialize"),
             ref("avilla.protocol/telegram::message", "serialize"),
