@@ -7,7 +7,7 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 from loguru import logger
 
-from avilla.core import CoreCapability, Message
+from avilla.core import CoreCapability, Message, Context
 from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -20,6 +20,7 @@ from avilla.standard.core.message import (
     MessageSend,
     MessageSent,
 )
+from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
     from avilla.qqapi.account import QQAPIAccount  # noqa
@@ -30,6 +31,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
     m.namespace = "avilla.protocol/qqapi::action"
     m.identify = "message"
 
+    context: OptionalAccess[Context] = OptionalAccess()
+
     @MessageSend.send.collect(m, target="land.guild.channel")
     async def send_channel_msg(
         self,
@@ -38,9 +41,9 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        context = self.context
         msg = await QQAPICapability(self.account.staff).serialize(message)
-        if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
+        if context and (event_id := context.cache.get(target.display_without_land)):
             msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
@@ -97,7 +100,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
     ) -> Selector:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         msg = await QQAPICapability(self.account.staff).serialize(message)
-        if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
+        context = self.context
+        if context and (event_id := context.cache.get(target.display_without_land)):
             msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
@@ -185,8 +189,9 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         reply: Selector | None = None,
     ) -> Selector:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        context = self.context
         msg = await QQAPICapability(self.account.staff).serialize(message)
-        if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
+        if context and (event_id := context.cache.get(target.display_without_land)):
             msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
@@ -276,6 +281,9 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 "source_guild_id": target.pattern["guild"],
             },
         )
+        context = self.context
+        if context:
+            context.cache[f"{context.scene.display_without_land}#dms"] = result['guild_id']
         return target.into(f"land.guild({result['guild_id']})")
 
     @QQAPICapability.create_dms.collect(m, target="land.guild.member")
@@ -289,6 +297,9 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 "source_guild_id": target.pattern["guild"],
             },
         )
+        context = self.context
+        if context:
+            context.cache[f"{context.scene.display_without_land}#dms"] = result['guild_id']
         return target.into(f"land.guild({result['guild_id']})")
 
     @MessageSend.send.collect(m, target="land.guild.user")
@@ -299,16 +310,11 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        context = self.context
         msg = await QQAPICapability(self.account.staff).serialize(message)
-        if not (send_guild_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}#dms")):
-            send_guild_id = (await self.create_dms_user(target)).pattern["guild"]
-            await cache.set(
-                f"qqapi/account({self.account.route['account']}):{target}#dms",
-                send_guild_id,
-                expire=timedelta(minutes=20),
-            )
-        if event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}"):
+        if not context or not (send_guild_id := context.cache.get(f"{context.scene.display_without_land}#dms")):
+            send_guild_id = (await self.create_dms_user(target)).pattern["guild"] 
+        if context and (event_id := context.cache.get(target.display_without_land)):
             msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
@@ -341,9 +347,11 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
 
     @MessageRevoke.revoke.collect(m, target="land.guild.user.message")
     async def delete_direct_msg(self, target: Selector):
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        if not (send_guild_id := await cache.get(f"qqapi/account({self.account.route['account']}):{target}#dms")):
-            return
+        context = self.context
+        if not context or not (send_guild_id := context.cache.get(f"{context.scene.display_without_land}#dms")):
+            send_guild_id = (await self.create_dms_user(target)).pattern["guild"]
+            if context:
+                context.cache.pop(f"{context.scene.display_without_land}#dms", None)  # type: ignore
         await self.account.connection.call_http(
             "delete",
             f"dms/{send_guild_id}/messages/{target.pattern['message']}",

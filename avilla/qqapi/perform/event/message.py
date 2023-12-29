@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from loguru import logger
 
 from avilla.core.context import Context
@@ -29,7 +28,6 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
         guild = Selector().land("qq").guild(raw_event["guild_id"])
         channel = guild.channel(raw_event["channel_id"])
@@ -60,9 +58,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(
-            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
-        )
+        context.cache[context.scene.display_without_land] = raw_event["id"]
         context._collect_metadatas(
             author,
             Nick(
@@ -80,7 +76,6 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
         if "group_openid" in raw_event:
             group = Selector().land("qq").group(raw_event["group_openid"])
@@ -118,9 +113,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(
-            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
-        )
+        context.cache[context.scene.display_without_land] = raw_event["id"]
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 
@@ -131,7 +124,6 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
         guild = Selector().land("qq").guild(raw_event["src_guild_id"])
         author = guild.user(raw_event["author"]["id"])
@@ -156,14 +148,8 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(
-            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
-        )
-        await cache.set(
-            f"qqapi/account({account_route['account']}):{context.scene}#dms",
-            raw_event["guild_id"],
-            timedelta(minutes=5),
-        )
+        context.cache[context.scene.display_without_land] = raw_event["id"]
+        context.cache[f"{context.scene.display_without_land}#dms"] = raw_event["guild_id"]
         context._collect_metadatas(
             author,
             Nick(
@@ -181,7 +167,6 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
-        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
         if "user_openid" in raw_event["author"]:
             friend = Selector().land("qq").friend(raw_event["author"]["user_openid"])
@@ -207,9 +192,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             time=datetime.fromisoformat(raw_event["timestamp"]),
             reply=reply,
         )
-        await cache.set(
-            f"qqapi/account({account_route['account']}):{context.scene}", raw_event["id"], timedelta(minutes=5)
-        )
+        context.cache[context.scene.display_without_land] = raw_event["id"]
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 

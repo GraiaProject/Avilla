@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from copy import deepcopy
+from copy import deepcopy, copy
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar, overload
 
@@ -32,7 +32,7 @@ class ContextSelector(Selector):
 
     def __deepcopy__(self, memo):
         data = {**self.pattern}
-        return self.__class__(deepcopy(self.context, memo), deepcopy(data, memo))
+        return self.__class__(copy(self.context), deepcopy(data, memo))
 
     @classmethod
     def from_selector(cls, cx: Context, selector: Selector) -> Self:
