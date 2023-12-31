@@ -6,11 +6,11 @@ from avilla.core import RawResource
 from avilla.core.elements import Audio, Face, File, Notice, Text
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
+from avilla.standard.telegram.constants import DiceEmoji
 from avilla.standard.telegram.elements import (
     Animation,
     Contact,
     Dice,
-    DiceEmoji,
     Entity,
     Location,
     Picture,

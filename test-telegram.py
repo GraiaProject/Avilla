@@ -5,7 +5,8 @@ from graia.amnesia.message import MessageChain
 
 from avilla.core import Audio, Avilla, Context, MessageReceived, Text
 from avilla.standard.core.message import MessageSent
-from avilla.standard.telegram.elements import Dice, DiceEmoji, Picture, Video, Voice
+from avilla.standard.telegram.constants import DiceEmoji
+from avilla.standard.telegram.elements import Dice, Picture, Video, Voice
 from avilla.standard.telegram.event import ForumTopicClosed, ForumTopicCreated
 from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
 

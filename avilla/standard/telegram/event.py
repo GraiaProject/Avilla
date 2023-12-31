@@ -6,10 +6,10 @@ from avilla.core.event import AvillaEvent
 
 @dataclass
 class NewChatMember(AvillaEvent):
+    target: Selector
     is_bot: bool
     username: str
     first_name: str
-    id: int
 
 
 @dataclass

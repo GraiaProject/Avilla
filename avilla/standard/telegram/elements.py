@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from enum import Enum
 from pathlib import Path
 from typing import Final
 
@@ -12,6 +11,7 @@ from avilla.core.elements import Picture as CorePicture
 from avilla.core.elements import Reference as CoreReference
 from avilla.core.elements import Video as CoreVideo
 from avilla.core.resource import LocalFileResource, Resource
+from avilla.standard.telegram.constants import DiceEmoji, DiceLimit, MessageEntityType
 
 
 class Reference(CoreReference):
@@ -137,25 +137,6 @@ class Voice(Audio):
         return "[$Voice]"
 
 
-class DiceEmoji(str, Enum):
-    DICE = "🎲"
-    DARTS = "🎯"
-    BASKETBALL = "🏀"
-    FOOTBALL = "⚽"
-    SLOT_MACHINE = "🎰"
-    BOWLING = "🎳"
-
-
-class DiceLimit(int, Enum):
-    MIN_VALUE = 1
-    MAX_VALUE_DICE = 6
-    MAX_VALUE_DARTS = 6
-    MAX_VALUE_BASKETBALL = 5
-    MAX_VALUE_FOOTBALL = 5
-    MAX_VALUE_SLOT_MACHINE = 64
-    MAX_VALUE_BOWLING = 6
-
-
 class Dice(Element):
     value: int | None
     emoji: DiceEmoji
@@ -178,26 +159,6 @@ class Dice(Element):
 
 class Story(Element):
     """Currently holds no information."""
-
-
-class MessageEntityType(str, Enum):
-    MENTION = "mention"
-    HASH_TAG = "hashtag"
-    CASHTAG = "cashtag"
-    PHONE_NUMBER = "phone_number"
-    BOT_COMMAND = "bot_command"
-    URL = "url"
-    EMAIL = "email"
-    BOLD = "bold"
-    ITALIC = "italic"
-    CODE = "code"
-    PRE = "pre"
-    TEXT_LINK = "text_link"
-    TEXT_MENTION = "text_mention"
-    UNDERLINE = "underline"
-    STRIKETHROUGH = "strikethrough"
-    SPOILER = "spoiler"
-    CUSTOM_EMOJI = "custom_emoji"
 
 
 @dataclass
