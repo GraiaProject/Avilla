@@ -33,7 +33,7 @@ class TelegramEventServicePerform((m := InstanceCollector())._):
 
         return ForumTopicCreated(
             context,
-            message_thread_id=raw_event.message.message_thread_id,
+            target=chat,
             name=raw_event.message.forum_topic_created.name,
             icon_color=raw_event.message.forum_topic_created.icon_color,
             icon_custom_emoji_id=raw_event.message.forum_topic_created.icon_custom_emoji_id,
@@ -52,4 +52,4 @@ class TelegramEventServicePerform((m := InstanceCollector())._):
             Selector().land(account.route["land"]).account(self_id),
         )
 
-        return ForumTopicClosed(context, message_thread_id=raw_event.message.message_thread_id)
+        return ForumTopicClosed(context, target=chat)
