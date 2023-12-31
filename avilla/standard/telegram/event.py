@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from avilla.core import Selector
 from avilla.core.event import AvillaEvent
 
 
@@ -13,7 +14,7 @@ class NewChatMember(AvillaEvent):
 
 @dataclass
 class ForumTopicEvent(AvillaEvent):
-    message_thread_id: int
+    target: Selector
 
 
 @dataclass
