@@ -27,16 +27,16 @@ from typing import (
     overload,
 )
 
+from typing_extensions import Self
+
+from avilla.core.elements import Element
+from avilla.core.utilles import identity
 from graia.amnesia.message.chain import MessageChain
 from graia.broadcast.builtin.derive import Derive, DeriveDispatcher
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
-from typing_extensions import Self
-
-from avilla.core.elements import Element
-from avilla.core.utilles import identity
 
 from .base import ChainDecorator
 from .commander_util import ParamToken, TextToken, tokenize
@@ -559,7 +559,7 @@ class TwilightMatcher:
                 accept_element = isinstance(match, ElementMatch) or (
                     isinstance(match, UnionMatch) and any(isinstance(i, ElementMatch) for i in match.pattern)
                 )
-                if group[0] == "\x02" and group[-1] == "\x03" and accept_element:
+                if accept_element and group[0] == "\x02" and group[-1] == "\x03":
                     res = elem_mapping[group[1:-1].split("_")[0]]
                 else:
                     res = _from_mapping_string(group, elem_mapping)
