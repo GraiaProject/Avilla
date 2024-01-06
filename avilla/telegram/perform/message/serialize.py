@@ -4,12 +4,29 @@ from typing import TYPE_CHECKING, cast
 
 from avilla.core import LocalFileResource, RawResource, UrlResource
 from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
-from avilla.core.elements import Audio, File, Text
+from avilla.core.elements import Audio, Face, File, Notice, Text
 from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.standard.telegram.constants import MessageEntityType
 from avilla.standard.telegram.elements import (
     Animation,
     Contact,
     Dice,
+    Entity,
+    EntityBlockQuote,
+    EntityBold,
+    EntityBotCommand,
+    EntityCashTag,
+    EntityCode,
+    EntityEmail,
+    EntityHashTag,
+    EntityItalic,
+    EntityPhoneNumber,
+    EntityPre,
+    EntitySpoiler,
+    EntityStrikeThrough,
+    EntityTextLink,
+    EntityUnderline,
+    EntityUrl,
     Location,
     Picture,
     Reference,
@@ -27,6 +44,7 @@ from avilla.telegram.fragments import (
     MessageFragmentContact,
     MessageFragmentDice,
     MessageFragmentDocument,
+    MessageFragmentEntity,
     MessageFragmentLocation,
     MessageFragmentPhoto,
     MessageFragmentReference,
@@ -206,3 +224,37 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         else:
             data = await self.account.staff.fetch_resource(resource)
         return MessageFragmentVoice(cast(bytes, data))
+
+    @m.entity(TelegramCapability.serialize_element, element=EntityHashTag)
+    @m.entity(TelegramCapability.serialize_element, element=EntityCashTag)
+    @m.entity(TelegramCapability.serialize_element, element=EntityPhoneNumber)
+    @m.entity(TelegramCapability.serialize_element, element=EntityBotCommand)
+    @m.entity(TelegramCapability.serialize_element, element=EntityUrl)
+    @m.entity(TelegramCapability.serialize_element, element=EntityEmail)
+    @m.entity(TelegramCapability.serialize_element, element=EntityBold)
+    @m.entity(TelegramCapability.serialize_element, element=EntityItalic)
+    @m.entity(TelegramCapability.serialize_element, element=EntityCode)
+    @m.entity(TelegramCapability.serialize_element, element=EntityPre)
+    @m.entity(TelegramCapability.serialize_element, element=EntityTextLink)
+    @m.entity(TelegramCapability.serialize_element, element=EntityUnderline)
+    @m.entity(TelegramCapability.serialize_element, element=EntityStrikeThrough)
+    @m.entity(TelegramCapability.serialize_element, element=EntitySpoiler)
+    @m.entity(TelegramCapability.serialize_element, element=EntityBlockQuote)
+    async def entity(self, element: Entity) -> MessageFragment:
+        return MessageFragmentEntity(
+            element.text,
+            element.type,  # type: ignore
+            data={k: v for k, v in element.__dict__.items() if k not in ("text", "type")},
+        )
+
+    @m.entity(TelegramCapability.serialize_element, element=Notice)
+    async def entity_mention(self, element: Notice) -> MessageFragment:
+        return MessageFragmentEntity(
+            str(element.display or element.target.last_value), MessageEntityType.MENTION, data={}
+        )
+
+    @m.entity(TelegramCapability.serialize_element, element=Face)
+    async def entity_face(self, element: Face) -> MessageFragment:
+        return MessageFragmentEntity(
+            str(element.name), MessageEntityType.CUSTOM_EMOJI, data={"custom_emoji_id": element.id}
+        )

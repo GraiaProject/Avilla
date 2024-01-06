@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from avilla.core import RawResource
 from avilla.core.elements import Audio, Face, File, Notice, Text
@@ -258,21 +258,21 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(TelegramCapability.deserialize_element, element="entity.underline")
     @m.entity(TelegramCapability.deserialize_element, element="entity.strikethrough")
     @m.entity(TelegramCapability.deserialize_element, element="entity.spoiler")
+    @m.entity(TelegramCapability.deserialize_element, element="entity.blockquote")
     async def entity(self, element: MessageFragmentEntity) -> Entity:
         for subclass in Entity.__subclasses__():
-            if subclass.__name__.lstrip("Entity").lower() == element.entity.type.replace("_", ""):
-                params = {"offset": element.entity.offset, "length": element.entity.length, "text": element.text}
-                params |= element.entity.to_dict()
+            if subclass.__name__.lstrip("Entity").lower() == element.e_type.replace("_", ""):
+                params = {"text": element.text} | element.data
                 return subclass(**params)  # type: ignore
 
     @m.entity(TelegramCapability.deserialize_element, element="entity.mention")
     @m.entity(TelegramCapability.deserialize_element, element="entity.text_mention")
     async def entity_mention(self, element: MessageFragmentEntity) -> Notice:
         target = Selector().land("telegram").user(element.text.lstrip("@"))
-        if getattr(element.entity, "user", None) is not None:
-            target = target.id(element.entity.user.id)
+        if getattr(element.raw, "user", None) is not None:
+            target = target.id(element.raw.user.id)
         return Notice(target, display=element.text)
 
     @m.entity(TelegramCapability.deserialize_element, element="entity.custom_emoji")
     async def entity_custom_emoji(self, element: MessageFragmentEntity) -> Face:
-        return Face(element.entity.custom_emoji_id, element.text)
+        return Face(element.raw.custom_emoji_id, element.text)

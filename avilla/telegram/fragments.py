@@ -25,10 +25,12 @@ from telegram import (
 )
 from telegram.constants import MessageType
 from telegram.ext import ExtBot
-from typing_extensions import Final, Self
+from typing_extensions import Final, Self, TypeVar
 
 from avilla.core import Selector
 from avilla.telegram.exception import WrongFragment
+
+_T = TypeVar("_T")
 
 
 class _FragmentType(str, Enum):
@@ -55,12 +57,27 @@ class MessageFragment:
         ...
 
     @classmethod
-    def sort(cls, *fragments: Self) -> list[Self]:
+    def sort(cls, *fragments: _T) -> list[_T]:
         return sorted(fragments, key=lambda f: PRIORITIES[f.__class__])
 
     @classmethod
-    def compose(cls, *fragments: Self) -> list[Self]:
-        text_type = (MessageFragmentText,)
+    def _compose_text(cls, *fragments: _T) -> list[_T]:
+        composed = []
+        for fragment in fragments:
+            if not isinstance(fragment, (MessageFragmentText, MessageFragmentEntity)):
+                composed.append(fragment)
+                continue
+            if isinstance(fragment, MessageFragmentEntity):
+                fragment = fragment.to_text()
+            if not composed:
+                composed.append(fragment)
+            else:
+                composed[-1].append_text(fragment)
+        return composed
+
+    @classmethod
+    def compose(cls, *fragments: _T) -> list[_T]:
+        text_type = (MessageFragmentText, MessageFragmentEntity)
 
         mapping = {
             MessageFragmentPhoto: MessageFragmentMediaGroup,
@@ -69,35 +86,29 @@ class MessageFragment:
             MessageFragmentVideo: MessageFragmentMediaGroup,
         }
 
+        fragments = cls._compose_text(*fragments)
         composed = []
         for fragment in fragments:
-            if not composed or not isinstance(fragment, tuple(mapping.keys()) + text_type):
+            if not composed or not isinstance(fragment, tuple(mapping.keys()) + text_type):  # type: ignore
                 composed.append(fragment)
                 continue
             last_fragment = composed[-1]
-            if isinstance(fragment, text_type):
-                if last_fragment.type == MessageType.TEXT:
-                    last_fragment.text += fragment.text
-                elif getattr(last_fragment, "caption", -1) != -1:
-                    last_fragment.caption = (last_fragment.caption or "") + fragment.text
-                else:
-                    composed.append(fragment)
+            if isinstance(fragment, text_type) and isinstance(last_fragment, CaptionedMessageFragment):
+                last_fragment.append_text(fragment)
             elif isinstance(last_fragment, tuple(set(mapping.values()))):
                 if (
                     type(last_fragment) is mapping[type(fragment)]
                     and len(last_fragment.media) < last_fragment.SIZE_LIMIT
                 ):
                     last_fragment.media.append(fragment)
-                    last_fragment.caption = (last_fragment.caption or "") + (fragment.caption or "") or None
+                    last_fragment.append_text(fragment)
                 else:
                     composed.append(fragment)
             elif mapping.get(type(last_fragment)) == mapping[type(fragment)]:
                 pop = composed.pop()
-                composed.append(
-                    mapping[type(fragment)](
-                        media=[pop, fragment], caption=(pop.caption or "") + (fragment.caption or "") or None
-                    )
-                )
+                composed.append(mapping[type(fragment)](media=[pop, fragment]))
+                composed[-1].append_text(pop)
+                composed[-1].append_text(fragment)
             else:
                 composed.append(fragment)
         return composed
@@ -151,10 +162,12 @@ class MessageFragmentReference(MessageFragment):
 
 class MessageFragmentText(MessageFragment):
     text: str
+    entities: list[MessageEntity]
 
-    def __init__(self, text: str, update: Update | None = None):
+    def __init__(self, text: str, update: Update | None = None, entities: list[MessageEntity] | None = None):
         super().__init__(MessageType.TEXT, update)
         self.text = text
+        self.entities = entities or []
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
@@ -169,13 +182,54 @@ class MessageFragmentText(MessageFragment):
     ) -> tuple[Message, ...]:
         if not params:
             params = {}
-        return (await bot.send_message(chat, text=self.text, message_thread_id=thread, **params),)
+        return (
+            await bot.send_message(chat, text=self.text, entities=self.entities, message_thread_id=thread, **params),
+        )
+
+    def append_text(self, new: MessageFragmentText):
+        text_offset = MessageFragmentEntity.compute_length(self.text)
+        if new_entities := new.entities:
+            self.entities.extend(
+                [
+                    MessageEntity(
+                        entity.type,
+                        entity.offset + text_offset,
+                        entity.length,
+                        **{k: v for k, v in entity.to_dict().items() if k not in ("type", "offset", "length")},
+                    )
+                    for entity in new_entities
+                ]
+            )
+        self.text += new.text
 
 
-class MessageFragmentPhoto(MessageFragment):
+class CaptionedMessageFragment(MessageFragment):
+    caption: str | None
+    caption_entities: list[MessageEntity]
+
+    def append_text(self, new: MessageFragmentText | CaptionedMessageFragment):
+        caption = self.caption or ""
+        caption_offset = MessageFragmentEntity.compute_length(caption)
+        if not self.caption_entities:
+            self.caption_entities = []
+        if new_entities := (new.entities if isinstance(new, MessageFragmentText) else new.caption_entities):
+            self.caption_entities.extend(
+                [
+                    MessageEntity(
+                        entity.type,
+                        entity.offset + caption_offset,
+                        entity.length,
+                        **{k: v for k, v in entity.to_dict().items() if k not in ("type", "offset", "length")},
+                    )
+                    for entity in new_entities
+                ]
+            )
+        self.caption = caption + (new.text if isinstance(new, MessageFragmentText) else new.caption or "")
+
+
+class MessageFragmentPhoto(CaptionedMessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | PhotoSize
     has_spoiler: bool
-    caption: str | None
 
     def __init__(
         self,
@@ -205,6 +259,7 @@ class MessageFragmentPhoto(MessageFragment):
                 chat,
                 photo=self.file,
                 caption=self.caption,
+                caption_entities=self.caption_entities,
                 message_thread_id=thread,
                 has_spoiler=self.has_spoiler,
                 **params,
@@ -212,9 +267,8 @@ class MessageFragmentPhoto(MessageFragment):
         )
 
 
-class MessageFragmentAudio(MessageFragment):
+class MessageFragmentAudio(CaptionedMessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | Audio
-    caption: str | None
 
     def __init__(
         self,
@@ -237,13 +291,21 @@ class MessageFragmentAudio(MessageFragment):
     ) -> tuple[Message, ...]:
         if not params:
             params = {}
-        return (await bot.send_audio(chat, audio=self.file, caption=self.caption, message_thread_id=thread, **params),)
+        return (
+            await bot.send_audio(
+                chat,
+                audio=self.file,
+                caption=self.caption,
+                caption_entities=self.caption_entities,
+                message_thread_id=thread,
+                **params,
+            ),
+        )
 
 
-class MessageFragmentVideo(MessageFragment):
+class MessageFragmentVideo(CaptionedMessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | Video
     has_spoiler: bool
-    caption: str | None
 
     def __init__(
         self,
@@ -273,6 +335,7 @@ class MessageFragmentVideo(MessageFragment):
                 chat,
                 video=self.file,
                 caption=self.caption,
+                caption_entities=self.caption_entities,
                 message_thread_id=thread,
                 has_spoiler=self.has_spoiler,
                 **params,
@@ -280,7 +343,7 @@ class MessageFragmentVideo(MessageFragment):
         )
 
 
-class MessageFragmentAnimation(MessageFragment):
+class MessageFragmentAnimation(CaptionedMessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | Animation
     has_spoiler: bool
 
@@ -288,11 +351,13 @@ class MessageFragmentAnimation(MessageFragment):
         self,
         file: str | Path | IO[bytes] | InputFile | bytes | Animation,
         has_spoiler: bool,
+        caption: str | None = None,
         update: Update | None = None,
     ):
         super().__init__(MessageType.ANIMATION, update)
         self.file = file
         self.has_spoiler = has_spoiler
+        self.caption = caption
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
@@ -307,7 +372,13 @@ class MessageFragmentAnimation(MessageFragment):
             params = {}
         return (
             await bot.send_animation(
-                chat, animation=self.file, message_thread_id=thread, has_spoiler=self.has_spoiler, **params
+                chat,
+                animation=self.file,
+                caption=self.caption,
+                caption_entities=self.caption_entities,
+                message_thread_id=thread,
+                has_spoiler=self.has_spoiler,
+                **params,
             ),
         )
 
@@ -391,9 +462,8 @@ class MessageFragmentDice(MessageFragment):
         return (await bot.send_dice(chat, emoji=self.emoji, message_thread_id=thread, **params),)
 
 
-class MessageFragmentDocument(MessageFragment):
+class MessageFragmentDocument(CaptionedMessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | Document
-    caption: str | None
 
     def __init__(
         self,
@@ -417,7 +487,14 @@ class MessageFragmentDocument(MessageFragment):
         if not params:
             params = {}
         return (
-            await bot.send_document(chat, document=self.file, caption=self.caption, message_thread_id=thread, **params),
+            await bot.send_document(
+                chat,
+                document=self.file,
+                caption=self.caption,
+                caption_entities=self.caption_entities,
+                message_thread_id=thread,
+                **params,
+            ),
         )
 
 
@@ -452,7 +529,7 @@ class MessageFragmentLocation(MessageFragment):
         )
 
 
-class MessageFragmentGroup(MessageFragment):
+class MessageFragmentGroup(CaptionedMessageFragment):
     SIZE_LIMIT: Final[int] = 9
     media: list[MessageFragment]
 
@@ -487,7 +564,14 @@ class MessageFragmentMediaGroup(MessageFragmentGroup):
             MessageType.VIDEO: InputMediaVideo,
         }
         media = [mapping[m.type](m.file, has_spoiler=m.has_spoiler) for m in self.media]  # Captions should be discarded
-        return await bot.send_media_group(chat, media=media, caption=self.caption, message_thread_id=thread, **params)
+        return await bot.send_media_group(
+            chat,
+            media=media,
+            caption=self.caption,
+            caption_entities=self.caption_entities,
+            message_thread_id=thread,
+            **params,
+        )
 
 
 class MessageFragmentAudioGroup(MessageFragmentGroup):
@@ -515,7 +599,14 @@ class MessageFragmentAudioGroup(MessageFragmentGroup):
         if not params:
             params = {}
         media = [InputMediaAudio(m.file) for m in self.media]
-        return await bot.send_media_group(chat, media=media, caption=self.caption, message_thread_id=thread, **params)
+        return await bot.send_media_group(
+            chat,
+            media=media,
+            caption=self.caption,
+            caption_entities=self.caption_entities,
+            message_thread_id=thread,
+            **params,
+        )
 
 
 class MessageFragmentSticker(MessageFragment):
@@ -623,9 +714,8 @@ class MessageFragmentVideoNote(MessageFragment):
         )
 
 
-class MessageFragmentVoice(MessageFragment):
+class MessageFragmentVoice(CaptionedMessageFragment):
     file: str | Path | IO[bytes] | InputFile | bytes | Voice
-    caption: str | None
 
     def __init__(
         self,
@@ -648,30 +738,45 @@ class MessageFragmentVoice(MessageFragment):
     ) -> tuple[Message, ...]:
         if not params:
             params = {}
-        return (await bot.send_voice(chat, voice=self.file, caption=self.caption, message_thread_id=thread, **params),)
+        return (
+            await bot.send_voice(
+                chat,
+                voice=self.file,
+                caption=self.caption,
+                caption_entities=self.caption_entities,
+                message_thread_id=thread,
+                **params,
+            ),
+        )
 
 
 class MessageFragmentEntity(MessageFragment):
-    entity: MessageEntity
+    data: dict[str, ...]
+    raw: MessageEntity
     text: str
+    e_type: str
 
     @property
     def type(self):
-        return f"entity.{self.entity.type}"
+        return f"entity.{self.e_type}"
 
     @type.setter
     def type(self, value):
-        return
+        pass
 
     def __init__(
         self,
         text: str,
-        raw: MessageEntity,
+        type: str,
+        data: dict[str, ...],
+        raw: MessageEntity | None = None,
         update: Update | None = None,
     ):
         super().__init__(_FragmentType.ENTITY, update)
         self.text = text
-        self.entity = raw
+        self.e_type = type
+        self.raw = raw
+        self.data = data
 
     @classmethod
     def extract(
@@ -682,12 +787,21 @@ class MessageFragmentEntity(MessageFragment):
         text = text.encode("utf-16be")
         remaining = text
         offset = 0
+        ignored_keys = ("type", "offset", "length")
         for entity in entities:
             start = (entity.offset - offset) * 2
             end = (entity.offset - offset + entity.length) * 2
             if left := remaining[:start]:
                 result.append(MessageFragmentText(left.decode("utf-16be"), update))
-            result.append(MessageFragmentEntity(remaining[start:end].decode("utf-16be"), entity, update))
+            result.append(
+                MessageFragmentEntity(
+                    remaining[start:end].decode("utf-16be"),
+                    entity.type,
+                    {k: v for k, v in entity.to_dict().items() if k not in ignored_keys},
+                    entity,
+                    update,
+                )
+            )
             remaining = remaining[end:]
             offset = entity.offset + entity.length
         if remaining:
@@ -695,17 +809,21 @@ class MessageFragmentEntity(MessageFragment):
         return result
 
     @staticmethod
-    def compute_length(text: bytes) -> int:
+    def compute_length(text: str) -> int:
         # See: https://core.telegram.org/api/entities#computing-entity-length
-        length = 0
-        for byte in text:
-            if (byte & 0xC0) != 0x80:
-                length += 2 if byte >= 0xF0 else 1
-        return length
+        text = text.encode("utf-8")
+        return sum(2 if byte >= 0xF0 else 1 for byte in text if (byte & 0xC0) != 0x80)
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:
         raise WrongFragment
+
+    def to_text(self) -> MessageFragmentText:
+        return MessageFragmentText(
+            self.text,
+            update=self.update,
+            entities=[MessageEntity(self.e_type, 0, self.compute_length(self.text), **self.data)],
+        )
 
 
 PRIORITIES: dict[type[MessageFragment], int | float] = {
