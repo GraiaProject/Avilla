@@ -28,8 +28,8 @@ def _import_performs():
     from .perform.message.serialize import TelegramMessageSerializePerform  # noqa: F401
 
     # :: Event
+    from .perform.event.forum import TelegramEventForumPerform  # noqa: F401
     from .perform.event.message import TelegramEventMessagePerform  # noqa: F401
-    from .perform.event.service import TelegramEventServicePerform  # noqa: F401
 
     # :: Action
     from .perform.action.forum import TelegramForumActionPerform  # noqa: F401
@@ -52,8 +52,8 @@ class TelegramProtocol(BaseProtocol):
             ref("avilla.protocol/telegram::action", "message"),
             ref("avilla.protocol/telegram::message", "deserialize"),
             ref("avilla.protocol/telegram::message", "serialize"),
+            ref("avilla.protocol/telegram::event", "forum"),
             ref("avilla.protocol/telegram::event", "message"),
-            ref("avilla.protocol/telegram::event", "service"),
         ),
     }
 
