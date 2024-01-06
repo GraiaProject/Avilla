@@ -121,6 +121,10 @@ class MessageFragment:
     def hook(self, fragments: list[Self], params: dict[str, ...] | None = None):
         pass
 
+    def __repr__(self):
+        attrs = " ".join(f"{k}={v!r}" for k, v in self.__dict__.items() if k != "update")
+        return f"<{self.__class__.__name__} type={self.type} {attrs}>"
+
 
 class MessageFragmentReference(MessageFragment):
     selector: Selector | None
@@ -673,24 +677,31 @@ class MessageFragmentEntity(MessageFragment):
     def extract(
         cls, text: str, entities: tuple[MessageEntity, ...], update: Update | None = None
     ) -> list[Self | MessageFragmentText]:
+        # See: https://core.telegram.org/api/entities#entity-length
         result = []
+        text = text.encode("utf-16be")
         remaining = text
         offset = 0
         for entity in entities:
-            if left := remaining[: entity.offset - offset]:
-                result.append(MessageFragmentText(left, update))
-            result.append(
-                MessageFragmentEntity(
-                    remaining[entity.offset - offset : entity.offset - offset + entity.length],
-                    entity,
-                    update,
-                )
-            )
-            remaining = remaining[entity.offset - offset + entity.length :]
+            start = (entity.offset - offset) * 2
+            end = (entity.offset - offset + entity.length) * 2
+            if left := remaining[:start]:
+                result.append(MessageFragmentText(left.decode("utf-16be"), update))
+            result.append(MessageFragmentEntity(remaining[start:end].decode("utf-16be"), entity, update))
+            remaining = remaining[end:]
             offset = entity.offset + entity.length
         if remaining:
-            result.append(MessageFragmentText(remaining, update))
+            result.append(MessageFragmentText(remaining.decode("utf-16be"), update))
         return result
+
+    @staticmethod
+    def compute_length(text: bytes) -> int:
+        # See: https://core.telegram.org/api/entities#computing-entity-length
+        length = 0
+        for byte in text:
+            if (byte & 0xC0) != 0x80:
+                length += 2 if byte >= 0xF0 else 1
+        return length
 
     @classmethod
     def decompose(cls, message: Message, update: Update | None = None) -> list[Self]:

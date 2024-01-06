@@ -268,7 +268,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(TelegramCapability.deserialize_element, element="entity.mention")
     @m.entity(TelegramCapability.deserialize_element, element="entity.text_mention")
     async def entity_mention(self, element: MessageFragmentEntity) -> Notice:
-        target = Selector().land("telegram").user(element.text[1:])
+        target = Selector().land("telegram").user(element.text.lstrip("@"))
         if getattr(element.entity, "user", None) is not None:
             target = target.id(element.entity.user.id)
         return Notice(target, display=element.text)
