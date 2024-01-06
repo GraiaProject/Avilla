@@ -245,6 +245,11 @@ class EntitySpoiler(Entity):
     type: Final[str] = MessageEntityType.SPOILER
 
 
+@dataclass
+class EntityBlockQuote(Entity):
+    type: Final[str] = MessageEntityType.BLOCKQUOTE
+
+
 class Invoice(Element):
     # To be implemented
     ...

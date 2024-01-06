@@ -40,6 +40,7 @@ class MessageEntityType(str, Enum):
     STRIKETHROUGH = "strikethrough"
     SPOILER = "spoiler"
     CUSTOM_EMOJI = "custom_emoji"
+    BLOCKQUOTE = "blockquote"
 
 
 class BotCommandScope(str, Enum):
