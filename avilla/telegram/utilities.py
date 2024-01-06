@@ -17,6 +17,8 @@ _message_events = [
     "forum_topic_reopened",
     "general_forum_topic_hidden",
     "general_forum_topic_unhidden",
+    "video_chat_started",
+    "video_chat_ended",
 ]
 
 
