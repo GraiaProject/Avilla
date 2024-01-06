@@ -29,8 +29,10 @@ class ForumTopicCreated(ForumTopicEvent):
     icon_custom_emoji_id: str | None = None
 
 
+@dataclass
 class ForumTopicEdited(ForumTopicEvent):
-    ...
+    name: str
+    icon_custom_emoji_id: str | None = None
 
 
 class ForumTopicReopened(ForumTopicEvent):
