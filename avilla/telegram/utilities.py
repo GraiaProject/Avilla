@@ -19,6 +19,8 @@ _message_events = [
     "general_forum_topic_unhidden",
     "video_chat_started",
     "video_chat_ended",
+    "video_chat_scheduled",
+    "video_chat_participants_invited",
 ]
 
 
