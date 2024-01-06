@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 
 from avilla.core import Selector
 from avilla.core.event import AvillaEvent
@@ -59,20 +60,24 @@ class ProximityAlertTriggered(AvillaEvent):
     ...
 
 
+@dataclass
 class VideoChatEvent(AvillaEvent):
-    ...
+    target: Selector
 
 
+@dataclass
 class VideoChatEnded(VideoChatEvent):
-    ...
+    duration: int
 
 
+@dataclass
 class VideoChatParticipantsInvited(VideoChatEvent):
-    ...
+    users: list[Selector]
 
 
+@dataclass
 class VideoChatScheduled(VideoChatEvent):
-    ...
+    start_date: datetime
 
 
 class VideoChatStarted(VideoChatEvent):
