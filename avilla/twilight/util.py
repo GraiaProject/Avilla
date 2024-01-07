@@ -202,7 +202,14 @@ class TwilightHelpManager:
             extracted_ids: List[str] = []
             for match in twilight.matcher.origin_match_list:
                 if isinstance(match, UnionMatch):
-                    extracted_ids.extend(match.pattern)
+                    for i in match.pattern:
+                        if isinstance(i, ElementMatch):
+                            extracted_ids.append(i.type.__name__)
+                        elif isinstance(i, RegexMatch):
+                            if not isinstance(i, ParamMatch):
+                                extracted_ids.append(i.pattern)
+                        else:
+                            extracted_ids.append(i)
                 elif isinstance(match, ElementMatch):
                     extracted_ids.append(match.type.__name__)
                 elif isinstance(match, RegexMatch) and not isinstance(match, ParamMatch):
