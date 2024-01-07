@@ -13,7 +13,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.exception import AuditException
-from avilla.qqapi.utils import form_data
+from avilla.qqapi.utils import form_data, unescape
 from avilla.standard.core.message import (
     MessageReceived,
     MessageRevoke,
@@ -165,6 +165,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 2,
                 expire=timedelta(minutes=5),
             )
+        # TODO: wait for api upgrade
+        msg["content"] = unescape(msg["content"])
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
         if result is None:
@@ -256,6 +258,8 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 2,
                 expire=timedelta(minutes=5),
             )
+        # TODO: wait for api upgrade
+        msg["content"] = unescape(msg["content"])
         method, data = form_data(msg)
         result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
         if result is None:
