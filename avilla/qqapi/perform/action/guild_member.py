@@ -8,7 +8,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.qqapi.const import PRIVILEGE_TRANS
 from avilla.standard.core.privilege import MuteCapability, MuteInfo, Privilege
-from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.profile import Nick, Summary, Avatar
 from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:
@@ -35,6 +35,14 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
             "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
         )
         return Summary(result["user"]["username"], result["nick"])
+
+    @m.pull("land.guild.member", Avatar)
+    @m.pull("land.guild.channel.member", Avatar)
+    async def get_summary(self, target: Selector, route: ...) -> Avatar:
+        result = await self.account.connection.call_http(
+            "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
+        )
+        return Avatar(result["user"]["avatar"])
 
     @m.pull("land.guild.channel.member", Privilege)
     async def get_privilege(self, target: Selector, route: ...) -> Privilege:
