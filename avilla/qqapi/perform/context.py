@@ -110,6 +110,8 @@ class QQAPIContextPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAccount"
         return target["guild"]
 
     @m.entity(CoreCapability.user, target="land.group.member")
+    @m.entity(CoreCapability.user, target="land.guild.member")
+    @m.entity(CoreCapability.user, target="land.guild.channel.member")
     def user_from_member(self, target: Selector):
         return target["member"]
 
