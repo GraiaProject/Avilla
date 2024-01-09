@@ -75,8 +75,17 @@ class Staff(BaseStaff):
 
         def build_handler(artifact: tuple[BaseCollector, QueryHandlerPerform]) -> QueryHandler:
             async def handler(predicate: Callable[[str, str], bool] | str, previous: Selector | None = None):
-                instance, entity = artifact
-                async for i in entity(instance, predicate, previous):
+                collector, entity = artifact
+
+                def _get_instance(_staff: Staff, _cls: type[N]) -> N:
+                    if _cls not in _staff.instances:
+                        res = _staff.instances[_cls] = _cls(_staff)
+                    else:
+                        res = _staff.instances[_cls]
+
+                    return res
+
+                async for i in entity(_get_instance(self, collector.cls), predicate, previous):
                     yield i
 
             return handler
