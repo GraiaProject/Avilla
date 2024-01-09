@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.namespace = "avilla.protocol/elizabeth::action"
-    m.identify = "group_member"
+    m.identify = "member"
 
     @m.pull("land.group.member", Avatar)
     async def get_group_member_avatar(self, target: Selector, route: ...) -> Avatar:
