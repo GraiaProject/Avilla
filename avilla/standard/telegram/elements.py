@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final
 
-from graia.amnesia.message.element import Element
+from graia.amnesia.message.element import Element, Text
 
 from avilla.core.elements import Audio
 from avilla.core.elements import Picture as CorePicture
@@ -162,11 +162,11 @@ class Story(Element):
 
 
 @dataclass
-class Entity(Element):
+class Entity(Text):
     text: str
 
     def __str__(self):
-        return f"[${self.__class__.__name__}]"
+        return self.text
 
     def __repr__(self):
         attrs = ";".join(f"{k}={v}" for k, v in self.__dict__.items())
