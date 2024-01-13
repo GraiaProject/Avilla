@@ -30,6 +30,7 @@ R = TypeVar("R", covariant=True)
 M = TypeVar("M", bound="Metadata")
 P = ParamSpec("P")
 P1 = ParamSpec("P1")
+N = TypeVar("N")
 Co = TypeVar("Co", bound="BaseCollector")
 
 

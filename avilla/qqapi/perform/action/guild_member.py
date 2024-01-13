@@ -38,7 +38,7 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
 
     @m.pull("land.guild.member", Avatar)
     @m.pull("land.guild.channel.member", Avatar)
-    async def get_summary(self, target: Selector, route: ...) -> Avatar:
+    async def get_avatar(self, target: Selector, route: ...) -> Avatar:
         result = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
         )

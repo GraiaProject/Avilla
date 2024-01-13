@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message import MessageChain
 
+from avilla.core import Context
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -80,7 +81,14 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         )
         if result["msg"] != "success" or result["messageId"] < 0:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {message}")
-        context = self.account.get_context(target, via=self.account.route)
+        # context = self.account.get_context(target, via=self.account.route)
+        context = Context(
+            self.account,
+            self.account.route,
+            target,
+            target,
+            self.account.route,
+        )
         self.protocol.post_event(
             MessageSent(
                 context,

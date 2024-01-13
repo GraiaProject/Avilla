@@ -30,12 +30,13 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             Selector().land("qq").user(str(raw_event["user_id"])),
             account,
             datetime.fromtimestamp(raw_event["time"]),
+            request_type="onebot11::friend",
         )
         return RequestEvent(
             Context(
                 account,
                 request.sender,
-                request.sender,
+                account.route,
                 request.scene,
                 account.route,
             ),
@@ -57,6 +58,7 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             Selector().land("qq").user(str(raw_event["user_id"])),
             account,
             datetime.fromtimestamp(raw_event["time"]),
+            request_type="onebot11::group",
         )
         return RequestEvent(
             Context(

@@ -92,8 +92,8 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         member = group.member(str(member_data["id"]))
         members = await self.connection.call("fetch", "memberList", {"target": member_data["group"]["id"]})
         members = cast(list[dict], members)
-        operator_data = next((d for d in members if d["id"] == raw_event["operator"]["id"]), None)
-        operator = group.member(str(operator_data["id"])) if operator_data else group
+        operator_data = next((d for d in members if d["permission"] == "OWNER"), None)
+        operator = group.member(str(operator_data["id"])) if operator_data else group.member(account_route["account"])
         context = Context(
             account,
             operator,
@@ -156,9 +156,9 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         group_data = member_data["group"]
         group = land.group(str(group_data["id"]))
         member = group.member(str(member_data["id"]))
-        members = await self.connection.call("fetch", "memberList", {"target": raw_event["group"]["id"]})
+        members = await self.connection.call("fetch", "memberList", {"target": group_data["id"]})
         members = cast(list[dict], members)
-        operator_data = next((d for d in members if d["id"] == raw_event["operator"]["id"]), None)
+        operator_data = next((d for d in members if d["permission"] == "OWNER"), None)
         operator = group.member(str(operator_data["id"])) if operator_data else group
         context = Context(
             account,

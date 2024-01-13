@@ -9,8 +9,9 @@ from avilla.core.context import Context
 from avilla.core.event import (
     MetadataModified,
     ModifyDetail,
-    RelationshipCreated,
-    RelationshipDestroyed,
+    SceneCreated,
+    SceneDestroyed,
+    DirectSessionCreated,
 )
 from avilla.core.selector import Selector
 from avilla.onebot.v11.capability import OneBot11Capability
@@ -92,7 +93,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
-        return RelationshipDestroyed(context, True, True)
+        return SceneDestroyed(context, True, True)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_decrease.kick")
     async def member_kick(self, raw_event: dict):
@@ -105,7 +106,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
-        return RelationshipDestroyed(context, False, True)
+        return SceneDestroyed(context, False, True)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_decrease.kick_me")
     async def member_kick_me(self, raw_event: dict):
@@ -118,7 +119,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
-        return RelationshipDestroyed(context, False, False)
+        return SceneDestroyed(context, False, False)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_increase.approve")
     async def member_increase_approve(self, raw_event: dict):
@@ -137,7 +138,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             group,
             group.member(str(self_id)),
         )
-        return RelationshipCreated(context)
+        return SceneCreated(context)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_increase.invite")
     async def member_increase_invite(self, raw_event: dict):
@@ -150,7 +151,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)), mediums=[group])
-        return RelationshipCreated(context)
+        return SceneCreated(context)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_ban.ban")
     async def member_muted(self, raw_event: dict):
@@ -219,7 +220,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             return
         friend = Selector().land("qq").friend(str(raw_event["user_id"]))
         context = Context(account, friend, friend, friend, account.route)
-        return RelationshipCreated(context)
+        return DirectSessionCreated(context)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.notify.poke")
     async def nudge_received(self, raw_event: dict):
