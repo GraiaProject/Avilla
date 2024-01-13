@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, TypeVar, Union, overload
+from types import FunctionType
+from typing import Any, Callable, Generic, TypeVar, Union, overload, cast
 from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
@@ -140,10 +141,26 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
         return any(cell.has_params() for cell in self.cells)
 
 
-@dataclass(unsafe_hash=True)
 class FieldReference(Generic[_MetadataT1, T]):
     define: type[_MetadataT1] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]
-    operator: Callable[[_MetadataT1], T]
+
+    def __init__(
+        self,
+        define: type[_MetadataT1] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1],
+        operator: Callable[[_MetadataT1], T]
+    ) -> None:
+
+        self.define = define
+        self.operator = cast(FunctionType, operator)
+
+    def __hash__(self):
+        return hash(self.define) + hash(self.operator.__code__) + hash("FieldReference")
+
+    def __eq__(self, other):
+        return isinstance(other, FieldReference) and self.__hash__() == other.__hash__()
+
+    def __repr__(self) -> str:
+        return f"FieldReference[{self.define.__repr__()}]"
 
 
 Route = Union[type[Metadata], MetadataRoute]
