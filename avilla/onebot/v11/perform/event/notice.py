@@ -47,8 +47,8 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             endpoint,
             Privilege,
             {
-                Privilege.inh(lambda x: x.available): ModifyDetail("update", True, False),
-                Privilege.inh(lambda x: x.effective): ModifyDetail("update", True, False),
+                Privilege.inh().available: ModifyDetail("update", True, False),
+                Privilege.inh().effective: ModifyDetail("update", True, False),
             },
             operator=operator,
             scene=group,
@@ -75,8 +75,8 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             endpoint,
             Privilege,
             {
-                Privilege.inh(lambda x: x.available): ModifyDetail("update", False, True),
-                Privilege.inh(lambda x: x.effective): ModifyDetail("update", False, True),
+                Privilege.inh().available: ModifyDetail("update", False, True),
+                Privilege.inh().effective: ModifyDetail("update", False, True),
             },
             operator=operator,
             scene=group,
@@ -175,8 +175,8 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             endpoint,
             MuteInfo,
             {
-                MuteInfo.inh(lambda x: x.muted): ModifyDetail("set", True),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=raw_event["duration"])),
+                MuteInfo.inh().muted: ModifyDetail("set", True),
+                MuteInfo.inh().duration: ModifyDetail("set", timedelta(seconds=raw_event["duration"])),
             },
             operator=operator,
             scene=group,
@@ -204,8 +204,8 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             endpoint,
             MuteInfo,
             {
-                MuteInfo.inh(lambda x: x.muted): ModifyDetail("clear"),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear"),
+                MuteInfo.inh().muted: ModifyDetail("clear"),
+                MuteInfo.inh().duration: ModifyDetail("clear"),
             },
             operator=operator,
             scene=group,
@@ -270,5 +270,5 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             context,
             user,
             Honor,
-            {Honor.inh(lambda x: x.name): ModifyDetail("set", raw_event["honor_type"])},
+            {Honor.inh().name: ModifyDetail("set", raw_event["honor_type"])},
         )

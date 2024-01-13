@@ -39,8 +39,8 @@ class RedEventGroupMemberPerform((m := ConnectionCollector())._):
                 target,
                 MuteInfo,
                 {
-                    MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                    MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear", timedelta(seconds=0)),
+                    MuteInfo.inh().muted: ModifyDetail("update", False, True),
+                    MuteInfo.inh().duration: ModifyDetail("clear", timedelta(seconds=0)),
                 },
                 operator=operator,
                 scene=group,
@@ -51,8 +51,8 @@ class RedEventGroupMemberPerform((m := ConnectionCollector())._):
                 target,
                 MuteInfo,
                 {
-                    MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", True, False),
-                    MuteInfo.inh(lambda x: x.duration): ModifyDetail(
+                    MuteInfo.inh().muted: ModifyDetail("update", True, False),
+                    MuteInfo.inh().duration: ModifyDetail(
                         "set", timedelta(seconds=int(group_data["shutUp"]["duration"]))
                     ),
                 },

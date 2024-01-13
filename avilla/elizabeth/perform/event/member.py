@@ -76,7 +76,9 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             context,
             member,
             Nick,
-            {Nick.inh(lambda x: x.nickname): ModifyDetail("update", raw_event["current"], raw_event["origin"])},
+            {
+                Nick.inh().nickname: ModifyDetail("update", raw_event["current"], raw_event["origin"])
+            },
             operator=operator or group.member(account_route["account"]),
             scene=group,
         )
@@ -142,7 +144,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             context,
             member,
             Nick,
-            {Nick.inh(lambda x: x.badge): ModifyDetail("update", raw_event["current"], raw_event["origin"])},
+            {Nick.inh().badge: ModifyDetail("update", raw_event["current"], raw_event["origin"])},
             operator=operator,
             scene=group,
         )
@@ -210,8 +212,8 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             member,
             Privilege,
             {
-                Privilege.inh(lambda x: x.available): ModifyDetail("update", available, not available),
-                Privilege.inh(lambda x: x.effective): ModifyDetail("update", available, not available),
+                Privilege.inh().available: ModifyDetail("update", available, not available),
+                Privilege.inh().effective: ModifyDetail("update", available, not available),
             },
             operator=operator,
             scene=group,
@@ -276,8 +278,8 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             member,
             MuteInfo,
             {
-                MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", True, False),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail(
+                MuteInfo.inh().muted: ModifyDetail("update", True, False),
+                MuteInfo.inh().duration: ModifyDetail(
                     "set", timedelta(seconds=raw_event["durationSeconds"]), None
                 ),
             },
@@ -344,8 +346,8 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             member,
             MuteInfo,
             {
-                MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("set", timedelta(seconds=0)),
+                MuteInfo.inh().muted: ModifyDetail("update", False, True),
+                MuteInfo.inh().duration: ModifyDetail("set", timedelta(seconds=0)),
             },
             operator=operator or group.member(account_route["account"]),
             scene=group,
@@ -394,7 +396,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             member,
             Honor,
             {
-                Honor.inh(lambda x: x.name): (
+                Honor.inh().name: (
                     ModifyDetail("set", raw_event["honor"], None)
                     if raw_event["action"] == "achieve"
                     else ModifyDetail("clear", None, raw_event["honor"])

@@ -19,6 +19,9 @@ from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
+from avilla.core.event import MetadataModified
+from avilla.standard.core.request import RequestEvent
+from avilla.standard.core.activity import ActivityEvent
 
 if TYPE_CHECKING:
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher
@@ -131,6 +134,27 @@ class Avilla:
         if type(event) in self.custom_event_recorder:
             self.custom_event_recorder[type(event)](event)
 
+        elif isinstance(event, RequestEvent):
+            logger.info(
+                f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                f"{context.account.route['account']}]: "
+                f"Request {event.request.request_type or event.request.id} "
+                f"from {client} in {scene}"
+            )
+        elif isinstance(event, ActivityEvent):
+            logger.info(
+                f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                f"{context.account.route['account']}]: "
+                f"Activity {event.id}: {event.activity}"
+                f"from {client} in {scene}"
+            )
+        elif isinstance(event, MetadataModified):
+            logger.info(
+                f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
+                f"{context.account.route['account']}]: "
+                f"Metadata {event.route} Modified: {event.details}"
+                f"from {client} in {scene}"
+            )
         elif isinstance(event, MessageReceived):
             logger.info(
                 f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
