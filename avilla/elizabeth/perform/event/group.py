@@ -113,9 +113,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh().muted: ModifyDetail("update", True, False),
-                MuteInfo.inh().duration: ModifyDetail(
-                    "set", timedelta(seconds=raw_event["durationSeconds"]), None
-                ),
+                MuteInfo.inh().duration: ModifyDetail("set", timedelta(seconds=raw_event["durationSeconds"]), None),
             },
             operator=operator,
             scene=group,
@@ -310,9 +308,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             group,
             Announcement,
             {
-                Announcement.inh().content: ModifyDetail(
-                    "update", raw_event["current"], raw_event["origin"]
-                ),
+                Announcement.inh().content: ModifyDetail("update", raw_event["current"], raw_event["origin"]),
             },
             operator=operator or group.member(account_route["account"]),  # bot self if no operator
             scene=group,

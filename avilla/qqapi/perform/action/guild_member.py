@@ -8,7 +8,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.qqapi.const import PRIVILEGE_TRANS
 from avilla.standard.core.privilege import MuteCapability, MuteInfo, Privilege
-from avilla.standard.core.profile import Nick, Summary, Avatar
+from avilla.standard.core.profile import Avatar, Nick, Summary
 from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:

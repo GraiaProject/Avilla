@@ -14,14 +14,14 @@ from loguru import logger
 from avilla.core._runtime import get_current_avilla
 from avilla.core.account import AccountInfo, BaseAccount
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
+from avilla.core.event import MetadataModified
 from avilla.core.protocol import BaseProtocol
 from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
-from avilla.core.event import MetadataModified
-from avilla.standard.core.request import RequestEvent
 from avilla.standard.core.activity import ActivityEvent
+from avilla.standard.core.request import RequestEvent
 
 if TYPE_CHECKING:
     from graia.broadcast import Decorator, Dispatchable, Namespace, T_Dispatcher

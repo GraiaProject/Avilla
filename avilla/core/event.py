@@ -7,11 +7,10 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
-from graia.broadcast.entities.signatures import Force
 from typing_extensions import Unpack
 
 from avilla.core.account import BaseAccount
-from avilla.core.metadata import FieldReference, Metadata, MetadataRoute
+from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.selector import Selector
 
 from ._runtime import cx_context

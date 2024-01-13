@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Nick, Summary, Avatar
+from avilla.standard.core.profile import Avatar, Nick, Summary
 
 if TYPE_CHECKING:
     from ...account import ElizabethAccount  # noqa

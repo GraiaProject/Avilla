@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from typing import Any, Generic, TypeVar, Union, overload, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union, overload
 from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
@@ -66,10 +66,13 @@ class Metadata(metaclass=MetadataMeta):
         super().__init_subclass__()
 
     if TYPE_CHECKING:
+
         @classmethod
         def inh(cls: type[_MetadataT1]) -> _MetadataT1:
             ...
+
     else:
+
         @classmethod
         def inh(cls: type[_MetadataT1]) -> FieldReference[_MetadataT1]:
             return FieldReference(cls)
@@ -134,10 +137,13 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
             cell.clear_params()
 
     if TYPE_CHECKING:
+
         @property
         def inh(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]) -> _MetadataT1:
             ...
+
     else:
+
         @property
         def inh(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]) -> RouteFieldReference[_MetadataT1]:
             return RouteFieldReference(self)
@@ -166,7 +172,9 @@ class FieldReference(Generic[_MetadataT1]):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Self:
         prev = self.__steps[-1]
-        self.__steps[-1] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        self.__steps[
+            -1
+        ] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
         return self
 
     def __getitem__(self, item: Any) -> Self:
@@ -195,7 +203,9 @@ class RouteFieldReference(Generic[_MetadataT1]):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Self:
         prev = self.__steps[-1]
-        self.__steps[-1] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        self.__steps[
+            -1
+        ] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
         return self
 
     def __getitem__(self, item: Any) -> Self:

@@ -12,7 +12,7 @@ from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.collector.connection import ConnectionCollector
 from avilla.qqapi.element import Reference
 from avilla.standard.core.message import MessageReceived, MessageRevoked
-from avilla.standard.core.profile import Nick, Summary, Avatar
+from avilla.standard.core.profile import Avatar, Nick, Summary
 
 
 class QQAPIEventMessagePerform((m := ConnectionCollector())._):
@@ -65,7 +65,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
                 raw_event["author"]["username"], raw_event["member"].get("nick", raw_event["author"]["username"]), None
             ),
             Summary(raw_event["author"]["username"], "channel member"),
-            Avatar(raw_event["author"]["avatar"])
+            Avatar(raw_event["author"]["avatar"]),
         )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
@@ -157,7 +157,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
                 raw_event["author"]["username"], raw_event["member"].get("nick", raw_event["author"]["username"]), None
             ),
             Summary(raw_event["author"]["username"], "channel member"),
-            Avatar(raw_event["author"]["avatar"])
+            Avatar(raw_event["author"]["avatar"]),
         )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
@@ -291,7 +291,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             author,
             Nick(raw_event["message"]["author"]["username"], raw_event["message"]["author"]["username"], None),
             Summary(raw_event["message"]["author"]["username"], "channel member"),
-            Avatar(raw_event["message"]["author"]["avatar"])
+            Avatar(raw_event["message"]["author"]["avatar"]),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)
 
@@ -317,6 +317,6 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             author,
             Nick(raw_event["message"]["author"]["username"], raw_event["message"]["author"]["username"], None),
             Summary(raw_event["message"]["author"]["username"], "channel member"),
-            Avatar(raw_event["message"]["author"]["avatar"])
+            Avatar(raw_event["message"]["author"]["avatar"]),
         )
         return MessageRevoked(context, author.message(raw_event["message"]["id"]), operator)

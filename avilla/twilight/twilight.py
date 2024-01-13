@@ -27,16 +27,16 @@ from typing import (
     overload,
 )
 
-from typing_extensions import Self
-
-from avilla.core.elements import Element
-from avilla.core.utilles import identity
 from graia.amnesia.message.chain import MessageChain
 from graia.broadcast.builtin.derive import Derive, DeriveDispatcher
 from graia.broadcast.entities.decorator import Decorator
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.interfaces.decorator import DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface
+from typing_extensions import Self
+
+from avilla.core.elements import Element
+from avilla.core.utilles import identity
 
 from .base import ChainDecorator
 from .commander_util import ParamToken, TextToken, tokenize

@@ -15,7 +15,7 @@ from avilla.standard.core.privilege import (
     Privilege,
     PrivilegeCapability,
 )
-from avilla.standard.core.profile import Nick, NickCapability, Summary, Avatar
+from avilla.standard.core.profile import Avatar, Nick, NickCapability, Summary
 from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:

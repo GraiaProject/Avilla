@@ -76,9 +76,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             context,
             member,
             Nick,
-            {
-                Nick.inh().nickname: ModifyDetail("update", raw_event["current"], raw_event["origin"])
-            },
+            {Nick.inh().nickname: ModifyDetail("update", raw_event["current"], raw_event["origin"])},
             operator=operator or group.member(account_route["account"]),
             scene=group,
         )
@@ -279,9 +277,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
             MuteInfo,
             {
                 MuteInfo.inh().muted: ModifyDetail("update", True, False),
-                MuteInfo.inh().duration: ModifyDetail(
-                    "set", timedelta(seconds=raw_event["durationSeconds"]), None
-                ),
+                MuteInfo.inh().duration: ModifyDetail("set", timedelta(seconds=raw_event["durationSeconds"]), None),
             },
             operator=operator or group.member(account_route["account"]),
             scene=group,

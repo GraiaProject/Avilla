@@ -9,7 +9,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
-from avilla.standard.core.profile import Summary, SummaryCapability, Avatar, Nick
+from avilla.standard.core.profile import Avatar, Nick, Summary, SummaryCapability
 from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:

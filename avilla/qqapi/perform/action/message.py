@@ -7,7 +7,7 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 from loguru import logger
 
-from avilla.core import CoreCapability, Message, Context
+from avilla.core import Context, CoreCapability, Message
 from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -287,7 +287,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         )
         context = self.context
         if context:
-            context.cache[f"{context.scene.display_without_land}#dms"] = result['guild_id']
+            context.cache[f"{context.scene.display_without_land}#dms"] = result["guild_id"]
         return target.into(f"land.guild({result['guild_id']})")
 
     @QQAPICapability.create_dms.collect(m, target="land.guild.member")
@@ -303,7 +303,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         )
         context = self.context
         if context:
-            context.cache[f"{context.scene.display_without_land}#dms"] = result['guild_id']
+            context.cache[f"{context.scene.display_without_land}#dms"] = result["guild_id"]
         return target.into(f"land.guild({result['guild_id']})")
 
     @MessageSend.send.collect(m, target="land.guild.user")
@@ -317,7 +317,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         context = self.context
         msg = await QQAPICapability(self.account.staff).serialize(message)
         if not context or not (send_guild_id := context.cache.get(f"{context.scene.display_without_land}#dms")):
-            send_guild_id = (await self.create_dms_user(target)).pattern["guild"] 
+            send_guild_id = (await self.create_dms_user(target)).pattern["guild"]
         if context and (event_id := context.cache.get(target.display_without_land)):
             msg["msg_id"] = event_id
         if reply:
