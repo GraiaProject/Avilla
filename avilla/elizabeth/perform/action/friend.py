@@ -6,7 +6,7 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.profile import Nick, Summary, Avatar
 from avilla.standard.core.relation.capability import RelationshipTerminate
 
 if TYPE_CHECKING:
@@ -18,8 +18,12 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
     m.namespace = "avilla.protocol/elizabeth::action"
     m.identify = "friend"
 
+    @m.pull("land.friend", Avatar)
+    async def get_friend_avatar(self, target: Selector, route: ...) -> Avatar:
+        return Avatar(f"https://q2.qlogo.cn/headimg_dl?dst_uin={target.pattern['friend']}&spec=640")
+
     @m.pull("land.friend", Nick)
-    async def get_contact_nick(self, target: Selector, route: ...) -> Nick:
+    async def get_friend_nick(self, target: Selector, route: ...) -> Nick:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(
             f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"
@@ -35,7 +39,7 @@ class ElizabethFriendActionPerform((m := AccountCollector["ElizabethProtocol", "
         return Nick(result["nickname"], result["nickname"], None)
 
     @m.pull("land.friend", Summary)
-    async def get_contact_summary(self, target: Selector, route: ...) -> Summary:
+    async def get_friend_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(
             f"elizabeth/account({self.account.route['account']}).friend({target.pattern['friend']})"

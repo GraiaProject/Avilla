@@ -9,7 +9,7 @@ from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL
 from avilla.standard.core.privilege import MuteAllCapability, Privilege
-from avilla.standard.core.profile import Summary, SummaryCapability
+from avilla.standard.core.profile import Summary, SummaryCapability, Avatar, Nick
 from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:
@@ -21,8 +21,28 @@ class ElizabethGroupActionPerform((m := AccountCollector["ElizabethProtocol", "E
     m.namespace = "avilla.protocol/elizabeth::action"
     m.identify = "group"
 
+    @m.pull("land.group", Avatar)
+    async def get_group_avatar(self, target: Selector, route: ...) -> Avatar:
+        return Avatar(f"https://p.qlogo.cn/gh/{target.pattern['group']}/{target.pattern['group']}/")
+
+    @m.pull("land.group", Nick)
+    async def get_group_nick(self, target: Selector, route: ...) -> Nick:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(
+            f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"
+        ):
+            return Nick(raw["name"], raw["name"], None)
+        result = await self.account.connection.call(
+            "fetch",
+            "groupConfig",
+            {
+                "target": int(target.pattern["group"]),
+            },
+        )
+        return Nick(result["name"], result["name"], None)
+
     @m.pull("land.group", Summary)
-    async def get_summary(self, target: Selector, route: ...) -> Summary:
+    async def get_group_summary(self, target: Selector, route: ...) -> Summary:
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if raw := await cache.get(
             f"elizabeth/account({self.account.route['account']}).group({target.pattern['group']})"

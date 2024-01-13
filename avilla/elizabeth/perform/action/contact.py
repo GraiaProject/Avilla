@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.profile import Nick, Summary, Avatar
 
 if TYPE_CHECKING:
     from ...account import ElizabethAccount  # noqa
@@ -14,6 +14,10 @@ if TYPE_CHECKING:
 class ElizabethContactActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.namespace = "avilla.protocol/elizabeth::action"
     m.identify = "contact"
+
+    @m.pull("land.contact", Avatar)
+    async def get_contact_avatar(self, target: Selector, route: ...) -> Avatar:
+        return Avatar(f"https://q2.qlogo.cn/headimg_dl?dst_uin={target.pattern['contact']}&spec=640")
 
     @m.pull("land.contact", Nick)
     async def get_contact_nick(self, target: Selector, route: ...) -> Nick:
