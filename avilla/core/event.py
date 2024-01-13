@@ -113,13 +113,7 @@ class ModifyDetail:
     previous: Any = None
 
     def __repr__(self):
-        if self.type == "set":
-            return f"Set to {self.current!r}"
-        if self.type == "clear":
-            return f"Clear from {self.previous!r}"
-        if self.type == "update":
-            return f"Update from {self.previous!r} to {self.current!r}"
-        return "..."
+        return f"ModifyDetail({self.previous!r} -> {self.current!r})"
 
 
 @dataclass
