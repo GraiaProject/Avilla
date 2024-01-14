@@ -138,7 +138,8 @@ class Avilla:
             logger.info(
                 f"[{context.account.info.protocol.__class__.__name__.replace('Protocol', '')} "
                 f"{context.account.route['account']}]: "
-                f"Request {event.request.request_type or event.request.id} "
+                f"Request {event.request.request_type or event.request.id}"
+                f"{f' with {event.request.message}' if event.request.message else ''} "
                 f"from {client} in {scene}"
             )
         elif isinstance(event, ActivityEvent):
