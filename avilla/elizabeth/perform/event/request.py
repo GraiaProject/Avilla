@@ -38,7 +38,7 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             sender,
             account,
             datetime.now(),
-            request_type="member_join",
+            request_type="elizabeth::member_join",
             message=raw_event.get("message"),
         )
         context._collect_metadatas(
@@ -74,7 +74,7 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             sender,
             account,
             datetime.now(),
-            request_type="new_friend",
+            request_type="elizabeth::new_friend",
             message=raw_event.get("message"),
         )
         context._collect_metadatas(
@@ -105,7 +105,7 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             member,
             account,
             datetime.now(),
-            request_type="bot_invited_join_group",
+            request_type="elizabeth::invited_join_group",
             message=raw_event.get("message"),
         )
         context._collect_metadatas(

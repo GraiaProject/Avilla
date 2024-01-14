@@ -31,6 +31,7 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             account,
             datetime.fromtimestamp(raw_event["time"]),
             request_type="onebot11::friend",
+            message=raw_event.get("comment"),
         )
         return RequestEvent(
             Context(
@@ -58,7 +59,8 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             Selector().land("qq").user(str(raw_event["user_id"])),
             account,
             datetime.fromtimestamp(raw_event["time"]),
-            request_type="onebot11::group",
+            request_type=f"onebot11::group.{raw_event['sub_type']}",
+            message=raw_event.get("comment"),
         )
         return RequestEvent(
             Context(
