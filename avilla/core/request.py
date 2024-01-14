@@ -28,6 +28,8 @@ class Request(Metadata):
     operator: Selector | None = None
     response: str | None = None
 
+    message: str | None = None
+
     @property
     def solved(self) -> bool:
         return self.response is not None

@@ -145,7 +145,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                         "senderId": int(node.uid) if node.uid else None,
                         "senderName": node.name,
                         "time": int(node.time.timestamp()),
-                        "messageChain": await self.account.staff.serialize_message(node.content),  # type: ignore
+                        "messageChain": await ElizabethCapability(self.account.staff).serialize_chain(node.content),
                     }
                 )
         return {"type": "Forward", "display": display, "nodes": nodes}

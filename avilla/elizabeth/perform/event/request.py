@@ -9,6 +9,7 @@ from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import LAND
 from avilla.standard.core.request import RequestReceived
+from avilla.standard.core.profile.metadata import Nick, Summary
 
 
 class ElizabethEventRequestPerform((m := ConnectionCollector())._):
@@ -38,6 +39,17 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             account,
             datetime.now(),
             request_type="member_join",
+            message=raw_event.get("message"),
+        )
+        context._collect_metadatas(
+            group,
+            Nick(raw_event["groupName"], raw_event["groupName"], None),
+            Summary(raw_event["groupName"], None),
+        )
+        context._collect_metadatas(
+            sender,
+            Nick(raw_event["nick"], raw_event["nick"], None),
+            Summary(raw_event["nick"], None),
         )
         return RequestReceived(context, request)
 
@@ -63,6 +75,12 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             account,
             datetime.now(),
             request_type="new_friend",
+            message=raw_event.get("message"),
+        )
+        context._collect_metadatas(
+            sender,
+            Nick(raw_event["nick"], raw_event["nick"], None),
+            Summary(raw_event["nick"], None),
         )
         return RequestReceived(context, request)
 
@@ -88,5 +106,16 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             account,
             datetime.now(),
             request_type="bot_invited_join_group",
+            message=raw_event.get("message"),
+        )
+        context._collect_metadatas(
+            member,
+            Nick(raw_event["nick"], raw_event["nick"], None),
+            Summary(raw_event["nick"], None),
+        )
+        context._collect_metadatas(
+            group,
+            Nick(raw_event["groupName"], raw_event["groupName"], None),
+            Summary(raw_event["groupName"], None),
         )
         return RequestReceived(context, request)
