@@ -1,13 +1,13 @@
 includes = ["avilla/onebot/v11"]
 raw-dependencies = [
-  "avilla-core >= 1.0.0a23",
+  "avilla-core >= 1.0.0a24",
   "avilla-standard-qq >= 1.0.0a21",
   "graia-amnesia[asgi]>=0.9.0"
 ]
 
 [project]
 name = "avilla-onebot-v11"
-version = "1.0.0a23" # WIP for release.
+version = "1.0.0a24" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]

@@ -8,8 +8,8 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import LAND
-from avilla.standard.core.request import RequestReceived
 from avilla.standard.core.profile.metadata import Nick, Summary
+from avilla.standard.core.request import RequestReceived
 
 
 class ElizabethEventRequestPerform((m := ConnectionCollector())._):
