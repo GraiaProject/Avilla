@@ -66,6 +66,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -132,6 +133,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -198,6 +200,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -265,6 +268,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -331,6 +335,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -381,6 +386,7 @@ class ElizabethEventGroupMemberPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,

@@ -148,4 +148,4 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                         "messageChain": await ElizabethCapability(self.account.staff).serialize_chain(node.content),
                     }
                 )
-        return {"type": "Forward", "display": display, "nodes": nodes}
+        return {"type": "Forward", "display": display, "nodeList": nodes}
