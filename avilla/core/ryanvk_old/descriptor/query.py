@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, AsyncGenerator, Callable, Container, Protocol, overload
 
 from avilla.core.selector import Selector, _FollowItem
-from graia.ryanvk import BaseCollector
+from avilla.core.flywheel import BaseCollector
 
 
 @dataclass(unsafe_hash=True)

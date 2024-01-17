@@ -6,9 +6,9 @@ from contextvars import ContextVar
 from typing import TYPE_CHECKING, Any, Callable, ContextManager, Final, Generic, Iterable, overload
 from typing_extensions import Self, Concatenate
 
+from ..builtins.overloads import SingletonOverload
 from .record import FnImplement
 from ..operators import instances
-from ..overloads import SingletonOverload
 from ..typing import (
     P1,
     ExplictImplementShape,

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Literal
 
-from avilla.core.ryanvk import Capability, Fn, TargetOverload
+from avilla.core.ryanvk_old import Capability, Fn, TargetOverload
 from avilla.core.selector import Selector
 
 

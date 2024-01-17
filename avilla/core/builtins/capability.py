@@ -6,9 +6,9 @@ from typing_extensions import Unpack
 
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.resource import Resource, T
-from avilla.core.ryanvk.descriptor.query import QuerySchema
-from avilla.core.ryanvk.overload.metadata import MetadataOverload
-from avilla.core.ryanvk.overload.target import TargetOverload
+from avilla.core.ryanvk_old.descriptor.query import QuerySchema
+from avilla.core.ryanvk_old.overload.metadata import MetadataOverload
+from avilla.core.ryanvk_old.overload.target import TargetOverload
 from graia.ryanvk.capability import Capability
 from graia.ryanvk.fn import Fn
 from graia.ryanvk.overload import NoneOverload, TypeOverload

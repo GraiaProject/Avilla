@@ -8,7 +8,8 @@ from typing import (
     Protocol,
     TypeVar,
 )
-from typing_extensions import TypeAlias, ParamSpec
+from typing_extensions import ParamSpec
+from typing_extensions import TypeAlias
 
 if TYPE_CHECKING:
     from .collector import BaseCollector

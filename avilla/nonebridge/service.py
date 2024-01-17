@@ -13,7 +13,7 @@ from nonebot.message import handle_event
 
 from avilla.core.account import BaseAccount
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.utilles import identity
 from avilla.standard.core.account import AccountRegistered, AccountUnregistered
 from graia.ryanvk import merge, ref

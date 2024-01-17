@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, AsyncIterator, Literal, overload
 from loguru import logger
 from typing_extensions import Self
 
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.red.account import RedAccount
 from avilla.red.capability import RedCapability
 from avilla.red.utils import MsgType, get_msg_types

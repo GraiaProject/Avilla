@@ -3,8 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from .fn.overload import FnOverload
-from .typing import Twin
+from ..fn.overload import FnOverload
+from ..typing import Twin
 
 
 @dataclass(eq=True, frozen=True)

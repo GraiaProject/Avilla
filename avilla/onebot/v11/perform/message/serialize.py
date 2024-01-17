@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, cast
 
 from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.onebot.v11.resource import OneBot11ImageResource
 from avilla.standard.qq.elements import (

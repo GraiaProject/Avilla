@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 
 try:
     from aiohttp import ClientSession

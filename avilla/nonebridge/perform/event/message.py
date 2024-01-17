@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from avilla.core.ryanvk.collector.context import ContextCollector
+from avilla.core.ryanvk_old.collector.context import ContextCollector
 from avilla.standard.core.message import MessageReceived
 
 from ...descriptor.event import NoneEventTranslate

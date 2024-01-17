@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from graia.amnesia.message import MessageChain
 
 from avilla.core.message import Message
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.standard.core.message import (

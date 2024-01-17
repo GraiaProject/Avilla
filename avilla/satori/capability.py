@@ -7,7 +7,7 @@ from satori.element import Element as SatoriElement
 from satori.model import Event
 
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from avilla.standard.core.application.event import AvillaLifecycleEvent
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 

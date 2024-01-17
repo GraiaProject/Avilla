@@ -4,7 +4,7 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from avilla.core.exceptions import permission_error_message
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.qqapi.const import PRIVILEGE_TRANS
 from avilla.standard.core.privilege import MuteCapability, MuteInfo, Privilege

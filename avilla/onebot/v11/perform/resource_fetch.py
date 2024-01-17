@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from aiohttp import ClientSession
 
 from avilla.core.builtins.capability import CoreCapability
-from avilla.core.ryanvk.collector.protocol import ProtocolCollector
+from avilla.core.ryanvk_old.collector.protocol import ProtocolCollector
 from avilla.onebot.v11.resource import (
     OneBot11FileResource,
     OneBot11ImageResource,

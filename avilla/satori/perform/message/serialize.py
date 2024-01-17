@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from satori.parser import escape
 
 from avilla.core.elements import Audio, File, Notice, NoticeAll, Picture, Text, Video
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.element import Button
 from avilla.satori.resource import SatoriResource

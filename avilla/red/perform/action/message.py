@@ -7,7 +7,7 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 from loguru import logger
 
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.red.capability import RedCapability
 from avilla.standard.core.message import (
