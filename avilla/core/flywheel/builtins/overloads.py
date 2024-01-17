@@ -12,7 +12,7 @@ class SimpleOverloadSignature:
     value: Any
 
 
-class SimpleOverload(FnOverload[SimpleOverloadSignature, type[Any], Any]):
+class SimpleOverload(FnOverload[SimpleOverloadSignature, Any, Any]):
     def digest(self, collect_value: Any) -> SimpleOverloadSignature:
         return SimpleOverloadSignature(collect_value)
 
