@@ -102,7 +102,9 @@ def find_querier_steps(
             steps = ".".join([i.name for i in current_steps])
             full_path = f"{head.upper}.{steps}" if head.upper else steps
             head.start += 1
-            if (query := ((*current_steps,), QueryRecord(head.upper or None, steps)))[1] in artifacts:
+
+            query = _, record = tuple(current_steps), QueryRecord(head.upper or None, steps)
+            if record in artifacts:
                 if full_path == whole:
                     if result is None or len(result) > len(head.history) + 1:
                         result = [*head.history, query]
