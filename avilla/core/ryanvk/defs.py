@@ -151,4 +151,5 @@ class query(FnCompose):
             yield self.base.collect((base, {}))
 
     def call(self, pattern: str, **predicators: FollowsPredicater):
-        # TODO
+        # TODO: 寻找 components (greedy?) -> 提取 predicators -> 组装 pipeline -> 返回 async generator.
+        ...
