@@ -170,7 +170,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             operator,
-            Nick(operator_data["memberName"], operator_data["memberName"], operator.get("specialTitle")),
+            Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
             Summary(operator_data["memberName"], "a group member assigned to this account"),
             MuteInfo(
                 operator_data.get("mutetimeRemaining") is not None,
@@ -193,7 +193,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             author,
-            Nick(author_data["memberName"], author_data["memberName"], author.get("specialTitle")),
+            Nick(author_data["memberName"], author_data["memberName"], author_data.get("specialTitle")),
             Summary(author_data["memberName"], "a group member assigned to this account"),
             MuteInfo(
                 author_data.get("mutetimeRemaining") is not None,

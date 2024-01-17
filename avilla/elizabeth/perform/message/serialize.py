@@ -139,7 +139,7 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
         for node in element.nodes:
             if node.mid:
                 nodes.append({"messageId": int(node.mid["message"])})
-            else:
+            elif node.content:
                 nodes.append(
                     {
                         "senderId": int(node.uid) if node.uid else None,
