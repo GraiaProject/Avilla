@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from contextvars import ContextVar
-from typing import TYPE_CHECKING, Any, Callable, ContextManager, Final, Generic, Iterable, overload
+from typing import TYPE_CHECKING, Any, Callable, ContextManager, Final, Generic, Iterable, NoReturn, overload
 from typing_extensions import Self, Concatenate
 
 from ..builtins.overloads import SingletonOverload
@@ -66,6 +66,8 @@ class FnCompose(ABC):
             harv.finished = True
             EntitiesHarvest.mutation_endpoint.reset(tok)
 
+    def raise_for_unimplemented(self) -> NoReturn:
+        raise NotImplementedError("cannot lookup any implementation with given arguments")
 
 class EntitiesHarvest(Generic[P1]):
     mutation_endpoint: Final[ContextVar[Self]] = ContextVar("EntitiesHarvest.mutation_endpoint")
