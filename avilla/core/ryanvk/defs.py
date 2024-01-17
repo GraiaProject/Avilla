@@ -156,7 +156,7 @@ class query(FnCompose):
         else:
             yield self.base.collect((base, {}))
 
-    def call(self, pattern: str, **predicators: FollowsPredicater):
+    def call(self, pattern: str, **predicators: FollowsPredicater) -> FnComposeCallReturnType[AsyncGenerator[Selector, None]]:
         # TODO: 寻找 components (greedy?) -> 提取 predicators -> 组装 pipeline -> 返回 async generator.
         follows = _parse_follows(pattern, **predicators)
         components = []

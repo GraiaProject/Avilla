@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar
+from typing import ClassVar, Generic, TypeVar
 
 from avilla.core.flywheel import BasePerform, InstanceOf, BaseCollector
 
