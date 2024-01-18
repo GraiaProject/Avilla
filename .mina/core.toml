@@ -2,7 +2,6 @@ includes = [
     "avilla/core",
     "avilla/core/py.typed",
     "avilla/standard/core",
-    "graia/ryanvk",
 ]
 
 [project]
