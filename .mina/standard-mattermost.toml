@@ -1,0 +1,20 @@
+includes = ["avilla/standard/mattermost"]
+raw_dependencies = [
+  "avilla-core >= 1.0.0a21",
+]
+
+[project]
+name = "avilla-standard-mattermost"
+version = "1.0.0a21"
+authors = [
+  {name = "nullqwertyuiop", email = "null@member.fsf.org"}
+]
+dependencies = []
+description = ""
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.9"
+
+[project.urls]
+homepage = "https://github.com/GraiaProject/Avilla"
+repository = "https://github.com/GraiaProject/Avilla"
