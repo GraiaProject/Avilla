@@ -7,7 +7,7 @@ from typing_extensions import Concatenate
 
 from ._runtime import AccessStack, GlobalLayout, Instances, Layout
 from .fn.record import FnImplement
-from .layout import DetailedArtifacts, LayoutT, LayoutContentT
+from .layout import ArtifactMirror, DetailedArtifacts, LayoutT
 from .topic import merge_topics_if_possible
 from .typing import R1, P, Q, R, inTC
 from .utils import standalone_context
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 @standalone_context
-def iter_artifacts(key: Any | None = None) -> Generator[LayoutContentT, None, None]:
+def iter_artifacts(key: Any | None = None) -> Generator[Mapping[Any, Any], None, None]:
     collection = AccessStack.get(None)
     if collection is None:
         collection = {}
@@ -37,7 +37,10 @@ def iter_artifacts(key: Any | None = None) -> Generator[LayoutContentT, None, No
     start_offset = index + 1
     try:
         for stack[-1], content in enumerate(layout()[start_offset:], start=start_offset):
-            yield content
+            if isinstance(content, ArtifactMirror):
+                yield from content.mirrors_target()
+            else:
+                yield content
     finally:
         stack.pop()
         if not stack:
