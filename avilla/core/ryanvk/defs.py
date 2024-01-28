@@ -1,12 +1,11 @@
 from __future__ import annotations
-from functools import reduce
 
-from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Callable, Protocol, TypeVar, overload
+from typing import TYPE_CHECKING, Any, AsyncGenerator, Awaitable, Protocol, TypeVar, overload
 from typing_extensions import Unpack
-from avilla.core.flywheel import Fn, FnCompose, SimpleOverload, TypeOverload, is_implemented
+from avilla.core.flywheel import Fn, FnCompose, SimpleOverload, TypeOverload
 from avilla.core.ryanvk.target_overload import TargetOverload
 
-from avilla.core.flywheel.typing import FnComposeCallReturnType, FnComposeCollectReturnType
+from avilla.core.flywheel.typing import FnComposeCallReturnType
 
 from avilla.core.selector import _FollowItem, Selector, FollowsPredicater, _parse_follows
 

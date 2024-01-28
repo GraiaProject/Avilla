@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from collections import ChainMap
 from contextlib import AsyncExitStack, ExitStack, asynccontextmanager, contextmanager
-from typing import TYPE_CHECKING, Any, Callable, Generator, Generic, Mapping, MutableSequence, overload
+from typing import TYPE_CHECKING, Any, Callable, Generator, Generic, Mapping, overload
 from typing_extensions import Concatenate
 
-from ._runtime import AccessStack, GlobalArtifacts, Instances, Layout
+from ._runtime import AccessStack, GlobalLayout, Instances, Layout
 from .fn.record import FnImplement
-from .layout import DetailedArtifacts
+from .layout import DetailedArtifacts, LayoutT, LayoutContentT
 from .topic import merge_topics_if_possible
 from .typing import R1, P, Q, R, inTC
 from .utils import standalone_context
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 @standalone_context
-def iter_artifacts(key: Any | None = None):
+def iter_artifacts(key: Any | None = None) -> Generator[LayoutContentT, None, None]:
     collection = AccessStack.get(None)
     if collection is None:
         collection = {}
@@ -44,8 +44,8 @@ def iter_artifacts(key: Any | None = None):
             collection.pop(key, None)
 
 
-def layout() -> MutableSequence[DetailedArtifacts[Any, Any]]:
-    return Layout.get(None) or [GlobalArtifacts]
+def layout() -> LayoutT:
+    return Layout.get(None) or GlobalLayout
 
 
 def shallow():
@@ -262,7 +262,7 @@ def isolate_layout(backwards_protect: bool = True):
 
     protected = []
     if backwards_protect:
-        protected = [i for i in upstream if not i.protected]
+        protected = [i for i in upstream if isinstance(i, DetailedArtifacts) and not i.protected]
 
     for protect_target in protected:
         protect_target.protected = True

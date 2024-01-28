@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any
 
 from statv import Stats, Statv
 
-from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.selector import Selector
 
 if TYPE_CHECKING:

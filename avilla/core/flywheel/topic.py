@@ -4,7 +4,7 @@ from itertools import cycle
 from typing import Any, Generic, Iterable, MutableMapping, MutableSequence, TypeVar
 from typing_extensions import Self
 
-from .layout import DetailedArtifacts
+from .layout import DetailedArtifacts, LayoutT
 
 T = TypeVar("T")
 S = TypeVar("S")
@@ -90,12 +90,12 @@ class PileTopic(Generic[T, S, E], Topic[T]):
 
 def merge_topics_if_possible(
     inbounds: Iterable[MutableMapping[Any, Any] | DetailedArtifacts[Any, Any]],
-    outbound: MutableSequence[DetailedArtifacts[Any, Any]],
+    outbound: LayoutT,
     *,
     replace_non_topic: bool = True,
 ) -> None:
     for index, value in enumerate(outbound):
-        if value.protected:
+        if not isinstance(value, DetailedArtifacts) or value.protected:
             outbound_depth = index
             break
     else:
@@ -118,7 +118,9 @@ def merge_topics_if_possible(
 
                 pair_v.append(record)
             elif replace_non_topic and maybe_topic not in done_replace:
-                outbound[0][maybe_topic] = record
+                if not isinstance(outbound[0], MutableMapping):
+                    outbound.insert(0, DetailedArtifacts())
+                outbound[0][maybe_topic] = record  # type: ignore
                 done_replace.add(maybe_topic)
 
     for topic, records in topic_pair_records.items():
