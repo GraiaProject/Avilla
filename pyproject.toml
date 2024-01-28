@@ -20,6 +20,8 @@ dependencies = [
     "pygtrie>=2.5.0",
     "selectolax>=0.3.16",
     "satori-python>=0.8.0",
+    "ryanvk-rye>=0.1.1",
+    "storsth>=0.1.0",
 ]
 version = "0"
 requires-python = ">=3.9"
