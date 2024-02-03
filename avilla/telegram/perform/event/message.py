@@ -35,7 +35,7 @@ class TelegramEventMessagePerform((m := InstanceCollector())._):
         self_id = raw_event.get_bot().id
         account = self.account
         chat = Selector().land(account.route["land"]).chat(str(raw_event.message.chat.id))
-        if chat == "message.supergroup" and raw_event.message.message_thread_id:
+        if event_type == "message.supergroup" and raw_event.message.message_thread_id:
             chat = chat.thread(str(raw_event.message.message_thread_id))
         context = Context(
             account,
