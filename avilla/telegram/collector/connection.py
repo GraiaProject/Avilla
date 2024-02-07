@@ -7,20 +7,20 @@ from graia.ryanvk import Access, BasePerform
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount
-    from avilla.telegram.bot.bot import TelegramBot
+    from avilla.telegram.connection.bot import TelegramBot
 
 T = TypeVar("T")
 T1 = TypeVar("T1")
 
 
-class ExtBotBasedPerformTemplate(BasePerform, native=True):
-    __collector__: ClassVar[InstanceCollector]
+class ConnectionBasedPerformTemplate(BasePerform, native=True):
+    __collector__: ClassVar[ConnectionCollector]
 
     instance: Access[TelegramBot] = Access()
     account: Access[TelegramAccount] = Access()
 
 
-class InstanceCollector(AvillaBaseCollector):
+class ConnectionCollector(AvillaBaseCollector):
     post_applying: bool = False
 
     @property
@@ -28,7 +28,7 @@ class InstanceCollector(AvillaBaseCollector):
         upper = super()._
 
         class PerformTemplate(
-            ExtBotBasedPerformTemplate,
+            ConnectionBasedPerformTemplate,
             upper,
             native=True,
         ):

@@ -1,8 +1,6 @@
 from functools import partial
 from typing import Callable
 
-from telegram import Update
-
 _message_events = [
     "poll",
     "pinned_message",
@@ -24,7 +22,7 @@ _message_events = [
 ]
 
 
-def _message_event_type(name: str, raw: Update) -> str:
+def _message_event_type(name: str, raw: ...) -> str:
     obj: dict[str, ...] = raw.to_dict()["message"]
     for event in _message_events:
         if event in obj and obj[event] is not False:
@@ -33,7 +31,7 @@ def _message_event_type(name: str, raw: Update) -> str:
     return f"{name}.{raw.message.chat.type}"
 
 
-_event_types: dict[str, Callable[[Update], str]] = {
+_event_types: dict[str, Callable[[...], str]] = {
     "message": partial(_message_event_type, "message"),
     "edited_message": lambda raw: f"edited_message.{raw.edited_message.chat.type}",
     "channel_post": partial(_message_event_type, "channel_post"),
@@ -51,7 +49,7 @@ _event_types: dict[str, Callable[[Update], str]] = {
 }
 
 
-def reveal_event_type(raw: Update) -> str:
+def reveal_event_type(raw: ...) -> str:
     update_type = list(raw.to_dict().keys())[1]
     if update_type in _event_types:
         return _event_types[update_type](raw)

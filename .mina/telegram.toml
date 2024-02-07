@@ -10,9 +10,7 @@ version = "0.1.0" # WIP for release.
 authors = [
   {name = "nullqwertyuiop", email = "null@member.fsf.org"},
 ]
-dependencies = [
-  "python-telegram-bot"
-]
+dependencies = []
 description = "Avilla Telegram Protocol"
 license = {text = "GPL-3.0"}
 readme = "README.md"

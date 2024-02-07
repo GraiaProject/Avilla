@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from launart import Launart, Service, any_completed
 
 if TYPE_CHECKING:
-    from avilla.telegram.bot.bot import TelegramBot
+    from avilla.telegram.connection.bot import TelegramBot
     from avilla.telegram.protocol import TelegramProtocol
 
 

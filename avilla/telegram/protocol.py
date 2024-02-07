@@ -6,9 +6,8 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from avilla.telegram.bot import TelegramBot
+from avilla.telegram.connection import TelegramBot
 from avilla.telegram.service import TelegramService
-from graia.ryanvk import merge, ref
 
 
 @dataclass
@@ -21,22 +20,26 @@ class TelegramBotConfig(ProtocolConfig):
 
 
 def _import_performs():
+    # TODO: this is fine
+
     # isort: off
 
     # :: Message
-    from .perform.message.deserialize import TelegramMessageDeserializePerform  # noqa: F401
-    from .perform.message.serialize import TelegramMessageSerializePerform  # noqa: F401
+    # from .perform.message.deserialize import TelegramMessageDeserializePerform  # noqa: F401
+    # from .perform.message.serialize import TelegramMessageSerializePerform  # noqa: F401
 
     # :: Event
-    from .perform.event.message import TelegramEventMessagePerform  # noqa: F401
+    # from .perform.event.message import TelegramEventMessagePerform  # noqa: F401
 
     # :: Action
-    from .perform.action.forum import TelegramForumActionPerform  # noqa: F401
-    from .perform.action.me import TelegramMeActionPerform  # noqa: F401
-    from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
+    # from .perform.action.forum import TelegramForumActionPerform  # noqa: F401
+    # from .perform.action.me import TelegramMeActionPerform  # noqa: F401
+    # from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
 
     # :: Resource Fetch
-    from .perform.resource_fetch import TelegramResourceFetchPerform  # noqa: F401
+    # from .perform.resource_fetch import TelegramResourceFetchPerform  # noqa: F401
+
+    pass
 
 
 class TelegramProtocol(BaseProtocol):
@@ -44,15 +47,15 @@ class TelegramProtocol(BaseProtocol):
 
     _import_performs()
     artifacts = {
-        **merge(
-            ref("avilla.protocol/telegram::resource_fetch"),
-            ref("avilla.protocol/telegram::action", "forum"),
-            ref("avilla.protocol/telegram::action", "me"),
-            ref("avilla.protocol/telegram::action", "message"),
-            ref("avilla.protocol/telegram::message", "deserialize"),
-            ref("avilla.protocol/telegram::message", "serialize"),
-            ref("avilla.protocol/telegram::event", "message"),
-        ),
+        # **merge(
+        #     ref("avilla.protocol/telegram::resource_fetch"),
+        #     ref("avilla.protocol/telegram::action", "forum"),
+        #     ref("avilla.protocol/telegram::action", "me"),
+        #     ref("avilla.protocol/telegram::action", "message"),
+        #     ref("avilla.protocol/telegram::message", "deserialize"),
+        #     ref("avilla.protocol/telegram::message", "serialize"),
+        #     ref("avilla.protocol/telegram::event", "message"),
+        # ),
     }
 
     def __init__(self):

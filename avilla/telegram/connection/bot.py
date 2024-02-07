@@ -5,10 +5,6 @@ from typing import TYPE_CHECKING, cast
 
 from launart import Launart, Service, any_completed
 from loguru import logger
-from telegram import Message
-from telegram.error import InvalidToken as InvalidTokenOrigin
-from telegram.error import NetworkError, TimedOut
-from telegram.ext import ExtBot
 
 from avilla.core import Selector
 from avilla.core.account import AccountInfo
@@ -18,10 +14,8 @@ from avilla.standard.core.account import (
     AccountUnregistered,
 )
 from avilla.telegram.account import TelegramAccount
-from avilla.telegram.bot.base import TelegramBase
+from avilla.telegram.connection.base import TelegramBase
 from avilla.telegram.const import PLATFORM
-from avilla.telegram.exception import InvalidToken
-from avilla.telegram.fragments import MessageFragment
 
 if TYPE_CHECKING:
     from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
@@ -34,21 +28,16 @@ class TelegramBot(TelegramBase, Service):
     protocol: TelegramProtocol
     config: TelegramBotConfig
 
-    bot: ExtBot
     available: bool
-    __auth: bool
-    __offset: int | None
 
     def __init__(self, protocol: TelegramProtocol, config: TelegramBotConfig):
         super().__init__(protocol)
         self.protocol = protocol
         self.config = config
-        self.__offset = None
-        self.__auth = False
 
     @property
     def available(self):
-        return self.__auth and not self.kill_switch.is_set() and not self.timeout_signal.is_set()
+        return not self.kill_switch.is_set() and not self.timeout_signal.is_set()
 
     @property
     def account_id(self):
@@ -58,24 +47,8 @@ class TelegramBot(TelegramBase, Service):
     def id(self):
         return f"telegram/bot#{self.account_id}"
 
-    async def auth(self, __retries: int = 0, __max_retries: int = 5):
-        try:
-            self.bot = ExtBot(
-                self.config.token, base_url=str(self.config.base_url), base_file_url=str(self.config.base_file_url)
-            )
-            await self.bot.initialize()
-            logger.info(f"{self.id} is available")
-            self.__auth = True
-        except InvalidTokenOrigin as e:
-            raise InvalidToken(self.config.token) from e
-        except (TimedOut, NetworkError) as e:
-            logger.warning(f"Failed to connect to telegram server: {e}, retrying ({__retries}/{__max_retries})...")
-            if __retries < __max_retries:
-                await self.auth(__retries + 1, __max_retries)
-            else:
-                logger.error(f"Failed to connect to telegram server: {e}, aborting...")
-
     def register(self):
+        # TODO: check if works
         account_route = Selector().land("telegram").account(str(self.account_id))
         if account_route in self.protocol.avilla.accounts:
             account = cast(TelegramAccount, self.protocol.avilla.accounts[account_route].account)
@@ -94,37 +67,12 @@ class TelegramBot(TelegramBase, Service):
 
     async def message_receive(self):
         while not self.manager.status.exiting:
-            try:
-                if not (update := await self.bot.get_updates(offset=self.__offset, timeout=self.config.timeout)):
-                    continue
-                for u in update:
-                    yield self, u
-                self.__offset = update[-1].update_id + 1
-            except InvalidToken:
-                self.kill_switch.set()
-                break
-            except (TimedOut, TimeoutError, NetworkError):
-                self.timeout_signal.set()
-                break
+            # TODO: re-implement message_receive
+            pass
 
-    async def send(self, target, fragments) -> list[Message]:
-        params: dict[str, ...] = {}
-        if self.config.reformat:
-            fragments = MessageFragment.sort(*fragments)
-        for fragment in fragments.copy():
-            fragment.hook(fragments, params)
-        fragments = MessageFragment.compose(*fragments)
-        chat = int(target.pattern["chat"])
-        thread = target.pattern.get("thread", None)
-        thread = int(thread) if thread else None
-        sent_ids = []
-        sent_messages: list[Message] = []
-        for fragment in fragments:
-            msg = await fragment.send(self.bot, chat, thread=thread, params=params)
-            sent_ids.extend([m.message_id for m in msg])
-            sent_messages.extend(msg)
-
-        return sent_messages
+    async def send(self, *args, **kwargs) -> ...:
+        # TODO: re-implement send
+        pass
 
     async def wait_for_available(self):
         await self.status.wait_for_available()
@@ -139,6 +87,7 @@ class TelegramBot(TelegramBase, Service):
         return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
     async def unregister(self):
+        # TODO: check if works
         avilla = self.protocol.avilla
         for n in list(avilla.accounts.keys()):
             logger.debug(f"Unregistering telegram account {n}...")
@@ -176,8 +125,8 @@ class TelegramBot(TelegramBase, Service):
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
-            await self.auth()
-            self.register()
+            # TODO: re-implement launch: stage preparing
+            pass
 
         async with self.stage("blocking"):
             await any_completed(manager.status.wait_for_sigexit(), self.daemon())
