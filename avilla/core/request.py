@@ -57,7 +57,7 @@ class Request(Metadata):
     def to_selector(self) -> Selector:
         request_id = self.id
         if self.request_type is not None:
-            request_id = f"{self.request_type}:{request_id}"
+            request_id = f"{self.request_type}@{request_id}"
         return self.scene.request(request_id)
 
     async def accept(self):
