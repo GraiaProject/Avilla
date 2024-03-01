@@ -91,37 +91,37 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         )
         return target.file(result["id"])
 
-    @m.entity(FileDelete.delete, target="land.group.file")
-    async def delete_file(self, target: Selector) -> None:
-         await self.account.connection.call(
+    @m.entity(FileDelete.delete, file="land.group.file")
+    async def delete_file(self, file: Selector) -> None:
+        await self.account.connection.call(
             "update",
             "file_delete",
             {
-                "id": target["file"],
-                "target": int(target["group"]),
+                "id": file["file"],
+                "target": int(file["group"]),
             },
         )
 
-    @m.entity(FileMove.move, target="land.group.file")
-    async def move_file(self, target: Selector, to: Selector) -> None:
-         await self.account.connection.call(
+    @m.entity(FileMove.move, file="land.group.file")
+    async def move_file(self, file: Selector, to: Selector) -> None:
+        await self.account.connection.call(
             "update",
             "file_move",
             {
-                "id": target["file"],
-                "target": int(target["group"]),
+                "id": file["file"],
+                "target": int(file["group"]),
                 "moveTo": to["file"],
             },
         )
 
-    @m.entity(FileRename.rename, target="land.group.file")
-    async def rename_file(self, target: Selector, name: str) -> None:
-         await self.account.connection.call(
+    @m.entity(FileRename.rename, file="land.group.file")
+    async def rename_file(self, file: Selector, name: str) -> None:
+        await self.account.connection.call(
             "update",
             "file_rename",
             {
-                "id": target["file"],
-                "target": int(target["group"]),
+                "id": file["file"],
+                "target": int(file["group"]),
                 "renameTo": name,
             },
         )
