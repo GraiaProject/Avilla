@@ -16,7 +16,10 @@ jobs:
           architecture: "x64"
       - name: Ensure PDM & twine
         run: |
-          python3 -m pip install pdm twine pdm-mina mina-build
+          python3 -m pip install pdm twine pdm-mina "mina-build<0.6"
+      - name: Set Target
+        run: |
+          export MINA_BUILD_TARGET=elizabeth
       - name: Build Package
         run: |
           pdm mina build elizabeth

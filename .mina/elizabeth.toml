@@ -6,7 +6,7 @@ raw-dependencies = [
 
 [project]
 name = "avilla-elizabeth"
-version = "1.0.0a26" # WIP for release.
+version = "1.0.0a27" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}

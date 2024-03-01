@@ -25,8 +25,8 @@ version = "0"
 requires-python = ">=3.9"
 
 [build-system]
-requires = ["mina-build>=0.6.0"]
-build-backend = "pdm.backend"
+requires = ["mina-build<0.6.0"]
+build-backend = "mina.backend"
 
 [tool.pdm.build]
 includes = ["avilla/"]
