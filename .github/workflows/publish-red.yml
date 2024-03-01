@@ -17,12 +17,9 @@ jobs:
       - name: Ensure PDM & twine
         run: |
           python3 -m pip install pdm twine pdm-mina "mina-build<0.6"
-      - name: Set Target
-        run: |
-          export MINA_BUILD_TARGET=red
       - name: Build Package
         run: |
-          pdm mina build red
+          export MINA_BUILD_TARGET=red && pdm mina build red
       - name: Publish to PyPI
         run: |
           twine upload dist/* --non-interactive -u __token__ -p ${{ secrets.PYPI_TOKEN }}
