@@ -22,8 +22,8 @@ class FileData(Metadata):
     parent: FileData | None
     is_file: bool
     is_dir: bool
-    upload_time: datetime
-    modify_time: datetime
+    upload_time: datetime | None
+    modify_time: datetime | None
     download_info: DownloadInfo | None
 
     def to_selector(self):
@@ -38,8 +38,8 @@ class FileData(Metadata):
             None if not raw["parent"] else cls.parse(raw["parent"]),
             raw["isFile"],
             raw["isDirectory"],
-            datetime.fromtimestamp(raw["uploadTime"]),
-            datetime.fromtimestamp(raw["lastModifyTime"]),
+            datetime.fromtimestamp(raw["uploadTime"]) if raw["uploadTime"] is not None else None,
+            datetime.fromtimestamp(raw["lastModifyTime"]) if raw["lastModifyTime"] is not None else None,,
             DownloadInfo(
                 raw["downloadInfo"]["sha1"],
                 raw["downloadInfo"]["md5"],
