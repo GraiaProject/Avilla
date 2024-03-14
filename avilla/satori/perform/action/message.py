@@ -24,7 +24,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
     m.namespace = "avilla.protocol/satori::action"
     m.identify = "message"
 
-    @m.entity(MessageSend.send, target="land.public.channel")
+    @m.entity(MessageSend.send, target="land.guild.channel")
     async def send_public_message(
         self,
         target: Selector,
@@ -65,6 +65,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         )
         return target.message(token)
 
+    @m.entity(MessageSend.send, target="land.user")
     @m.entity(MessageSend.send, target="land.private.user")
     async def send_private_message(
         self,
@@ -76,9 +77,14 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if reply:
             message = Reference(reply) + message
-        result = await self.account.client.message_create(
-            channel_id=target["private"], content=await SatoriCapability(self.account.staff).serialize(message)
-        )
+        if target.follows("::private.user"):
+            result = await self.account.client.message_create(
+                channel_id=target["private"], content=await SatoriCapability(self.account.staff).serialize(message)
+            )
+        else:
+            result = await self.account.client.send_private_message(
+                user_id=target["user"], message=await SatoriCapability(self.account.staff).serialize(message)
+            )
         for msg in result:
             _ctx = Context(
                 self.account,
@@ -106,7 +112,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         )
         return target.message(token)
 
-    @m.entity(MessageRevoke.revoke, target="land.public.channel.message")
+    @m.entity(MessageRevoke.revoke, target="land.guild.channel.message")
     async def revoke_public_message(self, target: Selector):
         cache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if result := await cache.get(f"satori/account({self.account.route['account']}).messages({target['message']})"):
@@ -124,14 +130,14 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             return
         await self.account.client.message_delete(channel_id=target["private"], message_id=target["message"])
 
-    @m.pull("land.public.channel.message", Message)
+    @m.pull("land.guild.channel.message", Message)
     async def get_public_message(self, message: Selector, route: ...) -> Message:
         msg = await self.account.client.message_get(
             channel_id=message["channel"],
             message_id=message["message"],
         )
         _ctx = self.account.get_context(
-            message.info("::public.channel").member(
+            message.info("::guild.channel").member(
                 msg.member.user.id if msg.member and msg.member.user else self.account.route["account"]
             )
         )
@@ -142,8 +148,8 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             content = content.exclude(Reference)
         return Message(
             id=f"{msg.id}",
-            scene=message.info("::public.channel"),
-            sender=message.info("::public.channel").member(
+            scene=message.info("::guild.channel"),
+            sender=message.info("::guild.channel").member(
                 msg.member.user.id if msg.member and msg.member.user else self.account.route["account"]
             ),
             content=content,

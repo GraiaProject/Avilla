@@ -28,7 +28,7 @@ class SatoriEventMessagePerform((m := ConnectionCollector())._):
         if TYPE_CHECKING:
             assert isinstance(raw_event, MessageEvent)
         if raw_event.channel.type == ChannelType.DIRECT:
-            private = Selector().land(account.route["land"]).private("True").channel(raw_event.channel.id)
+            private = Selector().land(account.route["land"]).private(raw_event.channel.id)
             user = private.user(raw_event.user.id)
             context = Context(
                 account,
