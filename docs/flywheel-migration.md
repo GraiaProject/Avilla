@@ -74,7 +74,7 @@ class QQAPIPerformAccountBase:
     account = InstanceOf(QQAPIAccount)
 
 # file: avilla.qqapi.perform.account
-class QQAPIAccountPerform(m := scoped_context().target, QQAPIPerformAccountBase):
+class QQAPIAccountPerform(m := scoped_context.env().target, QQAPIPerformAccountBase):
     @some_fn.impl(...)
     async def some_impl(self):
         reveal_type(self.protocol)
