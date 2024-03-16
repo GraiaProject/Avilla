@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     from .overload import FnOverload, TCollectValue
 
 
-@dataclass(slots=True)
+@dataclass
 class OverloadRecorder(Generic[CR]):
     target: FnRecord
     implement: CR

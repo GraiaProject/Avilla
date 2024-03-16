@@ -8,13 +8,13 @@ if TYPE_CHECKING:
     from .overload import FnOverload
 
 
-@dataclass(slots=True)
+@dataclass(eq=True, frozen=True)
 class FnRecord:
     spec: Fn
     scopes: dict[str, dict[Any, Any]] = field(default_factory=dict)
     entities: dict[frozenset[tuple[str, "FnOverload", Any]], Callable] = field(default_factory=dict)
 
 
-@dataclass(slots=True, unsafe_hash=True)
+@dataclass(eq=True, frozen=True)
 class FnImplement:
     fn: Fn
