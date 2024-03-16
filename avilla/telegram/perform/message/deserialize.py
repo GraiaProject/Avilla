@@ -47,15 +47,8 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         return [Text(raw_element["text"])]
 
     @staticmethod
-    async def extract_entities(text: str, entities: list[dict]) -> list[Text | Entity]:
+    async def extract_entities(text: str, entities: list[dict]) -> list[Text]:
         # See: https://core.telegram.org/api/entities#entity-length
-
-        def get_entity(__text: str, __type: str, __data: dict[str, ...]) -> Entity:
-            params = {"text": __text} | __data
-            for subclass in Entity.__subclasses__():
-                if subclass.__name__.lstrip("Entity").lower() == __type.replace("_", ""):
-                    return subclass(**params)
-            return Entity(**params)  # Fallback in case of unknown entity type
 
         ignored_keys = {"type", "offset", "length"}
         result = []
@@ -67,13 +60,10 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
             end = (entity["offset"] - offset + entity["length"]) * 2
             if left := remaining[:start]:
                 result.append(Text(left.decode("utf-16be")))
-            result.append(
-                get_entity(
-                    remaining[start:end].decode("utf-16be"),
-                    entity["type"],
-                    {k: v for k, v in entity.items() if k not in ignored_keys},
-                )
-            )
+            text_entity = Text(remaining[start:end].decode("utf-16be"), style=entity["type"])
+            for _k, _v in {k: v for k, v in entity.items() if k not in ignored_keys}:
+                setattr(text_entity, _k, _v)
+            result.append(text_entity)
             remaining = remaining[end:]
             offset = entity["offset"] + entity["length"]
         if remaining:
