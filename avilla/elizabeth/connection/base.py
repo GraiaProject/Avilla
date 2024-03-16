@@ -127,6 +127,7 @@ class ElizabethNetworking:
                 {
                     "subCommand": {
                         "fetch": "get",
+                        "update": "post",
                     }.get(method)
                     or method,
                     "syncId": echo,

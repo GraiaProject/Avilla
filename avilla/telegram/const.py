@@ -4,9 +4,9 @@ LAND = Land("telegram", [{"name": "Telegram"}], humanized_name="Telegram")
 PLATFORM = Platform(
     LAND,
     Abstract(
-        protocol="python-telegram-bot",
-        maintainers=[{"name": "python-telegram-bot"}],
-        humanized_name="python-telegram-bot",
+        protocol="telegram-bot-api",
+        maintainers=[{"name": "Telegram"}],
+        humanized_name="Telegram Bot API",
     ),
     Land(
         "telegram",

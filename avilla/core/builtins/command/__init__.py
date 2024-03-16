@@ -154,16 +154,16 @@ class AvillaCommands:
         async def listener(event: MessageReceived):
             msg = str(event.message.content.exclude(Notice)).lstrip()
             if matches := list(self.trie.prefixes(msg)):
-                await asyncio.gather(*(self.execute(*res.value, event) for res in matches if res.value))
+                await asyncio.gather(*(self.execute(*res.value, event) for res in matches if res.value))  # type: ignore
                 return
             # shortcut
             head, _ = split_once(msg, (" ",))
             for value in self.trie.values():
                 try:
-                    command_manager.find_shortcut(value[0], head)
+                    command_manager.find_shortcut(value[0], head)  # type: ignore
                 except ValueError:
                     continue
-                await self.execute(*value, event)
+                await self.execute(*value, event)  # type: ignore
 
     @property
     def all_helps(self) -> str:

@@ -7,6 +7,7 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 from loguru import logger
 
+from avilla.core import Context
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.red.capability import RedCapability
@@ -115,7 +116,13 @@ class RedMessageActionPerform((m := AccountCollector["RedProtocol", "RedAccount"
             ).event_callback("message::recv", resp)
             if TYPE_CHECKING:
                 assert isinstance(event, MessageReceived)
-            event.context = self.account.get_context(target, via=self.account.route)
+            event.context = Context(
+                self.account,
+                self.account.route,
+                target,
+                target,
+                self.account.route,
+            )
             event.message.scene = target
             event.message.sender = self.account.route
             self.protocol.post_event(MessageSent(event.context, event.message, self.account))

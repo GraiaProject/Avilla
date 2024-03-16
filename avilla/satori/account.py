@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from satori.account import Account
+from satori.client.account import Account
 
 from avilla.core.account import AccountStatus, BaseAccount
 from avilla.core.selector import Selector

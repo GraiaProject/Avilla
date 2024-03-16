@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message import MessageChain
 
+from avilla.core import Context
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -36,7 +37,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
             "send_group_msg",
             {
                 "group_id": int(target.pattern["group"]),
-                "message": [await self.staff.call_fn(OneBot11Capability.serialize_element, i) for i in message],
+                "message": await OneBot11Capability(self.account.staff).serialize_chain(message),
             },
         )
         if result is None:
@@ -76,12 +77,18 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
             "send_private_msg",
             {
                 "user_id": int(target.pattern["friend"]),
-                "message": [await self.staff.call_fn(OneBot11Capability.serialize_element, i) for i in message],
+                "message": await OneBot11Capability(self.account.staff).serialize_chain(message),
             },
         )
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {message}")
-        context = self.account.get_context(target, via=self.account.route)
+        context = Context(
+            self.account,
+            self.account.route,
+            target,
+            target,
+            self.account.route,
+        )
         self.protocol.post_event(
             MessageSent(
                 context,
@@ -104,7 +111,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         for node in forward.nodes:
             if node.mid:
                 data.append({"type": "node", "data": {"id": node.mid["message"]}})
-            else:
+            elif node.content:
                 data.append(
                     {
                         "type": "node",
@@ -112,7 +119,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
                             "name": node.name,
                             "uin": node.uid,
                             "time": str(int(node.time.timestamp())),
-                            "content": await self.account.staff.serialize_message(node.content),  # type: ignore
+                            "content": await OneBot11Capability(self.account.staff).serialize_chain(node.content),
                         },
                     }
                 )
@@ -146,7 +153,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         for node in forward.nodes:
             if node.mid:
                 data.append({"type": "node", "data": {"id": node.mid["message"]}})
-            else:
+            elif node.content:
                 data.append(
                     {
                         "type": "node",
@@ -154,7 +161,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
                             "name": node.name,
                             "uin": node.uid,
                             "time": str(int(node.time.timestamp())),
-                            "content": await self.account.staff.serialize_message(node.content),  # type: ignore
+                            "content": await OneBot11Capability(self.account.staff).serialize_chain(node.content),
                         },
                     }
                 )
@@ -167,7 +174,13 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         )
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {forward}")
-        context = self.account.get_context(target, via=self.account.route)
+        context = Context(
+            self.account,
+            self.account.route,
+            target,
+            target,
+            self.account.route,
+        )
         self.protocol.post_event(
             MessageSent(
                 context,

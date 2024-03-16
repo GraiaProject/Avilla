@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
 
 from graia.amnesia.message import Element
-from graia.amnesia.message import Text as Text  # noqa
+from graia.amnesia.message.element import Text as Text  # noqa
+from graia.amnesia.message.element import Unknown as Unknown  # noqa
 
 from avilla.core.resource import LocalFileResource, Resource
 from avilla.core.selector import Selector
@@ -44,6 +44,9 @@ class NoticeAll(Element):
     def __str__(self) -> str:
         return "[$NoticeAll]"
 
+    def __eq__(self, other):
+        return isinstance(other, NotImplementedError)
+
 
 class Picture(Element):
     resource: Resource[bytes]
@@ -60,6 +63,9 @@ class Picture(Element):
 
     def __repr__(self):
         return f"[$Picture:resource={self.resource.to_selector()}]"
+
+    def __eq__(self, other):
+        return isinstance(other, Picture) and self.resource.to_selector() == other.resource.to_selector()
 
 
 class Audio(Element):
@@ -80,6 +86,9 @@ class Audio(Element):
     def __repr__(self):
         return f"[$Audio:resource={self.resource.to_selector()}]"
 
+    def __eq__(self, other):
+        return isinstance(other, Audio) and self.resource.to_selector() == other.resource.to_selector()
+
 
 class Video(Element):
     resource: Resource[bytes]
@@ -96,6 +105,9 @@ class Video(Element):
 
     def __repr__(self):
         return f"[$Video:resource={self.resource.to_selector()}]"
+
+    def __eq__(self, other):
+        return isinstance(other, Video) and self.resource.to_selector() == other.resource.to_selector()
 
 
 class File(Element):
@@ -114,6 +126,9 @@ class File(Element):
     def __repr__(self) -> str:
         return f"[$File:resource={self.resource.to_selector()}]"
 
+    def __eq__(self, other):
+        return isinstance(other, File) and self.resource.to_selector() == other.resource.to_selector()
+
 
 @dataclass
 class Reference(Element):
@@ -123,6 +138,9 @@ class Reference(Element):
     def __str__(self):
         return f"[$Reference:id={self.message}]"
 
+    def __eq__(self, other):
+        return isinstance(other, Reference) and self.message == other.message
+
 
 @dataclass
 class Face(Element):
@@ -131,15 +149,3 @@ class Face(Element):
 
     def __str__(self) -> str:
         return f"[Face:id={self.id};name={self.name}]"
-
-
-class Unknown(Element):
-    type: str
-    raw_data: Any
-
-    def __init__(self, type: str, raw_data: Any) -> None:
-        self.type = type
-        self.raw_data = raw_data
-
-    def __str__(self) -> str:
-        return f"[$Unknown:type={self.type}]"

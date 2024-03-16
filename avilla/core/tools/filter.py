@@ -7,7 +7,7 @@ from operator import contains, eq, is_, is_not, ne
 from typing import Any, Generic, Protocol, TypeVar
 
 from graia.broadcast import BaseDispatcher, DispatcherInterface, ExecutionStop
-from typing_extensions import ParamSpec, Self
+from typing_extensions import ParamSpec
 
 from avilla.core.account import BaseAccount
 from avilla.core.context import Context
@@ -56,7 +56,7 @@ class Filter(BaseDispatcher, Generic[T]):
         self.middlewares.append(func)
         return self  # type: ignore
 
-    def assert_true(self: Filter[R], func: Callable[[R], Any]):
+    def assert_true(self: Filter[R], func: Callable[[R], Any]) -> Filter[R]:
         @self.step
         def _(result: R) -> R:
             if func(result):
@@ -65,44 +65,44 @@ class Filter(BaseDispatcher, Generic[T]):
 
         return self
 
-    def assert_false(self, func: Callable[[T], Any]) -> Self:
+    def assert_false(self, func: Callable[[T], Any]) -> Filter[T]:
         return self.assert_true(lambda result: not func(result))
 
-    def assert_equal(self, value: Any) -> Self:
+    def assert_equal(self, value: Any) -> Filter[T]:
         return self.assert_true(partial(eq, value))
 
-    def assert_not_equal(self, value: Any) -> Self:
+    def assert_not_equal(self, value: Any) -> Filter[T]:
         return self.assert_true(partial(ne, value))
 
     def is_(self, value: Any):
         return self.assert_true(partial(is_, value))
 
-    def is_not(self, value: Any) -> Self:
+    def is_not(self, value: Any) -> Filter[T]:
         return self.assert_true(partial(is_not, value))
 
     def is_none(self):
         return self.is_(None)
 
-    def is_not_none(self) -> Self:  # 实际上类型是 Filter[T - None]
+    def is_not_none(self) -> Filter[T]:  # 实际上类型是 Filter[T - None]
         return self.is_not(None)
 
     def contains(self, container: Container[R]) -> Filter[R]:
         return self.assert_true(partial(contains, container))  # type: ignore
 
-    def not_contains(self, container: Container) -> Self:
+    def not_contains(self, container: Container) -> Filter[T]:
         return self.assert_true(lambda result: result not in container)
 
     def instanceof(self, cls: type[R]) -> Filter[R]:
         return self.assert_true(lambda result: isinstance(result, cls))  # type: ignore
 
-    def not_instanceof(self, cls: type) -> Self:
+    def not_instanceof(self, cls: type) -> Filter[T]:
         return self.assert_true(lambda result: not isinstance(result, cls))
 
-    def any(self, funcs: Iterable[Callable[[T], Any]]) -> Self:
+    def any(self, funcs: Iterable[Callable[[T], Any]]) -> Filter[T]:
         funcs = frozenset(funcs)
         return self.assert_true(lambda result: any(func(result) for func in funcs))
 
-    def all(self, funcs: Iterable[Callable[[T], Any]]) -> Self:
+    def all(self, funcs: Iterable[Callable[[T], Any]]) -> Filter[T]:
         funcs = frozenset(funcs)
         return self.assert_true(lambda result: all(func(result) for func in funcs))
 

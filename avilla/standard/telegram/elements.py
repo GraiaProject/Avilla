@@ -132,11 +132,6 @@ class VideoNote(CoreVideo):
         return "[$VideoNote]"
 
 
-class Voice(Audio):
-    def __str__(self) -> str:
-        return "[$Voice]"
-
-
 class Dice(Element):
     value: int | None
     emoji: DiceEmoji

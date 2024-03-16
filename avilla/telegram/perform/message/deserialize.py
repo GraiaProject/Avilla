@@ -2,44 +2,30 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from avilla.core import RawResource
-from avilla.core.elements import Audio, Face, File, Notice, Text
+from graia.amnesia.message import Element, Text
+
+from avilla.core import Audio, File, Selector
 from avilla.core.ryanvk.collector.application import ApplicationCollector
-from avilla.core.selector import Selector
-from avilla.standard.telegram.constants import DiceEmoji
 from avilla.standard.telegram.elements import (
     Animation,
-    Contact,
-    Dice,
     Entity,
-    Location,
     Picture,
-    Reference,
     Sticker,
-    Venue,
     Video,
     VideoNote,
-    Voice,
 )
 from avilla.telegram.capability import TelegramCapability
-from avilla.telegram.fragments import (
-    MessageFragmentAnimation,
-    MessageFragmentAudio,
-    MessageFragmentContact,
-    MessageFragmentDice,
-    MessageFragmentDocument,
-    MessageFragmentEntity,
-    MessageFragmentLocation,
-    MessageFragmentPhoto,
-    MessageFragmentReference,
-    MessageFragmentSticker,
-    MessageFragmentText,
-    MessageFragmentVenue,
-    MessageFragmentVideo,
-    MessageFragmentVideoNote,
-    MessageFragmentVoice,
+from avilla.telegram.resource import (
+    TelegramAnimationResource,
+    TelegramAudioResource,
+    TelegramDocumentResource,
+    TelegramFileResource,
+    TelegramPhotoResource,
+    TelegramStickerResource,
+    TelegramVideoNoteResource,
+    TelegramVideoResource,
+    TelegramVoiceResource,
 )
-from avilla.telegram.resource import TelegramResource
 from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
@@ -53,226 +39,292 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
 
     context: OptionalAccess[Context] = OptionalAccess()
     account: OptionalAccess[TelegramAccount] = OptionalAccess()
+
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @m.entity(TelegramCapability.deserialize_element, element="reference")
-    async def reference(self, element: MessageFragmentReference) -> Reference:
-        if element.update:
-            return Reference(
+    @m.entity(TelegramCapability.deserialize_element, raw_element="text")
+    async def text(self, raw_element: dict) -> list[Text]:
+        return [Text(raw_element["text"])]
+
+    @staticmethod
+    async def extract_entities(text: str, entities: list[dict]) -> list[Text | Entity]:
+        # See: https://core.telegram.org/api/entities#entity-length
+
+        def get_entity(__text: str, __type: str, __data: dict[str, ...]) -> Entity:
+            params = {"text": __text} | __data
+            for subclass in Entity.__subclasses__():
+                if subclass.__name__.lstrip("Entity").lower() == __type.replace("_", ""):
+                    return subclass(**params)
+            return Entity(**params)  # Fallback in case of unknown entity type
+
+        ignored_keys = {"type", "offset", "length"}
+        result = []
+        text = text.encode("utf-16be")
+        remaining = text
+        offset = 0
+        for entity in entities:
+            start = (entity["offset"] - offset) * 2
+            end = (entity["offset"] - offset + entity["length"]) * 2
+            if left := remaining[:start]:
+                result.append(Text(left.decode("utf-16be")))
+            result.append(
+                get_entity(
+                    remaining[start:end].decode("utf-16be"),
+                    entity["type"],
+                    {k: v for k, v in entity.items() if k not in ignored_keys},
+                )
+            )
+            remaining = remaining[end:]
+            offset = entity["offset"] + entity["length"]
+        if remaining:
+            result.append(Text(remaining.decode("utf-16be")))
+        return result
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="entities")
+    async def entities(self, raw_element: dict) -> list[Text | Entity]:
+        return await self.extract_entities(raw_element["text"], raw_element["entities"])
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="caption")
+    async def caption(self, raw_element: dict) -> list[Element]:
+        result: list[Element] = []
+        caption: str = raw_element.popitem()[-1]
+        result.extend(await TelegramCapability(self.staff).deserialize_element(raw_element))
+        result.append(Text(caption))
+        return result
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="caption_entities")
+    async def caption_entities(self, raw_element: dict) -> list[Element]:
+        result: list[Element] = []
+        entities: list[dict] = raw_element.popitem()[-1]
+        caption: str = raw_element.popitem()[-1]
+        result.extend(await TelegramCapability(self.staff).deserialize_element(raw_element))
+        result.extend(await self.extract_entities(caption, entities))
+        return result
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="photo")
+    async def photo(self, raw_element: dict) -> list[Picture]:
+        photo: dict = raw_element["photo"][-1]
+        file_id: str = photo["file_id"]
+        file_unique_id: str = photo["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+
+        return [
+            Picture(
+                TelegramPhotoResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    width=photo["width"],
+                    height=photo["height"],
+                    file_size=photo.get("file_size"),
+                ),
+                has_spoiler=photo.get("has_media_spoiler", False),
+            )
+        ]
+
+    def _thumb_resource(self, thumbnail: dict | None) -> TelegramPhotoResource | None:
+        if not thumbnail:
+            return None
+        file_id: str = thumbnail["file_id"]
+        file_unique_id: str = thumbnail["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+
+        return TelegramPhotoResource(
+            selector=selector,
+            file_id=file_id,
+            file_unique_id=file_unique_id,
+            width=thumbnail["width"],
+            height=thumbnail["height"],
+            file_size=thumbnail.get("file_size"),
+        )
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="animation")
+    async def animation(self, raw_element: dict) -> list[Animation]:
+        animation: dict = raw_element["animation"]
+        file_id: str = animation["file_id"]
+        file_unique_id: str = animation["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+        thumbnail = self._thumb_resource(animation.get("thumb"))
+
+        return [
+            Animation(
+                TelegramAnimationResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    width=animation["width"],
+                    height=animation["height"],
+                    duration=animation["duration"],
+                    thumbnail=thumbnail,
+                    file_name=animation.get("file_name"),
+                    mime_type=animation.get("mime_type"),
+                    file_size=animation.get("file_size"),
+                )
+            )
+        ]
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="audio")
+    async def audio(self, raw_element: dict) -> list[File]:
+        audio: dict = raw_element["audio"]
+        file_id: str = audio["file_id"]
+        file_unique_id: str = audio["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+        thumbnail = self._thumb_resource(audio.get("thumb"))
+
+        return [
+            File(
+                TelegramAudioResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    duration=audio["duration"],
+                    performer=audio.get("performer"),
+                    title=audio.get("title"),
+                    file_name=audio.get("file_name"),
+                    mime_type=audio.get("mime_type"),
+                    file_size=audio.get("file_size"),
+                    thumbnail=thumbnail,
+                ),
+            )
+        ]
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="doucument")
+    async def document(self, raw_element: dict) -> list[File]:
+        document: dict = raw_element["document"]
+        file_id: str = document["file_id"]
+        file_unique_id: str = document["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+        thumbnail = self._thumb_resource(document.get("thumb"))
+
+        return [
+            File(
+                TelegramDocumentResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    file_name=document["file_name"],
+                    mime_type=document["mime_type"],
+                    file_size=document.get("file_size"),
+                    thumbnail=thumbnail,
+                )
+            )
+        ]
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="video")
+    async def video(self, raw_element: dict) -> list[Element]:
+        video: dict = raw_element["video"]
+        file_id: str = video["file_id"]
+        file_unique_id: str = video["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+        thumbnail = self._thumb_resource(video.get("thumb"))
+
+        return [
+            Video(
+                TelegramVideoResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    width=video["width"],
+                    height=video["height"],
+                    duration=video["duration"],
+                    thumbnail=thumbnail,
+                    file_name=video.get("file_name"),
+                    mime_type=video.get("mime_type"),
+                    file_size=video.get("file_size"),
+                ),
+                has_spoiler=video.get("has_media_spoiler", False),
+            )
+        ]
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="video_note")
+    async def video_note(self, raw_element: dict) -> list[Element]:
+        video_note: dict = raw_element["video_note"]
+        file_id: str = video_note["file_id"]
+        file_unique_id: str = video_note["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+        thumbnail = self._thumb_resource(video_note.get("thumb"))
+
+        return [
+            VideoNote(
+                TelegramVideoNoteResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    length=video_note["length"],
+                    duration=video_note["duration"],
+                    thumbnail=thumbnail,
+                    file_size=video_note.get("file_size"),
+                ),
+            )
+        ]
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="voice")
+    async def voice(self, raw_element: dict) -> list[Audio]:
+        voice: dict = raw_element["voice"]
+        file_id: str = voice["file_id"]
+        file_unique_id: str = voice["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+
+        return [
+            Audio(
+                TelegramVoiceResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    duration=voice["duration"],
+                    mime_type=voice.get("mime_type"),
+                    file_size=voice.get("file_size"),
+                ),
+                duration=voice["duration"],
+            )
+        ]
+
+    @m.entity(TelegramCapability.deserialize_element, raw_element="sticker")
+    async def sticker(self, raw_element: dict) -> list[Sticker]:
+        sticker: dict = raw_element["sticker"]
+        file_id: str = sticker["file_id"]
+        file_unique_id: str = sticker["file_unique_id"]
+        selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
+        thumbnail = self._thumb_resource(sticker.get("thumb"))
+
+        if premium_animation := sticker.get("premium_animation"):
+            premium_animation_file_id: str = premium_animation["file_id"]
+            premium_animation_file_unique_id: str = premium_animation["file_unique_id"]
+            premium_animation_selector = (
                 Selector()
-                .land(self.account.route["land"])
-                .chat(element.update.message.chat_id)
-                .message(element.original.message_id)
+                .land(self.context.land)
+                .file_id(premium_animation_file_id)
+                .file_unique_id(premium_animation_file_unique_id)
             )
-        return Reference(element.selector)
-
-    @m.entity(TelegramCapability.deserialize_element, element="text")
-    async def text(self, element: MessageFragmentText) -> Text:
-        return Text(element.text)
-
-    @m.entity(TelegramCapability.deserialize_element, element="photo")
-    async def photo(self, element: MessageFragmentPhoto) -> Picture:
-        if element.update:
-            file = await element.file.get_file()
-            resource = TelegramResource(
-                Selector().land("telegram").picture(file).file_id(file.file_id).file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.photo[-1],
-                element.update.message.photo,
+            premium_animation_resource = TelegramFileResource(
+                selector=premium_animation_selector,
+                file_id=premium_animation_file_id,
+                file_unique_id=premium_animation_file_unique_id,
+                file_size=premium_animation.get("file_size"),
+                file_path=premium_animation.get("file_path"),
             )
-            return Picture(resource, has_spoiler=element.has_spoiler)
-        return Picture(RawResource(element.file), has_spoiler=element.has_spoiler)
+        else:
+            premium_animation_resource = None
 
-    @m.entity(TelegramCapability.deserialize_element, element="audio")
-    async def audio(self, element: MessageFragmentAudio) -> Audio:
-        if element.update:
-            audio = element.update.message.audio
-            file = await audio.get_file()
-            resource = TelegramResource(
-                Selector()
-                .land("telegram")
-                .audio(audio)
-                .file(file)
-                .file_id(file.file_id)
-                .file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.audio,
-                (element.update.message.audio.thumbnail,),
+        return [
+            Sticker(
+                TelegramStickerResource(
+                    selector=selector,
+                    file_id=file_id,
+                    file_unique_id=file_unique_id,
+                    type=sticker["type"],
+                    width=sticker["width"],
+                    height=sticker["height"],
+                    is_animated=sticker["is_animated"],
+                    is_video=sticker["is_video"],
+                    thumb=thumbnail,
+                    emoji=sticker.get("emoji"),
+                    set_name=sticker.get("set_name"),
+                    premium_animation=premium_animation_resource,
+                    mask_position=sticker.get("mask_position"),
+                    custom_emoji_id=sticker.get("custom_emoji_id"),
+                    need_repainting=sticker.get("need_repainting"),
+                    file_size=sticker.get("file_size"),
+                ),
             )
-            return Audio(resource, duration=element.update.message.audio.duration)
-        return Audio(RawResource(element.file))
-
-    @m.entity(TelegramCapability.deserialize_element, element="video")
-    async def video(self, element: MessageFragmentVideo) -> Video:
-        if element.update:
-            video = element.update.message.video
-            file = await video.get_file()
-            resource = TelegramResource(
-                Selector()
-                .land("telegram")
-                .video(video)
-                .file(file)
-                .file_id(file.file_id)
-                .file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.video,
-                (element.update.message.video.thumbnail,),
-            )
-            return Video(resource, has_spoiler=element.has_spoiler)
-        return Video(RawResource(element.file), has_spoiler=element.has_spoiler)
-
-    @m.entity(TelegramCapability.deserialize_element, element="animation")
-    async def animation(self, element: MessageFragmentAnimation) -> Animation:
-        if update := element.update:
-            animation = update.message.animation
-            file = await animation.get_file()
-            resource = TelegramResource(
-                Selector()
-                .land("telegram")
-                .animation(animation)
-                .file(file)
-                .file_id(file.file_id)
-                .file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.animation,
-                (element.update.message.animation.thumbnail,),
-            )
-            return Animation(
-                resource,
-                width=animation.width,
-                height=animation.height,
-                duration=animation.duration,
-                has_spoiler=element.has_spoiler,
-            )
-        return Animation(RawResource(element.file), has_spoiler=element.has_spoiler)
-
-    @m.entity(TelegramCapability.deserialize_element, element="contact")
-    async def contact(self, element: MessageFragmentContact) -> Contact:
-        return Contact(element.phone_number, element.first_name, element.last_name, element.user_id, element.vcard)
-
-    @m.entity(TelegramCapability.deserialize_element, element="dice")
-    async def dice(self, element: MessageFragmentDice) -> Dice:
-        return Dice(DiceEmoji(element.emoji), element.value)
-
-    @m.entity(TelegramCapability.deserialize_element, element="document")
-    async def document(self, element: MessageFragmentDocument) -> File:
-        if element.update:
-            document = element.update.message.document
-            file = await document.get_file()
-            resource = TelegramResource(
-                Selector()
-                .land("telegram")
-                .document(document)
-                .file(file)
-                .file_id(file.file_id)
-                .file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.document,
-                (element.update.message.document.thumbnail,),
-            )
-            return File(resource)
-        return File(RawResource(element.file))
-
-    @m.entity(TelegramCapability.deserialize_element, element="location")
-    async def location(self, element: MessageFragmentLocation) -> Location:
-        return Location(element.longitude, element.latitude)
-
-    @m.entity(TelegramCapability.deserialize_element, element="sticker")
-    async def sticker(self, element: MessageFragmentSticker) -> Sticker:
-        if update := element.update:
-            sticker = update.message.sticker
-            file = await sticker.get_file()
-            resource = TelegramResource(
-                Selector()
-                .land("telegram")
-                .sticker(sticker)
-                .file(file)
-                .file_id(file.file_id)
-                .file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.sticker,
-                (element.update.message.sticker.thumbnail,),
-            )
-            return Sticker(
-                resource,
-                width=sticker.width,
-                height=sticker.height,
-                is_animated=sticker.is_animated,
-                is_video=sticker.is_video,
-            )
-        return Sticker(RawResource(element.file))
-
-    @m.entity(TelegramCapability.deserialize_element, element="venue")
-    async def venue(self, element: MessageFragmentVenue) -> Venue:
-        return Venue(element.latitude, element.longitude, element.title, element.address)
-
-    @m.entity(TelegramCapability.deserialize_element, element="video_note")
-    async def video_note(self, element: MessageFragmentVideoNote) -> VideoNote:
-        if element.update:
-            video_note = element.update.message.video_note
-            file = await video_note.get_file()
-            resource = TelegramResource(
-                Selector()
-                .land("telegram")
-                .video_note(video_note)
-                .file(file)
-                .file_id(file.file_id)
-                .file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.video,
-                (element.update.message.video.thumbnail,),
-            )
-            return VideoNote(resource)
-        return VideoNote(RawResource(element.file))
-
-    @m.entity(TelegramCapability.deserialize_element, element="voice")
-    async def voice(self, element: MessageFragmentVoice) -> Voice:
-        if element.update:
-            voice = element.update.message.voice
-            file = await voice.get_file()
-            resource = TelegramResource(
-                Selector()
-                .land("telegram")
-                .voice(voice)
-                .file(file)
-                .file_id(file.file_id)
-                .file_unique_id(file.file_unique_id),
-                file,
-                element.update.message.video,
-                (element.update.message.video.thumbnail,),
-            )
-            return Voice(resource, duration=voice.duration)
-        return Voice(RawResource(element.file))
-
-    @m.entity(TelegramCapability.deserialize_element, element="entity.hash_tag")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.cash_tag")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.phone_number")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.bot_command")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.url")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.email")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.bold")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.italic")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.code")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.pre")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.text_link")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.underline")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.strikethrough")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.spoiler")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.blockquote")
-    async def entity(self, element: MessageFragmentEntity) -> Entity:
-        for subclass in Entity.__subclasses__():
-            if subclass.__name__.lstrip("Entity").lower() == element.e_type.replace("_", ""):
-                params = {"text": element.text} | element.data
-                return subclass(**params)  # type: ignore
-
-    @m.entity(TelegramCapability.deserialize_element, element="entity.mention")
-    @m.entity(TelegramCapability.deserialize_element, element="entity.text_mention")
-    async def entity_mention(self, element: MessageFragmentEntity) -> Notice:
-        target = Selector().land("telegram").user(element.text.lstrip("@"))
-        if getattr(element.raw, "user", None) is not None:
-            target = target.id(element.raw.user.id)
-        return Notice(target, display=element.text)
-
-    @m.entity(TelegramCapability.deserialize_element, element="entity.custom_emoji")
-    async def entity_custom_emoji(self, element: MessageFragmentEntity) -> Face:
-        return Face(element.raw.custom_emoji_id, element.text)
+        ]

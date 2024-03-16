@@ -67,14 +67,12 @@ class ElizabethWsClientNetworking(ElizabethNetworking, Service):
         if method in {"get", "fetch"}:
             async with self.session.get((self.config.base_url / action).with_query(params or {})) as resp:
                 result = await resp.json()
-                validate_response(result)
-                return result
+                return validate_response(result)
 
         if method in {"post", "update"}:
             async with self.session.post((self.config.base_url / action), json=params or {}) as resp:
                 result = await resp.json()
-                validate_response(result)
-                return result
+                return validate_response(result)
 
         if method == "multipart":
             data = aiohttp.FormData(quote_fields=False)
@@ -88,8 +86,7 @@ class ElizabethWsClientNetworking(ElizabethNetworking, Service):
 
             async with self.session.post((self.config.base_url / action), data=data) as resp:
                 result = await resp.json()
-                validate_response(result)
-                return result
+                return validate_response(result)
 
         raise ValueError(f"Unknown method {method}")
 

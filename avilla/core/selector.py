@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import re
-from copy import deepcopy
 from collections.abc import Callable, Mapping
+from copy import deepcopy
 from dataclasses import dataclass
 from itertools import filterfalse
 from types import MappingProxyType

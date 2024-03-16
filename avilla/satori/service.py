@@ -5,7 +5,7 @@ from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from loguru import logger
-from satori.account import Account
+from satori.client.account import Account
 from satori.client import App
 from satori.model import Event, LoginStatus
 

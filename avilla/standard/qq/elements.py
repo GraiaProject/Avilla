@@ -29,25 +29,21 @@ class MarketFace(Element):
         return f"[$MarketFace:id={self.id};name={self.name}]"
 
 
+@dataclass
 class Xml(Element):
     content: str
-
-    def __init__(self, content: str) -> None:
-        self.content = content
 
     def __str__(self) -> str:
         return "[$Xml]"
 
 
+@dataclass
 class App(Element):
     content: str
 
     @classmethod
     def dump(cls, content: dict):
         return cls(json.dumps(content, ensure_ascii=False))
-
-    def __init__(self, content: str) -> None:
-        self.content = content
 
     def load(self):
         return json.loads(self.content)
@@ -56,15 +52,13 @@ class App(Element):
         return "[$App]"
 
 
+@dataclass
 class Json(Element):
     content: str
 
     @classmethod
     def dump(cls, content: dict):
         return cls(json.dumps(content, ensure_ascii=False))
-
-    def __init__(self, content: str) -> None:
-        self.content = content
 
     def load(self):
         return json.loads(self.content)
@@ -132,16 +126,14 @@ class PokeKind(str, Enum):
         return PokeKind.Unknown
 
 
+@dataclass
 class Poke(Element):
     """戳一戳 (或称窗口抖动)
 
     请与 头像双击动作(Nudge) 区分
     """
 
-    kind: PokeKind
-
-    def __init__(self, kind: PokeKind = PokeKind.Unknown) -> None:
-        self.kind = kind
+    kind: PokeKind = PokeKind.Unknown
 
     def __str__(self) -> str:
         return f"[$Poke:kind={self.kind}]"

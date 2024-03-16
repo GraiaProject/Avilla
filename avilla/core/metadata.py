@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextvars import ContextVar
 from dataclasses import dataclass, field
-from typing import Any, Callable, Generic, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union, overload
 from weakref import WeakKeyDictionary
 
 from typing_extensions import Self, TypeVarTuple, Unpack
@@ -65,9 +65,17 @@ class Metadata(metaclass=MetadataMeta):
         METACELL_PARAMS_CTX[cls] = ContextVar(f"$MetadataParam${cls.__module__}::{cls.__qualname__}", default=None)
         super().__init_subclass__()
 
-    @classmethod
-    def inh(cls: type[_MetadataT1], operator: Callable[[_MetadataT1], T]) -> FieldReference[_MetadataT1, T]:
-        return FieldReference(cls, operator)
+    if TYPE_CHECKING:
+
+        @classmethod
+        def inh(cls: type[_MetadataT1]) -> _MetadataT1:
+            ...
+
+    else:
+
+        @classmethod
+        def inh(cls: type[_MetadataT1]) -> FieldReference[_MetadataT1]:
+            return FieldReference(cls)
 
     @classmethod
     def get_params(cls) -> dict[str, Any] | None:
@@ -128,22 +136,82 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
         for cell in self.cells:
             cell.clear_params()
 
-    @property
-    def _(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]):
-        @_GetItemAgent
-        def wrapper(operator: Callable[[_MetadataT1], T]) -> FieldReference[_MetadataT1, T]:
-            return FieldReference(self, operator)
+    if TYPE_CHECKING:
 
-        return wrapper
+        @property
+        def inh(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]) -> _MetadataT1:
+            ...
+
+    else:
+
+        @property
+        def inh(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]) -> RouteFieldReference[_MetadataT1]:
+            return RouteFieldReference(self)
 
     def has_params(self) -> bool:
         return any(cell.has_params() for cell in self.cells)
 
 
-@dataclass(unsafe_hash=True)
-class FieldReference(Generic[_MetadataT1, T]):
-    define: type[_MetadataT1] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]
-    operator: Callable[[_MetadataT1], T]
+class FieldReference(Generic[_MetadataT1]):
+    def __init__(self, define: type[_MetadataT1]) -> None:
+        self.__define = define
+        self.__steps: list[str] = []
+
+    def __hash__(self):
+        return hash(self.__define) + hash(".".join(self.__steps)) + hash("FieldReference")
+
+    def __eq__(self, other):
+        return isinstance(other, FieldReference) and self.__hash__() == other.__hash__()
+
+    def __repr__(self) -> str:
+        return f"{self.__define.__name__}.{'.'.join(self.__steps)}"
+
+    def __getattr__(self, item: str) -> Self:
+        self.__steps.append(item)
+        return self
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Self:
+        prev = self.__steps[-1]
+        self.__steps[
+            -1
+        ] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        return self
+
+    def __getitem__(self, item: Any) -> Self:
+        prev = self.__steps[-1]
+        self.__steps[-1] = f"{prev}[{repr(item)}]"
+        return self
+
+
+class RouteFieldReference(Generic[_MetadataT1]):
+    def __init__(self, define: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]) -> None:
+        self.__define = define
+        self.__steps: list[str] = []
+
+    def __hash__(self):
+        return hash(self.__define) + hash(".".join(self.__steps)) + hash("RouteFieldReference")
+
+    def __eq__(self, other):
+        return isinstance(other, RouteFieldReference) and self.__hash__() == other.__hash__()
+
+    def __repr__(self) -> str:
+        return f"{self.__define.__repr__()}.{'.'.join(self.__steps)}"
+
+    def __getattr__(self, item: str) -> Self:
+        self.__steps.append(item)
+        return self
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Self:
+        prev = self.__steps[-1]
+        self.__steps[
+            -1
+        ] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        return self
+
+    def __getitem__(self, item: Any) -> Self:
+        prev = self.__steps[-1]
+        self.__steps[-1] = f"{prev}[{repr(item)}]"
+        return self
 
 
 Route = Union[type[Metadata], MetadataRoute]

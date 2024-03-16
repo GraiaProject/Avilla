@@ -36,11 +36,7 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
             context,
             friend,
             InputtingStatus,
-            {
-                InputtingStatus.inh(lambda x: x.value): ModifyDetail(
-                    "update", raw_event["inputting"], not raw_event["inputting"]
-                )
-            },
+            {InputtingStatus.inh().value: ModifyDetail("update", raw_event["inputting"], not raw_event["inputting"])},
             operator=friend,
             scene=friend,
         )
@@ -68,7 +64,7 @@ class ElizabethEventFriendPerform((m := ConnectionCollector())._):
             context,
             friend,
             Nick,
-            {Nick.inh(lambda x: x.name): ModifyDetail("update", raw_event["to"], raw_event["from"])},
+            {Nick.inh().name: ModifyDetail("update", raw_event["to"], raw_event["from"])},
             operator=friend,
             scene=friend,
         )

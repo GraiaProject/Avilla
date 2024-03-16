@@ -30,6 +30,7 @@ def _import_performs():  # noqa: F401
     from avilla.elizabeth.perform.action import (
         activity,
         announcement,
+        file,
         friend,
         group,
         member,
@@ -44,7 +45,7 @@ def _import_performs():  # noqa: F401
     from avilla.elizabeth.perform.event import relationship  # noqa: F401
     from avilla.elizabeth.perform.event import request  # noqa: F401, F811
     from avilla.elizabeth.perform.message import deserialize, serialize  # noqa
-    from avilla.elizabeth.perform.query import announcement, bot, friend, group  # noqa
+    from avilla.elizabeth.perform.query import announcement, bot, file, friend, group  # noqa
 
 
 _import_performs()
@@ -58,6 +59,7 @@ class ElizabethProtocol(BaseProtocol):
             ref("avilla.protocol/elizabeth::action", "activity"),
             ref("avilla.protocol/elizabeth::action", "announcement"),
             ref("avilla.protocol/elizabeth::action", "contact"),
+            ref("avilla.protocol/elizabeth::action", "file"),
             ref("avilla.protocol/elizabeth::action", "friend"),
             ref("avilla.protocol/elizabeth::action", "group"),
             ref("avilla.protocol/elizabeth::action", "member"),
@@ -74,6 +76,7 @@ class ElizabethProtocol(BaseProtocol):
             ref("avilla.protocol/elizabeth::message", "serialize"),
             ref("avilla.protocol/elizabeth::query", "announcement"),
             ref("avilla.protocol/elizabeth::query", "bot"),
+            ref("avilla.protocol/elizabeth::query", "file"),
             ref("avilla.protocol/elizabeth::query", "friend"),
             ref("avilla.protocol/elizabeth::query", "group"),
             ref("avilla.protocol/elizabeth::resource_fetch"),

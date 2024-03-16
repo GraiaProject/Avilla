@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from satori.model import Channel, Event, Login, Member, Message, Role, User
+from satori.model import Channel, Event, Login, Member, MessageObject, Role, User
 
 
 class OuterEvent(Event):
@@ -14,7 +14,7 @@ class OuterEvent(Event):
     channel: Channel
     login: Login
     member: Member
-    message: Message
+    message: MessageObject
     operator: User
     role: Role
     user: User

@@ -22,7 +22,7 @@ class ElizabethAnnouncementQueryPerform((m := AccountCollector["ElizabethProtoco
     async def query_group_announcement(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         cache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         result = await self.account.connection.call(
-            "fetch", "anno_list", {"id": int(previous["group"]), "offset": 0, "size": 10}
+            "fetch", "anno_list", {"id": int(previous["group"]), "offset": 0, "size": 1}
         )
         result = cast(list, result)
         for i in result:

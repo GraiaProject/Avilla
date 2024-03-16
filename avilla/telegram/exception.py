@@ -1,11 +1,5 @@
-from __future__ import annotations
-
-from avilla.core.exceptions import InvalidAuthentication
+from avilla.core import InvalidAuthentication
 
 
 class InvalidToken(InvalidAuthentication):
-    """无效的 Token"""
-
-
-class WrongFragment(Exception):
-    """skip 就完事儿"""
+    pass

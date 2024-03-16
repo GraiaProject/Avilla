@@ -7,11 +7,10 @@ from typing import TYPE_CHECKING, Any, Literal
 
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
-from graia.broadcast.entities.signatures import Force
 from typing_extensions import Unpack
 
 from avilla.core.account import BaseAccount
-from avilla.core.metadata import FieldReference, Metadata, MetadataRoute
+from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.selector import Selector
 
 from ._runtime import cx_context
@@ -45,13 +44,13 @@ class AvillaEvent(Dispatchable):
             if isclass(interface.annotation) and issubclass(interface.annotation, BaseAccount):
                 return interface.event.context.account
 
-            if interface.name == "client":
+            if interface.name == "client" and interface.annotation is Selector:
                 return interface.event.context.client
 
-            if interface.name == "scene":
+            if interface.name == "scene" and interface.annotation is Selector:
                 return interface.event.context.scene
 
-            if interface.name == "endpoint":
+            if interface.name == "endpoint" and interface.annotation is Selector:
                 return interface.event.context.endpoint
 
         @staticmethod
@@ -113,22 +112,24 @@ class ModifyDetail:
     current: Any = None
     previous: Any = None
 
+    def __repr__(self):
+        return f"ModifyDetail({self.previous!r} -> {self.current!r})"
+
 
 @dataclass
 class MetadataModified(AvillaEvent):
     endpoint: Selector
     route: type[Metadata] | MetadataRoute[Unpack[tuple[Any, ...]], Metadata]
-    details: dict[FieldReference, ModifyDetail]
+    details: dict[Any, ModifyDetail]
     operator: Selector | None = None
     scene: Selector | None = None
 
     class Dispatcher(AvillaEvent.Dispatcher):
         @staticmethod
         async def catch(interface: DispatcherInterface["MetadataModified"]):
-            if interface.name == "route":
-                return interface.event.route
             if interface.name == "details":
-                return interface.event.details
-            if interface.name == "operator":
-                return Force(interface.event.operator)
+                if interface.annotation is dict:
+                    return interface.event.details
+                if interface.is_annotated and interface.annotated_origin is ModifyDetail:
+                    return interface.event.details.get(interface.annotated_metadata[0])
             return await AvillaEvent.Dispatcher.catch(interface)

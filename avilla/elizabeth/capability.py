@@ -33,6 +33,14 @@ class ElizabethCapability((m := ApplicationCollector())._):
 
         return MessageChain(elements)
 
+    async def serialize_chain(self, chain: MessageChain):
+        elements = []
+
+        for element in chain:
+            elements.append(await self.serialize_element(element))
+
+        return elements
+
     async def handle_event(self, event: dict):
         maybe_event = await self.event_callback(event)
 
