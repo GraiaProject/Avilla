@@ -18,21 +18,21 @@ class QueryRecord:
 
 class QueryHandlerPerform(Protocol):
     def __call__(
-        self, _p0: Any, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None
+        fself, self: Any, predicate: Callable[[str, str], bool] | str, previous: Selector | None = None
     ) -> AsyncGenerator[Selector, None]:
         ...
 
 
 class QueryHandlerPerformNoPrev(Protocol):
     def __call__(
-        self, _p0: Any, predicate: Callable[[str, str], bool] | str, previous: None
+        fself, self: Any, predicate: Callable[[str, str], bool] | str, previous: None
     ) -> AsyncGenerator[Selector, None]:
         ...
 
 
 class QueryHandlerPerformPrev(Protocol):
     def __call__(
-        self, _p0: Any, predicate: Callable[[str, str], bool] | str, previous: Selector
+        fself, self: Any, predicate: Callable[[str, str], bool] | str, previous: Selector
     ) -> AsyncGenerator[Selector, None]:
         ...
 

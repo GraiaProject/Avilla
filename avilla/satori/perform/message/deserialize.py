@@ -118,43 +118,43 @@ class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Bold)
     async def bold(self, raw_element: Bold) -> Text:
-        return Text(raw_element.text, style="bold")
+        return Text(raw_element.dumps(True), style="bold")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Italic)
     async def italic(self, raw_element: Italic) -> Text:
-        return Text(raw_element.text, style="italic")
+        return Text(raw_element.dumps(True), style="italic")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Strikethrough)
     async def strikethrough(self, raw_element: Strikethrough) -> Text:
-        return Text(raw_element.text, style="strikethrough")
+        return Text(raw_element.dumps(True), style="strikethrough")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Underline)
     async def underline(self, raw_element: Underline) -> Text:
-        return Text(raw_element.text, style="underline")
+        return Text(raw_element.dumps(True), style="underline")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Spoiler)
     async def spoiler(self, raw_element: Spoiler) -> Text:
-        return Text(raw_element.text, style="spoiler")
+        return Text(raw_element.dumps(True), style="spoiler")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Code)
     async def code(self, raw_element: Code) -> Text:
-        return Text(raw_element.text, style="code")
+        return Text(raw_element.dumps(True), style="code")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Superscript)
     async def superscript(self, raw_element: Superscript) -> Text:
-        return Text(raw_element.text, style="superscript")
+        return Text(raw_element.dumps(True), style="superscript")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Subscript)
     async def subscript(self, raw_element: Subscript) -> Text:
-        return Text(raw_element.text, style="subscript")
+        return Text(raw_element.dumps(True), style="subscript")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Br)
     async def br(self, raw_element: Br) -> Text:
-        return Text(raw_element.text, style="br")
+        return Text("\n", style="br")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=Paragraph)
     async def paragraph(self, raw_element: Paragraph) -> Text:
-        return Text(raw_element.text, style="paragraph")
+        return Text(raw_element.dumps(True), style="paragraph")
 
     @m.entity(SatoriCapability.deserialize_element, raw_element=SatoriButton)
     async def button(self, raw_element: SatoriButton) -> Button:
