@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Literal, Protocol
+from typing import Protocol
 
-from flywheel import Fn, FnCompose, FnRecord, OverloadRecorder, SimpleOverload
+from flywheel import Fn, FnCompose, FnRecord, OverloadRecorder
 from avilla.core.ryanvk import TargetOverload
 from avilla.core.selector import Selector
 

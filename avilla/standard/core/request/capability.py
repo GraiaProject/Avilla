@@ -1,29 +1,10 @@
 from __future__ import annotations
 
-from typing import Literal, Protocol
+from typing import Protocol
 
-from flywheel import Fn, FnCompose, FnRecord, OverloadRecorder, SimpleOverload
+from flywheel import Fn, FnCompose, FnRecord, OverloadRecorder
 from avilla.core.ryanvk import TargetOverload
 from avilla.core.selector import Selector
-
-
-# class RequestCapability(Capability):
-#    @Fn.complex({TargetOverload(): ["target"]})
-#    async def accept(self, target: Selector):
-#        ...
-#
-#    @Fn.complex({TargetOverload(): ["target"]})
-#    async def reject(self, target: Selector, reason: str | None = None, forever: bool = False):
-#        ...
-#
-#    @Fn.complex({TargetOverload(): ["target"]})
-#    async def cancel(self, target: Selector):
-#        ...
-#
-#    @Fn.complex({TargetOverload(): ["target"]})
-#    async def ignore(self, target: Selector):
-#        ...
-
 
 @Fn.declare
 class accept_request(FnCompose):

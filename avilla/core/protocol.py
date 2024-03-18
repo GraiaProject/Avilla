@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from contextlib import nullcontext
-from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
-from typing_extensions import Self
 from flywheel import CollectContext
+from typing_extensions import Self
 
-from avilla.core.globals import AVILLA_CONTEXT_VAR, CONTEXT_CONTEXT_VAR, PROTOCOL_CONTEXT_VAR
 from avilla.core.event import AvillaEvent
+from avilla.core.globals import AVILLA_CONTEXT_VAR, CONTEXT_CONTEXT_VAR, PROTOCOL_CONTEXT_VAR
+from avilla.core.utilles import cachedstatic
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
@@ -21,8 +21,8 @@ class ProtocolConfig: ...
 class BaseProtocol:
     avilla: Avilla
 
-    @cached_property
-    def artifacts(self):
+    @cachedstatic
+    def artifacts():
         with CollectContext().collect_scope() as collect_context:
             ...
 
