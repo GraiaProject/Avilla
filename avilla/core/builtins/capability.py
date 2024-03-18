@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
+from flywheel.fn.base import Fn
+from flywheel.fn.compose import FnCompose, OverloadRecorder
+from flywheel.fn.record import FnRecord
+from flywheel.overloads import SimpleOverload, TypeOverload
 from typing_extensions import Unpack
 
-from avilla.core.flywheel.fn.base import Fn
-from avilla.core.flywheel.fn.compose import FnCompose, OverloadRecorder
-from avilla.core.flywheel.fn.record import FnRecord
-from avilla.core.flywheel.overloads import SimpleOverload, TypeOverload
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.resource import Resource, T
 from avilla.core.ryanvk.overloads import TargetOverload

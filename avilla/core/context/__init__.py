@@ -5,14 +5,14 @@ from typing import Any, TypedDict, TypeVar, cast
 
 from typing_extensions import ParamSpec, Unpack
 
-from avilla.core._runtime import cx_context
+from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from avilla.core.account import BaseAccount
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
 from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
-from avilla.core.builtins.capability import CoreCapability
 
 from ._roles import (
     ContextClientSelector,
@@ -92,7 +92,7 @@ class Context:
     @classproperty
     @classmethod
     def current(cls) -> Context:
-        return cx_context.get()
+        return CONTEXT_CONTEXT_VAR.get()
 
     @contextmanager
     def lookup_scope(self):

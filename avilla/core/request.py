@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from avilla.standard.core.request.capability import RequestCapability
 
-from ._runtime import cx_context
+from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from .metadata import Metadata
 from .platform import Land
 
@@ -61,13 +61,13 @@ class Request(Metadata):
         return self.scene.request(request_id)
 
     async def accept(self):
-        return await cx_context.get()[RequestCapability.accept](self.to_selector())
+        return await CONTEXT_CONTEXT_VAR.get()[RequestCapability.accept](self.to_selector())
 
     async def reject(self, reason: str | None = None, forever: bool = False):
-        return await cx_context.get()[RequestCapability.reject](self.to_selector(), reason, forever)
+        return await CONTEXT_CONTEXT_VAR.get()[RequestCapability.reject](self.to_selector(), reason, forever)
 
     async def cancel(self):
-        return await cx_context.get()[RequestCapability.cancel](self.to_selector())
+        return await CONTEXT_CONTEXT_VAR.get()[RequestCapability.cancel](self.to_selector())
 
     async def ignore(self):
-        return await cx_context.get()[RequestCapability.ignore](self.to_selector())
+        return await CONTEXT_CONTEXT_VAR.get()[RequestCapability.ignore](self.to_selector())

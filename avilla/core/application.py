@@ -11,7 +11,7 @@ from launart import Launart
 from launart.service import Service
 from loguru import logger
 
-from avilla.core._runtime import get_current_avilla
+from avilla.core.globals import get_current_avilla
 from avilla.core.account import AccountInfo, BaseAccount
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.event import MetadataModified
@@ -64,8 +64,6 @@ class Avilla:
         self.launch_manager.add_component(MemcacheService())
         self.launch_manager.add_component(self.service)
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
-
-        self.__init_isolate__()
 
         if message_cache_size > 0:
             from avilla.core.context import Context
@@ -198,6 +196,7 @@ class Avilla:
     
     @staticmethod
     def _require_builtins():
+        with 
         import avilla.core.builtins.resource_fetch  # noqa: F401
 
     @classmethod

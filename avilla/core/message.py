@@ -9,7 +9,7 @@ from avilla.core.platform import Land
 from avilla.core.selector import Selector
 from avilla.standard.core.message.capability import MessageRevoke
 
-from ._runtime import cx_context
+from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from .metadata import Metadata
 
 
@@ -30,4 +30,4 @@ class Message(Metadata):
         return self.scene.message(self.id)
 
     async def revoke(self):
-        await cx_context.get()[MessageRevoke.revoke](self.to_selector())
+        await CONTEXT_CONTEXT_VAR.get()[MessageRevoke.revoke](self.to_selector())

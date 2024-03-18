@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from avilla.core.flywheel.scoped import scoped_collect
+from flywheel.scoped import scoped_collect
+
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 
 try:

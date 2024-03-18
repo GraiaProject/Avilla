@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 
 from nonebot.adapters import Adapter as BaseAdapter
 
-from avilla.core._runtime import cx_context
+from avilla.core.globals import CONTEXT_CONTEXT_VAR
 
 from .bot import NoneBridgeBot
 
@@ -30,7 +30,7 @@ class NoneBridgeAdapter(BaseAdapter):
 
     async def _call_api(self, bot: NoneBridgeBot, api: str, **data: Any):
         staff = bot.service.staff
-        maybe_cx = cx_context.get(None)
+        maybe_cx = CONTEXT_CONTEXT_VAR.get(None)
         if maybe_cx is not None:
             staff = staff.ext(maybe_cx.get_staff_components())
         else:

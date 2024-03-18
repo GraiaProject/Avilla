@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 from typing_extensions import Self
 
-from avilla.core._runtime import cx_avilla, cx_context, cx_protocol
+from avilla.core.globals import AVILLA_CONTEXT_VAR, CONTEXT_CONTEXT_VAR, PROTOCOL_CONTEXT_VAR
 from avilla.core.event import AvillaEvent
 
 if TYPE_CHECKING:
@@ -28,8 +28,10 @@ class BaseProtocol:
         ...
 
     def post_event(self, event: AvillaEvent, context: Context | None = None):
-        with cx_avilla.use(self.avilla), cx_protocol.use(self), (
-            cx_context.use(context) if context is not None else nullcontext()
+        with (
+            AVILLA_CONTEXT_VAR.use(self.avilla),
+            PROTOCOL_CONTEXT_VAR.use(self),
+            CONTEXT_CONTEXT_VAR.use(context) if context is not None else nullcontext(),
         ):
             self.avilla.event_record(event)
             return self.avilla.broadcast.postEvent(event)

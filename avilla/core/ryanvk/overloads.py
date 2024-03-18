@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Callable
+
+from flywheel.fn.overload import FnOverload
 from typing_extensions import TypeAlias
 
-from avilla.core.flywheel.fn.overload import FnOverload
 from avilla.core.selector import FollowsPredicater, Selector, _parse_follows
 
 
