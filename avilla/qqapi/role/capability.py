@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from avilla.core.ryanvk import Fn, TargetOverload
+from avilla.core.ryanvk_old import Fn, TargetOverload
 from avilla.core.selector import Selector
 from graia.ryanvk.capability import Capability
 

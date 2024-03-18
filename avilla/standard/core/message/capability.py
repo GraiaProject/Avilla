@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core.ryanvk import Capability, Fn, TargetOverload
+from avilla.core.ryanvk_old import Capability, Fn, TargetOverload
 from avilla.core.selector import Selector
 
 # MessageFetch => rs.pull(Message, target=...)

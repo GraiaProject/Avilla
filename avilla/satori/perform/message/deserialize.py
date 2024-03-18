@@ -35,7 +35,7 @@ from avilla.core.elements import (
     Text,
     Video,
 )
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.element import Button

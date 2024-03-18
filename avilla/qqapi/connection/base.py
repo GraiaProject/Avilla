@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, AsyncIterator, Literal
 from loguru import logger
 from typing_extensions import Self
 
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.qqapi.audit import MessageAudited, audit_result
 from avilla.qqapi.capability import QQAPICapability
 

@@ -4,7 +4,6 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, TypeVar
 
-from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import ParamSpec
 
 from avilla.core.builtins.capability import CoreCapability
@@ -15,6 +14,7 @@ from avilla.standard.core.activity import ActivityTrigger
 from avilla.standard.core.message import MessageSend
 from avilla.standard.core.relation import SceneCapability
 from avilla.standard.core.request import RequestCapability
+from graia.amnesia.message import Element, MessageChain, Text
 
 from ._selector import ContextSelector
 
@@ -32,18 +32,18 @@ class ContextClientSelector(ContextSelector):
 
     @property
     def channel(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.channel, self)
+        return CoreCapability.channel(self)
 
     @property
     def guild(self) -> str | None:
         try:
-            return self.context.staff.call_fn(CoreCapability.guild, self)
+            return CoreCapability.guild(self)
         except NotImplementedError:
             return None
 
     @property
     def user(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.user, self)
+        return CoreCapability.user(self)
 
 
 class ContextEndpointSelector(ContextSelector):
@@ -55,18 +55,18 @@ class ContextEndpointSelector(ContextSelector):
 
     @property
     def channel(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.channel, self)
+        return CoreCapability.channel(self)
 
     @property
     def guild(self) -> str | None:
         try:
-            return self.context.staff.call_fn(CoreCapability.guild, self)
+            return CoreCapability.guild(self)
         except NotImplementedError:
             return None
 
     @property
     def user(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.user, self)
+        return CoreCapability.user(self)
 
 
 class ContextSelfSelector(ContextSelector):
@@ -108,11 +108,11 @@ class ContextSceneSelector(ContextSelector):
 
     @property
     def channel(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.channel, self)
+        return CoreCapability.channel(self)
 
     @property
     def guild(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.guild, self)
+        return CoreCapability.guild(self)
 
 
 class ContextRequestSelector(ContextEndpointSelector):

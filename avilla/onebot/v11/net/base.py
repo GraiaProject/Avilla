@@ -8,7 +8,7 @@ from loguru import logger
 from typing_extensions import Self
 
 from avilla.core.exceptions import ActionFailed
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.onebot.v11.capability import OneBot11Capability
 
 if TYPE_CHECKING:

@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from graia.amnesia.message import Element, MessageChain
 
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 
 if TYPE_CHECKING:

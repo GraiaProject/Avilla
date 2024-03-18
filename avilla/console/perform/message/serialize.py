@@ -11,7 +11,7 @@ from nonechat.message import Text as CslText
 from avilla.console.capability import ConsoleCapability
 from avilla.console.element import Markdown, Markup
 from avilla.core.elements import Face, Text
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 
 if TYPE_CHECKING:
     from ...account import ConsoleAccount  # noqa

@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import IO
 
-from avilla.core.ryanvk import Fn, TargetOverload
+from avilla.core.ryanvk_old import Fn, TargetOverload
 from avilla.core.selector import Selector
 from graia.ryanvk.capability import Capability
 

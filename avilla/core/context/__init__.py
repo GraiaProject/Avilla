@@ -10,8 +10,8 @@ from avilla.core.account import BaseAccount
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
-from avilla.core.ryanvk import Fn
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old import Fn
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.selector import FollowsPredicater, Selectable, Selector
 from avilla.core.utilles import classproperty
 

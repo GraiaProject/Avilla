@@ -3,6 +3,7 @@ from __future__ import annotations
 import functools
 from typing import Any, Callable
 
+from .fn.implement import OverloadRecorder
 from .context import CollectContext
 from .globals import COLLECTING_CONTEXT_VAR, GLOBAL_COLLECT_CONTEXT, GLOBAL_INSTANCE_CONTEXT, INSTANCE_CONTEXT_VAR
 from .typing import TYPE_CHECKING, AssignKeeperCls, P, R, TEntity
@@ -85,7 +86,7 @@ class scoped_collect(CollectContext):
 
             @staticmethod
             def impl(
-                fn: Fn[Callable[Concatenate[CR, OutP], Any], Any], *args: OutP.args, **kwargs: OutP.kwargs
+                fn: Fn[Callable[Concatenate[OverloadRecorder[CR], OutP], Any], Any], *args: OutP.args, **kwargs: OutP.kwargs
             ) -> AssignKeeperCls[Call[..., CR]]:
                 def inner(impl: Callable[Concatenate[Any, P], R] | FnImplementEntity[Callable[P, R]]):
                     if not isinstance(impl, FnImplementEntity):

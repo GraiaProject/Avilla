@@ -12,7 +12,7 @@ from nonechat.message import ConsoleMessage
 from avilla.console.capability import ConsoleCapability
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageSend, MessageSent
 

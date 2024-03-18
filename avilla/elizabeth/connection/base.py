@@ -8,7 +8,7 @@ from loguru import logger
 from typing_extensions import Self
 
 from avilla.core.exceptions import InvalidAuthentication
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.standard.core.account import AccountAvailable

@@ -7,7 +7,7 @@ from nonechat.info import Event as ConsoleEvent
 from nonechat.message import Element as ConsoleElement
 
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from graia.ryanvk import Fn, TypeOverload
 
 CE = TypeVar("CE", bound=ConsoleElement)

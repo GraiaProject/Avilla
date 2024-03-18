@@ -16,7 +16,7 @@ from avilla.core.account import AccountInfo, BaseAccount
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.event import MetadataModified
 from avilla.core.protocol import BaseProtocol
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity

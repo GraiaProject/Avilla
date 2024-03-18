@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar, overload
 from typing_extensions import Concatenate, ParamSpec, Self, Unpack
 
 from avilla.core.metadata import Metadata, MetadataRoute
-from avilla.core.ryanvk import Fn
+from avilla.core.ryanvk_old import Fn
 from avilla.core.selector import EMPTY_MAP, Selector
 from avilla.standard.core.privilege import Privilege
 from avilla.standard.core.profile import Avatar, Nick, Summary

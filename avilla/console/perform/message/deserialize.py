@@ -10,7 +10,7 @@ from nonechat.message import Text as CslText
 from avilla.console.capability import ConsoleCapability
 from avilla.console.element import Markdown, Markup
 from avilla.core.elements import Face, Text
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 
 
 class ConsoleMessageDeserializePerform((m := ApplicationCollector())._):

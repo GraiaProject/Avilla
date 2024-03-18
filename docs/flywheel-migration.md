@@ -85,7 +85,7 @@ class QQAPIAccountPerform(m := scoped_context.env().target, QQAPIPerformAccountB
 
 ### Staff
 
-在 Flywheel 中已经不存在 `Staff`，因为不再需要这样来封装对 `Fn` 的复杂封装。
+在 Flywheel 中已经不存在 `Staff`，因为 Flywheel 已经不再需要这样来封装对 `Fn` 的复杂封装。
 
 相对的，我们建议协议实现的维护者提供形似 `TelegramAction` 的集合类来方便进行各种内部与外部的操作，如同之前的形似 `TelegramCapability` 的各式 Capability，只是这个名字更切题。
 

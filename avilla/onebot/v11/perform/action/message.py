@@ -7,7 +7,7 @@ from graia.amnesia.message import MessageChain
 
 from avilla.core import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.standard.core.message import MessageRevoke, MessageSend

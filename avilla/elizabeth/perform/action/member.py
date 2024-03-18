@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 from avilla.core.exceptions import permission_error_message
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.const import PRIVILEGE_LEVEL, PRIVILEGE_TRANS
 from avilla.standard.core.privilege import (

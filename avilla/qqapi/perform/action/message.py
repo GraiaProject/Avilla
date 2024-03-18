@@ -9,7 +9,7 @@ from loguru import logger
 
 from avilla.core import Context, CoreCapability, Message
 from avilla.core.exceptions import ActionFailed
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.exception import AuditException

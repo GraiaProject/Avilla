@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.profile import Avatar, Nick, Summary
 from avilla.standard.core.relation.capability import RelationshipTerminate

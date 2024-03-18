@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.element import Ark, Embed, Keyboard, Markdown, Reference
 from avilla.qqapi.resource import (

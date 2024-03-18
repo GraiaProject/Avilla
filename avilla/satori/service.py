@@ -18,7 +18,7 @@ from avilla.standard.core.account import (
 )
 
 from ..core import Selector
-from ..core.ryanvk.staff import Staff
+from ..core.ryanvk_old.staff import Staff
 from .account import SatoriAccount
 from .capability import SatoriCapability
 from .const import platform

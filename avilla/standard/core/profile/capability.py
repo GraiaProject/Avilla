@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from avilla.core.metadata import Route
 from avilla.core.resource import Resource
-from avilla.core.ryanvk import Capability, Fn, MetadataOverload, TargetOverload
+from avilla.core.ryanvk_old import Capability, Fn, MetadataOverload, TargetOverload
 from avilla.core.selector import Selector
 
 
