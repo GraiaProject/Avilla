@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from copy import copy, deepcopy
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Awaitable, TypeVar
 
-from typing_extensions import Concatenate, ParamSpec, Self, Unpack
+from typing_extensions import ParamSpec, Self, Unpack
 
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.selector import EMPTY_MAP, Selector

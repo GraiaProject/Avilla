@@ -9,7 +9,6 @@ from avilla.core.platform import Land
 from avilla.core.selector import Selector
 from avilla.standard.core.message.capability import revoke_message
 
-from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from .metadata import Metadata
 
 

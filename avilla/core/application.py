@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from typing import TYPE_CHECKING, Any, Callable, ClassVar, Iterable, TypeVar, overload
+from typing import TYPE_CHECKING, Callable, Iterable, TypeVar, overload
 
 from creart import it
 from graia.amnesia.builtins.memcache import MemcacheService
@@ -10,7 +10,6 @@ from graia.broadcast import Broadcast
 from launart import Launart
 from launart.service import Service
 from loguru import logger
-from flywheel import CollectContext
 
 from avilla.core.globals import get_current_avilla
 from avilla.core.account import AccountInfo, BaseAccount
@@ -29,7 +28,6 @@ if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.standard.core.application import AvillaLifecycleEvent
 
-    from .resource import Resource
 
 T = TypeVar("T")
 TE = TypeVar("TE", bound="AvillaEvent")

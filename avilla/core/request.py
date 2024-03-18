@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 
 from avilla.standard.core.request.capability import accept_request, reject_request, cancel_request, ignore_request
 
-from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from .metadata import Metadata
 from .platform import Land
 
