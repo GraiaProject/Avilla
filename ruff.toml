@@ -1,3 +1,5 @@
 line-length = 120
+
+[lint]
 ignore = ["I"]
 extend-select = ["I", "F401"]

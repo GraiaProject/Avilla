@@ -216,8 +216,7 @@ class AvillaCommands:
         remove_tome: bool = False,
         dispatchers: Optional[list[T_Dispatcher]] = None,
         decorators: Optional[list[Decorator]] = None,
-    ) -> Callable[[TCallable], TCallable]:
-        ...
+    ) -> Callable[[TCallable], TCallable]: ...
 
     @overload
     def on(
@@ -230,8 +229,7 @@ class AvillaCommands:
         *,
         args: Optional[dict[str, Union[TAValue, Args, Arg]]] = None,
         meta: Optional[CommandMeta] = None,
-    ) -> Callable[[TCallable], TCallable]:
-        ...
+    ) -> Callable[[TCallable], TCallable]: ...
 
     def on(
         self,

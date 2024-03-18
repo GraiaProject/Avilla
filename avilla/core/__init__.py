@@ -75,32 +75,29 @@ from avilla.standard.core.application import (
     AvillaLifecycleEvent as AvillaLifecycleEvent,
 )
 from avilla.standard.core.common import Count as Count
-from avilla.standard.core.message import MessageEdit as MessageEdit
 from avilla.standard.core.message import MessageEdited as MessageEdited
 from avilla.standard.core.message import MessageReceived as MessageReceived
-from avilla.standard.core.message import MessageRevoke as MessageRevoke
 from avilla.standard.core.message import MessageRevoked as MessageRevoked
-from avilla.standard.core.message import MessageSend as MessageSend
+
 from avilla.standard.core.message import MessageSent as MessageSent
-from avilla.standard.core.privilege import BanCapability as BanCapability
+
 from avilla.standard.core.privilege import BanInfo as BanInfo
-from avilla.standard.core.privilege import MuteAllCapability as MuteAllCapability
-from avilla.standard.core.privilege import MuteCapability as MuteCapability
+
 from avilla.standard.core.privilege import MuteInfo as MuteInfo
 from avilla.standard.core.privilege import Privilege as Privilege
-from avilla.standard.core.privilege import PrivilegeCapability as PrivilegeCapability
+
 from avilla.standard.core.profile import Nick as Nick
-from avilla.standard.core.profile import NickCapability as NickCapability
+
 from avilla.standard.core.profile import Summary as Summary
-from avilla.standard.core.profile import SummaryCapability as SummaryCapability
-from avilla.standard.core.relation import SceneCapability as SceneCapability
+
+
 from avilla.standard.core.request import Answers as Answers
 from avilla.standard.core.request import Comment as Comment
 from avilla.standard.core.request import Questions as Questions
 from avilla.standard.core.request import Reason as Reason
 from avilla.standard.core.request import RequestAccepted as RequestAccepted
 from avilla.standard.core.request import RequestCancelled as RequestCancelled
-from avilla.standard.core.request import RequestCapability as RequestCapability
+
 from avilla.standard.core.request import RequestEvent as RequestEvent
 from avilla.standard.core.request import RequestIgnored as RequestIgnored
 from avilla.standard.core.request import RequestReceived as RequestReceived

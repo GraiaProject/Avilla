@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from typing import TYPE_CHECKING, Any, Callable, Iterable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Callable, ClassVar, Iterable, TypeVar, overload
 
 from creart import it
 from graia.amnesia.builtins.memcache import MemcacheService
@@ -10,13 +10,13 @@ from graia.broadcast import Broadcast
 from launart import Launart
 from launart.service import Service
 from loguru import logger
+from flywheel import CollectContext
 
 from avilla.core.globals import get_current_avilla
 from avilla.core.account import AccountInfo, BaseAccount
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.event import MetadataModified
 from avilla.core.protocol import BaseProtocol
-from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
@@ -42,7 +42,6 @@ class Avilla:
     protocols: list[BaseProtocol]
     accounts: dict[Selector, AccountInfo]
     service: AvillaService
-    global_artifacts: dict[Any, Any]
 
     def __init__(
         self,
@@ -174,12 +173,10 @@ class Avilla:
             )
 
     @overload
-    def add_event_recorder(self, event_type: type[TE]) -> Callable[[Callable[[TE], None]], Callable[[TE], None]]:
-        ...
+    def add_event_recorder(self, event_type: type[TE]) -> Callable[[Callable[[TE], None]], Callable[[TE], None]]: ...
 
     @overload
-    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None]) -> Callable[[TE], None]:
-        ...
+    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None]) -> Callable[[TE], None]: ...
 
     def add_event_recorder(
         self, event_type: type[TE], recorder: Callable[[TE], None] | None = None
@@ -193,10 +190,9 @@ class Avilla:
             return wrapper
         self.custom_event_recorder[event_type] = recorder  # type: ignore
         return recorder
-    
-    @staticmethod
-    def _require_builtins():
-        with 
+
+    @classmethod
+    def _require_builtins(cls):
         import avilla.core.builtins.resource_fetch  # noqa: F401
 
     @classmethod
@@ -207,20 +203,16 @@ class Avilla:
         return self.accounts[target]
 
     @overload
-    def get_accounts(self, *, land: str) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, land: str) -> list[AccountInfo]: ...
 
     @overload
-    def get_accounts(self, *, pattern: str) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, pattern: str) -> list[AccountInfo]: ...
 
     @overload
-    def get_accounts(self, *, protocol_type: type[BaseProtocol]) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, protocol_type: type[BaseProtocol]) -> list[AccountInfo]: ...
 
     @overload
-    def get_accounts(self, *, account_type: type[BaseAccount]) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, account_type: type[BaseAccount]) -> list[AccountInfo]: ...
 
     def get_accounts(
         self,

@@ -10,8 +10,8 @@ from avilla.core.selector import FollowsPredicater, Selector, _parse_follows
 
 
 @dataclass
-class LookupBranchMetadata:
-    ...
+class LookupBranchMetadata: ...
+
 
 @dataclass
 class LookupBranch:
@@ -22,6 +22,7 @@ class LookupBranch:
 
 LookupBranches: TypeAlias = "dict[str | FollowsPredicater | None, LookupBranch]"
 LookupCollection: TypeAlias = "dict[str, LookupBranches]"
+
 
 @dataclass
 class TargetOverloadSignature:
@@ -55,9 +56,9 @@ class TargetOverload(FnOverload[TargetOverloadSignature, tuple[str, dict[str, Fo
                 branches[item.literal or item.predicate] = branch
 
             processing_level = branch.levels
-        
+
         return branch.bind
-    
+
     def harvest(self, scope: dict, value: Selector) -> dict[Callable, None]:
         processing_scope: LookupCollection = scope
         branch = None
@@ -90,7 +91,7 @@ class TargetOverload(FnOverload[TargetOverloadSignature, tuple[str, dict[str, Fo
             return branch.bind
         else:
             return {}
-    
+
     def access(self, scope: dict, signature: TargetOverloadSignature) -> dict[Callable, None] | None:
         pattern_items = _parse_follows(signature.order)
         if not pattern_items:
@@ -111,5 +112,5 @@ class TargetOverload(FnOverload[TargetOverloadSignature, tuple[str, dict[str, Fo
 
             branch = branches[item.literal or item.predicate]
             processing_level = branch.levels
-        
+
         return branch.bind

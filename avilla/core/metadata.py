@@ -27,14 +27,12 @@ class _GetItemAgent(Generic[T]):
 
 class MetadataMeta(type):
     @overload
-    def __rshift__(cls: type[_MetadataT1], other: type[_MetadataT2]) -> MetadataRoute[_MetadataT1, _MetadataT2]:
-        ...
+    def __rshift__(cls: type[_MetadataT1], other: type[_MetadataT2]) -> MetadataRoute[_MetadataT1, _MetadataT2]: ...
 
     @overload
     def __rshift__(
         cls: type[_MetadataT1], other: MetadataRoute[Unpack[_TVT1]]
-    ) -> MetadataRoute[_MetadataT1, Unpack[_TVT1]]:
-        ...
+    ) -> MetadataRoute[_MetadataT1, Unpack[_TVT1]]: ...
 
     def __rshift__(cls: Any, other: type[Metadata] | MetadataRoute) -> MetadataRoute:
         # sourcery skip: instance-method-first-arg-name
@@ -68,8 +66,7 @@ class Metadata(metaclass=MetadataMeta):
     if TYPE_CHECKING:
 
         @classmethod
-        def inh(cls: type[_MetadataT1]) -> _MetadataT1:
-            ...
+        def inh(cls: type[_MetadataT1]) -> _MetadataT1: ...
 
     else:
 
@@ -107,14 +104,12 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
     @overload
     def __rshift__(
         self: MetadataRoute[Unpack[_TVT1]], other: type[_MetadataT1]
-    ) -> MetadataRoute[Unpack[_TVT1], _MetadataT1]:
-        ...
+    ) -> MetadataRoute[Unpack[_TVT1], _MetadataT1]: ...
 
     @overload
     def __rshift__(
         self: MetadataRoute[Unpack[_TVT1]], other: MetadataRoute[Unpack[_TVT2]]
-    ) -> MetadataRoute[Unpack[_TVT1], Unpack[_TVT2]]:
-        ...
+    ) -> MetadataRoute[Unpack[_TVT1], Unpack[_TVT2]]: ...
 
     def __rshift__(self, other: type[Metadata] | MetadataRoute) -> MetadataRoute:
         if not isinstance(other, (type, MetadataRoute)):
@@ -139,8 +134,7 @@ class MetadataRoute(Generic[Unpack[_TVT1]]):
     if TYPE_CHECKING:
 
         @property
-        def inh(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]) -> _MetadataT1:
-            ...
+        def inh(self: MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT1]) -> _MetadataT1: ...
 
     else:
 
@@ -172,9 +166,9 @@ class FieldReference(Generic[_MetadataT1]):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Self:
         prev = self.__steps[-1]
-        self.__steps[
-            -1
-        ] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        self.__steps[-1] = (
+            f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        )
         return self
 
     def __getitem__(self, item: Any) -> Self:
@@ -203,9 +197,9 @@ class RouteFieldReference(Generic[_MetadataT1]):
 
     def __call__(self, *args: Any, **kwargs: Any) -> Self:
         prev = self.__steps[-1]
-        self.__steps[
-            -1
-        ] = f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        self.__steps[-1] = (
+            f"{prev}({', '.join(repr(arg) for arg in args)}, {', '.join(f'{key}={repr(value)}' for key, value in kwargs.items())})"
+        )
         return self
 
     def __getitem__(self, item: Any) -> Self:

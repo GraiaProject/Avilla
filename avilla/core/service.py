@@ -44,8 +44,7 @@ class AvillaService(Service):
     def stages(self):
         return {"preparing", "blocking", "cleanup"}
 
-    def get_interface(self, interface_type):
-        ...
+    def get_interface(self, interface_type): ...
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):

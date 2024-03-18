@@ -1,7 +1,11 @@
-from .capability import BanCapability as BanCapability
-from .capability import MuteAllCapability as MuteAllCapability
-from .capability import MuteCapability as MuteCapability
-from .capability import PrivilegeCapability as PrivilegeCapability
+from .capability import ban_entity as ban_entity
+from .capability import downgrade_privilege as downgrade_privilege
+from .capability import mute_all as mute_all
+from .capability import mute_entity as mute_entity
+from .capability import unban_entity as unban_entity
+from .capability import unmute_all as unmute_all
+from .capability import unmute_entity as unmute_entity
+from .capability import upgrade_privilege as upgrade_privilege
 from .metadata import BanInfo as BanInfo
 from .metadata import MuteInfo as MuteInfo
 from .metadata import Privilege as Privilege

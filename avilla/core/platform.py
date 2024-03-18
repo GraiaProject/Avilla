@@ -5,8 +5,7 @@ from typing import TypedDict, TypeVar
 
 
 @dataclass
-class PlatformDescription:
-    ...
+class PlatformDescription: ...
 
 
 PD = TypeVar("PD", bound=PlatformDescription)

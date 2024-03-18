@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
 from statv import Stats, Statv
+from flywheel import CollectContext
 
 from avilla.core.selector import Selector
 from avilla.core.builtins.capability import CoreCapability
@@ -29,7 +30,7 @@ class AccountInfo:
 class BaseAccount:
     route: Selector
     avilla: Avilla
-    artifacts: 
+    artifacts: CollectContext = field(default_factory=CollectContext)
 
     @property
     def info(self) -> AccountInfo:

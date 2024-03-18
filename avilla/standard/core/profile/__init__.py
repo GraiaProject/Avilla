@@ -1,5 +1,12 @@
-from .capability import NickCapability as NickCapability
-from .capability import SummaryCapability as SummaryCapability
+from .capability import get_avatar as get_avatar
+from .capability import set_badge as set_badge
+from .capability import set_nickname as set_nickname
+from .capability import set_summary_description as set_summary_description
+from .capability import set_summary_name as set_summary_name
+from .capability import unset_badge as unset_badge
+from .capability import unset_nickname as unset_nickname
+from .capability import unset_summary_description as unset_summary_description
+from .capability import unset_summary_name as unset_summary_name
 from .metadata import Avatar as Avatar
 from .metadata import Nick as Nick
 from .metadata import Summary as Summary
