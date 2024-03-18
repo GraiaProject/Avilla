@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from graia.broadcast.entities.dispatcher import BaseDispatcher
 from graia.broadcast.entities.event import Dispatchable
 from typing_extensions import Unpack
+from flywheel import InstanceContext
 
 from avilla.core.account import BaseAccount
 from avilla.core.metadata import Metadata, MetadataRoute
@@ -36,6 +37,7 @@ class AvillaEvent(Dispatchable):
 
             stack: AsyncExitStack = interface.local_storage["_depend_lifespan_manager"]
             stack.enter_context(interface.event.context.protocol.artifacts.lookup_scope())
+            stack.enter_context(interface.event.context.instance_context.scope())
 
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):

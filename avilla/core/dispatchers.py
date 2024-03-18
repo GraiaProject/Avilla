@@ -28,14 +28,17 @@ class AvillaBuiltinDispatcher(BaseDispatcher):
 
         if interface.annotation is Avilla:
             return self.avilla
+        
         if interface.annotation in self.avilla._protocol_map:
             return self.avilla._protocol_map[interface.annotation]
+        
         if (
             isclass(interface.annotation)
             and issubclass(interface.annotation, BaseProtocol)
             and isinstance(PROTOCOL_CONTEXT_VAR.get(None), interface.annotation)
         ):
             return PROTOCOL_CONTEXT_VAR.get(None)
+        
         if (
             isinstance(interface.event, AvillaEvent)
             and isclass(interface.annotation)

@@ -5,6 +5,8 @@ from typing import Any, TypedDict, TypeVar, cast
 
 from typing_extensions import ParamSpec, Unpack
 
+from flywheel import InstanceContext
+
 from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from avilla.core.account import BaseAccount
 from avilla.core.builtins.capability import CoreCapability
@@ -64,6 +66,17 @@ class Context:
         self.mediums = [ContextMedium(ContextSelector.from_selector(self, medium)) for medium in mediums or []]
 
         self.cache = {"meta": metadatas or {}}
+
+    @property
+    def instance_context(self):
+        ins = InstanceContext()
+        ins.instances.update({type(i): i for i in [
+            self,
+            self.avilla,
+            self.protocol,
+            self.account
+        ]})
+        return ins
 
     @property
     def protocol(self):

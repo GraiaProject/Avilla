@@ -8,7 +8,7 @@ Flywheel 致力于用轻巧灵活的设计来迅捷而准确的构筑 Avilla 的
 ## Todo List
 
 - Overloads
-  - [ ] `SelectorOverload`，取代现有的 `TargetOverload` 设施。
+  - [x] `SelectorOverload`，取代现有的 `TargetOverload` 设施。
   - ~~`QueryOverload`~~，参考下文详细叙述。
   - ~~`MetadataOverload`~~，已可被 Flywheel 中的 `SimpleOverload` 取代。
   - ~~`ResourceOverload`~~，已可被 Flywheel 中的 `TypeOverload` 或 `SimpleOverload` 取代。
@@ -129,16 +129,45 @@ with connection.instance_ctx:
 
 ### 具体实现的模块如何导入
 
-我们推荐声明一个 `_import_performs` 方法，然后在 `Protocol.ensure` 配合 `CollectContext` 使用。
+我们推荐声明用 `cachedstatic` 装饰的 `Protocol.artifacts`，其返回一个 `CollectContext`，结果则被 `cachedstatic` 缓存。
 
-当然，前提是你里面的全部用了 `@local_collect` 或是 `scoped_context.env()`。
+当然，前提是你里面的各种 collect 全部用了 `@local_collect` 或是 `scoped_context.env()`。
 
 ```python
-def _import_performs():
-    ...
+from avilla.core.utilles import cachedstatic
 
 class Protocol:
-    def ensure(self, avilla):
-        with CollectContext() as self.perform_context:
-            _import_performs()
+    @cachedstatic
+    def artifacts():
+        with CollectContext() as ctx:
+            import ...
+        
+        return ctx
+```
+
+
+### 没有 Collector 后如何置入要调用的依赖
+
+之前的 Ryanvk v1.2 允许你直接使用 `avilla.core.ryanvk.collector` 中的各种特别预制的 Collector，
+但 Flywheel 则会有点麻烦 —— 他得间接的使用 `InstanceContext` 实现。
+
+当然，我们已经为应用生成了 Avilla, Context, 对应 Protocol 和对应 Account 的 mapping，在 AvillaEvent 监听下他们会被自动应用。
+但是我们注意到对于例如 `event_parse` 特别映射了一些例如 `connection` 的情况，这种情况下你需要这样做：
+
+```python
+from flywheel import InstanceOf
+
+class ConnectionPerformBase:
+    connection = InstanceOf(ConnectionBase)
+
+class ConnectionBase:
+    def parse_event(self):
+        with InstanceContext.scope() as ctx:
+            ctx[ConnectionBase] = self  # 这里一定要填 ConnectionBase，也就是基类，如果你用了的话。
+
+            ... # other fn call
+
+
+class GroupEventParsing(m := scoped_context.env().target, ConnectionPerformBase):
+    ...  # self.connection => ConnectionBase
 ```
