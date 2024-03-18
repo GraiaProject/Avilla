@@ -5,8 +5,8 @@ from typing import TYPE_CHECKING, Any
 
 from statv import Stats, Statv
 
-from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.selector import Selector
+from avilla.core.builtins.capability import CoreCapability
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
@@ -29,45 +29,23 @@ class AccountInfo:
 class BaseAccount:
     route: Selector
     avilla: Avilla
+    artifacts: 
 
     @property
     def info(self) -> AccountInfo:
         return self.avilla.accounts[self.route]
 
     @property
-    def staff(self):
-        return Staff(self.get_staff_artifacts(), self.get_staff_components())
-
-    @property
     def available(self) -> bool:
         return True
 
     def get_context(self, target: Selector, *, via: Selector | None = None) -> Context:
-        return self.staff.get_context(target, via=via)
+        return CoreCapability.get_context(target, via=via)
 
     def get_self_context(self):
         from avilla.core.context import Context
 
-        return Context(
-            self,
-            self.route,
-            self.route,
-            self.route.into("::"),
-            self.route,
-        )
-
-    def get_staff_components(self):
-        return {"account": self, "protocol": self.info.protocol, "avilla": self.avilla}
-
-    def get_staff_artifacts(self):
-        return [
-            self.info.artifacts,
-            self.info.protocol.artifacts,
-            self.avilla.global_artifacts,
-        ]
-
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
+        return Context(self, self.route, self.route, self.route.into("::"), self.route)
 
 
 class AccountStatus(Statv):

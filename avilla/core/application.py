@@ -195,27 +195,14 @@ class Avilla:
             return wrapper
         self.custom_event_recorder[event_type] = recorder  # type: ignore
         return recorder
-
-    def __init_isolate__(self):
-        from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
-
-        CoreResourceFetchPerform.apply_to(self.global_artifacts)
-
-    def get_staff_components(self):
-        return {"avilla": self}
-
-    def get_staff_artifacts(self):
-        return [self.global_artifacts]
-
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
+    
+    @staticmethod
+    def _require_builtins():
+        import avilla.core.builtins.resource_fetch  # noqa: F401
 
     @classmethod
     def current(cls):
         return get_current_avilla()
-
-    async def fetch_resource(self, resource: Resource[T]) -> T:
-        return await Staff(self.get_staff_artifacts(), self.get_staff_components()).fetch_resource(resource)
 
     def get_account(self, target: Selector) -> AccountInfo:
         return self.accounts[target]
