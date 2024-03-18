@@ -9,23 +9,23 @@ from nonechat.info import MessageEvent
 from avilla.console.capability import ConsoleCapability
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk_old.collector.account import AccountCollector
+
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
+from flywheel import scoped_collect
+from avilla.console.bases import InstanceOfAccount
 
 if TYPE_CHECKING:
     from avilla.console.account import ConsoleAccount  # noqa
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleEventMessagePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
-    m.namespace = "avilla.protocol/console::event/message"
-
-    @m.entity(ConsoleCapability.event_callback, event=MessageEvent)
+class ConsoleEventMessagePerform(m := scoped_collect.globals().target, InstanceOfAccount):
+    @m.impl(ConsoleCapability.event_callback, event=MessageEvent)
     async def console_message(self, event: MessageEvent):
         console = Selector().land(self.account.route["land"]).user(str(event.user.id))
         message = MessageChain(
-            [await ConsoleCapability(self.account.staff).deserialize_element(i) for i in event.message.content]
+            [await ConsoleCapability.deserialize_element(i) for i in event.message.content]
         )
         context = Context(
             account=self.account,

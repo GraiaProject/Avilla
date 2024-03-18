@@ -73,7 +73,7 @@ class AvillaConsoleBackend(Backend):
 
     async def post_event(self, event: Event):
         with suppress(NotImplementedError):
-            res = await ConsoleCapability(self.account.staff).event_callback(event)
+            res = await ConsoleCapability.event_callback(event)
             self._service.protocol.post_event(res)
             return
 

@@ -24,7 +24,7 @@ class send_message(FnCompose):
         return await entities.first(target, message, reply=reply)
 
     class shapecall(Protocol):
-        async def __call__(self, target: Selector, message: MessageChain, *, reply: Selector | None = None): ...
+        async def __call__(self, target: Selector, message: MessageChain, *, reply: Selector | None = None) -> Selector: ...
 
     def collect(self, recorder: OverloadRecorder[shapecall], target: str):
         recorder.use(self.target, (target, {}))
