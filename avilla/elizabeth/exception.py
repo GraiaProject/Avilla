@@ -1,6 +1,5 @@
 """Ariadne 的异常定义"""
 
-
 from avilla.core.exceptions import (
     InvalidAuthentication,
     InvalidOperation,

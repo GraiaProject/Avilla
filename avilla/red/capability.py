@@ -15,8 +15,7 @@ from graia.ryanvk import Fn, PredicateOverload, SimpleOverload, TypeOverload
 
 class RedCapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})
-    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None:
-        ...
+    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None: ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["element"]})
     async def deserialize_element(self, element: dict) -> Element:  # type: ignore
@@ -31,8 +30,7 @@ class RedCapability((m := ApplicationCollector())._):
         ...
 
     @Fn.complex({TargetOverload(): ["target"]})
-    async def send_forward(self, target: Selector, forward: Forward) -> Selector:
-        ...
+    async def send_forward(self, target: Selector, forward: Forward) -> Selector: ...
 
     async def deserialize(self, elements: list[dict]):
         _elements = []

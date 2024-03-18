@@ -53,11 +53,10 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
             guild.member(account.route["account"]),
         )
         return SceneDestroyed(
-            context, 
+            context,
             active=bool(raw_event.operator) and raw_event.operator.id == account.route["account"],
             indirect=not bool(raw_event.operator),
         )
-    
 
     @m.entity(SatoriCapability.event_callback, raw_event="guild-member-added")
     async def guild_member_added(self, raw_event: Event):
@@ -94,7 +93,7 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
             guild.member(account.route["account"]),
         )
         return MemberDestroyed(
-            context, 
+            context,
             active=bool(raw_event.operator) and raw_event.operator.id == member["member"],
             indirect=not bool(raw_event.operator),
         )
@@ -134,7 +133,7 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
             guild.member(account.route["account"]),
         )
         return RoleDestroyed(
-            context, 
+            context,
             active=bool(raw_event.operator) and raw_event.operator.id == account.route["account"],
             indirect=not bool(raw_event.operator),
         )

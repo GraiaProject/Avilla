@@ -25,7 +25,9 @@ class SatoriRequestActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         )
 
     @m.entity(RequestCapability.reject, target="land.guild.member.request")
-    async def reject_member_join_request(self, target: Selector, reason: str | None = None, forever: bool = False) -> None:
+    async def reject_member_join_request(
+        self, target: Selector, reason: str | None = None, forever: bool = False
+    ) -> None:
         request_id = target.pattern["request"]
         await self.account.client.guild_approve(
             request_id=request_id,
@@ -43,7 +45,9 @@ class SatoriRequestActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         )
 
     @m.entity(RequestCapability.reject, target="land.user.request")
-    async def reject_new_friend_request(self, target: Selector, reason: str | None = None, forever: bool = False) -> None:
+    async def reject_new_friend_request(
+        self, target: Selector, reason: str | None = None, forever: bool = False
+    ) -> None:
         request_id = target.pattern["request"]
         await self.account.client.friend_approve(
             request_id=request_id,

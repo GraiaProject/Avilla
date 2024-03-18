@@ -45,7 +45,8 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         )
         file = FileData.parse(result)
         await cache.set(
-            f"elizabeth/account({self.account.route['account']}).group({target['group']}).file({target['file']})", file,
+            f"elizabeth/account({self.account.route['account']}).group({target['group']}).file({target['file']})",
+            file,
             timedelta(minutes=5),
         )
         return file

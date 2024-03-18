@@ -16,16 +16,13 @@ from .utils import handle_text
 
 class QQAPICapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})
-    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None:
-        ...
+    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None: ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_element"]})
-    async def deserialize_element(self, raw_element: dict) -> Element:
-        ...
+    async def deserialize_element(self, raw_element: dict) -> Element: ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Any) -> str | tuple[str, Any]:
-        ...
+    async def serialize_element(self, element: Any) -> str | tuple[str, Any]: ...
 
     @Fn.complex({TargetOverload(): ["target"]})
     async def create_dms(self, target: Selector) -> Selector:

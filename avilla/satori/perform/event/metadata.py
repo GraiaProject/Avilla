@@ -55,7 +55,7 @@ class SatoriEventMetadataPerform((m := ConnectionCollector())._):
                 {
                     Avatar.inh().url: ModifyDetail("set", raw_event.guild.avatar, None),
                 },
-            )
+            ),
         ]
 
     @m.entity(SatoriCapability.event_callback, raw_event="guild-member-updated")
@@ -99,7 +99,7 @@ class SatoriEventMetadataPerform((m := ConnectionCollector())._):
                 {
                     Avatar.inh().url: ModifyDetail("set", raw_event.member.avatar, None),
                 },
-            )
+            ),
         ]
 
     @m.entity(SatoriCapability.event_callback, raw_event="guild-role-updated")

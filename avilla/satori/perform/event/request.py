@@ -15,6 +15,7 @@ from avilla.standard.core.profile.metadata import Nick, Summary
 from avilla.standard.core.request import RequestReceived
 from satori.model import Event
 
+
 class SatoriEventRequestPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/satori::event"
     m.identify = "request"

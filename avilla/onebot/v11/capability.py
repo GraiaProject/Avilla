@@ -22,8 +22,7 @@ def onebot11_event_type(raw: dict) -> str:
 
 class OneBot11Capability((m := ApplicationCollector())._):
     @Fn.complex({PredicateOverload(lambda _, raw: onebot11_event_type(raw)): ["raw_event"]})
-    async def event_callback(self, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None:
-        ...
+    async def event_callback(self, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None: ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_element"]})
     async def deserialize_element(self, raw_element: dict) -> Element:  # type: ignore

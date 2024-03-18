@@ -152,11 +152,12 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         group = Selector().land("qq").group(str(group_data["id"]))
         author = group.member(str(raw_event["authorId"]))
         author_data = await self.connection.call(
-            "fetch", "memberInfo",
+            "fetch",
+            "memberInfo",
             {
                 "target": group_data["id"],
                 "memberId": raw_event["authorId"],
-            }
+            },
         )
         operator_data = raw_event["operator"]
         operator = group.member(str(operator_data["id"]))

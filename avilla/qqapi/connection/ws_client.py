@@ -210,8 +210,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
     def get_staff_artifacts(self):
         return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
+    def __staff_generic__(self, element_type: dict, event_type: dict): ...
 
     @property
     def alive(self):

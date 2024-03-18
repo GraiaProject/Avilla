@@ -23,7 +23,9 @@ class ElizabethAnnouncementQueryPerform((m := AccountCollector["ElizabethProtoco
     async def query_group_file(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         cache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         result = await self.account.connection.call(
-            "fetch", "file_list", {"id": "", "target": int(previous["group"]), "offset": 0, "size": 1, "withDownloadInfo": "True"}
+            "fetch",
+            "file_list",
+            {"id": "", "target": int(previous["group"]), "offset": 0, "size": 1, "withDownloadInfo": "True"},
         )
         result = cast(list, result)
         for i in result:

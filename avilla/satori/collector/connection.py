@@ -33,7 +33,6 @@ class ConnectionCollector(AvillaBaseCollector):
             ConnectionBasedPerformTemplate,
             upper,
             native=True,
-        ):
-            ...
+        ): ...
 
         return PerformTemplate

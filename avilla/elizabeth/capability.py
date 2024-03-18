@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 
 class ElizabethCapability((m := ApplicationCollector())._):
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_event"]})
-    async def event_callback(self, raw_event: dict) -> AvillaEvent | None:
-        ...
+    async def event_callback(self, raw_event: dict) -> AvillaEvent | None: ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_element"]})
     async def deserialize_element(self, raw_element: dict) -> Element:  # type: ignore

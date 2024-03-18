@@ -70,12 +70,7 @@ class Context:
     @property
     def instance_context(self):
         ins = InstanceContext()
-        ins.instances.update({type(i): i for i in [
-            self,
-            self.avilla,
-            self.protocol,
-            self.account
-        ]})
+        ins.instances.update({type(i): i for i in [self, self.avilla, self.protocol, self.account]})
         return ins
 
     @property

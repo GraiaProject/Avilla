@@ -52,11 +52,7 @@ class SatoriEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             )
         else:
-            guild = (
-                Selector()
-                .land(account.route["land"])
-                .guild(raw_event.guild.id if raw_event.guild else "True")
-            )
+            guild = Selector().land(account.route["land"]).guild(raw_event.guild.id if raw_event.guild else "True")
             channel = guild.channel(raw_event.channel.id)
             member = channel.member(
                 raw_event.member.user.id if raw_event.member and raw_event.member.user else raw_event.user.id

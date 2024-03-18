@@ -9,8 +9,7 @@ from graia.ryanvk import merge, ref
 from .service import SatoriService
 
 
-class SatoriConfig(ProtocolConfig, WebsocketsInfo):
-    ...
+class SatoriConfig(ProtocolConfig, WebsocketsInfo): ...
 
 
 def _import_performs():

@@ -16,7 +16,7 @@ from avilla.core.event import AvillaEvent
 from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.utilles import identity
 from avilla.standard.core.account import AccountRegistered, AccountUnregistered
-from graia.ryanvk import merge, ref
+from graia.ryanvk import ref
 from graia.ryanvk.aio import queue_task
 
 from .adapter import NoneBridgeAdapter

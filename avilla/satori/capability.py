@@ -15,16 +15,13 @@ from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 
 class SatoriCapability((m := ApplicationCollector())._):
     @Fn.complex({PredicateOverload(lambda _, raw: raw.type): ["raw_event"]})
-    async def event_callback(self, raw_event: Event) -> AvillaEvent | AvillaLifecycleEvent | list[Any] | None:
-        ...
+    async def event_callback(self, raw_event: Event) -> AvillaEvent | AvillaLifecycleEvent | list[Any] | None: ...
 
     @Fn.complex({TypeOverload(): ["raw_element"]})
-    async def deserialize_element(self, raw_element: Any) -> Element:
-        ...
+    async def deserialize_element(self, raw_element: Any) -> Element: ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Any) -> str:
-        ...
+    async def serialize_element(self, element: Any) -> str: ...
 
     async def deserialize(self, content: str):
         elements = []

@@ -95,8 +95,7 @@ class RedWsClientNetworking(RedNetworking, Service):
     def get_staff_components(self):
         return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
 
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
+    def __staff_generic__(self, element_type: dict, event_type: dict): ...
 
     def get_staff_artifacts(self):
         return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
@@ -135,7 +134,11 @@ class RedWsClientNetworking(RedNetworking, Service):
                         self.close_signal.set()
                         self.connection = None
                         for v in list(avilla.accounts.values()):
-                            if v.protocol is self.protocol and self.account and v.route["account"] == self.account.route["account"]:  # type: ignore
+                            if (
+                                v.protocol is self.protocol
+                                and self.account
+                                and v.route["account"] == self.account.route["account"]
+                            ):  # type: ignore
                                 self.account = None
                                 del avilla.accounts[v.route]
                                 await avilla.broadcast.postEvent(AccountUnregistered(avilla, v.account))
