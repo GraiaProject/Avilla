@@ -9,6 +9,7 @@ from typing_extensions import Self
 from avilla.core.event import AvillaEvent
 from avilla.core.globals import AVILLA_CONTEXT_VAR, CONTEXT_CONTEXT_VAR, PROTOCOL_CONTEXT_VAR
 from avilla.core.utilles import cachedstatic
+from avilla.standard.core.application import AvillaLifecycleEvent
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
@@ -32,7 +33,7 @@ class BaseProtocol:
 
     def configure(self, config: ProtocolConfig) -> Self: ...
 
-    def post_event(self, event: AvillaEvent, context: Context | None = None):
+    def post_event(self, event: AvillaEvent | AvillaLifecycleEvent, context: Context | None = None):
         with (
             AVILLA_CONTEXT_VAR.use(self.avilla),
             PROTOCOL_CONTEXT_VAR.use(self),

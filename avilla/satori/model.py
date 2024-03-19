@@ -1,17 +1,16 @@
 from __future__ import annotations
 
-
 from satori.model import (
+    ArgvInteraction,
+    ButtonInteraction,
     Channel,
     Event,
+    Guild,
     Login,
     Member,
     MessageObject,
     Role,
     User,
-    Guild,
-    ButtonInteraction,
-    ArgvInteraction,
 )
 
 

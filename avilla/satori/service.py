@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-import asyncio
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
+from flywheel import InstanceContext
 from loguru import logger
-from satori.client.account import Account
 from satori.client import App
+from satori.client.account import Account
 from satori.model import Event, LoginStatus
 
+from avilla.core import Selector
 from avilla.core.account import AccountInfo
 from avilla.standard.core.account import (
     AccountAvailable,
@@ -17,8 +18,6 @@ from avilla.standard.core.account import (
     AccountUnregistered,
 )
 
-from ..core import Selector
-from ..core.ryanvk_old.staff import Staff
 from .account import SatoriAccount
 from .capability import SatoriCapability
 from .const import platform
@@ -40,25 +39,23 @@ class SatoriService(App):
         self.register(self.handle_event)
         self.lifecycle(self.handle_lifecycle)
 
-    def get_staff_components(self):
-        return {"protocol": self.protocol, "avilla": self.protocol.avilla}
-
-    def get_staff_artifacts(self):
-        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
-
-    @property
-    def staff(self):
-        return Staff(self.get_staff_artifacts(), self.get_staff_components())
-
     async def handle_event(self, account: Account, event: Event):
-        async def event_parse_task(connection: Account, raw: Event):
-            with suppress(NotImplementedError):
-                await SatoriCapability(self.staff.ext({"connection": connection})).handle_event(raw)
-                return
+        event_instance = InstanceContext()
+        event_instance.instances[Account] = account
+        event_instance.instances[type(self.protocol)] = self.protocol
+        if account.identity in self._accounts:
+            event_instance.instances[SatoriAccount] = self._accounts[account.identity]
+        with event_instance.scope(), suppress(NotImplementedError):
+            res = await SatoriCapability.event_callback(event)
+            if isinstance(res, list):
+                for e in res:
+                    self.protocol.avilla.event_record(e)
+                    self.protocol.post_event(e)
+            else:
+                self.protocol.avilla.event_record(res)
+                self.protocol.post_event(res)
 
-            logger.warning(f"received unsupported event {raw.type}: {raw}")
-
-        asyncio.create_task(event_parse_task(account, event))
+        logger.warning(f"received unsupported event {event.type}: {event}")
 
     async def handle_lifecycle(self, account: Account, state: LoginStatus):
         if state == LoginStatus.ONLINE:

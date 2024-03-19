@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from flywheel import scoped_collect
+
 from avilla.core.context import Context
 from avilla.core.event import (
     MemberCreated,
@@ -9,25 +10,20 @@ from avilla.core.event import (
     SceneDestroyed,
 )
 from avilla.core.selector import Selector
+from avilla.satori.bases import InstanceOfAccount
 from avilla.satori.capability import SatoriCapability
-from avilla.satori.collector.connection import ConnectionCollector
-from avilla.satori.model import GuildEvent, GuildMemberEvent, GuildRoleEvent
 from avilla.satori.event import RoleCreated, RoleDestroyed
-from satori.model import Event
+from avilla.satori.model import GuildEvent, GuildMemberEvent, GuildRoleEvent
 
 
-class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
-    m.namespace = "avilla.protocol/satori::event"
-    m.identify = "relationship"
+class SatoriEventRelationshipPerform(m := scoped_collect.globals().target, InstanceOfAccount, static=True):
 
-    @m.entity(SatoriCapability.event_callback, raw_event="guild-added")
-    async def guild_added(self, raw_event: Event):
-        account = self.protocol.service._accounts[self.connection.identity]
+    @m.impl(SatoriCapability.event_callback, raw_event="guild-added")
+    async def guild_added(self, event: GuildEvent):
+        account = self.account
         land = Selector().land(account.route["land"])
-        if TYPE_CHECKING:
-            assert isinstance(raw_event, GuildEvent)
-        guild = land.guild(raw_event.guild.id)
-        inviter = guild.member(raw_event.operator.id) if raw_event.operator else guild
+        guild = land.guild(event.guild.id)
+        inviter = guild.member(event.operator.id) if event.operator else guild
         context = Context(
             account,
             inviter,
@@ -37,14 +33,12 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return SceneCreated(context)
 
-    @m.entity(SatoriCapability.event_callback, raw_event="guild-removed")
-    async def guild_removed(self, raw_event: Event):
-        account = self.protocol.service._accounts[self.connection.identity]
+    @m.impl(SatoriCapability.event_callback, raw_event="guild-removed")
+    async def guild_removed(self, event: GuildEvent):
+        account = self.account
         land = Selector().land(account.route["land"])
-        if TYPE_CHECKING:
-            assert isinstance(raw_event, GuildEvent)
-        guild: Selector = land.guild(raw_event.guild.id)
-        operator = guild.member(raw_event.operator.id) if raw_event.operator else guild
+        guild: Selector = land.guild(event.guild.id)
+        operator = guild.member(event.operator.id) if event.operator else guild
         context = Context(
             account,
             operator,
@@ -54,19 +48,17 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return SceneDestroyed(
             context,
-            active=bool(raw_event.operator) and raw_event.operator.id == account.route["account"],
-            indirect=not bool(raw_event.operator),
+            active=bool(event.operator) and event.operator.id == account.route["account"],
+            indirect=not bool(event.operator),
         )
 
-    @m.entity(SatoriCapability.event_callback, raw_event="guild-member-added")
-    async def guild_member_added(self, raw_event: Event):
-        account = self.protocol.service._accounts[self.connection.identity]
+    @m.impl(SatoriCapability.event_callback, raw_event="guild-member-added")
+    async def guild_member_added(self, event: GuildMemberEvent):
+        account = self.account
         land = Selector().land(account.route["land"])
-        if TYPE_CHECKING:
-            assert isinstance(raw_event, GuildMemberEvent)
-        guild = land.guild(raw_event.guild.id)
-        member = guild.member(raw_event.member.user.id if raw_event.member.user else raw_event.user.id)
-        operator = guild.member(raw_event.operator.id) if raw_event.operator else member
+        guild = land.guild(event.guild.id)
+        member = guild.member(event.member.user.id if event.member.user else event.user.id)
+        operator = guild.member(event.operator.id) if event.operator else member
         context = Context(
             account,
             operator,
@@ -76,15 +68,13 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return MemberCreated(context)
 
-    @m.entity(SatoriCapability.event_callback, event_type="guild-member-removed")
-    async def guild_member_removed(self, raw_event: Event):
-        account = self.protocol.service._accounts[self.connection.identity]
+    @m.impl(SatoriCapability.event_callback, raw_event="guild-member-removed")
+    async def guild_member_removed(self, event: GuildMemberEvent):
+        account = self.account
         land = Selector().land(account.route["land"])
-        if TYPE_CHECKING:
-            assert isinstance(raw_event, GuildMemberEvent)
-        guild = land.guild(raw_event.guild.id)
-        member = guild.member(raw_event.member.user.id if raw_event.member.user else raw_event.user.id)
-        operator = guild.member(raw_event.operator.id) if raw_event.operator else member
+        guild = land.guild(event.guild.id)
+        member = guild.member(event.member.user.id if event.member.user else event.user.id)
+        operator = guild.member(event.operator.id) if event.operator else member
         context = Context(
             account,
             operator,
@@ -94,19 +84,17 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return MemberDestroyed(
             context,
-            active=bool(raw_event.operator) and raw_event.operator.id == member["member"],
-            indirect=not bool(raw_event.operator),
+            active=bool(event.operator) and event.operator.id == member["member"],
+            indirect=not bool(event.operator),
         )
 
-    @m.entity(SatoriCapability.event_callback, raw_event="guild-role-created")
-    async def guild_role_created(self, raw_event: Event):
-        account = self.protocol.service._accounts[self.connection.identity]
+    @m.impl(SatoriCapability.event_callback, raw_event="guild-role-created")
+    async def guild_role_created(self, event: GuildRoleEvent):
+        account = self.account
         land = Selector().land(account.route["land"])
-        if TYPE_CHECKING:
-            assert isinstance(raw_event, GuildRoleEvent)
-        guild = land.guild(raw_event.guild.id)
-        role = guild.role(raw_event.role.id)
-        operator = guild.member(raw_event.operator.id) if raw_event.operator else guild
+        guild = land.guild(event.guild.id)
+        role = guild.role(event.role.id)
+        operator = guild.member(event.operator.id) if event.operator else guild
         context = Context(
             account,
             operator,
@@ -116,15 +104,13 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RoleCreated(context)
 
-    @m.entity(SatoriCapability.event_callback, event_type="guild-role-deleted")
-    async def guild_role_deleted(self, raw_event: Event):
-        account = self.protocol.service._accounts[self.connection.identity]
+    @m.impl(SatoriCapability.event_callback, raw_event="guild-role-deleted")
+    async def guild_role_deleted(self, event: GuildRoleEvent):
+        account = self.account
         land = Selector().land(account.route["land"])
-        if TYPE_CHECKING:
-            assert isinstance(raw_event, GuildRoleEvent)
-        guild = land.guild(raw_event.guild.id)
-        role = guild.role(raw_event.role.id)
-        operator = guild.member(raw_event.operator.id) if raw_event.operator else guild
+        guild = land.guild(event.guild.id)
+        role = guild.role(event.role.id)
+        operator = guild.member(event.operator.id) if event.operator else guild
         context = Context(
             account,
             operator,
@@ -134,6 +120,6 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RoleDestroyed(
             context,
-            active=bool(raw_event.operator) and raw_event.operator.id == account.route["account"],
-            indirect=not bool(raw_event.operator),
+            active=bool(event.operator) and event.operator.id == account.route["account"],
+            indirect=not bool(event.operator),
         )

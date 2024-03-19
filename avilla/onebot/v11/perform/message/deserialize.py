@@ -18,20 +18,24 @@ from avilla.standard.qq.elements import (
     Share,
     Xml,
 )
+from flywheel import global_collect
 from flywheel.globals import INSTANCE_CONTEXT_VAR
 
 from avilla.onebot.v11.account import OneBot11Account
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="text")
 async def text(element: dict) -> Text:
     return Text(element["data"]["text"])
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="face")
 async def face(element: dict) -> Face:
     return Face(element["data"]["id"])
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="image")
 async def image(element: dict) -> Picture | FlashImage:
     data: dict = element["data"]
@@ -39,6 +43,7 @@ async def image(element: dict) -> Picture | FlashImage:
     return FlashImage(resource) if element.get("type") == "flash" else Picture(resource)
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="at")
 async def at(element: dict) -> Notice | NoticeAll:
     if element["data"]["qq"] == "all":
@@ -48,6 +53,7 @@ async def at(element: dict) -> Notice | NoticeAll:
     return Notice(Selector().land("qq").member(element["data"]["qq"]))
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="reply")
 async def reply(element: dict):
     with suppress(LookupError):
@@ -55,26 +61,31 @@ async def reply(element: dict):
     return Reference(Selector().land("qq").message(element["data"]["id"]))
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="dice")
 async def dice(element: dict):
     return Dice()
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="shake")
 async def shake(element: dict):
     return Poke()
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="json")
 async def json(element: dict):
     return Json(element["data"]["content"])
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="xml")
 async def xml(element: dict):
     return Xml(element["data"]["content"])
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="share")
 async def share(element: dict):
     return Share(
@@ -85,6 +96,7 @@ async def share(element: dict):
     )
 
 
+@global_collect
 @OneBot11Capability.deserialize_element.impl(element_type="forward")
 async def forward(element: dict):
     elem = Forward(element["data"]["id"])

@@ -1,8 +1,9 @@
 from __future__ import annotations
 
+from contextlib import suppress
 from dataclasses import asdict
-from typing import TYPE_CHECKING
 
+from flywheel import global_collect
 from satori.element import At
 from satori.element import Audio as SatoriAudio
 from satori.element import Bold, Br
@@ -25,6 +26,7 @@ from satori.element import Text as SatoriText
 from satori.element import Underline
 from satori.element import Video as SatoriVideo
 
+from avilla.core.context import Context
 from avilla.core.elements import (
     Audio,
     File,
@@ -35,7 +37,6 @@ from avilla.core.elements import (
     Text,
     Video,
 )
-from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.element import Button
@@ -45,117 +46,156 @@ from avilla.satori.resource import (
     SatoriImageResource,
     SatoriVideoResource,
 )
-from graia.ryanvk import OptionalAccess
-
-if TYPE_CHECKING:
-    from avilla.core.context import Context
-    from avilla.satori.account import SatoriAccount
 
 
-class SatoriMessageDeserializePerform((m := ApplicationCollector())._):
-    m.namespace = "avilla.protocol/satori::message"
-    m.identify = "deserialize"
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=SatoriText)
+async def text(element: SatoriText) -> Text:
+    return Text(element.text)
 
-    context: OptionalAccess[Context] = OptionalAccess()
-    account: OptionalAccess[SatoriAccount] = OptionalAccess()
 
-    # LINK: https://github.com/microsoft/pyright/issues/5409
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=At)
+async def at(element: At) -> Notice | NoticeAll:
+    if element.type in ("all", "here"):
+        return NoticeAll()
+    scene = Selector().land("satori")
+    with suppress(LookupError):
+        scene = Context.current.scene
+    if element.role:
+        return Notice(scene.role(element.role))
+    return Notice(scene.member(element.id))  # type: ignore
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=SatoriText)
-    async def text(self, raw_element: SatoriText) -> Text:
-        return Text(raw_element.text)
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=At)
-    async def at(self, raw_element: At) -> Notice | NoticeAll:
-        if raw_element.type in ("all", "here"):
-            return NoticeAll()
-        scene = self.context.scene if self.context else Selector().land("satori")
-        if raw_element.role:
-            return Notice(scene.role(raw_element.role))
-        return Notice(scene.member(raw_element.id))  # type: ignore
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Sharp)
+async def sharp(element: Sharp) -> Notice:
+    scene = Selector().land("satori")
+    with suppress(LookupError):
+        scene = Context.current.scene
+    return Notice(scene.into(f"~.channel({element.id})"))  # type: ignore
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Sharp)
-    async def sharp(self, raw_element: Sharp) -> Notice:
-        scene = self.context.scene if self.context else Selector().land("satori")
-        return Notice(scene.into(f"~.channel({raw_element.id})"))  # type: ignore
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Link)
-    async def a(self, raw_element: Link) -> Text:
-        return Text(raw_element.url, style="link")
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Link)
+async def a(element: Link) -> Text:
+    return Text(element.url, style="link")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Image)
-    async def img(self, raw_element: Image) -> Picture:
-        scene = self.context.scene if self.context else Selector().land("satori")
-        res = SatoriImageResource(**asdict(raw_element))
-        res.selector = scene.picture(raw_element.src)
-        return Picture(res)
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=SatoriVideo)
-    async def video(self, raw_element: SatoriVideo) -> Video:
-        scene = self.context.scene if self.context else Selector().land("satori")
-        res = SatoriVideoResource(**asdict(raw_element))
-        res.selector = scene.video(raw_element.src)
-        return Video(res)
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Image)
+async def img(element: Image) -> Picture:
+    scene = Selector().land("satori")
+    with suppress(LookupError):
+        scene = Context.current.scene
+    res = SatoriImageResource(**asdict(element))
+    res.selector = scene.picture(element.src)
+    return Picture(res)
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=SatoriAudio)
-    async def audio(self, raw_element: SatoriAudio) -> Audio:
-        scene = self.context.scene if self.context else Selector().land("satori")
-        res = SatoriAudioResource(**asdict(raw_element))
-        res.selector = scene.video(raw_element.src)
-        return Audio(res)
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=SatoriFile)
-    async def file(self, raw_element: SatoriFile) -> File:
-        scene = self.context.scene if self.context else Selector().land("satori")
-        res = SatoriFileResource(**asdict(raw_element))
-        res.selector = scene.video(raw_element.src)
-        return File(res)
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=SatoriVideo)
+async def video(element: SatoriVideo) -> Video:
+    scene = Selector().land("satori")
+    with suppress(LookupError):
+        scene = Context.current.scene
+    res = SatoriVideoResource(**asdict(element))
+    res.selector = scene.video(element.src)
+    return Video(res)
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Quote)
-    async def quote(self, raw_element: Quote) -> Reference:
-        scene = self.context.scene if self.context else Selector().land("satori")
-        return Reference(scene.message(raw_element.id))  # type: ignore
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Bold)
-    async def bold(self, raw_element: Bold) -> Text:
-        return Text(raw_element.dumps(True), style="bold")
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=SatoriAudio)
+async def audio(element: SatoriAudio) -> Audio:
+    scene = Selector().land("satori")
+    with suppress(LookupError):
+        scene = Context.current.scene
+    res = SatoriAudioResource(**asdict(element))
+    res.selector = scene.video(element.src)
+    return Audio(res)
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Italic)
-    async def italic(self, raw_element: Italic) -> Text:
-        return Text(raw_element.dumps(True), style="italic")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Strikethrough)
-    async def strikethrough(self, raw_element: Strikethrough) -> Text:
-        return Text(raw_element.dumps(True), style="strikethrough")
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=SatoriFile)
+async def file(element: SatoriFile) -> File:
+    scene = Selector().land("satori")
+    with suppress(LookupError):
+        scene = Context.current.scene
+    res = SatoriFileResource(**asdict(element))
+    res.selector = scene.video(element.src)
+    return File(res)
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Underline)
-    async def underline(self, raw_element: Underline) -> Text:
-        return Text(raw_element.dumps(True), style="underline")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Spoiler)
-    async def spoiler(self, raw_element: Spoiler) -> Text:
-        return Text(raw_element.dumps(True), style="spoiler")
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Quote)
+async def quote(element: Quote) -> Reference:
+    scene = Selector().land("satori")
+    with suppress(LookupError):
+        scene = Context.current.scene
+    return Reference(scene.message(element.id))  # type: ignore
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Code)
-    async def code(self, raw_element: Code) -> Text:
-        return Text(raw_element.dumps(True), style="code")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Superscript)
-    async def superscript(self, raw_element: Superscript) -> Text:
-        return Text(raw_element.dumps(True), style="superscript")
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Bold)
+async def bold(element: Bold) -> Text:
+    return Text(element.dumps(True), style="bold")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Subscript)
-    async def subscript(self, raw_element: Subscript) -> Text:
-        return Text(raw_element.dumps(True), style="subscript")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Br)
-    async def br(self, raw_element: Br) -> Text:
-        return Text("\n", style="br")
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Italic)
+async def italic(element: Italic) -> Text:
+    return Text(element.dumps(True), style="italic")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=Paragraph)
-    async def paragraph(self, raw_element: Paragraph) -> Text:
-        return Text(raw_element.dumps(True), style="paragraph")
 
-    @m.entity(SatoriCapability.deserialize_element, raw_element=SatoriButton)
-    async def button(self, raw_element: SatoriButton) -> Button:
-        return Button(**asdict(raw_element))
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Strikethrough)
+async def strikethrough(element: Strikethrough) -> Text:
+    return Text(element.dumps(True), style="strikethrough")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Underline)
+async def underline(element: Underline) -> Text:
+    return Text(element.dumps(True), style="underline")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Spoiler)
+async def spoiler(element: Spoiler) -> Text:
+    return Text(element.dumps(True), style="spoiler")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Code)
+async def code(element: Code) -> Text:
+    return Text(element.dumps(True), style="code")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Superscript)
+async def superscript(element: Superscript) -> Text:
+    return Text(element.dumps(True), style="superscript")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Subscript)
+async def subscript(element: Subscript) -> Text:
+    return Text(element.dumps(True), style="subscript")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Br)
+async def br(element: Br) -> Text:
+    return Text("\n", style="br")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=Paragraph)
+async def paragraph(element: Paragraph) -> Text:
+    return Text(element.dumps(True), style="paragraph")
+
+
+@global_collect
+@SatoriCapability.deserialize_element.impl(element=SatoriButton)
+async def button(element: SatoriButton) -> Button:
+    return Button(**asdict(element))

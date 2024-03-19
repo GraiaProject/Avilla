@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from flywheel import CollectContext
 from satori.config import WebsocketsInfo
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
-from graia.ryanvk import merge, ref
+from avilla.core.utilles import cachedstatic
 
 from .service import SatoriService
 
@@ -29,28 +30,19 @@ def _import_performs():
 
 class SatoriProtocol(BaseProtocol):
     service: SatoriService
-    _import_performs()
-    artifacts = {
-        **merge(
-            ref("avilla.protocol/satori::action", "message"),
-            ref("avilla.protocol/satori::action", "request"),
-            ref("avilla.protocol/satori::context"),
-            ref("avilla.protocol/satori::resource_fetch"),
-            ref("avilla.protocol/satori::message", "deserialize"),
-            ref("avilla.protocol/satori::message", "serialize"),
-            ref("avilla.protocol/satori::event", "message"),
-            ref("avilla.protocol/satori::event", "lifespan"),
-            ref("avilla.protocol/satori::event", "activity"),
-            ref("avilla.protocol/satori::event", "metadata"),
-            ref("avilla.protocol/satori::event", "relationship"),
-            ref("avilla.protocol/satori::event", "request"),
-        ),
-    }
+
+    @cachedstatic
+    def artifacts():
+        with CollectContext().collect_scope() as collect_context:
+            _import_performs()
+
+        return collect_context
 
     def __init__(self):
         self.service = SatoriService(self)
 
     def ensure(self, avilla: Avilla):
+        self.artifacts  # access at last 1 time.
         self.avilla = avilla
 
         avilla.launch_manager.add_component(self.service)
