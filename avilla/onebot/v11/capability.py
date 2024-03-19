@@ -1,13 +1,18 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Protocol, TypeVar
 
+from flywheel.globals import INSTANCE_CONTEXT_VAR
 from graia.amnesia.message import Element, MessageChain
 
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk_old.collector.application import ApplicationCollector
+from flywheel import Fn, FnCompose, OverloadRecorder, FnRecord, SimpleOverload, TypeOverload
+from avilla.core.application import Avilla
 from avilla.standard.core.application import AvillaLifecycleEvent
-from graia.ryanvk import Fn, PredicateOverload, TypeOverload
+
+El = TypeVar("El", bound=Element)
+El_co = TypeVar("El_co", bound=Element, covariant=True)
+El_contra = TypeVar("El_contra", bound=Element, contravariant=True)
 
 SPECIAL_POST_TYPE = {"message_sent": "message"}
 
@@ -20,37 +25,75 @@ def onebot11_event_type(raw: dict) -> str:
     )
 
 
-class OneBot11Capability((m := ApplicationCollector())._):
-    @Fn.complex({PredicateOverload(lambda _, raw: onebot11_event_type(raw)): ["raw_event"]})
-    async def event_callback(self, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None: ...
+class OneBot11Capability:
+    @Fn.declare
+    class event_callback(FnCompose):
+        event_type = SimpleOverload("raw_event")
 
-    @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_element"]})
-    async def deserialize_element(self, raw_element: dict) -> Element:  # type: ignore
-        ...
+        async def call(self, record: FnRecord, raw_event: dict):
+            entities = self.load(self.event_type.dig(record, onebot11_event_type(raw_event)))
+            return await entities.first(raw_event=raw_event)
+        
+        class shapecall(Protocol):
+            async def __call__(self, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent:
+                ...
+        
+        def collect(self, recorder: OverloadRecorder[shapecall], event: str):
+            recorder.use(self.event_type, event)
 
-    @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Any) -> dict:  # type: ignore
-        ...
+    @Fn.declare
+    class serialize_element(FnCompose):
+        element = TypeOverload("element")
 
-    async def deserialize_chain(self, chain: list[dict]):
+        async def call(self, record: FnRecord, element: Element):
+            entities = self.load(self.element.dig(record, element))
+            return await entities.first(element=element)
+
+        class shapecall(Protocol[El_contra]):
+            async def __call__(self, element: El_contra) -> dict:
+                ...
+
+        def collect(self, recorder: OverloadRecorder[shapecall[El]], element_type: type[El]):
+            recorder.use(self.element, element_type)
+
+    @Fn.declare
+    class deserialize_element(FnCompose):
+        element = SimpleOverload("element")
+
+        async def call(self, record: FnRecord, element: dict):
+            entities = self.load(self.element.dig(record, element['type']))
+            return await entities.first(element=element)
+
+        class shapecall(Protocol):
+            async def __call__(self, element: dict) -> Element:
+                ...
+
+        def collect(self, recorder: OverloadRecorder[shapecall], element_type: str):
+            recorder.use(self.element, element_type)
+
+    @staticmethod
+    async def deserialize_chain(chain: list[dict]):
         elements = []
 
         for raw_element in chain:
-            elements.append(await self.deserialize_element(raw_element))
+            elements.append(await OneBot11Capability.deserialize_element(raw_element))
 
         return MessageChain(elements)
 
-    async def serialize_chain(self, chain: MessageChain):
+    @staticmethod
+    async def serialize_chain(chain: MessageChain):
         elements = []
 
         for element in chain:
-            elements.append(await self.serialize_element(element))
+            elements.append(await OneBot11Capability.serialize_element(element))
 
         return elements
 
-    async def handle_event(self, event: dict):
-        maybe_event = await self.event_callback(event)
+    @staticmethod
+    async def handle_event(event: dict):
+        maybe_event = await OneBot11Capability.event_callback(event)
 
+        avilla = INSTANCE_CONTEXT_VAR.get().instances[Avilla]
         if maybe_event is not None:
-            self.avilla.event_record(maybe_event)
-            self.avilla.broadcast.postEvent(maybe_event)
+            avilla.event_record(maybe_event)
+            avilla.broadcast.postEvent(maybe_event)

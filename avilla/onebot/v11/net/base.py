@@ -8,7 +8,6 @@ from loguru import logger
 from typing_extensions import Self
 
 from avilla.core.exceptions import ActionFailed
-from avilla.core.ryanvk_old.staff import Staff
 from avilla.onebot.v11.capability import OneBot11Capability
 
 if TYPE_CHECKING:
@@ -29,16 +28,6 @@ class OneBot11Networking:
         self.response_waiters = {}
         self.close_signal = asyncio.Event()
 
-    def get_staff_components(self):
-        return {"connection": self, "protocol": self.protocol, "avilla": self.protocol.avilla}
-
-    def get_staff_artifacts(self):
-        return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
-
-    @property
-    def staff(self):
-        return Staff(self.get_staff_artifacts(), self.get_staff_components())
-
     def message_receive(self) -> AsyncIterator[tuple[Self, dict]]: ...
 
     @property
@@ -57,7 +46,7 @@ class OneBot11Networking:
 
             async def event_parse_task(data: dict):
                 with suppress(NotImplementedError):
-                    await OneBot11Capability(connection.staff).handle_event(data)
+                    await OneBot11Capability.handle_event(data)
                     return
 
                 logger.warning(f"received unsupported event: {data}")

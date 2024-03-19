@@ -30,7 +30,7 @@ class AccountInfo:
 class BaseAccount:
     route: Selector
     avilla: Avilla
-    artifacts: CollectContext = field(default_factory=CollectContext)
+    artifacts: CollectContext = field(default_factory=CollectContext, init=False)
 
     @property
     def info(self) -> AccountInfo:

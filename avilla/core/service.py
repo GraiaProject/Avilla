@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from functools import cached_property
 from typing import TYPE_CHECKING
 
+from flywheel.context import InstanceContext
 from launart import Launart, Service
 from loguru import logger
 
@@ -46,8 +48,17 @@ class AvillaService(Service):
 
     def get_interface(self, interface_type): ...
 
+    @cached_property
+    def instances_endpoint(self):
+        res =  InstanceContext()
+        res.instances[type(self.avilla)] = self.avilla
+        return res
+
     async def launch(self, manager: Launart):
+        endp = self.instances_endpoint.scope()
+
         async with self.stage("preparing"):
+            endp.__enter__()
             await self.avilla.broadcast.postEvent(ApplicationPreparing(self.avilla))
 
             logger.info(AVILLA_ASCII_RAW_LOGO, alt=AVILLA_ASCII_LOGO)
@@ -68,3 +79,4 @@ class AvillaService(Service):
             await self.avilla.broadcast.postEvent(ApplicationClosing(self.avilla))
 
         await self.avilla.broadcast.postEvent(ApplicationClosed(self.avilla))
+        endp.__exit__(None, None, None)
