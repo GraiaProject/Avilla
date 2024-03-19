@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from flywheel import scoped_collect
 from loguru import logger
-from satori.account import Account
+from satori.client.account import Account
 from satori.model import Event, LoginStatus
 
 from avilla.core.account import AccountInfo

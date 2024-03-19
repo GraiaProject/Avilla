@@ -3,8 +3,9 @@
 
 [metadata]
 groups = ["default", "dev"]
-strategy = ["cross_platform"]
-lock_version = "4.4.1"
+cross_platform = true
+static_urls = false
+lock_version = "4.3"
 content_hash = "sha256:a7e338a3aac7e5c53f26abb4e6e1752535ed5361c4390949ec42d46e2883c988"
 
 [[package]]
@@ -373,15 +374,15 @@ files = [
 
 [[package]]
 name = "elaina-flywheel"
-version = "0.1.4"
+version = "0.2.0"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "typing-extensions>=4.10.0",
 ]
 files = [
-    {file = "elaina_flywheel-0.1.4-py3-none-any.whl", hash = "sha256:490b460dc5f2724d7ff506e39f89edbc360b6a9df7a46d4de1362c65d18446a9"},
-    {file = "elaina_flywheel-0.1.4.tar.gz", hash = "sha256:bc7690613f13c57492fb815bdb3ad32524747f874ea202c782342c5b86f11d1b"},
+    {file = "elaina_flywheel-0.2.0-py3-none-any.whl", hash = "sha256:c309e83bdeb585473d88ad61370c77bfdba0df660f16a732058d2b2ba11fb026"},
+    {file = "elaina_flywheel-0.2.0.tar.gz", hash = "sha256:1dcbbfb3906c9475aaad95cf070a174a2aed2e113718f6ccd03bae1672284d16"},
 ]
 
 [[package]]
@@ -1588,7 +1589,7 @@ dependencies = [
     "python-dotenv>=0.13",
     "pyyaml>=5.1",
     "uvicorn==0.28.0",
-    "uvloop!=0.15.0,!=0.15.1,>=0.14.0; (sys_platform != \"cygwin\" and sys_platform != \"win32\") and platform_python_implementation != \"PyPy\"",
+    "uvloop!=0.15.0,!=0.15.1,>=0.14.0; sys_platform != \"win32\" and (sys_platform != \"cygwin\" and platform_python_implementation != \"PyPy\")",
     "watchfiles>=0.13",
     "websockets>=10.4",
 ]

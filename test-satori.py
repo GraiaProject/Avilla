@@ -5,14 +5,15 @@ from avilla.satori.protocol import SatoriProtocol, SatoriConfig
 
 config = SatoriConfig(
     "localhost",
-    5500,
+    12345,
+    path="foo"
 )
 avilla = Avilla(message_cache_size=0)
 avilla.apply_protocols(SatoriProtocol().configure(config))
 
 
-@avilla.listen(MessageSent)
-async def on_message_received(cx: Context, event: MessageSent):
+@avilla.listen(MessageReceived)
+async def on_message_received(cx: Context, event: MessageReceived):
     print(cx.endpoint, cx.client)
     print(event.message.content)
     if event.message.content.startswith("test"):

@@ -54,6 +54,7 @@ class SatoriService(App):
             else:
                 self.protocol.avilla.event_record(res)
                 self.protocol.post_event(res)
+            return
 
         logger.warning(f"received unsupported event {event.type}: {event}")
 
