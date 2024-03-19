@@ -36,7 +36,7 @@ class AvillaEvent(Dispatchable):
 
             stack: AsyncExitStack = interface.local_storage["_depend_lifespan_manager"]
             stack.enter_context(interface.event.context.protocol.artifacts.lookup_scope())
-            stack.enter_context(interface.event.context.instance_context.scope())
+            #stack.enter_context(interface.event.context.instance_context.scope())
 
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):

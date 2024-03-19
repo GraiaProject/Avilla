@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleProfileActionPerform(m := scoped_collect.env().target, InstanceOfAccount):
+class ConsoleProfileActionPerform(m := scoped_collect.env().target, InstanceOfAccount, static=True):
     @m.impl(CoreCapability.pull, "lang.user", Nick)
     async def get_console_nick(self, target: Selector) -> Nick:
         console = self.account.client.storage.current_user

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleEventMessagePerform(m := scoped_collect.globals().target, InstanceOfAccount):
+class ConsoleEventMessagePerform(m := scoped_collect.globals().target, InstanceOfAccount, static=True):
     @m.impl(ConsoleCapability.event_callback, event=MessageEvent)
     async def console_message(self, event: MessageEvent):
         console = Selector().land(self.account.route["land"]).user(str(event.user.id))

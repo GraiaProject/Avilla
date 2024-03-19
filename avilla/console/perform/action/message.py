@@ -22,7 +22,7 @@ if TYPE_CHECKING:
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleMessageActionPerform(m := scoped_collect.env().target, InstanceOfAccount):
+class ConsoleMessageActionPerform(m := scoped_collect.env().target, InstanceOfAccount, static=True):
     @m.impl(send_message, target="land.user")
     async def send_console_message(
         self,
@@ -31,8 +31,6 @@ class ConsoleMessageActionPerform(m := scoped_collect.env().target, InstanceOfAc
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        if TYPE_CHECKING:
-            assert isinstance(self.protocol, ConsoleProtocol)
         serialized_msg = ConsoleMessage(
             [await ConsoleCapability.serialize_element(i) for i in message]
         )

@@ -29,6 +29,9 @@ class TargetOverloadSignature:
     order: str
     predicators: dict[str, FollowsPredicater] = field(default_factory=dict)
 
+    def __hash__(self) -> int:
+        return hash(("TOS", self.order, tuple(self.predicators.items())))
+
 
 class TargetOverload(FnOverload[TargetOverloadSignature, tuple[str, dict[str, FollowsPredicater]], Selector]):
     def digest(self, collect_value: tuple[str, dict[str, FollowsPredicater]]) -> TargetOverloadSignature:

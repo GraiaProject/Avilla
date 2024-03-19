@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Protocol, TypeVar
+from typing import Protocol, TypeVar
 
 from graia.amnesia.message import Element as GraiaElement
 from nonechat.info import Event as ConsoleEvent
@@ -22,6 +22,8 @@ class ConsoleCapability:
         type = TypeOverload("type")
 
         async def call(self, record: FnRecord, event: ConsoleEvent):
+            from loguru import logger
+            logger.info(event)
             entities = self.load(self.type.dig(record, event))
             return await entities.first(event=event)
 

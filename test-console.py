@@ -7,6 +7,8 @@ avilla = Avilla()
 avilla.apply_protocols(ConsoleProtocol())
 
 
+from flywheel.globals import GLOBAL_INSTANCE_CONTEXT
+
 @avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context, event: MessageReceived):
     msg = str(event.message.content)

@@ -16,7 +16,6 @@ class ConsoleProtocol(BaseProtocol):
     def artifacts():
         with CollectContext().collect_scope() as collect_context:
             # isort: off
-
             import avilla.console.perform.action.activity  # noqa
             import avilla.console.perform.action.message
             import avilla.console.perform.action.profile
@@ -31,6 +30,7 @@ class ConsoleProtocol(BaseProtocol):
         self.name = name
 
     def ensure(self, avilla: Avilla):
+        self.artifacts  # access at last 1 time.
         self.avilla = avilla
         self.service = ConsoleService(self)
         avilla.launch_manager.add_component(self.service)

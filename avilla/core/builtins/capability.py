@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Protocol, TypeVar, overload
 
 from flywheel.fn.base import Fn
-from flywheel.fn.compose import FnCompose, OverloadRecorder
+from flywheel.fn.compose import FnCompose
+from flywheel.fn.implement import OverloadRecorder
 from flywheel.fn.record import FnRecord
 from flywheel.overloads import SimpleOverload, TypeOverload
 from typing_extensions import Unpack
@@ -68,7 +69,7 @@ class CoreCapability:
 
     @Fn.declare
     class pull(FnCompose):
-        route: SimpleOverload
+        route = SimpleOverload("route")
 
         async def call(
             self, record: FnRecord, target: Selector, route: type[M] | MetadataRoute[Unpack[tuple[Any, ...]], M]

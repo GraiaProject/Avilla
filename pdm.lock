@@ -373,15 +373,15 @@ files = [
 
 [[package]]
 name = "elaina-flywheel"
-version = "0.1.1"
+version = "0.1.4"
 requires_python = ">=3.9"
 summary = ""
 dependencies = [
     "typing-extensions>=4.10.0",
 ]
 files = [
-    {file = "elaina_flywheel-0.1.1-py3-none-any.whl", hash = "sha256:133d3d3af05465f37bee6e7e655b19697dea9081b0abbf4450e502ae65cf2f5e"},
-    {file = "elaina_flywheel-0.1.1.tar.gz", hash = "sha256:78422e8e917618e3f3429e77448704269d1cd09fd062def10c3a6329a76b9069"},
+    {file = "elaina_flywheel-0.1.4-py3-none-any.whl", hash = "sha256:490b460dc5f2724d7ff506e39f89edbc360b6a9df7a46d4de1362c65d18446a9"},
+    {file = "elaina_flywheel-0.1.4.tar.gz", hash = "sha256:bc7690613f13c57492fb815bdb3ad32524747f874ea202c782342c5b86f11d1b"},
 ]
 
 [[package]]

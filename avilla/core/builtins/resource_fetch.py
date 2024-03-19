@@ -12,7 +12,7 @@ except ImportError:
 from .capability import CoreCapability
 
 
-class CoreResourceFetchPerform(m := scoped_collect.globals().target):
+class CoreResourceFetchPerform(m := scoped_collect.globals().target, static=True):
     @m.impl(CoreCapability.fetch, resource=LocalFileResource)
     async def fetch_localfile(self, resource: LocalFileResource):
         return resource.file.read_bytes()

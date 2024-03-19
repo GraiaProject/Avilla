@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleContextPerform(m := scoped_collect.env().target, InstanceOfAccount):
+class ConsoleContextPerform(m := scoped_collect.env().target, InstanceOfAccount, static=True):
     @m.impl(CoreCapability.get_context, target="land.user")
     def get_context_from_channel(self, target: Selector, *, via: Selector | None = None):
         return Context(
