@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from functools import cached_property
 import sys
 from contextlib import suppress
 from typing import TYPE_CHECKING
 
 from flywheel import InstanceContext
-from flywheel.globals import INSTANCE_CONTEXT_VAR
 from loguru import logger
 from nonechat import Backend, Frontend
 from nonechat.info import Event
@@ -73,14 +73,17 @@ class AvillaConsoleBackend(Backend):
         logger.success("Console exit.")
         logger.warning("Press Ctrl-C for Application exit")
 
-    async def post_event(self, event: Event):
-        with InstanceContext().scope() as context:
-            context.instances[type(self.account)] = self.account
-            context.instances[type(self._service.protocol)] = self._service.protocol
+    @cached_property
+    def event_instance_ctx(self):
+        res = InstanceContext()
+        res.instances[type(self.account)] = self.account
+        res.instances[type(self._service.protocol)] = self._service.protocol
+        return res
 
-            with suppress(NotImplementedError):
-                res = await ConsoleCapability.event_callback(event)
-                self._service.protocol.post_event(res)
-                return
+    async def post_event(self, event: Event):
+        with self.event_instance_ctx.scope(), suppress(NotImplementedError):
+            res = await ConsoleCapability.event_callback(event)
+            self._service.protocol.post_event(res)
+            return
 
         logger.warning(f"received unsupported event {event.type}: {event}")
