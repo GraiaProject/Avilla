@@ -62,7 +62,6 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(TelegramCapability.event_callback, event_type="channel_post")
     @m.entity(TelegramCapability.event_callback, event_type="edited_channel_post")
     async def message(self, event_type: str, raw_event: dict):
-        print(f"{raw_event = }")
         if intersection := set(raw_event[event_type].keys()).intersection(SUB_EVENTS):
             return await TelegramCapability(self.staff).event_callback(f"{event_type}.{intersection.pop()}", raw_event)
         return await TelegramCapability(self.staff).event_callback(

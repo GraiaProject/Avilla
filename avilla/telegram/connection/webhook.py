@@ -1,41 +1,35 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 from aiohttp import ClientSession
+from graia.amnesia.builtins.asgi import UvicornASGIService
 from launart import Launart, Service, any_completed
-from loguru import logger
-from yarl import URL
+from starlette.applications import Starlette
+from starlette.requests import Request
+from starlette.responses import Response
+from starlette.routing import Route
 
-from avilla.core import Selector
-from avilla.core.account import AccountInfo
-from avilla.standard.core.account import (
-    AccountAvailable,
-    AccountRegistered,
-    AccountUnregistered,
-)
 from avilla.standard.telegram.preference.capability import PreferenceCapability
-from avilla.telegram.account import TelegramAccount
 from avilla.telegram.connection.base import TelegramNetworking
-from avilla.telegram.const import PLATFORM
-from avilla.telegram.exception import InvalidToken
 
 if TYPE_CHECKING:
-    from avilla.telegram.protocol import TelegramLongPollingConfig, TelegramProtocol
+    from avilla.telegram.protocol import TelegramWebhookConfig, TelegramProtocol
 
 
-class TelegramLongPollingNetworking(TelegramNetworking, Service):
-    required: set[str] = set()
+class TelegramWebhookNetworking(TelegramNetworking, Service):
+    required: set[str] = {"asgi.service/uvicorn"}
     stages: set[str] = {"preparing", "blocking"}
 
     protocol: TelegramProtocol
-    config: TelegramLongPollingConfig
+    config: TelegramWebhookConfig
 
     __alive: bool
     __offset: int | None
+    __queue: asyncio.Queue
 
-    def __init__(self, protocol: TelegramProtocol, config: TelegramLongPollingConfig):
+    def __init__(self, protocol: TelegramProtocol, config: TelegramWebhookConfig):
         super().__init__(protocol)
         self.protocol = protocol
         self.config = config
@@ -48,21 +42,14 @@ class TelegramLongPollingNetworking(TelegramNetworking, Service):
     def id(self):
         return f"telegram/connection/poll#{self.account_id}"
 
+    @property
+    def endpoint(self):
+        return self.config.webhook_url.path
+
     async def message_receive(self):
         while not self.manager.status.exiting:
-            logger.debug(f"polling for update, current offset: {self.__offset}...")
-            try:
-                updates = (await self.call("getUpdates", offset=self.__offset, timeout=30))["result"]
-                if self.__offset is not None:
-                    for update in updates:
-                        self.__offset = update["update_id"] + 1
-                        yield self, update
-                elif updates:
-                    self.__offset = updates[0]["update_id"]
-            except InvalidToken:
-                raise
-            except Exception as err:
-                logger.error(f"{self} failed to get updates: {err}")
+            data = await self.__queue.get()
+            yield self, data
 
     async def send(self, action: str, **kwargs) -> dict:
         async with self.session.post(
@@ -81,12 +68,27 @@ class TelegramLongPollingNetworking(TelegramNetworking, Service):
     def get_staff_artifacts(self):
         return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
+    async def request_handler(self, req: Request):
+        data = await req.json()
+        await self.__queue.put(data)
+        return Response()
+
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
             self.session = ClientSession()
             self.__offset = None
+            self.__queue = asyncio.Queue()
             self.register()
             await self.staff.call_fn(PreferenceCapability.delete_webhook)
+
+            asgi_service = manager.get_component(UvicornASGIService)
+            app = Starlette(routes=[Route("/", self.request_handler, methods=["POST"])])
+            asgi_service.middleware.mounts[self.endpoint.rstrip("/")] = app  # type: ignore
+            await self.staff.call_fn(
+                PreferenceCapability.set_webhook,
+                url=str(self.config.webhook_url),
+                secret_token=self.config.secret_token,
+            )
             self.__alive = True
 
         async with self.stage("blocking"):

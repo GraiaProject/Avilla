@@ -7,6 +7,7 @@ from yarl import URL
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
 from avilla.telegram.connection import TelegramLongPollingNetworking
+from avilla.telegram.connection.webhook import TelegramWebhookNetworking
 from avilla.telegram.service import TelegramService
 from graia.ryanvk import merge, ref
 
@@ -24,6 +25,7 @@ class TelegramLongPollingConfig(ProtocolConfig):
 class TelegramWebhookConfig(ProtocolConfig):
     token: str
     webhook_url: URL
+    secret_token: str | None = None
     base_url: URL = URL("https://api.telegram.org/")
     file_base_url: URL = URL("https://api.telegram.org/file/")
     proxy: str | None = None
@@ -78,11 +80,10 @@ class TelegramProtocol(BaseProtocol):
 
     def configure(self, config: TelegramLongPollingConfig | TelegramWebhookConfig):
         if isinstance(config, TelegramLongPollingConfig):
-            bot = TelegramLongPollingNetworking(self, config)
+            connection = TelegramLongPollingNetworking(self, config)
         elif isinstance(config, TelegramWebhookConfig):
-            # TODO: implement webhook
-            bot = ...
+            connection = TelegramWebhookNetworking(self, config)
         else:
             raise ValueError("Invalid config type")
-        self.service.connection_map[bot.account_id] = bot
+        self.service.connection_map[connection.account_id] = connection
         return self

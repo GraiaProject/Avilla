@@ -24,6 +24,7 @@ class TelegramPreferenceActionPerform((m := AccountCollector["TelegramProtocol",
         drop_pending_updates: bool = None,
         ip_address: str = None,
         certificate: ... = None,
+        secret_token: str = None,
     ):
         await self.account.connection.call(
             "setWebhook",
@@ -33,6 +34,7 @@ class TelegramPreferenceActionPerform((m := AccountCollector["TelegramProtocol",
             drop_pending_updates=drop_pending_updates,
             ip_address=ip_address,
             certificate=certificate,
+            secret_token=secret_token,
         )
 
     @m.entity(PreferenceCapability.delete_webhook)

@@ -8,7 +8,6 @@ from avilla.core import Audio, File, Selector
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.standard.telegram.elements import (
     Animation,
-    Entity,
     Picture,
     Sticker,
     Video,
@@ -61,7 +60,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
             if left := remaining[:start]:
                 result.append(Text(left.decode("utf-16be")))
             text_entity = Text(remaining[start:end].decode("utf-16be"), style=entity["type"])
-            for _k, _v in {k: v for k, v in entity.items() if k not in ignored_keys}:
+            for _k, _v in {k: v for k, v in entity.items() if k not in ignored_keys}.items():
                 setattr(text_entity, _k, _v)
             result.append(text_entity)
             remaining = remaining[end:]
@@ -71,7 +70,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         return result
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="entities")
-    async def entities(self, raw_element: dict) -> list[Text | Entity]:
+    async def entities(self, raw_element: dict) -> list[Text]:
         return await self.extract_entities(raw_element["text"], raw_element["entities"])
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="caption")
