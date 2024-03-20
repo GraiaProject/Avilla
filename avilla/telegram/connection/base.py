@@ -82,7 +82,6 @@ class TelegramNetworking:
 
     async def message_handle(self):
         async for connection, data in self.message_receive():
-            print(f"{data = }")
 
             async def process_media_group():
                 # TODO: re-implement process_media_group

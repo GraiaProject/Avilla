@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 class TelegramWebhookNetworking(TelegramNetworking, Service):
     required: set[str] = {"asgi.service/uvicorn"}
-    stages: set[str] = {"preparing", "blocking"}
+    stages: set[str] = {"preparing", "blocking", "cleanup"}
 
     protocol: TelegramProtocol
     config: TelegramWebhookConfig
@@ -69,9 +69,12 @@ class TelegramWebhookNetworking(TelegramNetworking, Service):
         return [self.protocol.artifacts, self.protocol.avilla.global_artifacts]
 
     async def request_handler(self, req: Request):
+        if req.headers["X-Telegram-Bot-Api-Secret-Token"] != self.config.secret_token:
+            return Response(status_code=403)
+
         data = await req.json()
         await self.__queue.put(data)
-        return Response()
+        return Response(status_code=204)
 
     async def launch(self, manager: Launart):
         async with self.stage("preparing"):
@@ -79,17 +82,21 @@ class TelegramWebhookNetworking(TelegramNetworking, Service):
             self.__offset = None
             self.__queue = asyncio.Queue()
             self.register()
-            await self.staff.call_fn(PreferenceCapability.delete_webhook)
 
             asgi_service = manager.get_component(UvicornASGIService)
-            app = Starlette(routes=[Route("/", self.request_handler, methods=["POST"])])
+            app = Starlette(
+                routes=[Route(f"/telegram/webhook/{self.account_id}", self.request_handler, methods=["POST"])]
+            )
             asgi_service.middleware.mounts[self.endpoint.rstrip("/")] = app  # type: ignore
             await self.staff.call_fn(
                 PreferenceCapability.set_webhook,
-                url=str(self.config.webhook_url),
+                url=str(self.config.webhook_url / f"telegram/webhook/{self.account_id}"),
                 secret_token=self.config.secret_token,
             )
             self.__alive = True
 
         async with self.stage("blocking"):
             await any_completed(manager.status.wait_for_sigexit(), self.daemon())
+
+        async with self.stage("cleanup"):
+            await self.staff.call_fn(PreferenceCapability.delete_webhook)
