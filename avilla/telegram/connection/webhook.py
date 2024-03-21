@@ -78,13 +78,11 @@ class TelegramWebhookNetworking(TelegramNetworking, Service):
             self.register()
 
             asgi_service = manager.get_component(UvicornASGIService)
-            app = Starlette(
-                routes=[Route(f"/telegram/webhook/{self.account_id}", self.request_handler, methods=["POST"])]
-            )
+            app = Starlette(routes=[Route("/", self.request_handler, methods=["POST"])])
             asgi_service.middleware.mounts[self.endpoint.rstrip("/")] = app  # type: ignore
             await self.staff.call_fn(
                 PreferenceCapability.set_webhook,
-                url=str(self.config.webhook_url / f"telegram/webhook/{self.account_id}"),
+                url=str(self.config.webhook_url),
                 secret_token=self.config.secret_token,
             )
             self.__alive = True

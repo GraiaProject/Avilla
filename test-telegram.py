@@ -6,7 +6,7 @@ from graia.amnesia.message import MessageChain
 from loguru import logger
 from yarl import URL
 
-from avilla.core import Avilla, Context, MessageReceived, Picture, LocalFileResource
+from avilla.core import Avilla, Context, MessageReceived
 from avilla.standard.core.message import MessageSent
 from avilla.standard.telegram.elements import Sticker
 from avilla.telegram.protocol import TelegramProtocol, TelegramWebhookConfig
@@ -24,14 +24,14 @@ avilla.launch_manager.add_component(UvicornASGIService("127.0.0.1", 9090))
 
 @avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context, event: MessageReceived, msg: MessageChain):
-    logger.info(f"Received: {repr(event)}")
-    logger.info(f"Message: {msg}")
-    await ctx.scene.send_message(MessageChain([Sticker(LocalFileResource(Path.cwd() / "test.jpg"))]))
+    logger.debug(f"Received: {event!r}")
+    logger.debug(f"Message: {msg!r}")
+    await ctx.scene.send_message(MessageChain([Sticker(Path.cwd() / "test.jpg")]))
 
 
 @avilla.listen(MessageSent)
 async def on_message_sent(event: MessageSent):
-    logger.info(f"Sent: {repr(event)}")
+    logger.debug(f"Sent: {event!r}")
 
 
 avilla.launch()
