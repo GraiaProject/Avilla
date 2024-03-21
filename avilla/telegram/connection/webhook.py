@@ -75,6 +75,9 @@ class TelegramWebhookNetworking(TelegramNetworking, Service):
             self.session = ClientSession()
             self.__offset = None
             self.__queue = asyncio.Queue()
+            await self.staff.call_fn(
+                PreferenceCapability.delete_webhook, drop_pending_updates=self.config.drop_pending_updates
+            )
             self.register()
 
             asgi_service = manager.get_component(UvicornASGIService)

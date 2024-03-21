@@ -26,6 +26,7 @@ class TelegramWebhookConfig(ProtocolConfig):
     token: str
     webhook_url: URL
     secret_token: str | None = None
+    drop_pending_updates: bool = False
     base_url: URL = URL("https://api.telegram.org/")
     file_base_url: URL = URL("https://api.telegram.org/file/")
     proxy: str | None = None

@@ -16,6 +16,7 @@ config = TelegramWebhookConfig(
     proxy=os.environ.get("HTTP_PROXY", None),
     webhook_url=URL(os.environ["TELEGRAM_WEBHOOK_URL"]),
     secret_token=os.environ.get("TELEGRAM_SECRET_TOKEN", None),
+    drop_pending_updates=True,
 )
 avilla = Avilla(message_cache_size=0)
 avilla.apply_protocols(TelegramProtocol().configure(config))
