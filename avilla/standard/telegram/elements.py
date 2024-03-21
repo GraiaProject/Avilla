@@ -70,7 +70,6 @@ class Contact(Element):
     phone_number: str
     first_name: str
     last_name: str | None = None
-    user_id: int | None = None
     vcard: str | None = None
 
     def __str__(self) -> str:
@@ -86,13 +85,30 @@ class Location(Element):
         return "[$Location]"
 
 
-@dataclass
 class Sticker(Element):
     resource: Resource[bytes] | Path | str
-    width: int = -1
-    height: int = -1
-    is_animated: bool = None
-    is_video: bool = None
+    width: int
+    height: int
+    is_animated: bool
+    is_video: bool
+
+    def __init__(
+        self,
+        resource: Resource[bytes] | Path | str,
+        width: int = -1,
+        height: int = -1,
+        is_animated: bool = None,
+        is_video: bool = None,
+    ):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
+        self.width = width
+        self.height = height
+        self.is_animated = is_animated
+        self.is_video = is_video
 
     def __str__(self) -> str:
         return "[$Sticker]"

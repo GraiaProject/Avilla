@@ -80,7 +80,7 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
             chat = chat.thread(str(message["message_thread_id"]))
         context = Context(
             account,
-            chat.member(message["from"]["id"]),
+            chat if event_type == "message.private" else chat.member(message["from"]["id"]),
             chat,
             chat,
             (
@@ -102,7 +102,7 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
             Message(
                 id=str(message["message_id"]),
                 scene=chat,
-                sender=chat.member(message["from"]["id"]),
+                sender=chat if event_type == "message.private" else chat.member(message["from"]["id"]),
                 content=chain,
                 time=datetime.fromtimestamp(message["date"]),
                 reply=reply,

@@ -38,8 +38,7 @@ def _import_performs():
 
     # :: Message
     from .perform.message.deserialize import TelegramMessageDeserializePerform  # noqa: F401
-
-    # from .perform.message.serialize import TelegramMessageSerializePerform  # noqa: F401
+    from .perform.message.serialize import TelegramMessageSerializePerform  # noqa: F401
 
     # :: Event
     from .perform.event.message import TelegramEventMessagePerform  # noqa: F401
@@ -47,8 +46,7 @@ def _import_performs():
     # :: Action
     # from .perform.action.forum import TelegramForumActionPerform  # noqa: F401
     from .perform.action.preference import TelegramPreferenceActionPerform  # noqa: F401
-
-    # from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
+    from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
 
     # :: Resource Fetch
     from .perform.resource_fetch import TelegramResourceFetchPerform  # noqa: F401
@@ -63,9 +61,9 @@ class TelegramProtocol(BaseProtocol):
             ref("avilla.protocol/telegram::resource_fetch"),
             # ref("avilla.protocol/telegram::action", "forum"),
             ref("avilla.protocol/telegram::action", "preference"),
-            # ref("avilla.protocol/telegram::action", "message"),
+            ref("avilla.protocol/telegram::action", "message"),
             ref("avilla.protocol/telegram::message", "deserialize"),
-            # ref("avilla.protocol/telegram::message", "serialize"),
+            ref("avilla.protocol/telegram::message", "serialize"),
             ref("avilla.protocol/telegram::event", "message"),
         ),
     }

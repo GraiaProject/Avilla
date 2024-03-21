@@ -64,12 +64,6 @@ class TelegramLongPollingNetworking(TelegramNetworking, Service):
             except Exception as err:
                 logger.error(f"{self} failed to get updates: {err}")
 
-    async def send(self, action: str, **kwargs) -> dict:
-        async with self.session.post(
-            self.config.base_url / f"bot{self.config.token}" / action, proxy=self.config.proxy, **kwargs
-        ) as resp:
-            return await resp.json()
-
     async def wait_for_available(self):
         await self.status.wait_for_available()
 

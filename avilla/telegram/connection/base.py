@@ -3,6 +3,7 @@ from __future__ import annotations
 import asyncio
 from typing import TYPE_CHECKING, AsyncIterator, cast
 
+import aiohttp
 from aiohttp import ClientSession
 from launart import any_completed, Launart
 from loguru import logger
@@ -62,7 +63,11 @@ class TelegramNetworking:
 
     async def wait_for_available(self): ...
 
-    async def send(self, action: str, **kwargs) -> dict: ...
+    async def send(self, action: str, **kwargs) -> dict:
+        async with self.session.post(
+            self.config.base_url / f"bot{self.config.token}" / action, proxy=self.config.proxy, **kwargs
+        ) as resp:
+            return await resp.json()
 
     async def daemon(self):
         while not self.manager.status.exiting:
@@ -117,18 +122,19 @@ class TelegramNetworking:
                 await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
                 del avilla.accounts[n]
 
-    async def call(self, action: str, **data) -> dict:
-        # TODO Implement files
-
-        # files: dict[...] = {}
-        #
-        # if files:
-        #     response = await self.send(action, files=files)
-
+    async def call(self, action: str, _file: dict[str, tuple[str, bytes]] = None, **data) -> dict:
         data = {k: v for k, v in data.items() if v is not None}
 
         logger.debug(f"calling {action!r}")
-        response = await self.send(action, json=data)
+
+        if _file:
+            files = aiohttp.FormData()
+            for filename, payload in _file.values():
+                files.add_field(filename, payload, filename=filename)
+            response = await self.send(action, data=files, params=data)
+        else:
+            response = await self.send(action, json=data)
+
         validate_response(response)
         logger.debug(f"call {action!r} success")
 

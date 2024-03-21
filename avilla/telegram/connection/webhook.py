@@ -51,12 +51,6 @@ class TelegramWebhookNetworking(TelegramNetworking, Service):
             data = await self.__queue.get()
             yield self, data
 
-    async def send(self, action: str, **kwargs) -> dict:
-        async with self.session.post(
-            self.config.base_url / f"bot{self.config.token}" / action, proxy=self.config.proxy, **kwargs
-        ) as resp:
-            return await resp.json()
-
     async def wait_for_available(self):
         await self.status.wait_for_available()
 
@@ -70,7 +64,7 @@ class TelegramWebhookNetworking(TelegramNetworking, Service):
 
     async def request_handler(self, req: Request):
         if req.headers["X-Telegram-Bot-Api-Secret-Token"] != self.config.secret_token:
-            return Response(status_code=403)
+            return Response(status_code=401)
 
         data = await req.json()
         await self.__queue.put(data)
