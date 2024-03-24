@@ -12,8 +12,9 @@ from avilla.core.event import (
 from avilla.core.selector import Selector
 from avilla.satori.bases import InstanceOfAccount
 from avilla.satori.capability import SatoriCapability
+from avilla.satori.collector.connection import ConnectionCollector
+from satori.event import GuildEvent, GuildMemberEvent, GuildRoleEvent
 from avilla.satori.event import RoleCreated, RoleDestroyed
-from avilla.satori.model import GuildEvent, GuildMemberEvent, GuildRoleEvent
 
 
 class SatoriEventRelationshipPerform(m := scoped_collect.globals().target, InstanceOfAccount, static=True):

@@ -10,7 +10,7 @@ from avilla.core.selector import Selector
 from avilla.satori.bases import InstanceOfAccount
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.const import land as LAND
-from avilla.satori.model import DirectEvent, GuildEvent, GuildMemberEvent
+from satori.event import GuildMemberEvent, UserEvent, GuildEvent
 from avilla.standard.core.profile.metadata import Nick, Summary
 from avilla.standard.core.request import RequestReceived
 
@@ -54,7 +54,7 @@ class SatoriEventRequestPerform(m := scoped_collect.globals().target, InstanceOf
         return RequestReceived(context, request)
 
     @m.impl(SatoriCapability.event_callback, raw_event="friend-request")
-    async def new_friend_request(self, event: DirectEvent):
+    async def new_friend_request(self, event: UserEvent):
         account = self.account
         land = Selector().land(account.route["land"])
         sender = land.user(event.user.id)
