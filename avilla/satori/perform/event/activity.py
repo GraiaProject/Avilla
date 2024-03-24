@@ -8,7 +8,7 @@ from avilla.core.context import Context
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.collector.connection import ConnectionCollector
-from avilla.satori.model import ButtonInteractionEvent
+from satori.event import ButtonInteractionEvent
 from avilla.standard.core.activity import ActivityAvailable
 
 

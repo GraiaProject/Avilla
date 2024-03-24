@@ -1301,7 +1301,7 @@ files = [
 
 [[package]]
 name = "satori-python"
-version = "0.10.0"
+version = "0.11.0"
 requires_python = ">=3.9"
 summary = "Satori Protocol SDK for python"
 dependencies = [
@@ -1315,8 +1315,8 @@ dependencies = [
     "yarl>=1.9.4",
 ]
 files = [
-    {file = "satori_python-0.10.0-py3-none-any.whl", hash = "sha256:72c7280f835199c42527b1357608175be580d6dbb572d201f1d9d299e23c8dc2"},
-    {file = "satori_python-0.10.0.tar.gz", hash = "sha256:141e3514b14886440fcce5de400d03403dcdb3cd95d3cef7ad1401f1b00a03fe"},
+    {file = "satori_python-0.11.0-py3-none-any.whl", hash = "sha256:74476706931762a79ef1a5384ba25225f06c6e20d9d36d6fcafbab1778d9f578"},
+    {file = "satori_python-0.11.0.tar.gz", hash = "sha256:8992a33a95b6fdd7bb0e4d613181926aca56b84938a9d670cab65d981ddd2685"},
 ]
 
 [[package]]

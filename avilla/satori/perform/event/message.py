@@ -12,7 +12,7 @@ from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.collector.connection import ConnectionCollector
-from avilla.satori.model import MessageEvent
+from satori.event import MessageEvent
 from avilla.standard.core.message import MessageReceived, MessageSent
 
 

@@ -6,7 +6,7 @@ from avilla.core.event import MetadataModified, ModifyDetail
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.collector.connection import ConnectionCollector
-from avilla.satori.model import GuildEvent, GuildMemberEvent, GuildRoleEvent
+from satori.event import GuildEvent, GuildMemberEvent, GuildRoleEvent
 from avilla.standard.core.profile import Summary, Avatar, Nick
 from satori.model import Event
 

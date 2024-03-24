@@ -9,7 +9,7 @@ from avilla.core.selector import Selector
 from avilla.satori.const import land as LAND
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.collector.connection import ConnectionCollector
-from avilla.satori.model import GuildMemberEvent, DirectEvent, GuildEvent
+from satori.event import GuildMemberEvent, UserEvent, GuildEvent
 
 from avilla.standard.core.profile.metadata import Nick, Summary
 from avilla.standard.core.request import RequestReceived
@@ -62,7 +62,7 @@ class SatoriEventRequestPerform((m := ConnectionCollector())._):
         account = self.protocol.service._accounts[self.connection.identity]
         land = Selector().land(account.route["land"])
         if TYPE_CHECKING:
-            assert isinstance(raw_event, DirectEvent)
+            assert isinstance(raw_event, UserEvent)
         sender = land.user(raw_event.user.id)
         context = Context(
             account,

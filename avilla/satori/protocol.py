@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from satori.config import WebsocketsInfo
+from satori.client.network.websocket import WsNetwork
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
@@ -11,6 +12,9 @@ from .service import SatoriService
 
 class SatoriConfig(ProtocolConfig, WebsocketsInfo):
     ...
+
+
+SatoriService.register_config(SatoriConfig, WsNetwork)
 
 
 def _import_performs():

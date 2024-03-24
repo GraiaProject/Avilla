@@ -11,7 +11,7 @@ from avilla.core.event import (
 from avilla.core.selector import Selector
 from avilla.satori.capability import SatoriCapability
 from avilla.satori.collector.connection import ConnectionCollector
-from avilla.satori.model import GuildEvent, GuildMemberEvent, GuildRoleEvent
+from satori.event import GuildEvent, GuildMemberEvent, GuildRoleEvent
 from avilla.satori.event import RoleCreated, RoleDestroyed
 from satori.model import Event
 
@@ -77,7 +77,7 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return MemberCreated(context)
 
-    @m.entity(SatoriCapability.event_callback, event_type="guild-member-removed")
+    @m.entity(SatoriCapability.event_callback, raw_event="guild-member-removed")
     async def guild_member_removed(self, raw_event: Event):
         account = self.protocol.service._accounts[self.connection.identity]
         land = Selector().land(account.route["land"])
@@ -117,7 +117,7 @@ class SatoriEventRelationshipPerform((m := ConnectionCollector())._):
         )
         return RoleCreated(context)
 
-    @m.entity(SatoriCapability.event_callback, event_type="guild-role-deleted")
+    @m.entity(SatoriCapability.event_callback, raw_event="guild-role-deleted")
     async def guild_role_deleted(self, raw_event: Event):
         account = self.protocol.service._accounts[self.connection.identity]
         land = Selector().land(account.route["land"])
