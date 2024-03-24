@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 from graia.amnesia.message import Element, MessageChain
 
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 
 if TYPE_CHECKING:
@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 
 class ElizabethCapability((m := ApplicationCollector())._):
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_event"]})
-    async def event_callback(self, raw_event: dict) -> AvillaEvent | None:
-        ...
+    async def event_callback(self, raw_event: dict) -> AvillaEvent | None: ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_element"]})
     async def deserialize_element(self, raw_element: dict) -> Element:  # type: ignore

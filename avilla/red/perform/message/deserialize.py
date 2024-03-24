@@ -16,7 +16,7 @@ from avilla.core.elements import (
     Text,
     Video,
 )
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.red.capability import RedCapability
 from avilla.red.resource import (

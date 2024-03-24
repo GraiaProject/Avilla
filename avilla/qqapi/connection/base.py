@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, AsyncIterator, Literal
 from loguru import logger
 from typing_extensions import Self
 
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.qqapi.audit import MessageAudited, audit_result
 from avilla.qqapi.capability import QQAPICapability
 
@@ -52,18 +52,14 @@ class QQAPINetworking:
     def staff(self):
         return Staff(self.get_staff_artifacts(), self.get_staff_components())
 
-    def message_receive(self, shard: tuple[int, int]) -> AsyncIterator[tuple[Self, dict]]:
-        ...
+    def message_receive(self, shard: tuple[int, int]) -> AsyncIterator[tuple[Self, dict]]: ...
 
     @property
-    def alive(self) -> bool:
-        ...
+    def alive(self) -> bool: ...
 
-    async def wait_for_available(self):
-        ...
+    async def wait_for_available(self): ...
 
-    async def send(self, payload: dict, shard: tuple[int, int]) -> None:
-        ...
+    async def send(self, payload: dict, shard: tuple[int, int]) -> None: ...
 
     async def message_handle(self, shard: tuple[int, int]):
         async for connection, data in self.message_receive(shard):
@@ -93,5 +89,4 @@ class QQAPINetworking:
         self.session_id = None
         self.close_signal.set()
 
-    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
-        ...
+    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict: ...

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable, cast
 from graia.amnesia.builtins.memcache import MemcacheService
 
 from avilla.core.builtins.capability import CoreCapability
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.file import FileData
 
@@ -23,7 +23,9 @@ class ElizabethAnnouncementQueryPerform((m := AccountCollector["ElizabethProtoco
     async def query_group_file(self, predicate: Callable[[str, str], bool] | str, previous: Selector):
         cache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         result = await self.account.connection.call(
-            "fetch", "file_list", {"id": "", "target": int(previous["group"]), "offset": 0, "size": 1, "withDownloadInfo": "True"}
+            "fetch",
+            "file_list",
+            {"id": "", "target": int(previous["group"]), "offset": 0, "size": 1, "withDownloadInfo": "True"},
         )
         result = cast(list, result)
         for i in result:

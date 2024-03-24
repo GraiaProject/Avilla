@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import signal
-from typing import TYPE_CHECKING, Any, Callable, Iterable, TypeVar, overload
+from typing import TYPE_CHECKING, Callable, Iterable, TypeVar, overload
 
 from creart import it
 from graia.amnesia.builtins.memcache import MemcacheService
@@ -11,12 +11,11 @@ from launart import Launart
 from launart.service import Service
 from loguru import logger
 
-from avilla.core._runtime import get_current_avilla
+from avilla.core.globals import get_current_avilla
 from avilla.core.account import AccountInfo, BaseAccount
 from avilla.core.dispatchers import AvillaBuiltinDispatcher
 from avilla.core.event import MetadataModified
 from avilla.core.protocol import BaseProtocol
-from avilla.core.ryanvk.staff import Staff
 from avilla.core.selector import Selector
 from avilla.core.service import AvillaService
 from avilla.core.utilles import identity
@@ -29,7 +28,6 @@ if TYPE_CHECKING:
     from avilla.core.event import AvillaEvent
     from avilla.standard.core.application import AvillaLifecycleEvent
 
-    from .resource import Resource
 
 T = TypeVar("T")
 TE = TypeVar("TE", bound="AvillaEvent")
@@ -42,7 +40,6 @@ class Avilla:
     protocols: list[BaseProtocol]
     accounts: dict[Selector, AccountInfo]
     service: AvillaService
-    global_artifacts: dict[Any, Any]
 
     def __init__(
         self,
@@ -64,8 +61,6 @@ class Avilla:
         self.launch_manager.add_component(MemcacheService())
         self.launch_manager.add_component(self.service)
         self.broadcast.finale_dispatchers.append(AvillaBuiltinDispatcher(self))
-
-        self.__init_isolate__()
 
         if message_cache_size > 0:
             from avilla.core.context import Context
@@ -176,12 +171,10 @@ class Avilla:
             )
 
     @overload
-    def add_event_recorder(self, event_type: type[TE]) -> Callable[[Callable[[TE], None]], Callable[[TE], None]]:
-        ...
+    def add_event_recorder(self, event_type: type[TE]) -> Callable[[Callable[[TE], None]], Callable[[TE], None]]: ...
 
     @overload
-    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None]) -> Callable[[TE], None]:
-        ...
+    def add_event_recorder(self, event_type: type[TE], recorder: Callable[[TE], None]) -> Callable[[TE], None]: ...
 
     def add_event_recorder(
         self, event_type: type[TE], recorder: Callable[[TE], None] | None = None
@@ -196,45 +189,28 @@ class Avilla:
         self.custom_event_recorder[event_type] = recorder  # type: ignore
         return recorder
 
-    def __init_isolate__(self):
-        from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
-
-        CoreResourceFetchPerform.apply_to(self.global_artifacts)
-
-    def get_staff_components(self):
-        return {"avilla": self}
-
-    def get_staff_artifacts(self):
-        return [self.global_artifacts]
-
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
+    @classmethod
+    def _require_builtins(cls):
+        import avilla.core.builtins.resource_fetch  # noqa: F401
 
     @classmethod
     def current(cls):
         return get_current_avilla()
 
-    async def fetch_resource(self, resource: Resource[T]) -> T:
-        return await Staff(self.get_staff_artifacts(), self.get_staff_components()).fetch_resource(resource)
-
     def get_account(self, target: Selector) -> AccountInfo:
         return self.accounts[target]
 
     @overload
-    def get_accounts(self, *, land: str) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, land: str) -> list[AccountInfo]: ...
 
     @overload
-    def get_accounts(self, *, pattern: str) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, pattern: str) -> list[AccountInfo]: ...
 
     @overload
-    def get_accounts(self, *, protocol_type: type[BaseProtocol]) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, protocol_type: type[BaseProtocol]) -> list[AccountInfo]: ...
 
     @overload
-    def get_accounts(self, *, account_type: type[BaseAccount]) -> list[AccountInfo]:
-        ...
+    def get_accounts(self, *, account_type: type[BaseAccount]) -> list[AccountInfo]: ...
 
     def get_accounts(
         self,

@@ -4,17 +4,17 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, TypeVar
 
-from graia.amnesia.message import Element, MessageChain, Text
 from typing_extensions import ParamSpec
 
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.message import Message
 from avilla.core.metadata import Metadata
 from avilla.core.selector import Selector
-from avilla.standard.core.activity import ActivityTrigger
-from avilla.standard.core.message import MessageSend
-from avilla.standard.core.relation import SceneCapability
-from avilla.standard.core.request import RequestCapability
+from avilla.standard.core.activity import start_activity
+from avilla.standard.core.message import send_message
+from avilla.standard.core.relation import leave_scene, disband_scene, remove_member
+from avilla.standard.core.request import accept_request, reject_request, cancel_request, ignore_request
+from graia.amnesia.message import Element, MessageChain, Text
 
 from ._selector import ContextSelector
 
@@ -28,22 +28,22 @@ _MetadataT = TypeVar("_MetadataT", bound=Metadata)
 
 class ContextClientSelector(ContextSelector):
     def trigger_activity(self, activity: str):
-        return self.context[ActivityTrigger.trigger](self.activity(activity))
+        return start_activity(self.activity(activity))
 
     @property
     def channel(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.channel, self)
+        return CoreCapability.channel(self)
 
     @property
     def guild(self) -> str | None:
         try:
-            return self.context.staff.call_fn(CoreCapability.guild, self)
+            return CoreCapability.guild(self)
         except NotImplementedError:
             return None
 
     @property
     def user(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.user, self)
+        return CoreCapability.user(self)
 
 
 class ContextEndpointSelector(ContextSelector):
@@ -55,31 +55,31 @@ class ContextEndpointSelector(ContextSelector):
 
     @property
     def channel(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.channel, self)
+        return CoreCapability.channel(self)
 
     @property
     def guild(self) -> str | None:
         try:
-            return self.context.staff.call_fn(CoreCapability.guild, self)
+            return CoreCapability.guild(self)
         except NotImplementedError:
             return None
 
     @property
     def user(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.user, self)
+        return CoreCapability.user(self)
 
 
 class ContextSelfSelector(ContextSelector):
     def trigger_activity(self, activity: str):
-        return self.context[ActivityTrigger.trigger](self.activity(activity))
+        return start_activity(self.activity(activity))
 
 
 class ContextSceneSelector(ContextSelector):
     def leave_scene(self):
-        return self.context[SceneCapability.leave](self)
+        return leave_scene(self)
 
     def disband_scene(self):
-        return self.context[SceneCapability.disband](self)
+        return disband_scene(self)
 
     def send_message(
         self,
@@ -101,32 +101,32 @@ class ContextSceneSelector(ContextSelector):
         elif isinstance(reply, str):
             reply = self.message(reply)
 
-        return self.context[MessageSend.send](self, message, reply=reply)
+        return send_message(self, message, reply=reply)
 
     def remove_member(self, target: Selector, reason: str | None = None):
-        return self.context[SceneCapability.remove_member](target, reason)
+        return remove_member(target, reason)
 
     @property
     def channel(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.channel, self)
+        return CoreCapability.channel(self)
 
     @property
     def guild(self) -> str:
-        return self.context.staff.call_fn(CoreCapability.guild, self)
+        return CoreCapability.guild(self)
 
 
 class ContextRequestSelector(ContextEndpointSelector):
-    def accept_request(self):
-        return self.context[RequestCapability.accept](self)
+    def accept(self):
+        return accept_request(self)
 
-    def reject_request(self, reason: str | None = None, forever: bool = False):
-        return self.context[RequestCapability.reject](self, reason, forever)
+    def reject(self, reason: str | None = None, forever: bool = False):
+        return reject_request(self, reason, forever)
 
-    def cancel_request(self):
-        return self.context[RequestCapability.cancel](self)
+    def cancel(self):
+        return cancel_request(self)
 
-    def ignore_request(self):
-        return self.context[RequestCapability.ignore](self)
+    def ignore(self):
+        return ignore_request(self)
 
 
 @dataclass

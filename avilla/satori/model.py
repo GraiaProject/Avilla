@@ -1,8 +1,17 @@
 from __future__ import annotations
 
-from datetime import datetime
-
-from satori.model import Channel, Event, Login, Member, MessageObject, Role, User, Guild, ButtonInteraction, ArgvInteraction
+from satori.model import (
+    ArgvInteraction,
+    ButtonInteraction,
+    Channel,
+    Event,
+    Guild,
+    Login,
+    Member,
+    MessageObject,
+    Role,
+    User,
+)
 
 
 class MessageEvent(Event):
@@ -16,7 +25,6 @@ class DirectEvent(Event):
     user: User
 
 
-
 class GuildEvent(Event):
     guild: Guild
 
@@ -25,6 +33,7 @@ class GuildMemberEvent(Event):
     guild: Guild
     user: User
     member: Member
+
 
 class GuildRoleEvent(Event):
     guild: Guild

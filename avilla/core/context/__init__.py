@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from collections.abc import Callable
-from typing import Any, TypedDict, TypeVar, cast, overload
+from contextlib import contextmanager
+from typing import Any, TypedDict, TypeVar, cast
 
 from typing_extensions import ParamSpec, Unpack
 
-from avilla.core._runtime import cx_context
+from flywheel import InstanceContext
+
+from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from avilla.core.account import BaseAccount
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.platform import Land
 from avilla.core.resource import Resource
-from avilla.core.ryanvk import Fn
-from avilla.core.ryanvk.staff import Staff
-from avilla.core.selector import FollowsPredicater, Selectable, Selector
+from avilla.core.selector import Selectable, Selector
 from avilla.core.utilles import classproperty
 
 from ._roles import (
@@ -54,15 +55,8 @@ class Context:
         scene: Selector,
         selft: Selector,
         mediums: list[Selector] | None = None,
-        prelude_metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
+        metadatas: dict[Selector, dict[type[Metadata] | MetadataRoute, Metadata]] | None = None,
     ) -> None:
-        self.artifacts = [
-            account.info.artifacts,
-            account.info.protocol.artifacts,
-            account.avilla.global_artifacts,
-        ]
-        # 这里是为了能在 Context 层级进行修改
-
         self.account = account
 
         self.client = ContextClientSelector.from_selector(self, client)
@@ -71,8 +65,13 @@ class Context:
         self.self = ContextSelfSelector.from_selector(self, selft)
         self.mediums = [ContextMedium(ContextSelector.from_selector(self, medium)) for medium in mediums or []]
 
-        self.cache = {"meta": prelude_metadatas or {}}
-        self.staff = Staff(self.get_staff_artifacts(), self.get_staff_components())
+        self.cache = {"meta": metadatas or {}}
+
+    @property
+    def instance_context(self):
+        ins = InstanceContext()
+        ins.instances.update({type(i): i for i in [self, self.avilla, self.protocol, self.account]})
+        return ins
 
     @property
     def protocol(self):
@@ -101,24 +100,11 @@ class Context:
     @classproperty
     @classmethod
     def current(cls) -> Context:
-        return cx_context.get()
+        return CONTEXT_CONTEXT_VAR.get()
 
-    def get_staff_components(self):
-        return {
-            "context": self,
-            "protocol": self.protocol,
-            "account": self.account,
-            "avilla": self.avilla,
-        }
-
-    def get_staff_artifacts(self):
-        return self.artifacts
-
-    def query(self, pattern: str, **predicators: FollowsPredicater):
-        return self.staff.query_entities(pattern, **predicators)
-
-    async def fetch(self, resource: Resource[_T]) -> _T:
-        return await self.staff.fetch_resource(resource)
+    @contextmanager
+    def lookup_scope(self):
+        yield
 
     async def pull(
         self,
@@ -138,24 +124,4 @@ class Context:
             if not route.has_params():
                 return cast("_MetadataT", meta)
 
-        return await self.staff.pull_metadata(target, route)
-
-    @overload
-    def __getitem__(self, closure: Selector) -> ContextSelector:
-        ...
-
-    @overload
-    def __getitem__(self, closure: Fn[P, R]) -> Callable[P, R]:
-        ...
-
-    def __getitem__(self, closure: Selector | Fn[P, Any]):
-        if isinstance(closure, Selector):
-            return ContextSelector(self, closure.pattern)
-
-        def run(*args: P.args, **kwargs: P.kwargs):
-            return self.staff.call_fn(closure, *args, **kwargs)
-
-        return run
-
-    def __staff_generic__(self, element_type: dict, event_type: dict):
-        ...
+        return await CoreCapability.pull(target, route)

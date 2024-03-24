@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from copy import copy, deepcopy
-from typing import TYPE_CHECKING, Any, Awaitable, Callable, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Awaitable, TypeVar
 
-from typing_extensions import Concatenate, ParamSpec, Self, Unpack
+from typing_extensions import ParamSpec, Self, Unpack
 
 from avilla.core.metadata import Metadata, MetadataRoute
-from avilla.core.ryanvk import Fn
 from avilla.core.selector import EMPTY_MAP, Selector
 from avilla.standard.core.privilege import Privilege
 from avilla.standard.core.profile import Avatar, Nick, Summary
@@ -37,26 +36,6 @@ class ContextSelector(Selector):
     @classmethod
     def from_selector(cls, cx: Context, selector: Selector) -> Self:
         return cls(cx, selector.pattern)
-
-    @overload
-    def __getitem__(self, item: str) -> str:
-        ...
-
-    @overload
-    def __getitem__(self, item: Fn[Concatenate[Selector, P], R]) -> Callable[P, R]:
-        ...
-
-    def __getitem__(
-        self,
-        item: str | Fn[Concatenate[Selector, P], R],
-    ) -> str | Callable[P, R]:
-        if isinstance(item, str):
-            return super().__getitem__(item)
-
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
-            return self.context.staff.call_fn(item, self, *args, **kwargs)
-
-        return wrapper
 
     def pull(
         self, metadata: type[_MetadataT] | MetadataRoute[Unpack[tuple[Any, ...]], _MetadataT]

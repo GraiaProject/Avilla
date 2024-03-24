@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.file import (
     FileData,
@@ -45,7 +45,8 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         )
         file = FileData.parse(result)
         await cache.set(
-            f"elizabeth/account({self.account.route['account']}).group({target['group']}).file({target['file']})", file,
+            f"elizabeth/account({self.account.route['account']}).group({target['group']}).file({target['file']})",
+            file,
             timedelta(minutes=5),
         )
         return file

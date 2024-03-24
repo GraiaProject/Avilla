@@ -7,9 +7,8 @@ from graia.amnesia.message import MessageChain
 
 from avilla.core.platform import Land
 from avilla.core.selector import Selector
-from avilla.standard.core.message.capability import MessageRevoke
+from avilla.standard.core.message.capability import revoke_message
 
-from ._runtime import cx_context
 from .metadata import Metadata
 
 
@@ -30,4 +29,4 @@ class Message(Metadata):
         return self.scene.message(self.id)
 
     async def revoke(self):
-        await cx_context.get()[MessageRevoke.revoke](self.to_selector())
+        await revoke_message(self.to_selector())

@@ -11,31 +11,32 @@ from nonechat.message import Text as CslText
 from avilla.console.capability import ConsoleCapability
 from avilla.console.element import Markdown, Markup
 from avilla.core.elements import Face, Text
-from avilla.core.ryanvk.collector.account import AccountCollector
+from flywheel import global_collect
 
 if TYPE_CHECKING:
     from ...account import ConsoleAccount  # noqa
     from ...protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleMessageSerializePerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
-    m.namespace = "avilla.protocol/console::message"
-    m.identify = "serialize"
+@global_collect
+@ConsoleCapability.serialize_element.impl(element=Text)
+async def text(element: Text):
+    return CslText(element.text)
 
-    # LINK: https://github.com/microsoft/pyright/issues/5409
 
-    @m.entity(ConsoleCapability.serialize_element, element=Text)
-    async def text(self, element: Text):
-        return CslText(element.text)
+@global_collect
+@ConsoleCapability.serialize_element.impl(element=Face)
+async def emoji(element: Face):
+    return CslEmoji(element.id)
 
-    @m.entity(ConsoleCapability.serialize_element, element=Face)
-    async def emoji(self, element: Face):
-        return CslEmoji(element.id)
 
-    @m.entity(ConsoleCapability.serialize_element, element=Markup)
-    async def markup(self, element: Markup):
-        return CslMarkup(**asdict(element))
+@global_collect
+@ConsoleCapability.serialize_element.impl(element=Markup)
+async def markup(element: Markup):
+    return CslMarkup(**asdict(element))
 
-    @m.entity(ConsoleCapability.serialize_element, element=Markdown)
-    async def markdown(self, element: Markdown):
-        return CslMarkdown(**asdict(element))
+
+@global_collect
+@ConsoleCapability.serialize_element.impl(element=Markdown)
+async def markdown(element: Markdown):
+    return CslMarkdown(**asdict(element))

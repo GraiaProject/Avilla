@@ -4,9 +4,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.standard.core.request.capability import RequestCapability
+from avilla.standard.core.request.capability import accept_request, reject_request, cancel_request, ignore_request
 
-from ._runtime import cx_context
 from .metadata import Metadata
 from .platform import Land
 
@@ -61,13 +60,13 @@ class Request(Metadata):
         return self.scene.request(request_id)
 
     async def accept(self):
-        return await cx_context.get()[RequestCapability.accept](self.to_selector())
+        return await accept_request(self.to_selector())
 
     async def reject(self, reason: str | None = None, forever: bool = False):
-        return await cx_context.get()[RequestCapability.reject](self.to_selector(), reason, forever)
+        return await reject_request(self.to_selector(), reason, forever)
 
     async def cancel(self):
-        return await cx_context.get()[RequestCapability.cancel](self.to_selector())
+        return await cancel_request(self.to_selector())
 
     async def ignore(self):
-        return await cx_context.get()[RequestCapability.ignore](self.to_selector())
+        return await ignore_request(self.to_selector())

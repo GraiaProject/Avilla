@@ -1,35 +1,43 @@
 from __future__ import annotations
 
 from contextlib import nullcontext
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any
 
+from flywheel import CollectContext
 from typing_extensions import Self
 
-from avilla.core._runtime import cx_avilla, cx_context, cx_protocol
 from avilla.core.event import AvillaEvent
+from avilla.core.globals import AVILLA_CONTEXT_VAR, CONTEXT_CONTEXT_VAR, PROTOCOL_CONTEXT_VAR
+from avilla.core.utilles import cachedstatic
+from avilla.standard.core.application import AvillaLifecycleEvent
 
 if TYPE_CHECKING:
     from avilla.core.application import Avilla
     from avilla.core.context import Context
 
 
-class ProtocolConfig:
-    ...
+class ProtocolConfig: ...
 
 
 class BaseProtocol:
     avilla: Avilla
-    artifacts: ClassVar[dict[Any, Any]]
 
-    def ensure(self, avilla: Avilla) -> Any:
-        ...
+    @cachedstatic
+    def artifacts():
+        with CollectContext().collect_scope() as collect_context:
+            ...
 
-    def configure(self, config: ProtocolConfig) -> Self:
-        ...
+        return collect_context
 
-    def post_event(self, event: AvillaEvent, context: Context | None = None):
-        with cx_avilla.use(self.avilla), cx_protocol.use(self), (
-            cx_context.use(context) if context is not None else nullcontext()
+    def ensure(self, avilla: Avilla) -> Any: ...
+
+    def configure(self, config: ProtocolConfig) -> Self: ...
+
+    def post_event(self, event: AvillaEvent | AvillaLifecycleEvent, context: Context | None = None):
+        with (
+            AVILLA_CONTEXT_VAR.use(self.avilla),
+            PROTOCOL_CONTEXT_VAR.use(self),
+            CONTEXT_CONTEXT_VAR.use(context) if context is not None else nullcontext(),
         ):
             self.avilla.event_record(event)
             return self.avilla.broadcast.postEvent(event)

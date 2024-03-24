@@ -11,29 +11,29 @@ if TYPE_CHECKING:
     from avilla.core.protocol import BaseProtocol
 
 
-cx_avilla: Ctx[Avilla] = Ctx("avilla")
-cx_protocol: Ctx[BaseProtocol] = Ctx("protocol")
-cx_context: Ctx[Context] = Ctx("context")
+AVILLA_CONTEXT_VAR: Ctx[Avilla] = Ctx("avilla")
+PROTOCOL_CONTEXT_VAR: Ctx[BaseProtocol] = Ctx("protocol")
+CONTEXT_CONTEXT_VAR: Ctx[Context] = Ctx("context")
 
 
 def get_current_avilla() -> Avilla:
-    avilla = cx_avilla.get(None)
+    avilla = AVILLA_CONTEXT_VAR.get(None)
     if avilla:
         return avilla
-    protocol = cx_protocol.get(None)
+    protocol = PROTOCOL_CONTEXT_VAR.get(None)
     if protocol:
         return protocol.avilla
-    context = cx_context.get(None)
+    context = CONTEXT_CONTEXT_VAR.get(None)
     if context:
         return context.protocol.avilla
     raise RuntimeError("no any current avilla")
 
 
 def get_current_protocol():
-    protocol = cx_protocol.get(None)
+    protocol = PROTOCOL_CONTEXT_VAR.get(None)
     if protocol:
         return protocol
-    context = cx_context.get(None)
+    context = CONTEXT_CONTEXT_VAR.get(None)
     if context:
         return context.protocol
     raise RuntimeError("no any current protocol")
@@ -42,7 +42,7 @@ def get_current_protocol():
 def require_context(func):
     @functools.wraps(func)
     async def wrapper(*args, **kwargs):
-        if cx_context.get(None):
+        if CONTEXT_CONTEXT_VAR.get(None):
             return await func(*args, **kwargs)
         raise RuntimeError("no any current context")
 

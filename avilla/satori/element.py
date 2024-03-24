@@ -5,5 +5,4 @@ from satori.element import Button as SatoriButton
 from avilla.core.elements import Element
 
 
-class Button(SatoriButton, Element):
-    ...
+class Button(SatoriButton, Element): ...

@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, Face, File, Notice, NoticeAll, Picture, Text
-from avilla.core.ryanvk.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.resource import (

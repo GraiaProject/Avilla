@@ -221,5 +221,4 @@ class Selector:
 
 @runtime_checkable
 class Selectable(Protocol):
-    def to_selector(self) -> Selector:
-        ...
+    def to_selector(self) -> Selector: ...

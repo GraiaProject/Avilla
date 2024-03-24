@@ -6,7 +6,8 @@ from yarl import URL
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol
-from graia.ryanvk import merge, ref
+from flywheel import CollectContext
+from avilla.core.utilles import cachedstatic
 
 from .net.ws_client import OneBot11WsClientNetworking
 from .net.ws_server import OneBot11WsServerNetworking
@@ -25,46 +26,27 @@ class OneBot11ReverseConfig:
     access_token: str | None = None
 
 
-def _import_performs():
-    from avilla.onebot.v11.perform import context, resource_fetch  # noqa: F401
-    from avilla.onebot.v11.perform.action import admin  # noqa: F401
-    from avilla.onebot.v11.perform.action import ban  # noqa: F401
-    from avilla.onebot.v11.perform.action import leave  # noqa: F401
-    from avilla.onebot.v11.perform.action import message  # noqa: F401
-    from avilla.onebot.v11.perform.action import mute  # noqa: F401
-    from avilla.onebot.v11.perform.event import lifespan  # noqa: F401
-    from avilla.onebot.v11.perform.event import message  # noqa: F401, F811
-    from avilla.onebot.v11.perform.event import notice  # noqa: F401
-    from avilla.onebot.v11.perform.event import request  # noqa: F401
-    from avilla.onebot.v11.perform.message import deserialize  # noqa: F401
-    from avilla.onebot.v11.perform.message import serialize  # noqa: F401
-    from avilla.onebot.v11.perform.query import group  # noqa: F401
-
-
-_import_performs()
-
-
 class OneBot11Protocol(BaseProtocol):
     service: OneBot11Service
 
-    artifacts = {
-        **merge(
-            ref("avilla.protocol/onebot11::context"),
-            ref("avilla.protocol/onebot11::resource_fetch"),
-            ref("avilla.protocol/onebot11::action", "admin"),
-            ref("avilla.protocol/onebot11::action", "ban"),
-            ref("avilla.protocol/onebot11::action", "leave"),
-            ref("avilla.protocol/onebot11::action", "message"),
-            ref("avilla.protocol/onebot11::action", "mute"),
-            ref("avilla.protocol/onebot11::event", "message"),
-            ref("avilla.protocol/onebot11::event", "lifespan"),
-            ref("avilla.protocol/onebot11::event", "notice"),
-            ref("avilla.protocol/onebot11::event", "request"),
-            ref("avilla.protocol/onebot11::message", "deserialize"),
-            ref("avilla.protocol/onebot11::message", "serialize"),
-            ref("avilla.protocol/onebot11::query", "group"),
-        ),
-    }
+    @cachedstatic
+    def artifacts():
+        with CollectContext().lookup_scope() as collect_context:
+            from avilla.onebot.v11.perform import context, resource_fetch  # noqa: F401
+            from avilla.onebot.v11.perform.action import admin  # noqa: F401
+            from avilla.onebot.v11.perform.action import ban  # noqa: F401
+            from avilla.onebot.v11.perform.action import leave  # noqa: F401
+            from avilla.onebot.v11.perform.action import message  # noqa: F401
+            from avilla.onebot.v11.perform.action import mute  # noqa: F401
+            from avilla.onebot.v11.perform.event import lifespan  # noqa: F401
+            from avilla.onebot.v11.perform.event import message  # noqa: F401, F811
+            from avilla.onebot.v11.perform.event import notice  # noqa: F401
+            from avilla.onebot.v11.perform.event import request  # noqa: F401
+            from avilla.onebot.v11.perform.message import deserialize  # noqa: F401
+            from avilla.onebot.v11.perform.message import serialize  # noqa: F401
+            from avilla.onebot.v11.perform.query import group  # noqa: F401
+        
+        return collect_context
 
     def __init__(self):
         self.service = OneBot11Service(self)

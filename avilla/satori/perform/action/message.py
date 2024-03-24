@@ -2,29 +2,25 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from secrets import token_urlsafe
-from typing import TYPE_CHECKING
 
+from flywheel import scoped_collect
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
+from avilla.core.builtins.capability import CoreCapability
 from avilla.core.context import Context
 from avilla.core.elements import Reference
+from avilla.core.globals import CONTEXT_CONTEXT_VAR
 from avilla.core.message import Message
-from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
+from avilla.satori.bases import InstanceOfAccount
 from avilla.satori.capability import SatoriCapability
-from avilla.standard.core.message import MessageRevoke, MessageSend, MessageSent
-
-if TYPE_CHECKING:
-    from avilla.satori.account import SatoriAccount  # noqa
-    from avilla.satori.protocol import SatoriProtocol  # noqa
+from avilla.standard.core.message import MessageSent, revoke_message, send_message
 
 
-class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "SatoriAccount"]())._):
-    m.namespace = "avilla.protocol/satori::action"
-    m.identify = "message"
+class SatoriMessageActionPerform(m := scoped_collect.env().target, InstanceOfAccount, static=True):
 
-    @m.entity(MessageSend.send, target="land.guild.channel")
+    @m.impl(send_message, target="land.guild.channel")
     async def send_public_message(
         self,
         target: Selector,
@@ -36,7 +32,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         if reply:
             message = Reference(reply) + message
         result = await self.account.client.message_create(
-            channel_id=target["channel"], content=await SatoriCapability(self.account.staff).serialize(message)
+            channel_id=target["channel"], content=await SatoriCapability.serialize(message)
         )
         for msg in result:
             _ctx = Context(
@@ -46,7 +42,8 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 target,
                 target.member(self.account.route["account"]),
             )
-            content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
+            with CONTEXT_CONTEXT_VAR.use(_ctx):
+                content = await SatoriCapability.deserialize(msg.content)
             content = content.exclude(Reference)
             _msg = Message(
                 id=f"{msg.id}",
@@ -65,8 +62,8 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         )
         return target.message(token)
 
-    @m.entity(MessageSend.send, target="land.user")
-    @m.entity(MessageSend.send, target="land.private.user")
+    @m.impl(send_message, target="land.user")
+    @m.impl(send_message, target="land.private.user")
     async def send_private_message(
         self,
         target: Selector,
@@ -79,11 +76,11 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             message = Reference(reply) + message
         if target.follows("::private.user"):
             result = await self.account.client.message_create(
-                channel_id=target["private"], content=await SatoriCapability(self.account.staff).serialize(message)
+                channel_id=target["private"], content=await SatoriCapability.serialize(message)
             )
         else:
             result = await self.account.client.send_private_message(
-                user_id=target["user"], message=await SatoriCapability(self.account.staff).serialize(message)
+                user_id=target["user"], message=await SatoriCapability.serialize(message)
             )
         for msg in result:
             _ctx = Context(
@@ -93,7 +90,8 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
                 target,
                 self.account.route,
             )
-            content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
+            with CONTEXT_CONTEXT_VAR.use(_ctx):
+                content = await SatoriCapability.deserialize(msg.content)
             content = content.exclude(Reference)
             _msg = Message(
                 id=f"{msg.id}",
@@ -112,7 +110,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
         )
         return target.message(token)
 
-    @m.entity(MessageRevoke.revoke, target="land.guild.channel.message")
+    @m.impl(revoke_message, target="land.guild.channel.message")
     async def revoke_public_message(self, target: Selector):
         cache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if result := await cache.get(f"satori/account({self.account.route['account']}).messages({target['message']})"):
@@ -121,7 +119,7 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             return
         await self.account.client.message_delete(channel_id=target["channel"], message_id=target["message"])
 
-    @m.entity(MessageRevoke.revoke, target="land.private.user.message")
+    @m.impl(revoke_message, target="land.private.user.message")
     async def revoke_private_message(self, target: Selector):
         cache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if result := await cache.get(f"satori/account({self.account.route['account']}).messages({target['message']})"):
@@ -130,26 +128,27 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             return
         await self.account.client.message_delete(channel_id=target["private"], message_id=target["message"])
 
-    @m.pull("land.guild.channel.message", Message)
-    async def get_public_message(self, message: Selector, route: ...) -> Message:
+    @m.impl(CoreCapability.pull, "land.guild.channel.message", Message)
+    async def get_public_message(self, target: Selector) -> Message:
         msg = await self.account.client.message_get(
-            channel_id=message["channel"],
-            message_id=message["message"],
+            channel_id=target["channel"],
+            message_id=target["message"],
         )
         _ctx = self.account.get_context(
-            message.info("::guild.channel").member(
+            target.info("::guild.channel").member(
                 msg.member.user.id if msg.member and msg.member.user else self.account.route["account"]
             )
         )
-        content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
+        with CONTEXT_CONTEXT_VAR.use(_ctx):
+            content = await SatoriCapability.deserialize(msg.content)
         reply = None
         if replys := content.get(Reference):
-            reply = message.info(f"~.message({replys[0].message['message']})")
+            reply = target.info(f"~.message({replys[0].message['message']})")
             content = content.exclude(Reference)
         return Message(
             id=f"{msg.id}",
-            scene=message.info("::guild.channel"),
-            sender=message.info("::guild.channel").member(
+            scene=target.info("::guild.channel"),
+            sender=target.info("::guild.channel").member(
                 msg.member.user.id if msg.member and msg.member.user else self.account.route["account"]
             ),
             content=content,
@@ -157,22 +156,23 @@ class SatoriMessageActionPerform((m := AccountCollector["SatoriProtocol", "Sator
             reply=reply,
         )
 
-    @m.pull("land.private.user.message", Message)
-    async def get_private_message(self, message: Selector, route: ...) -> Message:
+    @m.impl(CoreCapability.pull, "land.private.user.message", Message)
+    async def get_private_message(self, target: Selector) -> Message:
         msg = await self.account.client.message_get(
-            channel_id=message["private"],
-            message_id=message["message"],
+            channel_id=target["private"],
+            message_id=target["message"],
         )
-        _ctx = self.account.get_context(message.info("::private.user"))
-        content = await SatoriCapability(self.account.staff.ext({"context": _ctx})).deserialize(msg.content)
+        _ctx = self.account.get_context(target.info("::private.user"))
+        with CONTEXT_CONTEXT_VAR.use(_ctx):
+            content = await SatoriCapability.deserialize(msg.content)
         reply = None
         if replys := content.get(Reference):
-            reply = message.info(f"~.message({replys[0].message['message']})")
+            reply = target.info(f"~.message({replys[0].message['message']})")
             content = content.exclude(Reference)
         return Message(
             id=f"{msg.id}",
-            scene=message.info("::private.user"),
-            sender=message.info("::private.user"),
+            scene=target.info("::private.user"),
+            sender=target.info("::private.user"),
             content=content,
             time=datetime.now(),
             reply=reply,

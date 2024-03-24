@@ -6,7 +6,7 @@ groups = ["default", "dev"]
 cross_platform = true
 static_urls = false
 lock_version = "4.3"
-content_hash = "sha256:e8057c8f48890b706f230fe917d7ee6e72b4845768650a17686af5465cddcecf"
+content_hash = "sha256:a7e338a3aac7e5c53f26abb4e6e1752535ed5361c4390949ec42d46e2883c988"
 
 [[package]]
 name = "aiohttp"
@@ -370,6 +370,19 @@ summary = "Editable installations"
 files = [
     {file = "editables-0.5-py3-none-any.whl", hash = "sha256:61e5ffa82629e0d8bfe09bc44a07db3c1ab8ed1ce78a6980732870f19b5e7d4c"},
     {file = "editables-0.5.tar.gz", hash = "sha256:309627d9b5c4adc0e668d8c6fa7bac1ba7c8c5d415c2d27f60f081f8e80d1de2"},
+]
+
+[[package]]
+name = "elaina-flywheel"
+version = "0.2.0"
+requires_python = ">=3.9"
+summary = ""
+dependencies = [
+    "typing-extensions>=4.10.0",
+]
+files = [
+    {file = "elaina_flywheel-0.2.0-py3-none-any.whl", hash = "sha256:c309e83bdeb585473d88ad61370c77bfdba0df660f16a732058d2b2ba11fb026"},
+    {file = "elaina_flywheel-0.2.0.tar.gz", hash = "sha256:1dcbbfb3906c9475aaad95cf070a174a2aed2e113718f6ccd03bae1672284d16"},
 ]
 
 [[package]]

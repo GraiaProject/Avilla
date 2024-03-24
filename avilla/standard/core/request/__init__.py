@@ -1,4 +1,7 @@
-from .capability import RequestCapability as RequestCapability
+from .capability import accept_request as accept_request
+from .capability import cancel_request as cancel_request
+from .capability import ignore_request as ignore_request
+from .capability import reject_request as reject_request
 from .event import RequestAccepted as RequestAccepted
 from .event import RequestCancelled as RequestCancelled
 from .event import RequestEvent as RequestEvent

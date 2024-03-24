@@ -19,7 +19,8 @@ dependencies = [
     "graia-amnesia",
     "loguru",
     "launart",
-    "creart"
+    "creart",
+    "elaina-flywheel"
 ]
 description = ""
 license = {text = "MIT"}

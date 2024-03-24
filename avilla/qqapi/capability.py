@@ -5,8 +5,8 @@ from typing import Any
 from graia.amnesia.message import Element, MessageChain
 
 from avilla.core.event import AvillaEvent
-from avilla.core.ryanvk.collector.application import ApplicationCollector
-from avilla.core.ryanvk.overload.target import TargetOverload
+from avilla.core.ryanvk_old.collector.application import ApplicationCollector
+from avilla.core.ryanvk_old.overload.target import TargetOverload
 from avilla.core.selector import Selector
 from avilla.standard.core.application.event import AvillaLifecycleEvent
 from graia.ryanvk import Fn, PredicateOverload, SimpleOverload, TypeOverload
@@ -16,16 +16,13 @@ from .utils import handle_text
 
 class QQAPICapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})
-    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None:
-        ...
+    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None: ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: raw["type"]): ["raw_element"]})
-    async def deserialize_element(self, raw_element: dict) -> Element:
-        ...
+    async def deserialize_element(self, raw_element: dict) -> Element: ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Any) -> str | tuple[str, Any]:
-        ...
+    async def serialize_element(self, element: Any) -> str | tuple[str, Any]: ...
 
     @Fn.complex({TargetOverload(): ["target"]})
     async def create_dms(self, target: Selector) -> Selector:

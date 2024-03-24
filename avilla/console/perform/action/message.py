@@ -12,19 +12,18 @@ from nonechat.message import ConsoleMessage
 from avilla.console.capability import ConsoleCapability
 from avilla.core.context import Context
 from avilla.core.message import Message
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.console.bases import InstanceOfAccount
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageSend, MessageSent
+from avilla.standard.core.message import MessageSent, send_message
+from flywheel import scoped_collect
 
 if TYPE_CHECKING:
     from avilla.console.account import ConsoleAccount  # noqa
     from avilla.console.protocol import ConsoleProtocol  # noqa
 
 
-class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "ConsoleAccount"]())._):
-    m.namespace = "avilla.protocol/console::action/message"
-
-    @m.entity(MessageSend.send, target="land.user")
+class ConsoleMessageActionPerform(m := scoped_collect.env().target, InstanceOfAccount, static=True):
+    @m.impl(send_message, target="land.user")
     async def send_console_message(
         self,
         target: Selector,
@@ -32,10 +31,8 @@ class ConsoleMessageActionPerform((m := AccountCollector["ConsoleProtocol", "Con
         *,
         reply: Selector | None = None,
     ) -> Selector:
-        if TYPE_CHECKING:
-            assert isinstance(self.protocol, ConsoleProtocol)
         serialized_msg = ConsoleMessage(
-            [await ConsoleCapability(self.account.staff).serialize_element(i) for i in message]
+            [await ConsoleCapability.serialize_element(i) for i in message]
         )
 
         await self.account.client.call(

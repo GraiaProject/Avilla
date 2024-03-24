@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+from flywheel import scoped_collect
 from loguru import logger
-from satori.account import Account
+from satori.client.account import Account
 from satori.model import Event, LoginStatus
 
 from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
 from avilla.satori.account import SatoriAccount
+from avilla.satori.bases import InstanceOfConnection
 from avilla.satori.capability import SatoriCapability
-from avilla.satori.collector.connection import ConnectionCollector
 from avilla.satori.const import platform
 from avilla.standard.core.account.event import (
     AccountAvailable,
@@ -18,15 +19,13 @@ from avilla.standard.core.account.event import (
 )
 
 
-class SatoriEventLifespanPerform((m := ConnectionCollector())._):
-    m.namespace = "avilla.protocol/satori::event"
-    m.identify = "lifespan"
+class SatoriEventLifespanPerform(m := scoped_collect.globals().target, InstanceOfConnection, static=True):
 
-    @m.entity(SatoriCapability.event_callback, raw_event="login-added")
-    async def connect(self, raw_event: Event):
-        self_id = raw_event.self_id
-        account = Account(raw_event.platform, self_id, self.connection.config)
-        route = Selector().land(raw_event.platform).account(self_id)
+    @m.impl(SatoriCapability.event_callback, raw_event="login-added")
+    async def connect(self, event: Event):
+        self_id = event.self_id
+        account = Account(event.platform, self_id, self.connection.config)
+        route = Selector().land(event.platform).account(self_id)
         _account = SatoriAccount(route=route, protocol=self.protocol)
         self.protocol.service.accounts[account.identity] = account
 
@@ -39,32 +38,33 @@ class SatoriEventLifespanPerform((m := ConnectionCollector())._):
         _account.client = self.connection
         return AccountRegistered(self.protocol.avilla, _account)
 
-    @m.entity(SatoriCapability.event_callback, raw_event="login-updated")
-    async def enable(self, raw_event: Event):
-        identity = f"{raw_event.platform}/{raw_event.self_id}"
+    @m.impl(SatoriCapability.event_callback, raw_event="login-updated")
+    async def enable(self, event: Event):
+        identity = f"{event.platform}/{event.self_id}"
         account = self.protocol.service.accounts.get(identity)
         if account is None:
-            logger.warning(f"Unknown account {identity} received enable event {raw_event}")
-            return
+            logger.warning(f"Unknown account {identity} received enable event {event}")
+            raise NotImplementedError
         _account = self.protocol.service._accounts[identity]
-        if _account.status.enabled and raw_event.login and raw_event.login.status != LoginStatus.ONLINE:
+        if _account.status.enabled and event.login and event.login.status != LoginStatus.ONLINE:
             _account.status.enabled = False
             logger.warning(f"Account {identity} disabled by remote")
             account.connected.clear()
             return AccountUnavailable(self.protocol.avilla, _account)
-        if not _account.status.enabled and raw_event.login and raw_event.login.status == LoginStatus.ONLINE:
+        if not _account.status.enabled and event.login and event.login.status == LoginStatus.ONLINE:
             _account.status.enabled = True
             account.connected.set()
             logger.warning(f"Account {identity} enabled by remote")
             return AccountAvailable(self.protocol.avilla, _account)
+        raise NotImplementedError
 
-    @m.entity(SatoriCapability.event_callback, raw_event="login-removed")
-    async def disable(self, raw_event: Event):
-        identity = f"{raw_event.platform}/{raw_event.self_id}"
+    @m.impl(SatoriCapability.event_callback, raw_event="login-removed")
+    async def disable(self, event: Event):
+        identity = f"{event.platform}/{event.self_id}"
         account = self.protocol.service.accounts.get(identity)
         if account is None:
-            logger.warning(f"Unknown account {identity} received disable event {raw_event}")
-            return
+            logger.warning(f"Unknown account {identity} received disable event {event}")
+            raise NotImplementedError
         _account = self.protocol.service._accounts[identity]
         _account.status.enabled = False
         logger.warning(f"Account {identity} disabled by remote")

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, AsyncIterator, Literal, overload
 from loguru import logger
 from typing_extensions import Self
 
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.red.account import RedAccount
 from avilla.red.capability import RedCapability
 from avilla.red.utils import MsgType, get_msg_types
@@ -37,18 +37,14 @@ class RedNetworking:
     def staff(self):
         return Staff(self.get_staff_artifacts(), self.get_staff_components())
 
-    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]:
-        ...
+    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]: ...
 
     @property
-    def alive(self) -> bool:
-        ...
+    def alive(self) -> bool: ...
 
-    async def wait_for_available(self):
-        ...
+    async def wait_for_available(self): ...
 
-    async def send(self, payload: dict) -> None:
-        ...
+    async def send(self, payload: dict) -> None: ...
 
     async def message_handle(self):
         async for connection, data in self.message_receive():
@@ -121,8 +117,7 @@ class RedNetworking:
     @overload
     async def call_http(
         self, method: Literal["get", "post", "multipart"], action: str, params: dict | None = None
-    ) -> dict:
-        ...
+    ) -> dict: ...
 
     @overload
     async def call_http(
@@ -131,10 +126,8 @@ class RedNetworking:
         action: str,
         params: dict | None = None,
         raw: Literal[True] = True,
-    ) -> bytes:
-        ...
+    ) -> bytes: ...
 
     async def call_http(
         self, method: Literal["get", "post", "multipart"], action: str, params: dict | None = None, raw: bool = False
-    ) -> dict | bytes:
-        ...
+    ) -> dict | bytes: ...

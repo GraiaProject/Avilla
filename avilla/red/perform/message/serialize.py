@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from avilla.core.builtins.resource_fetch import CoreResourceFetchPerform
 from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.red.capability import RedCapability
 from avilla.standard.qq.elements import MarketFace
 

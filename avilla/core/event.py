@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
 from datetime import datetime
 from inspect import isclass
@@ -13,7 +14,7 @@ from avilla.core.account import BaseAccount
 from avilla.core.metadata import Metadata, MetadataRoute
 from avilla.core.selector import Selector
 
-from ._runtime import cx_context
+from avilla.core.globals import CONTEXT_CONTEXT_VAR
 
 if TYPE_CHECKING:
     from graia.broadcast.interfaces.dispatcher import DispatcherInterface
@@ -31,8 +32,11 @@ class AvillaEvent(Dispatchable):
         async def beforeExecution(interface: DispatcherInterface[AvillaEvent]):
             if interface.depth < 1:
                 interface.local_storage["avilla_context"] = interface.event.context
-                interface.local_storage["_context_token"] = cx_context.set(interface.event.context)
-            await interface.event.context.staff.exit_stack.__aenter__()
+                interface.local_storage["_context_token"] = CONTEXT_CONTEXT_VAR.set(interface.event.context)
+
+            stack: AsyncExitStack = interface.local_storage["_depend_lifespan_manager"]
+            stack.enter_context(interface.event.context.protocol.artifacts.lookup_scope())
+            #stack.enter_context(interface.event.context.instance_context.scope())
 
         @staticmethod
         async def catch(interface: DispatcherInterface[AvillaEvent]):
@@ -56,33 +60,27 @@ class AvillaEvent(Dispatchable):
         @staticmethod
         async def afterExecution(interface: DispatcherInterface[AvillaEvent], exc, tb):
             if interface.depth < 1:
-                cx_context.reset(interface.local_storage["_context_token"])
-            await interface.event.context.staff.exit_stack.__aexit__(type(exc), exc, tb)
+                CONTEXT_CONTEXT_VAR.reset(interface.local_storage["_context_token"])
 
 
 @dataclass
-class RelationshipEvent(AvillaEvent):
-    ...
+class RelationshipEvent(AvillaEvent): ...
 
 
 @dataclass
-class RelationshipCreated(RelationshipEvent):
-    ...
+class RelationshipCreated(RelationshipEvent): ...
 
 
 @dataclass
-class DirectSessionCreated(RelationshipCreated):
-    ...
+class DirectSessionCreated(RelationshipCreated): ...
 
 
 @dataclass
-class SceneCreated(RelationshipCreated):
-    ...
+class SceneCreated(RelationshipCreated): ...
 
 
 @dataclass
-class MemberCreated(RelationshipEvent):
-    ...
+class MemberCreated(RelationshipEvent): ...
 
 
 @dataclass
@@ -92,18 +90,15 @@ class RelationshipDestroyed(RelationshipEvent):
 
 
 @dataclass
-class DirectSessionDestroyed(RelationshipDestroyed):
-    ...
+class DirectSessionDestroyed(RelationshipDestroyed): ...
 
 
 @dataclass
-class SceneDestroyed(RelationshipDestroyed):
-    ...
+class SceneDestroyed(RelationshipDestroyed): ...
 
 
 @dataclass
-class MemberDestroyed(RelationshipDestroyed):
-    ...
+class MemberDestroyed(RelationshipDestroyed): ...
 
 
 @dataclass

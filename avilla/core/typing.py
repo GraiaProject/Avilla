@@ -17,5 +17,4 @@ _T = TypeVar("_T", contravariant=True)
 
 @runtime_checkable
 class Ensureable(Protocol[_T]):
-    def ensure(self, interact: _T) -> Any:
-        ...
+    def ensure(self, interact: _T) -> Any: ...

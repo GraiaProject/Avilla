@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
-from avilla.core.ryanvk.collector.account import AccountCollector
+from avilla.core.ryanvk_old.collector.account import AccountCollector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource
 from avilla.standard.qq.elements import (

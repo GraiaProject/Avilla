@@ -8,7 +8,7 @@ from loguru import logger
 from typing_extensions import Self
 
 from avilla.core.exceptions import InvalidAuthentication
-from avilla.core.ryanvk.staff import Staff
+from avilla.core.ryanvk_old.staff import Staff
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.standard.core.account import AccountAvailable
@@ -47,18 +47,14 @@ class ElizabethNetworking:
     def staff(self):
         return Staff(self.get_staff_artifacts(), self.get_staff_components())
 
-    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]:
-        ...
+    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]: ...
 
     @property
-    def alive(self) -> bool:
-        ...
+    def alive(self) -> bool: ...
 
-    async def wait_for_available(self):
-        ...
+    async def wait_for_available(self): ...
 
-    async def send(self, payload: dict) -> None:
-        ...
+    async def send(self, payload: dict) -> None: ...
 
     async def message_handle(self):
         async for connection, data in self.message_receive():
@@ -140,5 +136,4 @@ class ElizabethNetworking:
         finally:
             del self.response_waiters[echo]
 
-    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
-        ...
+    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict: ...

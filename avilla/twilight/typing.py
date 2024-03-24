@@ -1,6 +1,5 @@
 """Ariadne 的类型标注"""
 
-
 import contextlib
 import enum
 import sys

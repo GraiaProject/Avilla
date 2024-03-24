@@ -1,48 +1,140 @@
 from __future__ import annotations
 
+from typing import Protocol
 from datetime import timedelta
 
-from avilla.core.ryanvk import Capability, Fn, TargetOverload
+from flywheel import Fn, FnCompose, FnRecord, OverloadRecorder
+from avilla.core.ryanvk import TargetOverload
 from avilla.core.selector import Selector
 
 
-class PrivilegeCapability(Capability):
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def upgrade(self, target: Selector, dest: str | None = None) -> None:
-        ...
+@Fn.declare
+class upgrade_privilege(FnCompose):
+    target = TargetOverload("target")
 
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def downgrade(self, target: Selector, dest: str | None = None) -> None:
-        ...
+    async def call(self, record: FnRecord, target: Selector, dest: str | None = None) -> None:
+        entities = self.load(self.target.dig(record, target))
 
+        return await entities.first(target, dest)
 
-class MuteCapability(Capability):
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def mute(self, target: Selector, duration: timedelta) -> None:
-        ...
+    class shapecall(Protocol):
+        async def __call__(self, target: Selector, dest: str | None = None) -> None: ...
 
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def unmute(self, target: Selector) -> None:
-        ...
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
 
 
-class MuteAllCapability(Capability):
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def mute_all(self, target: Selector) -> None:
-        ...
+@Fn.declare
+class downgrade_privilege(FnCompose):
+    target = TargetOverload("target")
 
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def unmute_all(self, target: Selector) -> None:
-        ...
+    async def call(self, record: FnRecord, target: Selector, dest: str | None = None) -> None:
+        entities = self.load(self.target.dig(record, target))
 
-    # Fetch => rs.pull(MuteInfo, target=...)
+        return await entities.first(target, dest)
+
+    class shapecall(Protocol):
+        async def __call__(self, target: Selector, dest: str | None = None) -> None: ...
+
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
 
 
-class BanCapability(Capability):
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def ban(self, target: Selector, *, duration: timedelta | None = None, reason: str | None = None) -> None:
-        ...
+@Fn.declare
+class mute_entity(FnCompose):
+    target = TargetOverload("target")
 
-    @Fn.complex({TargetOverload(): ["target"]})
-    async def unban(self, target: Selector) -> None:
-        ...
+    async def call(self, record: FnRecord, target: Selector, duration: timedelta) -> None:
+        entities = self.load(self.target.dig(record, target))
+
+        return await entities.first(target, duration)
+
+    class shapecall(Protocol):
+        async def __call__(self, target: Selector, duration: timedelta) -> None: ...
+
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
+
+
+@Fn.declare
+class unmute_entity(FnCompose):
+    target = TargetOverload("target")
+
+    async def call(self, record: FnRecord, target: Selector) -> None:
+        entities = self.load(self.target.dig(record, target))
+
+        return await entities.first(target)
+
+    class shapecall(Protocol):
+        async def __call__(self, target: Selector) -> None: ...
+
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
+
+
+@Fn.declare
+class mute_all(FnCompose):
+    target = TargetOverload("target")
+
+    async def call(self, record: FnRecord, target: Selector) -> None:
+        entities = self.load(self.target.dig(record, target))
+
+        return await entities.first(target)
+
+    class shapecall(Protocol):
+        async def __call__(self, target: Selector) -> None: ...
+
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
+
+
+@Fn.declare
+class unmute_all(FnCompose):
+    target = TargetOverload("target")
+
+    async def call(self, record: FnRecord, target: Selector) -> None:
+        entities = self.load(self.target.dig(record, target))
+
+        return await entities.first(target)
+
+    class shapecall(Protocol):
+        async def __call__(self, target: Selector) -> None: ...
+
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
+
+
+@Fn.declare
+class ban_entity(FnCompose):
+    target = TargetOverload("target")
+
+    async def call(
+        self, record: FnRecord, target: Selector, *, duration: timedelta | None = None, reason: str | None = None
+    ) -> None:
+        entities = self.load(self.target.dig(record, target))
+
+        return await entities.first(target, duration, reason)
+
+    class shapecall(Protocol):
+        async def __call__(
+            self, target: Selector, duration: timedelta | None = None, reason: str | None = None
+        ) -> None: ...
+
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
+
+
+@Fn.declare
+class unban_entity(FnCompose):
+    target = TargetOverload("target")
+
+    async def call(self, record: FnRecord, target: Selector) -> None:
+        entities = self.load(self.target.dig(record, target))
+
+        return await entities.first(target)
+
+    class shapecall(Protocol):
+        async def __call__(self, target: Selector) -> None: ...
+
+    def collect(self, recorder: OverloadRecorder[shapecall], target: str):
+        recorder.use(self.target, (target, {}))
