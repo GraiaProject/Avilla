@@ -22,6 +22,10 @@ class ElizabethVoiceResource(ElizabethResource):
     pass
 
 
+class ElizabethVideoResource(ElizabethResource):
+    pass
+
+
 class ElizabethFileResource(ElizabethResource):
     name: str
     size: int

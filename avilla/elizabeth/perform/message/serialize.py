@@ -4,11 +4,11 @@ import base64
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.elizabeth.capability import ElizabethCapability
-from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource
+from avilla.elizabeth.resource import ElizabethImageResource, ElizabethVoiceResource, ElizabethVideoResource
 from avilla.standard.qq.elements import (
     App,
     Dice,
@@ -131,6 +131,30 @@ class ElizabethMessageSerializePerform((m := AccountCollector["ElizabethProtocol
                 "type": "Voice",
                 "base64": base64.b64encode(await self.account.staff.fetch_resource(element.resource)).decode("utf-8"),
             }
+
+    @m.entity(ElizabethCapability.serialize_element, element=Video)
+    async def video(self, element: Video):
+        if isinstance(element.resource, ElizabethVideoResource):
+            return {
+                "type": "ShortVideo",
+                "videoId": element.resource.id,
+                "videoUrl": element.resource.url,
+            }
+        elif isinstance(element.resource, UrlResource):
+            return {
+                "type": "ShortVideo",
+                "videoUrl": element.resource.url,
+            }
+        raise NotImplementedError
+        # elif isinstance(element.resource, LocalFileResource):
+        #     return {"type": "Voice", "base64": base64.b64encode(element.resource.file.read_bytes()).decode("utf-8")}
+        # elif isinstance(element.resource, RawResource):
+        #     return {"type": "Voice", "base64": base64.b64encode(element.resource.data).decode("utf-8")}
+        # else:
+        #     return {
+        #         "type": "Voice",
+        #         "base64": base64.b64encode(await self.account.staff.fetch_resource(element.resource)).decode("utf-8"),
+        #     }
 
     @m.entity(ElizabethCapability.serialize_element, element=Forward)
     async def forward(self, element: Forward):

@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Face, File, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Audio, Face, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
@@ -11,6 +11,7 @@ from avilla.elizabeth.resource import (
     ElizabethFileResource,
     ElizabethImageResource,
     ElizabethVoiceResource,
+    ElizabethVideoResource,
 )
 from avilla.standard.qq.elements import (
     App,
@@ -151,6 +152,19 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
             raw_element["url"],
         )
         return Audio(resource, int(raw_element["length"]))
+
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="ShortVideo")
+    async def video(self, raw_element: dict) -> Video:
+        if self.context:
+            selector = self.context.scene
+        else:
+            selector = Selector().land("qq")
+        resource = ElizabethVideoResource(
+            selector.video(raw_element["videoId"]),
+            raw_element["videoId"],
+            raw_element["videoUrl"],
+        )
+        return Video(resource)
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="Forward")
     async def forward(self, raw_element: dict) -> Forward:

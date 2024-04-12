@@ -8,6 +8,8 @@ from avilla.core.event import (
     MemberDestroyed,
     SceneCreated,
     SceneDestroyed,
+    DirectSessionCreated,
+    DirectSessionDestroyed
 )
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
@@ -20,6 +22,48 @@ from avilla.standard.core.profile import Nick, Summary
 class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
     m.namespace = "avilla.protocol/elizabeth::event"
     m.identify = "relationship"
+
+    @m.entity(ElizabethCapability.event_callback, raw_event="FriendAddEvent")
+    async def friend_add(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        friend_data = raw_event["friend"]
+        friend = land.friend(str(friend_data["id"]))
+        context = Context(
+            account,
+            friend,
+            account_route,
+            friend,
+            account_route,
+        )
+        context._collect_metadatas(
+            friend,
+            Nick(friend_data["nickname"], friend_data["nickname"], friend_data.get("remark")),
+            Summary(friend_data["nickname"], None),
+        )
+        return DirectSessionCreated(context)
+
+    @m.entity(ElizabethCapability.event_callback, raw_event="FriendDeleteEvent")
+    async def friend_delete(self, raw_event: dict):
+        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account = self.protocol.avilla.accounts[account_route].account
+        land = Selector().land("qq")
+        friend_data = raw_event["friend"]
+        friend = land.friend(str(friend_data["id"]))
+        context = Context(
+            account,
+            friend,
+            account_route,
+            friend,
+            account_route,
+        )
+        context._collect_metadatas(
+            friend,
+            Nick(friend_data["nickname"], friend_data["nickname"], friend_data.get("remark")),
+            Summary(friend_data["nickname"], None),
+        )
+        return DirectSessionDestroyed(context)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="MemberJoinEvent")
     async def member_join(self, raw_event: dict):
