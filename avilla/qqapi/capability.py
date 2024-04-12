@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 from graia.amnesia.message import Element, MessageChain
 
@@ -30,6 +30,18 @@ class QQAPICapability((m := ApplicationCollector())._):
     @Fn.complex({TargetOverload(): ["target"]})
     async def create_dms(self, target: Selector) -> Selector:
         """主动创建私聊会话，返回临时的 Guild"""
+        ...
+
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def post_file(
+        self,
+        target: Selector,
+        file_type: Literal[1, 2, 3, 4],
+        url: str | None = None,
+        srv_send_msg: bool = True,
+        file_data: str | bytes | None = None,
+    ) -> dict:
+        """上传文件，返回文件信息"""
         ...
 
     async def deserialize(self, event: dict):

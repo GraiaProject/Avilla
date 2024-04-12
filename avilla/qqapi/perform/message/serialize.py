@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Face, Notice, NoticeAll, Picture, Text, Video
+from avilla.core.elements import Audio, Face, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.qqapi.capability import QQAPICapability
@@ -12,6 +12,7 @@ from avilla.qqapi.resource import (
     QQAPIAudioResource,
     QQAPIImageResource,
     QQAPIVideoResource,
+    QQAPIFileResource,
 )
 from avilla.qqapi.utils import escape
 
@@ -58,13 +59,31 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
     async def audio(self, element: Audio):
         if isinstance(element.resource, (QQAPIAudioResource, UrlResource)):
             return "media", ("audio", element.resource.url)
-        raise NotImplementedError
+        if isinstance(element.resource, LocalFileResource):
+            return "file_audio", element.resource.file.read_bytes()
+        if isinstance(element.resource, RawResource):
+            return "file_audio", element.resource.data
+        return "file_audio", await self.account.staff.fetch_resource(element.resource)
 
     @m.entity(QQAPICapability.serialize_element, element=Video)
     async def video(self, element: Video):
         if isinstance(element.resource, (QQAPIVideoResource, UrlResource)):
             return "media", ("video", element.resource.url)
-        raise NotImplementedError
+        if isinstance(element.resource, LocalFileResource):
+            return "file_video", element.resource.file.read_bytes()
+        if isinstance(element.resource, RawResource):
+            return "file_video", element.resource.data
+        return "file_video", await self.account.staff.fetch_resource(element.resource)
+
+    @m.entity(QQAPICapability.serialize_element, element=File)
+    async def file(self, element: File):
+        if isinstance(element.resource, (QQAPIFileResource, UrlResource)):
+            return "media", ("file", element.resource.url)
+        if isinstance(element.resource, LocalFileResource):
+            return "file_file", element.resource.file.read_bytes()
+        if isinstance(element.resource, RawResource):
+            return "file_file", element.resource.data
+        return "file_file", await self.account.staff.fetch_resource(element.resource)
 
     @m.entity(QQAPICapability.serialize_element, element=Reference)
     async def reference(self, element: Reference):
