@@ -1,11 +1,11 @@
 includes = ["avilla/qqapi"]
 raw_dependencies = [
-  "avilla-core >= 1.0.0a23",
+  "avilla-core >= 1.0.0a25",
 ]
 
 [project]
 name = "avilla-qqapi"
-version = "1.0.0a28"
+version = "1.0.0a29"
 authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
