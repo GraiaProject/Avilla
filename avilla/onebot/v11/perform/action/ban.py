@@ -17,13 +17,14 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
     m.identify = "ban"
 
     @BanCapability.ban.collect(m, target="land.group.member")
-    async def ban_member(self, target: Selector, *, duration: timedelta | None = None, reason: str | None = None):
+    async def ban_member(self, target: Selector, *, reject_add_request: bool = False):
         result = await self.account.connection.call(
             "set_group_kick",
             {
                 "group_id": int(target["group"]),
                 "user_id": int(target["member"]),
+                "reject_add_request": reject_add_request,
             },
         )
-        if result is None:
+        if result is not None:
             raise RuntimeError(f"Failed to ban {target}: {result}")
