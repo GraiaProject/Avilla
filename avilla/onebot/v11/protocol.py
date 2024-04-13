@@ -28,10 +28,10 @@ class OneBot11ReverseConfig:
 def _import_performs():
     from avilla.onebot.v11.perform import context, resource_fetch  # noqa: F401
     from avilla.onebot.v11.perform.action import admin  # noqa: F401
-    from avilla.onebot.v11.perform.action import ban  # noqa: F401
-    from avilla.onebot.v11.perform.action import leave  # noqa: F401
+    from avilla.onebot.v11.perform.action import scene  # noqa: F401
     from avilla.onebot.v11.perform.action import message  # noqa: F401
     from avilla.onebot.v11.perform.action import mute  # noqa: F401
+    from avilla.onebot.v11.perform.action import request  # noqa: F401
     from avilla.onebot.v11.perform.event import lifespan  # noqa: F401
     from avilla.onebot.v11.perform.event import message  # noqa: F401, F811
     from avilla.onebot.v11.perform.event import notice  # noqa: F401
@@ -52,10 +52,10 @@ class OneBot11Protocol(BaseProtocol):
             ref("avilla.protocol/onebot11::context"),
             ref("avilla.protocol/onebot11::resource_fetch"),
             ref("avilla.protocol/onebot11::action", "admin"),
-            ref("avilla.protocol/onebot11::action", "ban"),
-            ref("avilla.protocol/onebot11::action", "leave"),
+            ref("avilla.protocol/onebot11::action", "scene"),
             ref("avilla.protocol/onebot11::action", "message"),
             ref("avilla.protocol/onebot11::action", "mute"),
+            ref("avilla.protocol/onebot11::action", "request"),
             ref("avilla.protocol/onebot11::event", "message"),
             ref("avilla.protocol/onebot11::event", "lifespan"),
             ref("avilla.protocol/onebot11::event", "notice"),

@@ -53,7 +53,7 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         request = Request(
-            raw_event["flag"],
+            f'{raw_event["sub_type"]}_{raw_event["flag"]}',
             account.info.platform.land,
             Selector().land("qq").group(str(raw_event["group_id"])),
             Selector().land("qq").user(str(raw_event["user_id"])),
