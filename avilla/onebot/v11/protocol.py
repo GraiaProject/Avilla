@@ -27,6 +27,7 @@ class OneBot11ReverseConfig:
 
 def _import_performs():
     from avilla.onebot.v11.perform import context, resource_fetch  # noqa: F401
+    from avilla.onebot.v11.perform.action import file  # noqa: F401
     from avilla.onebot.v11.perform.action import admin  # noqa: F401
     from avilla.onebot.v11.perform.action import scene  # noqa: F401
     from avilla.onebot.v11.perform.action import message  # noqa: F401
@@ -39,6 +40,7 @@ def _import_performs():
     from avilla.onebot.v11.perform.message import deserialize  # noqa: F401
     from avilla.onebot.v11.perform.message import serialize  # noqa: F401
     from avilla.onebot.v11.perform.query import group  # noqa: F401
+    from avilla.onebot.v11.perform.query import file  # noqa: F401
 
 
 _import_performs()
@@ -51,6 +53,7 @@ class OneBot11Protocol(BaseProtocol):
         **merge(
             ref("avilla.protocol/onebot11::context"),
             ref("avilla.protocol/onebot11::resource_fetch"),
+            ref("avilla.protocol/onebot11::action", "file"),
             ref("avilla.protocol/onebot11::action", "admin"),
             ref("avilla.protocol/onebot11::action", "scene"),
             ref("avilla.protocol/onebot11::action", "message"),
@@ -62,6 +65,7 @@ class OneBot11Protocol(BaseProtocol):
             ref("avilla.protocol/onebot11::event", "request"),
             ref("avilla.protocol/onebot11::message", "deserialize"),
             ref("avilla.protocol/onebot11::message", "serialize"),
+            ref("avilla.protocol/onebot11::query", "file"),
             ref("avilla.protocol/onebot11::query", "group"),
         ),
     }

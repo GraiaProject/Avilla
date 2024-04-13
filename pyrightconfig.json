@@ -6,5 +6,6 @@
     "venvPath": ".",
     "typeCheckingMode": "basic",
     "include": ["avilla", "graia"],
-    "stubPath": ""
+    "stubPath": "",
+    "disableBytesTypePromotions": true
 }

@@ -28,11 +28,20 @@ class OneBot11VideoResource(OneBot11Resource):
 
 class OneBot11FileResource(OneBot11Resource):
     name: str
+    path: str
     size: int
-    busid: int
+    busid: int | None
 
-    def __init__(self, selector: Selector, file: str, url: str, name: str, size: int, busid: int):
-        super().__init__(selector, file, url)
+    def __init__(
+        self, 
+        selector: Selector,
+        name: str,
+        path: str,
+        size: int, 
+        busid: int | None = None
+    ):
+        super().__init__(selector, "", "")
         self.name = name
+        self.path = path
         self.size = size
         self.busid = busid

@@ -1,22 +1,20 @@
 from __future__ import annotations
 
-import io
 import os
 from datetime import timedelta
-from typing import TYPE_CHECKING
+from typing import IO, TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.elizabeth.file import (
+from avilla.standard.core.file import (
     FileData,
-    FileUpload,
-    FileDirectoryCreate,
-    FileDelete,
-    FileMove,
-    FileRename,
+    FileCapability,
+    FileDirectoryCapability
 )
+
+from avilla.elizabeth.utils import filedata_parse
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
@@ -43,19 +41,19 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
                 "withDownloadInfo": "True",
             },
         )
-        file = FileData.parse(result)
+        file = filedata_parse(result)
         await cache.set(
             f"elizabeth/account({self.account.route['account']}).group({target['group']}).file({target['file']})", file,
             timedelta(minutes=5),
         )
         return file
 
-    @m.entity(FileUpload.upload, target="land.group")
+    @m.entity(FileCapability.upload, target="land.group")
     async def upload_file(
         self,
         target: Selector,
         name: str,
-        file: bytes | io.IOBase | os.PathLike,
+        file: bytes | IO[bytes] | os.PathLike,
         path: str | None = None,
     ) -> Selector:
         _name = name or ""
@@ -78,7 +76,7 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         )
         return target.file(str(result["id"]))
 
-    @m.entity(FileDirectoryCreate.create, target="land.group")
+    @m.entity(FileDirectoryCapability.create, target="land.group")
     async def create_directory(self, target: Selector, name: str, parent: str | None = None) -> Selector:
         result = await self.account.connection.call(
             "update",
@@ -91,8 +89,8 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
         )
         return target.file(result["id"])
 
-    @m.entity(FileDelete.delete, file="land.group.file")
-    async def delete_file(self, file: Selector) -> None:
+    @m.entity(FileCapability.delete, file="land.group.file")
+    async def delete_file(self, file: Selector, busid: int | None = None) -> None:
         await self.account.connection.call(
             "update",
             "file_delete",
@@ -102,7 +100,19 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
             },
         )
 
-    @m.entity(FileMove.move, file="land.group.file")
+    @m.entity(FileDirectoryCapability.delete, file="land.group.file")
+    async def delete_folder(self, file: Selector) -> None:
+        await self.account.connection.call(
+            "update",
+            "file_delete",
+            {
+                "id": file["file"],
+                "target": int(file["group"]),
+            },
+        )
+
+    @m.entity(FileCapability.move, file="land.group.file")
+    @m.entity(FileDirectoryCapability.move, file="land.group.file")
     async def move_file(self, file: Selector, to: Selector) -> None:
         await self.account.connection.call(
             "update",
@@ -114,7 +124,8 @@ class ElizabethAnnouncementActionPerform((m := AccountCollector["ElizabethProtoc
             },
         )
 
-    @m.entity(FileRename.rename, file="land.group.file")
+    @m.entity(FileCapability.rename, file="land.group.file")
+    @m.entity(FileDirectoryCapability.rename, file="land.group.file")
     async def rename_file(self, file: Selector, name: str) -> None:
         await self.account.connection.call(
             "update",

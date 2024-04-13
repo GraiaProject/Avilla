@@ -8,14 +8,14 @@ from graia.amnesia.builtins.memcache import MemcacheService
 from avilla.core.builtins.capability import CoreCapability
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.elizabeth.file import FileData
+from avilla.elizabeth.utils import filedata_parse
 
 if TYPE_CHECKING:
     from avilla.elizabeth.account import ElizabethAccount  # noqa
     from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
 
 
-class ElizabethAnnouncementQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
+class ElizabethFileQueryPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.namespace = "avilla.protocol/elizabeth::query"
     m.identify = "file"
 
@@ -30,7 +30,7 @@ class ElizabethAnnouncementQueryPerform((m := AccountCollector["ElizabethProtoco
             file_id = i["id"]
             await cache.set(
                 f"elizabeth/account({self.account.route['account']}).group({previous['group']}).file({file_id})",
-                FileData.parse(i),
+                filedata_parse(i),
                 timedelta(minutes=5),
             )
             if callable(predicate) and predicate("file", file_id) or file_id == predicate:

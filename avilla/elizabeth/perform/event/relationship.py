@@ -63,7 +63,7 @@ class ElizabethEventRelationshipPerform((m := ConnectionCollector())._):
             Nick(friend_data["nickname"], friend_data["nickname"], friend_data.get("remark")),
             Summary(friend_data["nickname"], None),
         )
-        return DirectSessionDestroyed(context)
+        return DirectSessionDestroyed(context, active=True)
 
     @m.entity(ElizabethCapability.event_callback, raw_event="MemberJoinEvent")
     async def member_join(self, raw_event: dict):

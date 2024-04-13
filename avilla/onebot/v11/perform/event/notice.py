@@ -18,6 +18,7 @@ from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.standard.core.activity import ActivityTrigged
 from avilla.standard.core.privilege import MuteInfo, Privilege
+from avilla.standard.core.file import FileReceived
 from avilla.standard.qq.event import PocketLuckyKingNoticed
 from avilla.standard.qq.honor import Honor
 
@@ -232,7 +233,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         if "group_id" in raw_event:
             group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
             target = group.member(str(raw_event["target_id"]))
-            operator = group.message(str(raw_event["user_id"]))
+            operator = group.member(str(raw_event["user_id"]))
             context = Context(account, operator, target, group, group.member(str(self_id)))
             return ActivityTrigged(context, "nudge", group, target.nudge("_"), operator)
         else:
@@ -251,7 +252,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
 
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
         target = group.member(str(raw_event["target_id"]))
-        operator = group.message(str(raw_event["user_id"]))
+        operator = group.member(str(raw_event["user_id"]))
         context = Context(account, operator, target, group, group.member(str(self_id)))
         return PocketLuckyKingNoticed(context)
 
@@ -264,11 +265,27 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             return
 
         group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
-        user = group.message(str(raw_event["user_id"]))
+        user = group.member(str(raw_event["user_id"]))
         context = Context(account, group, user, group, group.member(str(self_id)))
         return MetadataModified(
             context,
             user,
             Honor,
             {Honor.inh().name: ModifyDetail("set", raw_event["honor_type"])},
+        )
+
+    @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_upload")
+    async def file_upload(self, raw_event: dict):
+        self_id = raw_event["self_id"]
+        account = self.connection.accounts.get(self_id)
+        if account is None:
+            logger.warning(f"Unknown account {self_id} sent message {raw_event}")
+            return
+
+        group = Selector().land(account.route["land"]).group(str(raw_event["group_id"]))
+        user = group.member(str(raw_event["user_id"]))
+        context = Context(account, group, user, group, group.member(str(self_id)))
+        return FileReceived(
+            context,
+            group.file(raw_event["file"]["id"]),
         )
