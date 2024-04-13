@@ -12,9 +12,6 @@ if TYPE_CHECKING:
 
 
 class OneBot11PrivilegeActionPerform((m := AccountCollector["OneBot11Protocol", "OneBot11Account"]())._):
-    m.namespace = "avilla.protocol/onebot11::action"
-    m.identify = "admin"
-
     @PrivilegeCapability.upgrade.collect(m, target="land.group.member")
     async def upgrade_perm(self, target: Selector, dest: str | None = None):
         result = await self.account.connection.call(

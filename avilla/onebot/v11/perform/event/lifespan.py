@@ -9,7 +9,6 @@ from avilla.core.platform import Abstract, Land, Platform
 from avilla.core.selector import Selector
 from avilla.onebot.v11.account import OneBot11Account
 from avilla.onebot.v11.capability import OneBot11Capability
-from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.standard.core.account.event import (
     AccountAvailable,
     AccountRegistered,
