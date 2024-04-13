@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from graia.amnesia.message import MessageChain
 
 from avilla.core import Context
+from avilla.core.elements import Reference
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -33,6 +34,8 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
     ) -> Selector:
         if message.has(Forward):
             return await self.send_group_forward_msg(target, message.get_first(Forward))
+        if reply:
+            message.content.insert(0, Reference(reply))
         result = await self.account.connection.call(
             "send_group_msg",
             {
@@ -73,6 +76,8 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
     ) -> Selector:
         if message.has(Forward):
             return await self.send_friend_forward_msg(target, message.get_first(Forward))
+        if reply:
+            message.content.insert(0, Reference(reply))
         result = await self.account.connection.call(
             "send_private_msg",
             {
@@ -106,6 +111,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
             Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["message_id"])
         )
 
+    @m.entity(OneBot11Capability.send_forward_msg, target="land.group")
     async def send_group_forward_msg(self, target: Selector, forward: Forward) -> Selector:
         data = []
         for node in forward.nodes:
@@ -148,6 +154,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         )
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["message_id"])
 
+    @m.entity(OneBot11Capability.send_forward_msg, target="land.friend")
     async def send_friend_forward_msg(self, target: Selector, forward: Forward) -> Selector:
         data = []
         for node in forward.nodes:

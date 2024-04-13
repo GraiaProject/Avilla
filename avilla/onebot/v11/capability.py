@@ -4,9 +4,12 @@ from typing import Any
 
 from graia.amnesia.message import Element, MessageChain
 
+from avilla.core import Selector
 from avilla.core.event import AvillaEvent
+from avilla.core.ryanvk import TargetOverload
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.standard.core.application import AvillaLifecycleEvent
+from avilla.standard.qq.elements import Forward
 from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 
 SPECIAL_POST_TYPE = {"message_sent": "message"}
@@ -31,6 +34,11 @@ class OneBot11Capability((m := ApplicationCollector())._):
 
     @Fn.complex({TypeOverload(): ["element"]})
     async def serialize_element(self, element: Any) -> dict:  # type: ignore
+        ...
+
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def send_forward_msg(self, target: Selector, forward: Forward) -> Selector:
+        """发送合并转发消息"""
         ...
 
     async def deserialize_chain(self, chain: list[dict]):
