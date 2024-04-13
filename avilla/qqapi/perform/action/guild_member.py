@@ -132,19 +132,7 @@ class QQAPIGuildMemberActionPerform((m := AccountCollector["QQAPIProtocol", "QQA
 
     @SceneCapability.remove_member.collect(m, target="land.guild.member")
     @SceneCapability.remove_member.collect(m, target="land.guild.channel.member")
-    async def remove_user(self, target: Selector, reason: str | None = None) -> None:
-        self_info = await self.account.connection.call_http(
-            "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
-        )
-        effective = bool({"2", "4", "5"} & set(self_info["roles"]))
-        if not effective:
-            raise PermissionError(permission_error_message(f"remove_member@{target.path}", "read", ["manage"]))
-        await self.account.connection.call_http(
-            "delete", f"guilds/{target.pattern['guild']}/members/{target.pattern['member']}", {}
-        )
-
-    @SceneCapability.remove_member.collect(m, target="land.guild.channel.member")
-    async def remove_member(self, target: Selector, reason: str | None = None) -> None:
+    async def remove_member(self, target: Selector, reason: str | None = None, permanent: bool = False) -> None:
         self_info = await self.account.connection.call_http(
             "get", f"guilds/{target.pattern['guild']}/members/{self.account.route['account']}", {}
         )

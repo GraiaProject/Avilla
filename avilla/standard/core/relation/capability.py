@@ -16,7 +16,7 @@ class SceneCapability(Capability):
         ...
 
     @Fn.complex({TargetOverload(): ["target"]})
-    async def remove_member(self, target: Selector, reason: str | None = None) -> None:
+    async def remove_member(self, target: Selector, reason: str | None = None, permanent: bool = False) -> None:
         ...
 
     # @Fn.with_overload({

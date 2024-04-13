@@ -73,7 +73,7 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
         )
 
     @m.entity(SceneCapability.remove_member, target="land.group.member")
-    async def remove_member(self, target: Selector, reason: str | None = None):
+    async def remove_member(self, target: Selector, reason: str | None = None, permanent: bool = False):
         await self.account.websocket_client.call_http(
             "post",
             "api/group/kick",
@@ -81,6 +81,6 @@ class RedGroupActionPerform((m := AccountCollector["RedProtocol", "RedAccount"](
                 "group": int(target["group"]),
                 "uidList": [int(target["member"])],
                 "reason": reason or "",
-                "refuseForever": False,
+                "refuseForever": permanent,
             },
         )

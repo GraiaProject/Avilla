@@ -103,8 +103,8 @@ class ContextSceneSelector(ContextSelector):
 
         return self.context[MessageSend.send](self, message, reply=reply)
 
-    def remove_member(self, target: Selector, reason: str | None = None):
-        return self.context[SceneCapability.remove_member](target, reason)
+    def remove_member(self, target: Selector, reason: str | None = None, permanent: bool = False):
+        return self.context[SceneCapability.remove_member](target, reason, permanent)
 
     @property
     def channel(self) -> str:

@@ -286,7 +286,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
         )
 
     @m.entity(SceneCapability.remove_member, target="land.group.member")
-    async def group_member_remove(self, target: Selector, reason: str | None = None):
+    async def group_member_remove(self, target: Selector, reason: str | None = None, permanent: bool = False):
         if not (await self.get_group_member_privilege(target, Privilege)).effective:
             self_privilege_info = await self.get_group_member_privilege_summary(
                 target.into(f"~.member({self.account.route['account']})"), Summary
