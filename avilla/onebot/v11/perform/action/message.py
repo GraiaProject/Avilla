@@ -204,3 +204,47 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         return (
             Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["message_id"])
         )
+
+    @m.pull("land.group.message", Message)
+    async def get_group_message(self, message: Selector, route: ...) -> Message:
+        result = await self.account.connection.call(
+            "get_msg",
+            {
+                "message_id": int(message.pattern["message"]),
+            },
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
+        if not result["group"]:
+            raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
+        group = Selector().land(self.account.route["land"]).group(str(result["group_id"]))
+        content = await OneBot11Capability(self.account.staff).deserialize_chain(result["message"])
+        return Message(
+            str(result["message_id"]),
+            group,
+            group.member(result["sender"]["user_id"]),
+            content,
+            datetime.fromtimestamp(result["time"]),
+        )
+
+    @m.pull("land.friend.message", Message)
+    async def get_friend_message(self, message: Selector, route: ...) -> Message:
+        result = await self.account.connection.call(
+            "get_msg",
+            {
+                "message_id": int(message.pattern["message"]),
+            },
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
+        if result["group"]:
+            raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
+        friend = Selector().land(self.account.route["land"]).friend(str(result["user_id"]))
+        content = await OneBot11Capability(self.account.staff).deserialize_chain(result["message"])
+        return Message(
+            str(result["message_id"]),
+            friend,
+            friend,
+            content,
+            datetime.fromtimestamp(result["time"]),
+        )
