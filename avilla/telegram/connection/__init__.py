@@ -1,1 +1,1 @@
-from .bot import TelegramBot as TelegramBot
+from .poll import TelegramLongPollingNetworking

@@ -7,7 +7,7 @@ from graia.ryanvk import Access, BasePerform
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount
-    from avilla.telegram.connection.bot import TelegramBot
+    from avilla.telegram.connection.poll import TelegramNetworking
 
 T = TypeVar("T")
 T1 = TypeVar("T1")
@@ -16,7 +16,7 @@ T1 = TypeVar("T1")
 class ConnectionBasedPerformTemplate(BasePerform, native=True):
     __collector__: ClassVar[ConnectionCollector]
 
-    instance: Access[TelegramBot] = Access()
+    connection: Access[TelegramNetworking] = Access()
     account: Access[TelegramAccount] = Access()
 
 

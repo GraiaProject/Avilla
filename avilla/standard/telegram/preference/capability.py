@@ -12,6 +12,7 @@ class PreferenceCapability(Capability):
         drop_pending_updates: bool = None,
         ip_address: str = None,
         certificate: ... = None,
+        secret_token: str = None,
     ) -> None:
         pass
 

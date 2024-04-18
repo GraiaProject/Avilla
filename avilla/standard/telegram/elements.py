@@ -2,31 +2,20 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Final
 
-from graia.amnesia.message.element import Element, Text
+from graia.amnesia.message.element import Element
 
-from avilla.core.elements import Audio
 from avilla.core.elements import Picture as CorePicture
-from avilla.core.elements import Reference as CoreReference
 from avilla.core.elements import Video as CoreVideo
 from avilla.core.resource import LocalFileResource, Resource
-from avilla.standard.telegram.constants import DiceEmoji, DiceLimit, MessageEntityType
-
-
-class Reference(CoreReference):
-    original: ...
+from avilla.standard.telegram.constants import DiceEmoji, DiceLimit
 
 
 class Picture(CorePicture):
     has_spoiler: bool
 
     def __init__(self, resource: Resource[bytes] | Resource[str] | Path | str, has_spoiler: bool = False):
-        if isinstance(resource, Path):
-            resource = LocalFileResource(resource)
-        elif isinstance(resource, str):
-            resource = LocalFileResource(Path(resource))
-        self.resource = resource
+        super().__init__(resource)
         self.has_spoiler = has_spoiler
 
     def __repr__(self):
@@ -37,11 +26,7 @@ class Video(CoreVideo):
     has_spoiler: bool
 
     def __init__(self, resource: Resource[bytes] | Path | str, has_spoiler: bool = False):
-        if isinstance(resource, Path):
-            resource = LocalFileResource(resource)
-        elif isinstance(resource, str):
-            resource = LocalFileResource(Path(resource))
-        self.resource = resource
+        super().__init__(resource)
         self.has_spoiler = has_spoiler
 
     def __repr__(self):
@@ -85,7 +70,6 @@ class Contact(Element):
     phone_number: str
     first_name: str
     last_name: str | None = None
-    user_id: int | None = None
     vcard: str | None = None
 
     def __str__(self) -> str:
@@ -101,13 +85,30 @@ class Location(Element):
         return "[$Location]"
 
 
-@dataclass
 class Sticker(Element):
     resource: Resource[bytes] | Path | str
-    width: int = -1
-    height: int = -1
-    is_animated: bool = None
-    is_video: bool = None
+    width: int
+    height: int
+    is_animated: bool
+    is_video: bool
+
+    def __init__(
+        self,
+        resource: Resource[bytes] | Path | str,
+        width: int = -1,
+        height: int = -1,
+        is_animated: bool = None,
+        is_video: bool = None,
+    ):
+        if isinstance(resource, Path):
+            resource = LocalFileResource(resource)
+        elif isinstance(resource, str):
+            resource = LocalFileResource(Path(resource))
+        self.resource = resource
+        self.width = width
+        self.height = height
+        self.is_animated = is_animated
+        self.is_video = is_video
 
     def __str__(self) -> str:
         return "[$Sticker]"
@@ -132,11 +133,6 @@ class VideoNote(CoreVideo):
         return "[$VideoNote]"
 
 
-class Voice(Audio):
-    def __str__(self) -> str:
-        return "[$Voice]"
-
-
 class Dice(Element):
     value: int | None
     emoji: DiceEmoji
@@ -159,95 +155,6 @@ class Dice(Element):
 
 class Story(Element):
     """Currently holds no information."""
-
-
-@dataclass
-class Entity(Text):
-    text: str
-
-    def __str__(self):
-        return self.text
-
-    def __repr__(self):
-        attrs = ";".join(f"{k}={v}" for k, v in self.__dict__.items())
-        return f"[${self.__class__.__name__}:{attrs}]"
-
-
-@dataclass
-class EntityHashTag(Entity):
-    type: Final[str] = MessageEntityType.HASH_TAG
-
-
-@dataclass
-class EntityCashTag(Entity):
-    type: Final[str] = MessageEntityType.CASHTAG
-
-
-@dataclass
-class EntityPhoneNumber(Entity):
-    type: Final[str] = MessageEntityType.PHONE_NUMBER
-
-
-@dataclass
-class EntityBotCommand(Entity):
-    type: Final[str] = MessageEntityType.BOT_COMMAND
-
-
-@dataclass
-class EntityUrl(Entity):
-    type: Final[str] = MessageEntityType.URL
-
-
-@dataclass
-class EntityEmail(Entity):
-    type: Final[str] = MessageEntityType.EMAIL
-
-
-@dataclass
-class EntityBold(Entity):
-    type: Final[str] = MessageEntityType.BOLD
-
-
-@dataclass
-class EntityItalic(Entity):
-    type: Final[str] = MessageEntityType.ITALIC
-
-
-@dataclass
-class EntityCode(Entity):
-    type: Final[str] = MessageEntityType.CODE
-
-
-@dataclass
-class EntityPre(Entity):
-    language: str
-    type: Final[str] = MessageEntityType.PRE
-
-
-@dataclass
-class EntityTextLink(Entity):
-    url: str
-    type: Final[str] = MessageEntityType.TEXT_LINK
-
-
-@dataclass
-class EntityUnderline(Entity):
-    type: Final[str] = MessageEntityType.UNDERLINE
-
-
-@dataclass
-class EntityStrikeThrough(Entity):
-    type: Final[str] = MessageEntityType.STRIKETHROUGH
-
-
-@dataclass
-class EntitySpoiler(Entity):
-    type: Final[str] = MessageEntityType.SPOILER
-
-
-@dataclass
-class EntityBlockQuote(Entity):
-    type: Final[str] = MessageEntityType.BLOCKQUOTE
 
 
 class Invoice(Element):
