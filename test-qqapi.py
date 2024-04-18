@@ -27,7 +27,6 @@ async def on_message_received(cx: Context, event: MessageReceived):
     print(
         await cx.scene.send_message(
             [
-                Reference(event.message.id),
                 Text("Hello, Avilla!"),
                 # Embed(
                 #     "Test Embed",

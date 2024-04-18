@@ -1,19 +1,20 @@
 from __future__ import annotations
 
+from base64 import b64encode
 from datetime import datetime, timedelta, timezone
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 from loguru import logger
 
-from avilla.core import CoreCapability, Message, Context
+from avilla.core import Context, CoreCapability, Message
 from avilla.core.exceptions import ActionFailed
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.qqapi.capability import QQAPICapability
 from avilla.qqapi.exception import AuditException
-from avilla.qqapi.utils import form_data
+from avilla.qqapi.utils import form_data, unescape
 from avilla.standard.core.message import (
     MessageReceived,
     MessageRevoke,
@@ -32,6 +33,76 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
     m.identify = "message"
 
     context: OptionalAccess[Context] = OptionalAccess()
+
+    @m.entity(QQAPICapability.post_file, target="land.group")
+    async def post_group_file(
+        self,
+        target: Selector,
+        file_type: int,
+        url: str | None = None,
+        srv_send_msg: bool = True,
+        file_data: str | bytes | None = None,
+    ) -> dict:
+        if isinstance(file_data, bytes):
+            file_data = b64encode(file_data).decode()
+        result = await self.account.connection.call_http(
+            "post",
+            f"v2/groups/{target.pattern['group']}/files",
+            {
+                "file_type": file_type,
+                "url": url,
+                "srv_send_msg": srv_send_msg,
+                "file_data": file_data,
+            },
+        )
+        if result is None:
+            raise ActionFailed(f"Failed to post file to {target.pattern['group']}")
+        return result
+
+    @m.entity(QQAPICapability.post_file, target="land.friend")
+    async def post_friend_file(
+        self,
+        target: Selector,
+        file_type: int,
+        url: str | None = None,
+        srv_send_msg: bool = True,
+        file_data: str | bytes | None = None,
+    ) -> dict:
+        if isinstance(file_data, bytes):
+            file_data = b64encode(file_data).decode()
+        result = await self.account.connection.call_http(
+            "post",
+            f"v2/users/{target.pattern['friend']}/files",
+            {
+                "file_type": file_type,
+                "url": url,
+                "srv_send_msg": srv_send_msg,
+                "file_data": file_data,
+            },
+        )
+        if result is None:
+            raise ActionFailed(f"Failed to post file to {target.pattern['friend']}")
+        return result
+
+    @staticmethod
+    def _extract_qq_media(msg: dict) -> dict[str, Any]:
+        kwargs = {}
+        if media := msg.get("media"):
+            kwargs["file_type"] = {"image": 1, "video": 2, "audio": 3, "file": 4}.get(media[0], 4)
+            kwargs["url"] = media[1]
+        elif "file_image" in msg:
+            kwargs["file_type"] = 1
+            kwargs["file_data"] = msg.pop("file_image")
+        elif "file_audio" in msg:
+            kwargs["file_type"] = 2
+            kwargs["file_data"] = msg.pop("file_audio")
+        elif "file_video" in msg:
+            kwargs["file_type"] = 3
+            kwargs["file_data"] = msg.pop("file_video")
+        elif "file_file" in msg:
+            kwargs["file_type"] = 4
+            kwargs["file_data"] = msg.pop("file_file")
+        return kwargs
 
     @MessageSend.send.collect(m, target="land.guild.channel")
     async def send_channel_msg(
@@ -107,32 +178,28 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             msg["msg_id"] = reply.pattern["message"]
             # TODO: wait for api upgrade
             # msg["message_reference"] = {"message_id": reply.pattern["message"]}
-        if "file_image" in msg:
-            raise NotImplementedError("file_image is not supported yet")
         if msg.get("embed"):
             msg_type = 4
         elif msg.get("ark"):
             msg_type = 3
         elif msg.get("markdown"):
             msg_type = 2
-        elif msg.get("media"):
+        elif any(
+            i in msg
+            for i in (
+                "media",
+                "file_image",
+                "file_video",
+                "file_audio",
+                "file_file",
+            )
+        ):
             msg_type = 7
         else:
             msg_type = 0
         msg["timestamp"] = int(datetime.now(timezone.utc).timestamp())
         if msg_type == 7:
-            file_types = {"image": 1, "video": 2, "audio": 3}
-            result = await self.account.connection.call_http(
-                "post",
-                f"v2/groups/{target.pattern['group']}/files",
-                {
-                    "file_type": file_types.get(msg["media"][0], 1),
-                    "url": msg["media"][1],
-                    "srv_send_msg": "msg_id" not in msg,
-                },
-            )
-            if result is None:
-                raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
+            result = await self.post_group_file(target, srv_send_msg="msg_id" not in msg, **self._extract_qq_media(msg))
             if "msg_id" not in msg:
                 context = self.account.get_context(target)
                 msg = Message(
@@ -165,8 +232,14 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 2,
                 expire=timedelta(minutes=5),
             )
+        # TODO: wait for api upgrade
+        msg["content"] = unescape(msg["content"])
         method, data = form_data(msg)
-        result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
+        try:
+            result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
+        except ActionFailed:
+            msg["msg_seq"] = msg["msg_seq"] + (hash(target.pattern['group']) % 0x7FFFFFF) + int(datetime.now(timezone.utc).timestamp())
+            result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
         if result is None:
             raise ActionFailed(f"Failed to send message to {target.pattern['group']}: {message}")
         context = self.account.get_context(target)
@@ -197,32 +270,28 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             msg["msg_id"] = reply.pattern["message"]
             # TODO: wait for api upgrade
             # msg["message_reference"] = {"message_id": reply.pattern["message"]}
-        if "file_image" in msg:
-            raise NotImplementedError("file_image is not supported yet")
         if msg.get("embed"):
             msg_type = 4
         elif msg.get("ark"):
             msg_type = 3
         elif msg.get("markdown"):
             msg_type = 2
-        elif msg.get("media"):
-            msg_type = 1
+        elif any(
+            i in msg
+            for i in (
+                "media",
+                "file_image",
+                "file_video",
+                "file_audio",
+                "file_file",
+            )
+        ):
+            msg_type = 7
         else:
             msg_type = 0
         msg["timestamp"] = int(datetime.now(timezone.utc).timestamp())
-        if msg_type == 1:
-            file_types = {"image": 1, "video": 2, "audio": 3}
-            result = await self.account.connection.call_http(
-                "post",
-                f"v2/users/{target.pattern['friend']}/files",
-                {
-                    "file_type": file_types.get(msg["media"][0], 1),
-                    "url": msg["media"][1],
-                    "srv_send_msg": "msg_id" not in msg,
-                },
-            )
-            if result is None:
-                raise ActionFailed(f"Failed to send message to {target.pattern['friend']}: {message}")
+        if msg_type == 7:
+            result = await self.post_friend_file(target, srv_send_msg="msg_id" not in msg, **self._extract_qq_media(msg))
             if "msg_id" not in msg:
                 context = self.account.get_context(target)
                 msg = Message(
@@ -238,8 +307,6 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
             if "content" not in msg or not msg["content"]:
                 msg["content"] = " "
         msg["msg_type"] = msg_type
-        if "file_image" in msg:
-            raise NotImplementedError("file_image is not supported yet")
         if seq := await cache.get(
             f"qqapi/account({self.account.route['account']}):{target}+msg_id:{msg.get('msg_id', '_')}"
         ):
@@ -256,8 +323,14 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 2,
                 expire=timedelta(minutes=5),
             )
+        # TODO: wait for api upgrade
+        msg["content"] = unescape(msg["content"])
         method, data = form_data(msg)
-        result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
+        try:
+            result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
+        except ActionFailed:
+            msg["msg_seq"] = msg["msg_seq"] + (hash(target.pattern['friend']) % 0x7FFFFFF) + int(datetime.now(timezone.utc).timestamp())
+            result = await self.account.connection.call_http(method, f"v2/users/{target.pattern['friend']}/messages", data)
         if result is None:
             raise ActionFailed(f"Failed to send message to {target.pattern['friend']}: {message}")
         context = self.account.get_context(target)
@@ -283,7 +356,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         )
         context = self.context
         if context:
-            context.cache[f"{context.scene.display_without_land}#dms"] = result['guild_id']
+            context.cache[f"{context.scene.display_without_land}#dms"] = result["guild_id"]
         return target.into(f"land.guild({result['guild_id']})")
 
     @QQAPICapability.create_dms.collect(m, target="land.guild.member")
@@ -299,7 +372,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         )
         context = self.context
         if context:
-            context.cache[f"{context.scene.display_without_land}#dms"] = result['guild_id']
+            context.cache[f"{context.scene.display_without_land}#dms"] = result["guild_id"]
         return target.into(f"land.guild({result['guild_id']})")
 
     @MessageSend.send.collect(m, target="land.guild.user")
@@ -313,7 +386,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         context = self.context
         msg = await QQAPICapability(self.account.staff).serialize(message)
         if not context or not (send_guild_id := context.cache.get(f"{context.scene.display_without_land}#dms")):
-            send_guild_id = (await self.create_dms_user(target)).pattern["guild"] 
+            send_guild_id = (await self.create_dms_user(target)).pattern["guild"]
         if context and (event_id := context.cache.get(target.display_without_land)):
             msg["msg_id"] = event_id
         if reply:

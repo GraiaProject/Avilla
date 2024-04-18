@@ -31,8 +31,8 @@ class QQAPIEventMetadataPerform((m := ConnectionCollector())._):
             guild,
             Summary,
             {
-                Summary.inh(lambda x: x.name): ModifyDetail("set", raw_event["name"], None),
-                Summary.inh(lambda x: x.description): ModifyDetail("set", raw_event["description"], None),
+                Summary.inh().name: ModifyDetail("set", raw_event["name"], None),
+                Summary.inh().description: ModifyDetail("set", raw_event["description"], None),
             },
         )
 
@@ -52,5 +52,5 @@ class QQAPIEventMetadataPerform((m := ConnectionCollector())._):
             channel.member(account_route["account"]),
         )
         return MetadataModified(
-            context, channel, Summary, {Summary.inh(lambda x: x.name): ModifyDetail("set", raw_event["name"], None)}
+            context, channel, Summary, {Summary.inh().name: ModifyDetail("set", raw_event["name"], None)}
         )

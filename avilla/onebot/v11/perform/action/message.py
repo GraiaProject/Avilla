@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 
 from graia.amnesia.message import MessageChain
 
+from avilla.core import Context
+from avilla.core.elements import Reference
 from avilla.core.message import Message
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -32,11 +34,13 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
     ) -> Selector:
         if message.has(Forward):
             return await self.send_group_forward_msg(target, message.get_first(Forward))
+        if reply:
+            message.content.insert(0, Reference(reply))
         result = await self.account.connection.call(
             "send_group_msg",
             {
                 "group_id": int(target.pattern["group"]),
-                "message": [await self.staff.call_fn(OneBot11Capability.serialize_element, i) for i in message],
+                "message": await OneBot11Capability(self.account.staff).serialize_chain(message),
             },
         )
         if result is None:
@@ -72,16 +76,24 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
     ) -> Selector:
         if message.has(Forward):
             return await self.send_friend_forward_msg(target, message.get_first(Forward))
+        if reply:
+            message.content.insert(0, Reference(reply))
         result = await self.account.connection.call(
             "send_private_msg",
             {
                 "user_id": int(target.pattern["friend"]),
-                "message": [await self.staff.call_fn(OneBot11Capability.serialize_element, i) for i in message],
+                "message": await OneBot11Capability(self.account.staff).serialize_chain(message),
             },
         )
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {message}")
-        context = self.account.get_context(target, via=self.account.route)
+        context = Context(
+            self.account,
+            self.account.route,
+            target,
+            target,
+            self.account.route,
+        )
         self.protocol.post_event(
             MessageSent(
                 context,
@@ -99,12 +111,13 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
             Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["message_id"])
         )
 
+    @m.entity(OneBot11Capability.send_forward_msg, target="land.group")
     async def send_group_forward_msg(self, target: Selector, forward: Forward) -> Selector:
         data = []
         for node in forward.nodes:
             if node.mid:
                 data.append({"type": "node", "data": {"id": node.mid["message"]}})
-            else:
+            elif node.content:
                 data.append(
                     {
                         "type": "node",
@@ -112,7 +125,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
                             "name": node.name,
                             "uin": node.uid,
                             "time": str(int(node.time.timestamp())),
-                            "content": await self.account.staff.serialize_message(node.content),  # type: ignore
+                            "content": await OneBot11Capability(self.account.staff).serialize_chain(node.content),
                         },
                     }
                 )
@@ -141,12 +154,13 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         )
         return Selector().land(self.account.route["land"]).group(target.pattern["group"]).message(result["message_id"])
 
+    @m.entity(OneBot11Capability.send_forward_msg, target="land.friend")
     async def send_friend_forward_msg(self, target: Selector, forward: Forward) -> Selector:
         data = []
         for node in forward.nodes:
             if node.mid:
                 data.append({"type": "node", "data": {"id": node.mid["message"]}})
-            else:
+            elif node.content:
                 data.append(
                     {
                         "type": "node",
@@ -154,7 +168,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
                             "name": node.name,
                             "uin": node.uid,
                             "time": str(int(node.time.timestamp())),
-                            "content": await self.account.staff.serialize_message(node.content),  # type: ignore
+                            "content": await OneBot11Capability(self.account.staff).serialize_chain(node.content),
                         },
                     }
                 )
@@ -167,7 +181,13 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         )
         if result is None:
             raise RuntimeError(f"Failed to send message to {target.pattern['friend']}: {forward}")
-        context = self.account.get_context(target, via=self.account.route)
+        context = Context(
+            self.account,
+            self.account.route,
+            target,
+            target,
+            self.account.route,
+        )
         self.protocol.post_event(
             MessageSent(
                 context,
@@ -183,4 +203,48 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         )
         return (
             Selector().land(self.account.route["land"]).friend(target.pattern["friend"]).message(result["message_id"])
+        )
+
+    @m.pull("land.group.message", Message)
+    async def get_group_message(self, message: Selector, route: ...) -> Message:
+        result = await self.account.connection.call(
+            "get_msg",
+            {
+                "message_id": int(message.pattern["message"]),
+            },
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
+        if not result["group"]:
+            raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
+        group = Selector().land(self.account.route["land"]).group(str(result["group_id"]))
+        content = await OneBot11Capability(self.account.staff).deserialize_chain(result["message"])
+        return Message(
+            str(result["message_id"]),
+            group,
+            group.member(result["sender"]["user_id"]),
+            content,
+            datetime.fromtimestamp(result["time"]),
+        )
+
+    @m.pull("land.friend.message", Message)
+    async def get_friend_message(self, message: Selector, route: ...) -> Message:
+        result = await self.account.connection.call(
+            "get_msg",
+            {
+                "message_id": int(message.pattern["message"]),
+            },
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
+        if result["group"]:
+            raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
+        friend = Selector().land(self.account.route["land"]).friend(str(result["user_id"]))
+        content = await OneBot11Capability(self.account.staff).deserialize_chain(result["message"])
+        return Message(
+            str(result["message_id"]),
+            friend,
+            friend,
+            content,
+            datetime.fromtimestamp(result["time"]),
         )

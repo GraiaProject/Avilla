@@ -19,3 +19,11 @@ def platform(land: str):
             humanized_name="Satori Protocol for Avilla",
         ),
     )
+
+
+def land(land: str):
+    return Land(
+        land,
+        [{"name": "satorijs"}],
+        humanized_name=land.title(),
+    )

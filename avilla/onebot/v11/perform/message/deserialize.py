@@ -3,11 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Reference, Text
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Reference, Text, File
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.onebot.v11.capability import OneBot11Capability
-from avilla.onebot.v11.resource import OneBot11ImageResource
+from avilla.onebot.v11.resource import OneBot11ImageResource, OneBot11FileResource
 from avilla.standard.qq.elements import (
     Dice,
     FlashImage,
@@ -44,7 +44,11 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(OneBot11Capability.deserialize_element, raw_element="image")
     async def image(self, raw_element: dict) -> Picture | FlashImage:
         data: dict = raw_element["data"]
-        resource = OneBot11ImageResource(Selector().land("qq").picture(file := data["file"]), file, data["url"])
+        if self.context:
+            id_ = self.context.scene.file(data["file"])
+        else:
+            id_ = Selector().land("qq").file(data["file"])
+        resource = OneBot11ImageResource(id_, data["file"], data["url"])
         return FlashImage(resource) if raw_element.get("type") == "flash" else Picture(resource)
 
     @m.entity(OneBot11Capability.deserialize_element, raw_element="at")
@@ -109,4 +113,20 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
             elem.nodes.append(node)
         return elem
 
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="file")
+    async def file(self, raw_element: dict) -> File:
+        data = raw_element["data"]
+        if "file_id" in data:
+            if self.context:
+                id_ = self.context.scene.file(data["file_id"])
+            else:
+                id_ = Selector().land("qq").file(data["file_id"])
+            resource = OneBot11FileResource(id_, data["file"], "", int(data["file_size"]))
+        else:
+            if self.context:
+                id_ = self.context.scene.file(data["name"])
+            else:
+                id_ = Selector().land("qq").file(data["name"])
+            resource = OneBot11FileResource(id_, data["name"], data["path"], int(data["size"]), data.get("busid", None))
+        return File(resource)
     # TODO

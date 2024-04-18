@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 from typing import TYPE_CHECKING, cast
 
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text, Reference
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.onebot.v11.capability import OneBot11Capability
@@ -154,3 +154,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
         return {"type": "shake", "data": {}}
 
     # TODO
+
+    @m.entity(OneBot11Capability.serialize_element, element=Reference)
+    async def reply(self, element: Reference):
+        return {"type": "reply", "data": {"id": element.message["message"]}}

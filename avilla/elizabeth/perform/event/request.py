@@ -8,6 +8,7 @@ from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
 from avilla.elizabeth.collector.connection import ConnectionCollector
 from avilla.elizabeth.const import LAND
+from avilla.standard.core.profile.metadata import Nick, Summary
 from avilla.standard.core.request import RequestReceived
 
 
@@ -37,7 +38,18 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             sender,
             account,
             datetime.now(),
-            request_type="member_join",
+            request_type="elizabeth::member_join",
+            message=raw_event.get("message"),
+        )
+        context._collect_metadatas(
+            group,
+            Nick(raw_event["groupName"], raw_event["groupName"], None),
+            Summary(raw_event["groupName"], None),
+        )
+        context._collect_metadatas(
+            sender,
+            Nick(raw_event["nick"], raw_event["nick"], None),
+            Summary(raw_event["nick"], None),
         )
         return RequestReceived(context, request)
 
@@ -62,7 +74,13 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             sender,
             account,
             datetime.now(),
-            request_type="new_friend",
+            request_type="elizabeth::new_friend",
+            message=raw_event.get("message"),
+        )
+        context._collect_metadatas(
+            sender,
+            Nick(raw_event["nick"], raw_event["nick"], None),
+            Summary(raw_event["nick"], None),
         )
         return RequestReceived(context, request)
 
@@ -87,6 +105,17 @@ class ElizabethEventRequestPerform((m := ConnectionCollector())._):
             member,
             account,
             datetime.now(),
-            request_type="bot_invited_join_group",
+            request_type="elizabeth::invited_join_group",
+            message=raw_event.get("message"),
+        )
+        context._collect_metadatas(
+            member,
+            Nick(raw_event["nick"], raw_event["nick"], None),
+            Summary(raw_event["nick"], None),
+        )
+        context._collect_metadatas(
+            group,
+            Nick(raw_event["groupName"], raw_event["groupName"], None),
+            Summary(raw_event["groupName"], None),
         )
         return RequestReceived(context, request)

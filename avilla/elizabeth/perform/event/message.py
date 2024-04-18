@@ -104,6 +104,7 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -128,11 +129,12 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
         friend = Selector().land("qq").friend(str(raw_event["operator"]))
+        author = Selector().land("qq").friend(str(raw_event["authorId"]))
         message = Selector().land("qq").friend(str(raw_event["authorId"])).message(str(raw_event["messageId"]))
         context = Context(
             account,
             friend,
-            friend,
+            author,
             friend,
             account_route,
         )
@@ -146,51 +148,65 @@ class ElizabethEventMessagePerform((m := ConnectionCollector())._):
     async def group_recall(self, raw_event: dict):
         account_route = Selector().land("qq").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        group = Selector().land("qq").group(str(raw_event["group"]["id"]))
-        if operator := raw_event.get("operator"):
-            member = group.member(str(operator["id"]))
-        else:
-            member = group.member(account_route["account"])
-        message = (
-            Selector()
-            .land("qq")
-            .group(str(raw_event["group"]["id"]))
-            .member(str(raw_event["authorId"]))
-            .message(str(raw_event["messageId"]))
+        group_data = raw_event["group"]
+        group = Selector().land("qq").group(str(group_data["id"]))
+        author = group.member(str(raw_event["authorId"]))
+        author_data = await self.connection.call(
+            "fetch", "memberInfo",
+            {
+                "target": group_data["id"],
+                "memberId": raw_event["authorId"],
+            }
         )
+        operator_data = raw_event["operator"]
+        operator = group.member(str(operator_data["id"]))
+        message = author.message(str(raw_event["messageId"]))
         context = Context(
             account,
-            member,
-            group,
+            operator,
+            author,
             group,
             group.member(account_route["account"]),
         )
-        group_data = raw_event["group"]
-        if operator:
-            context._collect_metadatas(
-                member,
-                Nick(operator["memberName"], operator["memberName"], operator.get("specialTitle")),
-                Summary(operator["memberName"], "a group member assigned to this account"),
-                MuteInfo(
-                    operator.get("mutetimeRemaining") is not None,
-                    timedelta(seconds=operator.get("mutetimeRemaining", 0)),
-                    None,
-                ),
-                Privilege(
-                    PRIVILEGE_LEVEL[operator["permission"]] > 0,
-                    PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator["permission"]],
-                ),
-            )
         context._collect_metadatas(
-            member,
+            operator,
+            Nick(operator_data["memberName"], operator_data["memberName"], operator_data.get("specialTitle")),
+            Summary(operator_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                operator_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=operator_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[operator_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[operator_data["permission"]],
+            ),
+        )
+        context._collect_metadatas(
+            group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
             ),
         )
+        context._collect_metadatas(
+            author,
+            Nick(author_data["memberName"], author_data["memberName"], author_data.get("specialTitle")),
+            Summary(author_data["memberName"], "a group member assigned to this account"),
+            MuteInfo(
+                author_data.get("mutetimeRemaining") is not None,
+                timedelta(seconds=author_data.get("mutetimeRemaining", 0)),
+                None,
+            ),
+            Privilege(
+                PRIVILEGE_LEVEL[author_data["permission"]] > 0,
+                PRIVILEGE_LEVEL[group_data["permission"]] > PRIVILEGE_LEVEL[author_data["permission"]],
+            ),
+        )
         return MessageRevoked(
             context,
             message,
-            member,
+            operator,
         )

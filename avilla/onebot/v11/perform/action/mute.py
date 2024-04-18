@@ -18,7 +18,7 @@ class OneBot11MuteActionPerform((m := AccountCollector["OneBot11Protocol", "OneB
 
     @MuteCapability.mute.collect(m, target="land.group.member")
     async def mute_member(self, target: Selector, duration: timedelta):
-        result = self.account.connection.call(
+        result = await self.account.connection.call(
             "set_group_ban",
             {
                 "group_id": int(target["group"]),
@@ -26,12 +26,12 @@ class OneBot11MuteActionPerform((m := AccountCollector["OneBot11Protocol", "OneB
                 "duration": int(duration.total_seconds()),
             },
         )
-        if result is None:
+        if result is not None:
             raise RuntimeError(f"Failed to mute {target}: {result}")
 
     @MuteCapability.mute.collect(m, target="land.group.anonymous")
     async def mute_anonymous(self, target: Selector, duration: timedelta):
-        result = self.account.connection.call(
+        result = await self.account.connection.call(
             "set_group_anonymous_ban",
             {
                 "group_id": int(target["group"]),
@@ -39,27 +39,27 @@ class OneBot11MuteActionPerform((m := AccountCollector["OneBot11Protocol", "OneB
                 "duration": int(duration.total_seconds()),
             },
         )
-        if result is None:
+        if result is not None:
             raise RuntimeError(f"Failed to mute {target}: {result}")
 
     @MuteCapability.unmute.collect(m, target="land.group.member")
     async def unmute_member(self, target: Selector):
-        result = self.account.connection.call(
+        result = await self.account.connection.call(
             "set_group_ban", {"group_id": int(target["group"]), "user_id": int(target["member"]), "duration": 0}
         )
-        if result is None:
+        if result is not None:
             raise RuntimeError(f"Failed to mute {target}: {result}")
 
     @MuteAllCapability.mute_all.collect(m, target="land.group")
     async def mute_all_group(self, target: Selector):
-        result = self.account.connection.call("set_group_whole_ban", {"group_id": int(target["group"]), "enable": True})
-        if result is None:
+        result = await self.account.connection.call("set_group_whole_ban", {"group_id": int(target["group"]), "enable": True})
+        if result is not None:
             raise RuntimeError(f"Failed to mute all {target}: {result}")
 
     @MuteAllCapability.unmute_all.collect(m, target="land.group")
     async def unmute_all_group(self, target: Selector):
-        result = self.account.connection.call(
+        result = await self.account.connection.call(
             "set_group_whole_ban", {"group_id": int(target["group"]), "enable": False}
         )
-        if result is None:
+        if result is not None:
             raise RuntimeError(f"Failed to unmute all {target}: {result}")

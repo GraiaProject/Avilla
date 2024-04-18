@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Audio, Face, File, Notice, NoticeAll, Picture, Text
+from avilla.core.elements import Audio, Face, File, Notice, NoticeAll, Picture, Text, Video
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.elizabeth.capability import ElizabethCapability
@@ -11,6 +11,7 @@ from avilla.elizabeth.resource import (
     ElizabethFileResource,
     ElizabethImageResource,
     ElizabethVoiceResource,
+    ElizabethVideoResource,
 )
 from avilla.standard.qq.elements import (
     App,
@@ -99,9 +100,13 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="File")
     async def file(self, raw_element: dict) -> File:
+        if self.context:
+            selector = self.context.scene
+        else:
+            selector = Selector().land("qq")
         return File(
             ElizabethFileResource(
-                Selector().land("qq").file(raw_element["id"]),
+                selector.file(raw_element["id"]),
                 raw_element["id"],
                 None,
                 raw_element["name"],
@@ -111,8 +116,12 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="Image")
     async def image(self, raw_element: dict) -> Picture:
+        if self.context:
+            selector = self.context.scene
+        else:
+            selector = Selector().land("qq")
         resource = ElizabethImageResource(
-            Selector().land("qq").picture(raw_element["imageId"]),
+            selector.picture(raw_element["imageId"]),
             raw_element["imageId"],
             raw_element["url"],
         )
@@ -120,8 +129,12 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="FlashImage")
     async def flash_image(self, raw_element: dict) -> FlashImage:
+        if self.context:
+            selector = self.context.scene
+        else:
+            selector = Selector().land("qq")
         resource = ElizabethImageResource(
-            Selector().land("qq").picture(raw_element["imageId"]),
+            selector.picture(raw_element["imageId"]),
             raw_element["id"],
             raw_element["url"],
         )
@@ -129,12 +142,29 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="Voice")
     async def voice(self, raw_element: dict) -> Audio:
+        if self.context:
+            selector = self.context.scene
+        else:
+            selector = Selector().land("qq")
         resource = ElizabethVoiceResource(
-            Selector().land("qq").voice(raw_element["voiceId"]),
+            selector.voice(raw_element["voiceId"]),
             raw_element["voiceId"],
             raw_element["url"],
         )
         return Audio(resource, int(raw_element["length"]))
+
+    @m.entity(ElizabethCapability.deserialize_element, raw_element="ShortVideo")
+    async def video(self, raw_element: dict) -> Video:
+        if self.context:
+            selector = self.context.scene
+        else:
+            selector = Selector().land("qq")
+        resource = ElizabethVideoResource(
+            selector.video(raw_element["videoId"]),
+            raw_element["videoId"],
+            raw_element["videoUrl"],
+        )
+        return Video(resource)
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="Forward")
     async def forward(self, raw_element: dict) -> Forward:

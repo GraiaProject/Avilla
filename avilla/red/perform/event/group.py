@@ -34,7 +34,7 @@ class RedEventGroupPerform((m := ConnectionCollector())._):
             context,
             group,
             Summary,
-            {Summary.inh(lambda x: x.name): ModifyDetail("update", group_data["groupName"], "")},
+            {Summary.inh().name: ModifyDetail("update", group_data["groupName"], "")},
             operator=operator,
             scene=group,
         )

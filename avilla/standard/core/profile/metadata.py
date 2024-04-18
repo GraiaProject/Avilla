@@ -16,3 +16,8 @@ class Nick(Metadata):
     name: str
     nickname: str
     badge: str | None
+
+
+@dataclass
+class Avatar(Metadata):
+    url: str

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from satori.config import WebsocketsInfo
+from satori.client.network.websocket import WsNetwork
 
 from avilla.core.application import Avilla
 from avilla.core.protocol import BaseProtocol, ProtocolConfig
@@ -13,12 +14,19 @@ class SatoriConfig(ProtocolConfig, WebsocketsInfo):
     ...
 
 
-def _import_performs():  # noqa: F401
-    import avilla.satori.perform.action.message
+SatoriService.register_config(SatoriConfig, WsNetwork)
+
+
+def _import_performs():
+    import avilla.satori.perform.action.message  # noqa: F401
+    import avilla.satori.perform.action.request  # noqa: F401
     import avilla.satori.perform.context  # noqa: F401
     import avilla.satori.perform.event.activity
     import avilla.satori.perform.event.lifespan
     import avilla.satori.perform.event.message
+    import avilla.satori.perform.event.metadata
+    import avilla.satori.perform.event.relationship
+    import avilla.satori.perform.event.request
     import avilla.satori.perform.message.deserialize
     import avilla.satori.perform.message.serialize  # noqa
     import avilla.satori.perform.resource_fetch  # noqa: F401
@@ -30,6 +38,7 @@ class SatoriProtocol(BaseProtocol):
     artifacts = {
         **merge(
             ref("avilla.protocol/satori::action", "message"),
+            ref("avilla.protocol/satori::action", "request"),
             ref("avilla.protocol/satori::context"),
             ref("avilla.protocol/satori::resource_fetch"),
             ref("avilla.protocol/satori::message", "deserialize"),
@@ -37,6 +46,9 @@ class SatoriProtocol(BaseProtocol):
             ref("avilla.protocol/satori::event", "message"),
             ref("avilla.protocol/satori::event", "lifespan"),
             ref("avilla.protocol/satori::event", "activity"),
+            ref("avilla.protocol/satori::event", "metadata"),
+            ref("avilla.protocol/satori::event", "relationship"),
+            ref("avilla.protocol/satori::event", "request"),
         ),
     }
 

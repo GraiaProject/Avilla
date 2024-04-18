@@ -20,7 +20,7 @@ class OneBot11PrivilegeActionPerform((m := AccountCollector["OneBot11Protocol", 
         result = await self.account.connection.call(
             "set_group_admin", {"group_id": int(target["group"]), "user_id": int(target["member"]), "enable": True}
         )
-        if result is None:
+        if result is not None:
             raise RuntimeError(f"Failed to upgrade permission to {target}: {result}")
 
     @PrivilegeCapability.downgrade.collect(m, target="land.group.member")
@@ -28,5 +28,5 @@ class OneBot11PrivilegeActionPerform((m := AccountCollector["OneBot11Protocol", 
         result = await self.account.connection.call(
             "set_group_admin", {"group_id": int(target["group"]), "user_id": int(target["member"]), "enable": False}
         )
-        if result is None:
+        if result is not None:
             raise RuntimeError(f"Failed to downgrade permission to {target}: {result}")

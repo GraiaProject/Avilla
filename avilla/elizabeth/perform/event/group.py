@@ -50,6 +50,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -62,8 +63,8 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             group.member(account_route["account"]),
             Privilege,
             {
-                Privilege.inh(lambda x: x.available): ModifyDetail("update", available, not available),
-                Privilege.inh(lambda x: x.effective): ModifyDetail("update", available, not available),
+                Privilege.inh().available: ModifyDetail("update", available, not available),
+                Privilege.inh().effective: ModifyDetail("update", available, not available),
             },
             operator=operator,
             scene=group,
@@ -101,6 +102,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -112,10 +114,8 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             group.member(account_route["account"]),
             MuteInfo,
             {
-                MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", True, False),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail(
-                    "set", timedelta(seconds=raw_event["durationSeconds"]), None
-                ),
+                MuteInfo.inh().muted: ModifyDetail("update", True, False),
+                MuteInfo.inh().duration: ModifyDetail("set", timedelta(seconds=raw_event["durationSeconds"]), None),
             },
             operator=operator,
             scene=group,
@@ -153,6 +153,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
         )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -164,8 +165,8 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             group.member(account_route["account"]),
             MuteInfo,
             {
-                MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", False, True),
-                MuteInfo.inh(lambda x: x.duration): ModifyDetail("clear", timedelta(seconds=0)),
+                MuteInfo.inh().muted: ModifyDetail("update", False, True),
+                MuteInfo.inh().duration: ModifyDetail("clear", timedelta(seconds=0)),
             },
             operator=operator,
             scene=group,
@@ -203,6 +204,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -213,7 +215,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             context,
             group,
             Summary,
-            {Summary.inh(lambda x: x.name): ModifyDetail("update", raw_event["current"], raw_event["origin"])},
+            {Summary.inh().name: ModifyDetail("update", raw_event["current"], raw_event["origin"])},
             operator=operator or group.member(account_route["account"]),
             scene=group,
         )
@@ -250,6 +252,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -261,7 +264,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             group,
             MuteInfo,
             {
-                MuteInfo.inh(lambda x: x.muted): ModifyDetail("update", raw_event["current"], raw_event["origin"]),
+                MuteInfo.inh().muted: ModifyDetail("update", raw_event["current"], raw_event["origin"]),
             },
             operator=operator or group.member(account_route["account"]),  # bot self if no operator
             scene=group,
@@ -299,6 +302,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             )
         context._collect_metadatas(
             group,
+            Nick(group_data["name"], group_data["name"], None),
             Summary(group_data["name"], None),
             Privilege(
                 PRIVILEGE_LEVEL[group_data["permission"]] > 0,
@@ -310,9 +314,7 @@ class ElizabethEventGroupPerform((m := ConnectionCollector())._):
             group,
             Announcement,
             {
-                Announcement.inh(lambda x: x.content): ModifyDetail(
-                    "update", raw_event["current"], raw_event["origin"]
-                ),
+                Announcement.inh().content: ModifyDetail("update", raw_event["current"], raw_event["origin"]),
             },
             operator=operator or group.member(account_route["account"]),  # bot self if no operator
             scene=group,

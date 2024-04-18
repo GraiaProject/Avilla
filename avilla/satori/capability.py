@@ -3,7 +3,8 @@ from __future__ import annotations
 from typing import Any
 
 from graia.amnesia.message import Element, MessageChain
-from satori.element import Element as SatoriElement
+from satori.parser import parse
+from satori.element import transform
 from satori.model import Event
 
 from avilla.core.event import AvillaEvent
@@ -14,7 +15,7 @@ from graia.ryanvk import Fn, PredicateOverload, TypeOverload
 
 class SatoriCapability((m := ApplicationCollector())._):
     @Fn.complex({PredicateOverload(lambda _, raw: raw.type): ["raw_event"]})
-    async def event_callback(self, raw_event: Event) -> AvillaEvent | AvillaLifecycleEvent | None:
+    async def event_callback(self, raw_event: Event) -> AvillaEvent | AvillaLifecycleEvent | list[Any] | None:
         ...
 
     @Fn.complex({TypeOverload(): ["raw_element"]})
@@ -25,10 +26,10 @@ class SatoriCapability((m := ApplicationCollector())._):
     async def serialize_element(self, element: Any) -> str:
         ...
 
-    async def deserialize(self, content: list[SatoriElement]):
+    async def deserialize(self, content: str):
         elements = []
 
-        for raw_element in content:
+        for raw_element in transform(parse(content)):
             elements.append(await self.deserialize_element(raw_element))
 
         return MessageChain(elements)
@@ -45,5 +46,10 @@ class SatoriCapability((m := ApplicationCollector())._):
         maybe_event = await self.event_callback(event)
 
         if maybe_event is not None:
-            self.avilla.event_record(maybe_event)
-            self.avilla.broadcast.postEvent(maybe_event)
+            if isinstance(maybe_event, list):
+                for _event in maybe_event:
+                    self.avilla.event_record(_event)
+                    self.avilla.broadcast.postEvent(_event)
+            else:
+                self.avilla.event_record(maybe_event)
+                self.avilla.broadcast.postEvent(maybe_event)

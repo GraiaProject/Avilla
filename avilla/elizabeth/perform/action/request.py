@@ -17,7 +17,8 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
 
     @m.entity(RequestCapability.accept, target="land.group.request")
     async def accept_member_request(self, target: Selector) -> None:
-        event_id, from_id = target.pattern["request"].split(":")[1].split("/")
+        request_id = target.pattern["request"].split("@")[-1]
+        event_id, from_id = request_id.split("/")
         await self.account.connection.call(
             "update",
             "resp_memberJoinRequestEvent",
@@ -32,7 +33,8 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
 
     @m.entity(RequestCapability.reject, target="land.group.request")
     async def reject_member_request(self, target: Selector, reason: str | None = None, forever: bool = False) -> None:
-        event_id, from_id = target.pattern["request"].split(":")[1].split("/")
+        request_id = target.pattern["request"].split("@")[-1]
+        event_id, from_id = request_id.split("/")
         await self.account.connection.call(
             "update",
             "resp_memberJoinRequestEvent",
@@ -47,7 +49,8 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
 
     @m.entity(RequestCapability.ignore, target="land.group.request")
     async def ignore_member_request(self, target: Selector) -> None:
-        event_id, from_id = target.pattern["request"].split(":")[1].split("/")
+        request_id = target.pattern["request"].split("@")[-1]
+        event_id, from_id = request_id.split("/")
         await self.account.connection.call(
             "update",
             "resp_memberJoinRequestEvent",
@@ -66,7 +69,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             "update",
             "resp_newFriendRequestEvent",
             {
-                "eventId": int(target.pattern["request"].split(":")[1]),
+                "eventId": int(target.pattern["request"].split("@")[-1]),
                 "fromId": int(target.pattern["contact"]),
                 "groupId": int(target.pattern["group"]),
                 "operate": 0,
@@ -80,7 +83,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             "update",
             "resp_newFriendRequestEvent",
             {
-                "eventId": int(target.pattern["request"].split(":")[1]),
+                "eventId": int(target.pattern["request"].split("@")[-1]),
                 "fromId": int(target.pattern["contact"]),
                 "groupId": int(target.pattern["group"]),
                 "operate": 2 if forever else 1,
@@ -94,7 +97,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             "update",
             "resp_botInvitedJoinGroupRequestEvent",
             {
-                "eventId": int(target.pattern["request"].split(":")[1]),
+                "eventId": int(target.pattern["request"].split("@")[-1]),
                 "fromId": int(target.pattern["member"]),
                 "groupId": int(target.pattern["group"]),
                 "operate": 0,
@@ -110,7 +113,7 @@ class ElizabethRequestActionPerform((m := AccountCollector["ElizabethProtocol", 
             "update",
             "resp_botInvitedJoinGroupRequestEvent",
             {
-                "eventId": int(target.pattern["request"].split(":")[1]),
+                "eventId": int(target.pattern["request"].split("@")[-1]),
                 "fromId": int(target.pattern["member"]),
                 "groupId": int(target.pattern["group"]),
                 "operate": 1,

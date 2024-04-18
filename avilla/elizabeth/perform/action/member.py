@@ -15,7 +15,7 @@ from avilla.standard.core.privilege import (
     Privilege,
     PrivilegeCapability,
 )
-from avilla.standard.core.profile import Nick, NickCapability, Summary
+from avilla.standard.core.profile import Avatar, Nick, NickCapability, Summary
 from avilla.standard.core.relation import SceneCapability
 
 if TYPE_CHECKING:
@@ -25,7 +25,11 @@ if TYPE_CHECKING:
 
 class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtocol", "ElizabethAccount"]())._):
     m.namespace = "avilla.protocol/elizabeth::action"
-    m.identify = "group_member"
+    m.identify = "member"
+
+    @m.pull("land.group.member", Avatar)
+    async def get_group_member_avatar(self, target: Selector, route: ...) -> Avatar:
+        return Avatar(f"https://q2.qlogo.cn/headimg_dl?dst_uin={target.pattern['member']}&spec=640")
 
     @m.pull("land.group.member", Nick)
     async def get_group_member_nick(self, target: Selector, route: ...) -> Nick:
@@ -282,7 +286,7 @@ class ElizabethGroupMemberActionPerform((m := AccountCollector["ElizabethProtoco
         )
 
     @m.entity(SceneCapability.remove_member, target="land.group.member")
-    async def group_member_remove(self, target: Selector, reason: str | None = None):
+    async def group_member_remove(self, target: Selector, reason: str | None = None, permanent: bool = False):
         if not (await self.get_group_member_privilege(target, Privilege)).effective:
             self_privilege_info = await self.get_group_member_privilege_summary(
                 target.into(f"~.member({self.account.route['account']})"), Summary

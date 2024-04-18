@@ -30,12 +30,14 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             Selector().land("qq").user(str(raw_event["user_id"])),
             account,
             datetime.fromtimestamp(raw_event["time"]),
+            request_type="onebot11::friend",
+            message=raw_event.get("comment"),
         )
         return RequestEvent(
             Context(
                 account,
                 request.sender,
-                request.sender,
+                account.route,
                 request.scene,
                 account.route,
             ),
@@ -51,12 +53,14 @@ class OneBot11EventRequestPerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         request = Request(
-            raw_event["flag"],
+            f'{raw_event["sub_type"]}_{raw_event["flag"]}',
             account.info.platform.land,
             Selector().land("qq").group(str(raw_event["group_id"])),
             Selector().land("qq").user(str(raw_event["user_id"])),
             account,
             datetime.fromtimestamp(raw_event["time"]),
+            request_type=f"onebot11::group.{raw_event['sub_type']}",
+            message=raw_event.get("comment"),
         )
         return RequestEvent(
             Context(
