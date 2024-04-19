@@ -1,23 +1,12 @@
 import os
-from pathlib import Path
 
 from graia.amnesia.message import MessageChain
 
-from avilla.core import Audio, Avilla, Context, MessageReceived, Text
+from avilla.core import Avilla, Context, MessageReceived
 from avilla.standard.core.message import MessageSent
-from avilla.standard.telegram.constants import DiceEmoji
-from avilla.standard.telegram.elements import Dice, Picture, Video, Voice
-from avilla.standard.telegram.event import (
-    ForumTopicClosed,
-    ForumTopicCreated,
-    ForumTopicEdited,
-    ForumTopicReopened,
-    GeneralForumTopicHidden,
-    GeneralForumTopicUnhidden,
-)
-from avilla.telegram.protocol import TelegramBotConfig, TelegramProtocol
+from avilla.telegram.protocol import TelegramLongPollingConfig, TelegramProtocol
 
-config = TelegramBotConfig(os.environ["TELEGRAM_TOKEN"], reformat=False)
+config = TelegramLongPollingConfig(os.environ["TELEGRAM_TOKEN"])
 avilla = Avilla(message_cache_size=0)
 avilla.apply_protocols(TelegramProtocol().configure(config))
 
@@ -26,20 +15,22 @@ avilla.apply_protocols(TelegramProtocol().configure(config))
 async def on_message_received(cx: Context, event: MessageReceived, msg: MessageChain):
     # print(repr(event))
     print(f"{msg = }")
-    await cx.scene.send_message(
-        # MessageChain(
-        #     [
-        #         # Dice(DiceEmoji.SLOT_MACHINE),
-        #         # Picture(Path("test.jpg"), has_spoiler=False),
-        #         # Text("Hello, Avilla!"),
-        #         # Video(Path("test.mp4"), has_spoiler=True),
-        #         # Text("Hello, Avilla!"),
-        #         Voice(Path("test.mp3")),
-        #     ]
-        # ),
-        msg,
-        reply=event.message,
-    )
+    # await cx.scene.send_message(
+    #     # MessageChain(
+    #     #     [
+    #     #         # Dice(DiceEmoji.SLOT_MACHINE),
+    #     #         # Picture(Path("test.jpg"), has_spoiler=False),
+    #     #         # Text("Hello, Avilla!"),
+    #     #         # Video(Path("test.mp4"), has_spoiler=True),
+    #     #         # Text("Hello, Avilla!"),
+    #     #         Voice(Path("test.mp3")),
+    #     #     ]
+    #     # ),
+    #     msg,
+    #     reply=event.message,
+    # )
+    await event.message.revoke()
+    print("Revoke")
 
 
 # @avilla.listen(ForumTopicCreated)

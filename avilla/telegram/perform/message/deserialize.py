@@ -42,17 +42,17 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
     # LINK: https://github.com/microsoft/pyright/issues/5409
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="text")
-    async def text(self, raw_element: dict) -> list[Text]:
+    async def text(self, raw_element: dict) -> list[Element]:
         return [Text(raw_element["text"])]
 
     @staticmethod
-    async def extract_entities(text: str, entities: list[dict]) -> list[Text]:
+    async def extract_entities(text: str, entities: list[dict]) -> list[Element]:
         # See: https://core.telegram.org/api/entities#entity-length
 
         ignored_keys = {"type", "offset", "length"}
         result = []
-        text = text.encode("utf-16be")
-        remaining = text
+        encoded = text.encode("utf-16be")
+        remaining = encoded
         offset = 0
         for entity in entities:
             start = (entity["offset"] - offset) * 2
@@ -70,7 +70,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         return result
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="entities")
-    async def entities(self, raw_element: dict) -> list[Text]:
+    async def entities(self, raw_element: dict) -> list[Element]:
         return await self.extract_entities(raw_element["text"], raw_element["entities"])
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="caption")
@@ -91,10 +91,12 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         return result
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="photo")
-    async def photo(self, raw_element: dict) -> list[Picture]:
+    async def photo(self, raw_element: dict) -> list[Element]:
         photo: dict = raw_element["photo"][-1]
         file_id: str = photo["file_id"]
         file_unique_id: str = photo["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
 
         return [
@@ -116,6 +118,8 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
             return None
         file_id: str = thumbnail["file_id"]
         file_unique_id: str = thumbnail["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
 
         return TelegramPhotoResource(
@@ -128,10 +132,12 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         )
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="animation")
-    async def animation(self, raw_element: dict) -> list[Animation]:
+    async def animation(self, raw_element: dict) -> list[Element]:
         animation: dict = raw_element["animation"]
         file_id: str = animation["file_id"]
         file_unique_id: str = animation["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
         thumbnail = self._thumb_resource(animation.get("thumb"))
 
@@ -153,10 +159,12 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         ]
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="audio")
-    async def audio(self, raw_element: dict) -> list[File]:
+    async def audio(self, raw_element: dict) -> list[Element]:
         audio: dict = raw_element["audio"]
         file_id: str = audio["file_id"]
         file_unique_id: str = audio["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
         thumbnail = self._thumb_resource(audio.get("thumb"))
 
@@ -178,10 +186,12 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         ]
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="doucument")
-    async def document(self, raw_element: dict) -> list[File]:
+    async def document(self, raw_element: dict) -> list[Element]:
         document: dict = raw_element["document"]
         file_id: str = document["file_id"]
         file_unique_id: str = document["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
         thumbnail = self._thumb_resource(document.get("thumb"))
 
@@ -204,6 +214,8 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         video: dict = raw_element["video"]
         file_id: str = video["file_id"]
         file_unique_id: str = video["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
         thumbnail = self._thumb_resource(video.get("thumb"))
 
@@ -230,6 +242,8 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         video_note: dict = raw_element["video_note"]
         file_id: str = video_note["file_id"]
         file_unique_id: str = video_note["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
         thumbnail = self._thumb_resource(video_note.get("thumb"))
 
@@ -248,10 +262,12 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         ]
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="voice")
-    async def voice(self, raw_element: dict) -> list[Audio]:
+    async def voice(self, raw_element: dict) -> list[Element]:
         voice: dict = raw_element["voice"]
         file_id: str = voice["file_id"]
         file_unique_id: str = voice["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
 
         return [
@@ -269,10 +285,12 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         ]
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="sticker")
-    async def sticker(self, raw_element: dict) -> list[Sticker]:
+    async def sticker(self, raw_element: dict) -> list[Element]:
         sticker: dict = raw_element["sticker"]
         file_id: str = sticker["file_id"]
         file_unique_id: str = sticker["file_unique_id"]
+
+        assert self.context
         selector = Selector().land(self.context.land).file_id(file_id).file_unique_id(file_unique_id)
         thumbnail = self._thumb_resource(sticker.get("thumb"))
 

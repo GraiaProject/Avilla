@@ -54,9 +54,9 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
 
     async def process_resource(self, element: Element, result: dict) -> dict:
         resource: Resource[bytes] = element.resource  # type: ignore
-        data: bytes | None = None
 
         if isinstance(resource, (TelegramResource, UrlResource)):
+            data = None
             result["data"][list(result["data"].keys())[-1]] = (
                 resource.url if isinstance(resource, UrlResource) else resource.file_id
             )
@@ -65,7 +65,7 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
         elif isinstance(resource, RawResource):
             data = resource.data
         else:
-            data: bytes = await self.account.staff.fetch_resource(resource)
+            data = await self.account.staff.fetch_resource(resource)
 
         if data is not None:
             name: str = str(id(data))  # sourcery skip: remove-unnecessary-cast

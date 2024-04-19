@@ -73,7 +73,6 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(TelegramCapability.event_callback, event_type="message.group")
     @m.entity(TelegramCapability.event_callback, event_type="message.supergroup")
     async def message_(self, event_type: str, raw_event: dict):
-        self_id = self.connection.account_id
         account = self.account
         message: dict = raw_event["message"]
         chat = Selector().land(account.route["land"]).chat(str(message["chat"]["id"]))
@@ -85,9 +84,9 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
             chat,
             chat,
             (
-                Selector().land(account.route["land"]).account(self_id)
+                Selector().land(account.route["land"]).account(account.route["account"])
                 if event_type == "message.private"
-                else chat.member(str(self_id))
+                else chat.member(account.route["account"])
             ),
         )
 

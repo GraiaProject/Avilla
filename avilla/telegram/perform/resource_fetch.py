@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from avilla.core import Context, CoreCapability, Selector
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.telegram.resource import (
@@ -15,6 +17,10 @@ from avilla.telegram.resource import (
     TelegramVoiceResource,
 )
 from graia.ryanvk import OptionalAccess
+
+if TYPE_CHECKING:
+    from avilla.telegram.account import TelegramAccount  # noqa
+    from avilla.telegram.protocol import TelegramProtocol  # noqa
 
 
 class TelegramResourceFetchPerform((m := AccountCollector["TelegramProtocol", "TelegramAccount"]())._):

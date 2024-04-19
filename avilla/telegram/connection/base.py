@@ -59,15 +59,13 @@ class TelegramNetworking:
     def staff(self):
         return Staff(self.get_staff_artifacts(), self.get_staff_components())
 
-    def message_receive(self) -> AsyncIterator[tuple[Self, dict[str, ...]]]:
-        ...
+    def message_receive(self) -> AsyncIterator[tuple[Self, dict]]: ...
 
     @property
     def alive(self) -> bool:  # noqa
         ...
 
-    async def wait_for_available(self):
-        ...
+    async def wait_for_available(self): ...
 
     async def send(self, action: str, **kwargs) -> dict:
         async with self.session.post(
@@ -102,7 +100,7 @@ class TelegramNetworking:
             async def event_parse_task():
                 await TelegramCapability(connection.staff).handle_event(list(data.keys())[-1], data)
 
-            asyncio.create_task(event_parse_task())
+            asyncio.create_task(event_parse_task())  # noqa
 
     def register(self):
         account_route = Selector().land("telegram").account(str(self.account_id))
@@ -129,7 +127,7 @@ class TelegramNetworking:
                 await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
                 del avilla.accounts[n]
 
-    async def call(self, action: str, _file: dict[str, tuple[str, bytes]] = None, **data) -> dict:
+    async def call(self, action: str, _file: dict[str, tuple[str, bytes]] | None = None, **data) -> dict:
         data = {k: v for k, v in data.items() if v is not None}
 
         logger.debug(f"calling {action!r}")
