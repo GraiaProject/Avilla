@@ -131,14 +131,12 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         if result := await cache.get(
             f"telegram/account({self.account.route['account']}).messages({target['message']})"
         ):
-            for msg in result:
-                await self.account.connection.call(
-                    "deleteMessage",
-                    chat_id=int(target.pattern["chat"]),
-                    message_id=int(msg["result"]["message_id"]),
-                )
+            await self.account.connection.call(
+                "deleteMessages",
+                chat_id=int(target.pattern["chat"]),
+                message_ids=[int(msg["result"]["message_id"]) for msg in result],
+            )
             return
-
         await self.account.connection.call(
             "deleteMessage", chat_id=int(target.pattern["chat"]), message_id=int(target.pattern["message"])
         )
