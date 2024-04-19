@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
-from avilla.core import Message
+from avilla.core import Message, UnsupportedOperation
 from avilla.core.elements import Reference
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -144,11 +144,49 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
     @m.entity(MessageEdit.edit, target="land.chat.message")
     @m.entity(MessageEdit.edit, target="land.chat.thread.message")
     async def edit_message(self, target: Selector, content: MessageChain):
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if await cache.get(f"telegram/account({self.account.route['account']}).messages({target['message']})"):
+            # we just don't support editing messages with multiple parts
+            raise UnsupportedOperation()
+
         editable = ["message", "photo", "audio", "document", "video", "animation"]
         serialized = await TelegramCapability(self.account.staff).serialize(content)
         composed = self.compose_elements(serialized)
 
         if len(composed) > 1 or composed[0]["api_name"][4:].lower() not in editable:
+            # an example of this is editing with a complex MessageChain
             raise InvalidEditedMessage()
 
-        # TODO: impl this
+        if composed[0]["api_name"][4:].lower() == "message":
+            await self.edit_text(target, composed[0])
+        else:
+            await self.edit_media(target, composed[0])
+
+    async def edit_text(self, target: Selector, content: dict):
+        await self.account.connection.call(
+            "editMessageText",
+            chat_id=int(target.pattern["chat"]),
+            message_id=int(target.pattern["message"]),
+            text=content["data"]["text"],
+            entities=content["data"].get("entities", []),
+        )
+
+    async def edit_caption(self, target: Selector, content: dict):
+        await self.account.connection.call(
+            "editMessageCaption",
+            chat_id=int(target.pattern["chat"]),
+            message_id=int(target.pattern["message"]),
+            caption=content["data"]["caption"],
+            caption_entities=content["data"].get("caption_entities", []),
+        )
+
+    async def edit_media(self, target: Selector, content: dict):
+        if "caption" in content["data"]:
+            await self.edit_caption(target, content)
+        await self.account.connection.call(
+            f"editMessageMedia",
+            _file=content.get("file"),
+            chat_id=int(target.pattern["chat"]),
+            message_id=int(target.pattern["message"]),
+            media=content["data"]["media"],
+        )
