@@ -51,6 +51,9 @@ def _import_performs():
     from .perform.action.preference import TelegramPreferenceActionPerform  # noqa: F401
     from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
 
+    # :: Context
+    from .perform.context import TelegramContextPerform  # noqa: F401
+
     # :: Resource Fetch
     from .perform.resource_fetch import TelegramResourceFetchPerform  # noqa: F401
 
@@ -61,6 +64,7 @@ class TelegramProtocol(BaseProtocol):
     _import_performs()
     artifacts = {
         **merge(
+            ref("avilla.protocol/telegram::context"),
             ref("avilla.protocol/telegram::resource_fetch"),
             ref("avilla.protocol/telegram::action", "chat"),
             # ref("avilla.protocol/telegram::action", "forum"),
