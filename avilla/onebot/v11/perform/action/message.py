@@ -215,8 +215,6 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
         )
         if result is None:
             raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
-        if not result["group"]:
-            raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
         group = Selector().land(self.account.route["land"]).group(str(result["group_id"]))
         content = await OneBot11Capability(self.account.staff).deserialize_chain(result["message"])
         return Message(
