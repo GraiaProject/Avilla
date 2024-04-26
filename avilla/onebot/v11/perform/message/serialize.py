@@ -3,11 +3,11 @@ from __future__ import annotations
 import base64
 from typing import TYPE_CHECKING, cast
 
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text, Reference
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Text, Reference, Audio
 from avilla.core.resource import LocalFileResource, RawResource, UrlResource
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.onebot.v11.capability import OneBot11Capability
-from avilla.onebot.v11.resource import OneBot11ImageResource
+from avilla.onebot.v11.resource import OneBot11ImageResource, OneBot11RecordResource
 from avilla.standard.qq.elements import (
     App,
     Dice,
@@ -78,6 +78,51 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
                 "data": {
                     "file": "base64://"
                     + base64.b64encode(cast(bytes, await self.account.staff.fetch_resource(element.resource))).decode(
+                        "utf-8"
+                    ),
+                },
+            }
+
+    @m.entity(OneBot11Capability.serialize_element, element=Audio)
+    async def audio(self, element: Picture) -> dict:
+        if isinstance(element.resource, OneBot11RecordResource):
+            return {
+                "type": "record",
+                "data": {
+                    "file": element.resource.file,
+                    "url": element.resource.url,
+                },
+            }
+        elif isinstance(element.resource, UrlResource):
+            return {
+                "type": "record",
+                "data": {
+                    "url": element.resource.url,
+                },
+            }
+        elif isinstance(element.resource, LocalFileResource):
+            data = base64.b64encode(element.resource.file.read_bytes()).decode("utf-8")
+            return {
+                "type": "record",
+                "data": {
+                    "file": "base64://" + data,
+                },
+            }
+        elif isinstance(element.resource, RawResource):
+            data = base64.b64encode(element.resource.data).decode("utf-8")
+            return {
+                "type": "record",
+                "data": {
+                    "file": "base64://" + data,
+                },
+            }
+        else:
+            return {
+                "type": "record",
+                "data": {
+                    "file": "base64://"
+                            + base64.b64encode(
+                        cast(bytes, await self.account.staff.fetch_resource(element.resource))).decode(
                         "utf-8"
                     ),
                 },
