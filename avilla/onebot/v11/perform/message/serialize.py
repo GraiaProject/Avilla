@@ -84,7 +84,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
             }
 
     @m.entity(OneBot11Capability.serialize_element, element=Audio)
-    async def audio(self, element: Picture) -> dict:
+    async def audio(self, element: Audio) -> dict:
         if isinstance(element.resource, OneBot11RecordResource):
             return {
                 "type": "record",
