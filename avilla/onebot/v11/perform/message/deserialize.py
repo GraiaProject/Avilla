@@ -3,11 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from avilla.core.elements import Face, Notice, NoticeAll, Picture, Reference, Text, File
+from avilla.core.elements import Face, Notice, NoticeAll, Picture, Reference, Text, File, Audio
 from avilla.core.ryanvk.collector.application import ApplicationCollector
 from avilla.core.selector import Selector
 from avilla.onebot.v11.capability import OneBot11Capability
-from avilla.onebot.v11.resource import OneBot11ImageResource, OneBot11FileResource
+from avilla.onebot.v11.resource import OneBot11ImageResource, OneBot11FileResource, OneBot11RecordResource
 from avilla.standard.qq.elements import (
     Dice,
     FlashImage,
@@ -50,6 +50,18 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
             id_ = Selector().land("qq").file(data["file"])
         resource = OneBot11ImageResource(id_, data["file"], data["url"])
         return FlashImage(resource) if raw_element.get("type") == "flash" else Picture(resource)
+
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="record")
+    async def record(self, raw_element: dict) -> Audio:
+        data: dict = raw_element["data"]
+        if "url" in data.keys():
+            if self.context:
+                id_ = self.context.scene.file(data["file"])
+            else:
+                id_ = Selector().land("qq").file(data["file"])
+            resource = OneBot11RecordResource(id_, data["file"], data["url"])
+            return Audio(resource)
+        return Audio(data["path"])
 
     @m.entity(OneBot11Capability.deserialize_element, raw_element="at")
     async def at(self, raw_element: dict) -> Notice | NoticeAll:
