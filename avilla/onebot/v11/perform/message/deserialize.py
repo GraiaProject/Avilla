@@ -54,12 +54,12 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(OneBot11Capability.deserialize_element, raw_element="record")
     async def record(self, raw_element: dict) -> Audio:
         data: dict = raw_element["data"]
-        if "path" in data.keys():
+        if "url" in data.keys():
             if self.context:
                 id_ = self.context.scene.file(data["file"])
             else:
                 id_ = Selector().land("qq").file(data["file"])
-            resource = OneBot11RecordResource(id_, data["file"], data["path"])
+            resource = OneBot11RecordResource(id_, data["file"], data["url"])
             return Audio(resource)
         return Audio(data["path"])
 
