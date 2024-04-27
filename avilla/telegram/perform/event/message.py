@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Final
 
-from avilla.core import MemberCreated, SceneCreated
+from avilla.core import MemberCreated, MemberDestroyed, SceneCreated, SceneDestroyed
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.selector import Selector
@@ -136,3 +136,33 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
 
             account.avilla.event_record(event)
             account.avilla.broadcast.postEvent(event)
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.left_chat_member")
+    async def left_chat_member(self, event_type: str, raw_event: dict):
+        account = self.account
+        user = raw_event["message"]["left_chat_member"]
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        member = chat.member(str(user["id"]))
+        context = Context(
+            account,
+            member,
+            chat,
+            chat,
+            Selector().land(account.route["land"]).member(account.route["account"]),
+        )
+        context._collect_metadatas(
+            member,
+            Nick(username := TelegramChatActionPerform.extract_username(user), username, user.get("title")),
+            Summary(username, None),
+        )
+        context._collect_metadatas(
+            chat,
+            Nick(chat_name := raw_event["message"]["chat"]["title"], chat_name, None),
+            Summary(chat_name, None),
+        )
+        if member.last_value == account.route["account"]:
+            event = SceneDestroyed(context, active=False)
+        else:
+            event = MemberDestroyed(context, active=True)
+
+        return event
