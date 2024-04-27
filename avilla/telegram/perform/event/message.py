@@ -16,6 +16,13 @@ from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.profile import Avatar, Nick, Summary
+from avilla.standard.telegram.event import (
+    ProximityAlertTriggered,
+    VideoChatEnded,
+    VideoChatParticipantsInvited,
+    VideoChatScheduled,
+    VideoChatStarted,
+)
 from avilla.standard.telegram.message_auto_delete_timer.metadata import (
     MessageAutoDeleteTimer,
 )
@@ -241,4 +248,78 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
                 )
             },
             scene=chat,
+        )
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.proximity_alert_triggered")
+    async def proximity_alert_triggered(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return ProximityAlertTriggered(
+            context,
+            Selector().land(self.account.route["land"]).member(str(raw_event["message"]["traveler"]["id"])),
+            Selector().land(self.account.route["land"]).member(str(raw_event["message"]["watcher"]["id"])),
+            raw_event["message"]["distance"],
+        )
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_scheduled")
+    async def video_chat_scheduled(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return VideoChatScheduled(
+            context,
+            datetime.fromtimestamp(raw_event["message"]["start_date"]),
+        )
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_started")
+    async def video_chat_started(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return VideoChatStarted(context)
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_ended")
+    async def video_chat_ended(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return VideoChatEnded(context, duration=raw_event["message"]["video_chat_ended"]["duration"])
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_participants_invited")
+    async def video_chat_participants_invited(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return VideoChatParticipantsInvited(
+            context,
+            [
+                Selector().land(self.account.route["land"]).member(str(user["id"]))
+                for user in raw_event["message"]["video_chat_participants_invited"]["users"]
+            ],
         )
