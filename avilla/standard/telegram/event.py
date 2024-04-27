@@ -33,8 +33,7 @@ class ProximityAlertTriggered(AvillaEvent):
 
 
 @dataclass
-class VideoChatEvent(AvillaEvent):
-    target: Selector
+class VideoChatEvent(AvillaEvent): ...
 
 
 @dataclass
