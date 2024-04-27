@@ -26,11 +26,6 @@ class GeneralForumTopicUnhidden(RelationshipEvent): ...
 
 
 @dataclass
-class MessageAutoDeleteTimerChanged(AvillaEvent):
-    message_auto_delete_time: int
-
-
-@dataclass
 class ProximityAlertTriggered(AvillaEvent):
     traveler: Selector
     watcher: Selector
