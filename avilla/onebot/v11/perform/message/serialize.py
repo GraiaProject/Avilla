@@ -18,6 +18,7 @@ from avilla.standard.qq.elements import (
     Poke,
     Share,
     Xml,
+    MarketFace,
 )
 
 if TYPE_CHECKING:
@@ -203,3 +204,14 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
     @m.entity(OneBot11Capability.serialize_element, element=Reference)
     async def reply(self, element: Reference):
         return {"type": "reply", "data": {"id": element.message["message"]}}
+
+    @m.entity(OneBot11Capability.serialize_element, element=MarketFace)
+    async def market_face(self, element: MarketFace):
+        return {
+            "type": "mface",
+            "data": {
+                "emojiPackageId": element.emoji_package_id,
+                "emojiId": element.emoji_id,
+                "key": element.key,
+            }
+        }
