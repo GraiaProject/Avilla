@@ -3,12 +3,19 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Final
 
-from avilla.core import MemberCreated, MemberDestroyed, SceneCreated, SceneDestroyed
+from avilla.core import (
+    MemberCreated,
+    MemberDestroyed,
+    MetadataModified,
+    SceneCreated,
+    SceneDestroyed,
+)
 from avilla.core.context import Context
+from avilla.core.event import ModifyDetail
 from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
-from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.profile import Avatar, Nick, Summary
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.collector.connection import ConnectionCollector
 from avilla.telegram.perform.action.chat import TelegramChatActionPerform
@@ -166,3 +173,46 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
             event = MemberDestroyed(context, active=True)
 
         return event
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.new_chat_title")
+    async def new_chat_title(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        context._collect_metadatas(
+            chat,
+            Nick(chat_name := raw_event["message"]["chat"]["title"], chat_name, None),
+            Summary(chat_name, None),
+        )
+        return MetadataModified(
+            context, chat, Summary, {Summary.inh().name: ModifyDetail("update", current=chat_name)}, scene=chat
+        )
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.new_chat_photo")
+    async def new_chat_photo(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return MetadataModified(context, chat, Avatar, {Avatar.inh().url: ModifyDetail("update")}, scene=chat)
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.delete_chat_photo")
+    async def delete_chat_photo(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return MetadataModified(context, chat, Avatar, {Avatar.inh().url: ModifyDetail("clear")}, scene=chat)
