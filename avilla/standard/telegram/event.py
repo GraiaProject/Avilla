@@ -1,63 +1,40 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from datetime import datetime
 
 from avilla.core import Selector
-from avilla.core.event import AvillaEvent
+from avilla.core.event import AvillaEvent, RelationshipEvent, SceneDestroyed
 
 
 @dataclass
-class NewChatMember(AvillaEvent):
-    target: Selector
-    is_bot: bool
-    username: str
-    first_name: str
-
-
-@dataclass
-class ForumTopicEvent(AvillaEvent):
-    target: Selector
-
-
-@dataclass
-class ForumTopicClosed(ForumTopicEvent):
-    ...
-
-
-@dataclass
-class ForumTopicCreated(ForumTopicEvent):
-    name: str
-    icon_color: int
-    icon_custom_emoji_id: str | None = None
-
-
-@dataclass
-class ForumTopicEdited(ForumTopicEvent):
+class ForumTopicEdited(RelationshipEvent):
     name: str
     icon_custom_emoji_id: str | None = None
 
 
-class ForumTopicReopened(ForumTopicEvent):
-    ...
+@dataclass
+class ForumTopicReopened(SceneDestroyed): ...
 
 
-class GeneralForumTopicHidden(ForumTopicEvent):
-    ...
+@dataclass
+class GeneralForumTopicHidden(RelationshipEvent): ...
 
 
-class GeneralForumTopicUnhidden(ForumTopicEvent):
-    ...
+@dataclass
+class GeneralForumTopicUnhidden(RelationshipEvent): ...
 
 
+@dataclass
 class MessageAutoDeleteTimerChanged(AvillaEvent):
-    ...
+    message_auto_delete_time: int
 
 
-class SuccessfulPayment(AvillaEvent):
-    ...
-
-
+@dataclass
 class ProximityAlertTriggered(AvillaEvent):
-    ...
+    traveler: Selector
+    watcher: Selector
+    distance: int
 
 
 @dataclass
@@ -80,9 +57,5 @@ class VideoChatScheduled(VideoChatEvent):
     start_date: datetime
 
 
-class VideoChatStarted(VideoChatEvent):
-    ...
-
-
-class WriteAccessAllowed(AvillaEvent):
-    ...
+@dataclass
+class VideoChatStarted(VideoChatEvent): ...
