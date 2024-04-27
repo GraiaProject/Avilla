@@ -3,12 +3,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Final
 
+from avilla.core import MemberCreated, SceneCreated
 from avilla.core.context import Context
 from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.profile import Nick, Summary
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.collector.connection import ConnectionCollector
+from avilla.telegram.perform.action.chat import TelegramChatActionPerform
 
 SUB_EVENTS: Final[set[str]] = {
     "new_chat_members",
@@ -102,3 +105,34 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
                 reply=reply,
             ),
         )
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.new_chat_members")
+    async def new_chat_members(self, event_type: str, raw_event: dict):
+        account = self.account
+        for user in raw_event["message"]["new_chat_members"]:
+            chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+            member = chat.member(str(user["id"]))
+            context = Context(
+                account,
+                member,
+                chat,
+                chat,
+                Selector().land(account.route["land"]).member(account.route["account"]),
+            )
+            context._collect_metadatas(
+                member,
+                Nick(username := TelegramChatActionPerform.extract_username(user), username, user.get("title")),
+                Summary(username, None),
+            )
+            context._collect_metadatas(
+                chat,
+                Nick(chat_name := raw_event["message"]["chat"]["title"], chat_name, None),
+                Summary(chat_name, None),
+            )
+            if member.last_value == account.route["account"]:
+                event = SceneCreated(context)
+            else:
+                event = MemberCreated(context)
+
+            account.avilla.event_record(event)
+            account.avilla.broadcast.postEvent(event)
