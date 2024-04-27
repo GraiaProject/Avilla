@@ -2,9 +2,11 @@ import asyncio
 import os
 
 from graia.amnesia.message import MessageChain
+from loguru import logger
 
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.standard.core.message import MessageEdit, MessageSent
+from avilla.standard.core.profile import Avatar
 from avilla.telegram.protocol import TelegramLongPollingConfig, TelegramProtocol
 
 config = TelegramLongPollingConfig(os.environ["TELEGRAM_TOKEN"])
@@ -13,10 +15,10 @@ avilla.apply_protocols(TelegramProtocol().configure(config))
 
 
 @avilla.listen(MessageReceived)
-async def on_message_received(cx: Context, event: MessageReceived, msg: MessageChain):
+async def on_message_received(cx: Context, event: MessageReceived, message: MessageChain):
     # print(repr(event))
-    print(f"{msg = }")
-    sent = await cx.scene.send_message(
+    logger.debug(f"{message = !r}")
+    await cx.scene.send_message(
         # MessageChain(
         #     [
         #         # Dice(DiceEmoji.SLOT_MACHINE),
@@ -27,11 +29,10 @@ async def on_message_received(cx: Context, event: MessageReceived, msg: MessageC
         #         Voice(Path("test.mp3")),
         #     ]
         # ),
-        msg,
+        message,
         reply=event.message,
     )
-    await asyncio.sleep(1)
-    await cx.staff.call_fn(MessageEdit.edit, sent, MessageChain("Edited!"))
+    logger.debug(f"Avatar URL: {await cx.pull(Avatar, cx.client)}")
 
 
 # @avilla.listen(ForumTopicCreated)
@@ -66,7 +67,7 @@ async def on_message_received(cx: Context, event: MessageReceived, msg: MessageC
 
 @avilla.listen(MessageSent)
 async def on_message_sent(event: MessageSent):
-    print(repr(event))
+    logger.debug(repr(event))
 
 
 avilla.launch()

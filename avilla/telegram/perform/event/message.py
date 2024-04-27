@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Final
-
-from graia.amnesia.builtins.memcache import Memcache, MemcacheService
-from graia.amnesia.message import MessageChain
 
 from avilla.core.context import Context
 from avilla.core.message import Message
@@ -94,20 +91,6 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
 
         chain = await TelegramCapability(account.staff.ext({"context": context})).deserialize(message)
         reply = chat.message(message["reply_to_message"]["message_id"]) if "reply_to_message" in message else None
-
-        cache: Memcache = self.account.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        await cache.set(
-            f"telegram/chat({message['chat']['id']})",
-            {
-                "id": message["chat"]["id"],
-                "title": message["chat"].get("title"),
-                "username": message["chat"].get("username"),
-                "first_name": message["chat"].get("first_name"),
-                "last_name": message["chat"].get("last_name"),
-            },
-            expire=timedelta(minutes=5),
-        )
-
         return MessageReceived(
             context,
             Message(

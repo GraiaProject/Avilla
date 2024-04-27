@@ -7,8 +7,9 @@ from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
-from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.profile import Avatar, Nick, Summary
 from avilla.standard.core.relation.capability import RelationshipTerminate
+from avilla.telegram.perform.resource_fetch import TelegramResourceFetchPerform
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa
@@ -51,3 +52,37 @@ class TelegramChatActionPerform((m := AccountCollector["TelegramProtocol", "Tele
     @RelationshipTerminate.terminate.collect(m, target="land.chat.thread")
     async def leave_chat(self, target: Selector):
         await self.account.connection.call("leaveChat", chat_id=target.into("::chat").last_value)
+
+    @m.pull("land.chat", Avatar)
+    @m.pull("land.chat.thread", Avatar)
+    async def get_chat_profile_photo(self, target: Selector, route: ...) -> Avatar:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        connection = self.account.connection
+        if raw := await cache.get(f"telegram/chat({target.last_value})"):
+            if raw["type"] == "private":
+                return await self.get_user_profile_photo(target, route)
+            file_id = raw.get("photo", {}).get("big_file_id")
+        else:
+            result = (await connection.call("getChat", chat_id=target.last_value))["result"]
+            await cache.set(f"telegram/chat({target.last_value})", result, expire=timedelta(minutes=5))
+            if result["type"] == "private":
+                return await self.get_user_profile_photo(target, route)
+            file_id = result.get("photo", {}).get("big_file_id")
+        file_resource = await TelegramResourceFetchPerform(self.staff).get_file_resource(file_id)
+        url = connection.config.file_base_url / f"bot{connection.config.token}" / str(file_resource.file_path)
+        return Avatar(str(url))
+
+    @m.pull("land.chat.member", Avatar)
+    @m.pull("land.chat.thread.member", Avatar)
+    async def get_user_profile_photo(self, target: Selector, route: ...) -> Avatar:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        connection = self.account.connection
+        if raw := await cache.get(f"telegram/user({target.last_value})::profile_photos"):
+            file_id = raw["photos"][0][-1]["file_id"]
+        else:
+            result = (await connection.call("getUserProfilePhotos", user_id=target.last_value))["result"]
+            await cache.set(f"telegram/user({target.last_value})::profile_photos", result, expire=timedelta(minutes=5))
+            file_id = result["photos"][0][-1]["file_id"]
+        file_resource = await TelegramResourceFetchPerform(self.staff).get_file_resource(file_id)
+        url = connection.config.file_base_url / f"bot{connection.config.token}" / str(file_resource.file_path)
+        return Avatar(str(url))
