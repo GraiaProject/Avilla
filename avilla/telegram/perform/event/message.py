@@ -16,6 +16,9 @@ from avilla.core.message import Message
 from avilla.core.selector import Selector
 from avilla.standard.core.message import MessageReceived
 from avilla.standard.core.profile import Avatar, Nick, Summary
+from avilla.standard.telegram.message_auto_delete_timer.metadata import (
+    MessageAutoDeleteTimer,
+)
 from avilla.telegram.capability import TelegramCapability
 from avilla.telegram.collector.connection import ConnectionCollector
 from avilla.telegram.perform.action.chat import TelegramChatActionPerform
@@ -216,3 +219,26 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
             Selector().land(self.account.route["land"]).member(self.account.route["account"]),
         )
         return MetadataModified(context, chat, Avatar, {Avatar.inh().url: ModifyDetail("clear")}, scene=chat)
+
+    @m.entity(TelegramCapability.event_callback, event_type="message.message_auto_delete_timer_changed")
+    async def message_auto_delete_timer_changed(self, event_type: str, raw_event: dict):
+        chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
+        context = Context(
+            self.account,
+            chat,
+            chat,
+            chat,
+            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
+        )
+        return MetadataModified(
+            context,
+            chat,
+            MessageAutoDeleteTimer,
+            {
+                MessageAutoDeleteTimer.inh().message_auto_delete_time: ModifyDetail(
+                    "update",
+                    current=raw_event["message"]["message_auto_delete_timer_changed"]["message_auto_delete_time"],
+                )
+            },
+            scene=chat,
+        )
