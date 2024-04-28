@@ -14,7 +14,7 @@ dependencies = [
   "aiohttp"
 ]
 description = "Avilla Telegram Protocol"
-license = {text = "GPL-3.0"}
+license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.9"
 
