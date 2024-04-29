@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
-from avilla.core import Message, UnsupportedOperation
+from avilla.core import Context, Message, UnsupportedOperation
 from avilla.core.elements import Reference
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
 from avilla.standard.core.message import (
     MessageEdit,
+    MessageEdited,
     MessageRevoke,
     MessageSend,
     MessageSent,
@@ -43,9 +44,19 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         composed = self.compose_elements(serialized)
 
         if reply:
-            _reply = reply.last_value
+            _reply_selector = reply
         elif ref := message.get(Reference):
-            _reply = ref[0].message.last_value
+            _reply_selector = ref[0].message
+        else:
+            _reply_selector = None
+
+        if _reply_selector:
+            if result := await cache.get(
+                f"telegram/account({self.account.route['account']}).messages({_reply_selector.last_value})"
+            ):
+                _reply = result[-1]["result"]["message_id"]
+            else:
+                _reply = _reply_selector.last_value
         else:
             _reply = None
 
@@ -79,7 +90,15 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         return target.message(token)
 
     def compose_elements(self, elements: list[dict]) -> list[dict]:
-        composable = {"message": ["message"], "photo": ["message"]}
+        composable = {
+            "message": ["message"],
+            "photo": ["message"],
+            "audio": ["message"],
+            "document": ["message"],
+            "video": ["message"],
+            "animation": ["message"],
+            "voice": ["message"],
+        }
         composed: list[dict] = []
         last_compose: str = ""
         last_element: dict = {}
@@ -89,9 +108,17 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
                 last_compose = element["api_name"][4:].lower()
                 last_element = element
                 continue
+
             this_compose: str = element["api_name"][4:].lower()
             if last_compose in composable and this_compose in composable[last_compose]:
-                last_element = getattr(self, f"compose_{last_compose}")(last_element, element)
+
+                if this_compose == "message" and last_compose == "message":
+                    last_element = self.compose_text(last_element, element)
+                elif this_compose == "message":
+                    last_element = self.compose_caption(last_element, element)
+                else:
+                    last_element = self.compose_media_group(last_element, element)
+
             else:
                 composed.append(last_element)
                 last_compose = this_compose
@@ -101,7 +128,7 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         return composed
 
     @staticmethod
-    def compose_message(last: dict, this: dict) -> dict:
+    def compose_text(last: dict, this: dict) -> dict:
         text = last["data"]["text"] + this["data"]["text"]
         entity_offset = len(last["data"]["text"].encode("utf-16be"))
         for entity in this["data"]["entities"]:
@@ -120,9 +147,11 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         last["data"]["caption"] = caption
         return last
 
-    def compose_photo(self, last: dict, this: dict) -> dict:
-        if list(this["data"].keys())[0] == "text":
-            return self.compose_caption(last, this)
+    @staticmethod
+    def compose_media_group(last: dict, this: dict) -> dict:
+        # TODO: compose into MediaGroup
+
+        raise UnsupportedOperation()
 
     @m.entity(MessageRevoke.revoke, target="land.chat.message")
     @m.entity(MessageRevoke.revoke, target="land.chat.thread.message")
@@ -158,12 +187,42 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
             raise InvalidEditedMessage()
 
         if composed[0]["api_name"][4:].lower() == "message":
-            await self.edit_text(target, composed[0])
+            resp = (await self.edit_text(target, composed[0]))["result"]
         else:
-            await self.edit_media(target, composed[0])
+            resp = (await self.edit_media(target, composed[0]))["result"]
 
-    async def edit_text(self, target: Selector, content: dict):
-        await self.account.connection.call(
+        chat = target.modify({k: v for k, v in target.pattern.items() if k != "message"})
+
+        if "message_id" in resp:
+            is_private = resp["chat"]["type"] == "private"
+            context = Context(
+                self.account,
+                (chat if is_private else chat.member(resp["from"]["id"])),
+                chat,
+                chat,
+                self.account.route if is_private else chat.member(self.account.route["account"]),
+            )
+            self.protocol.post_event(
+                MessageEdited(
+                    context=context,
+                    message=Message(
+                        id=resp["message_id"],
+                        scene=chat,
+                        sender=chat.member(self.account.route["account"]),
+                        content=content,
+                        time=datetime.fromtimestamp(resp["date"]),
+                        reply=(
+                            chat.message(resp["reply_to_message"]["message_id"]) if "reply_to_message" in resp else None
+                        ),
+                    ),
+                    operator=self.account.route if is_private else chat.member(self.account.route["account"]),
+                    past=MessageChain([]),
+                    current=content,
+                )
+            )
+
+    async def edit_text(self, target: Selector, content: dict) -> dict:
+        return await self.account.connection.call(
             "editMessageText",
             chat_id=int(target.pattern["chat"]),
             message_id=int(target.pattern["message"]),
@@ -171,8 +230,8 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
             entities=content["data"].get("entities", []),
         )
 
-    async def edit_caption(self, target: Selector, content: dict):
-        await self.account.connection.call(
+    async def edit_caption(self, target: Selector, content: dict) -> dict:
+        return await self.account.connection.call(
             "editMessageCaption",
             chat_id=int(target.pattern["chat"]),
             message_id=int(target.pattern["message"]),
@@ -180,11 +239,11 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
             caption_entities=content["data"].get("caption_entities", []),
         )
 
-    async def edit_media(self, target: Selector, content: dict):
+    async def edit_media(self, target: Selector, content: dict) -> dict:
         if "caption" in content["data"]:
-            await self.edit_caption(target, content)
-        await self.account.connection.call(
-            f"editMessageMedia",
+            return await self.edit_caption(target, content)
+        return await self.account.connection.call(
+            "editMessageMedia",
             _file=content.get("file"),
             chat_id=int(target.pattern["chat"]),
             message_id=int(target.pattern["message"]),
