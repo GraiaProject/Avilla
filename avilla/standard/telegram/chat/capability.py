@@ -66,3 +66,22 @@ class ChatCapability(Capability):
 
     @Fn.complex({TargetOverload(): ["target"]})
     async def unhide_general_topic(self, target: Selector) -> None: ...
+
+    @Fn.complex({TargetOverload(): ["target"]})
+    async def send_chat_action(
+        self,
+        target: Selector,
+        action: Literal[
+            "typing",
+            "upload_photo",
+            "record_video",
+            "upload_video",
+            "record_voice",
+            "upload_voice",
+            "upload_document",
+            "choose_sticker",
+            "find_location",
+            "record_video_note",
+            "upload_video_note",
+        ],
+    ) -> None: ...

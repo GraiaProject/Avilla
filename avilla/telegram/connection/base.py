@@ -127,20 +127,20 @@ class TelegramNetworking:
                 await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
                 del avilla.accounts[n]
 
-    async def call(self, action: str, _file: dict[str, tuple[str, bytes]] | None = None, **data) -> dict:
+    async def call(self, _action: str, _file: dict[str, tuple[str, bytes]] | None = None, **data) -> dict:
         data = {k: v for k, v in data.items() if v is not None}
 
-        logger.debug(f"calling {action!r}")
+        logger.debug(f"calling {_action!r}")
 
         if _file:
             files = aiohttp.FormData()
             for filename, payload in _file.values():
                 files.add_field(filename, payload, filename=filename)
-            response = await self.send(action, data=files, params=data)
+            response = await self.send(_action, data=files, params=data)
         else:
-            response = await self.send(action, json=data)
+            response = await self.send(_action, json=data)
 
         validate_response(response)
-        logger.debug(f"call {action!r} success")
+        logger.debug(f"call {_action!r} success")
 
         return response

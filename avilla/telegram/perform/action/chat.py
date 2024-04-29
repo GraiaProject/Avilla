@@ -198,3 +198,16 @@ class TelegramChatActionPerform((m := AccountCollector["TelegramProtocol", "Tele
     @m.entity(ChatCapability.unhide_general_topic, target="land.chat")
     async def unhide_general_topic(self, target: Selector):
         await self.account.connection.call("unhideGeneralForumTopic", chat_id=target.last_value)
+
+    @m.entity(ChatCapability.send_chat_action, target="land.chat")
+    @m.entity(ChatCapability.send_chat_action, target="land.chat.thread")
+    async def send_chat_action(self, target: Selector, action: str):
+        if "thread" in target.pattern:
+            await self.account.connection.call(
+                "sendChatAction",
+                chat_id=target.into("::chat").last_value,
+                message_thread_id=target.last_value,
+                action=action,
+            )
+            return
+        await self.account.connection.call("sendChatAction", chat_id=target.last_value, action=action)
