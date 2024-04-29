@@ -90,7 +90,7 @@ class TelegramChatActionPerform((m := AccountCollector["TelegramProtocol", "Tele
 
     @m.entity(ChatCapability.pin_message, target="land.chat.message")
     @m.entity(ChatCapability.pin_message, target="land.chat.thread.message")
-    async def pin_message(self, target: Selector, disable_notification: bool = False):
+    async def pin_message(self, target: Selector, disable_notification: bool | None = None):
         await self.account.connection.call(
             "pinChatMessage",
             chat_id=target.into("::chat").last_value,

@@ -12,6 +12,7 @@ from avilla.standard.core.message import (
     MessageRevoked,
     MessageSent,
 )
+from avilla.standard.telegram.reaction.capability import ReactionCapability
 from avilla.telegram.protocol import TelegramLongPollingConfig, TelegramProtocol
 
 config = TelegramLongPollingConfig(os.environ["TELEGRAM_TOKEN"])
@@ -28,6 +29,8 @@ async def on_message_received(ctx: Context, event: MessageReceived, message: Mes
         await ctx[MessageEdit.edit](sent, MessageChain("Edited!"))
     if str(message) == "!revoke":
         await ctx[MessageRevoke.revoke](sent)
+    if str(message) == "!like":
+        await ctx[ReactionCapability.set](event.message.to_selector(), ["👍"])
 
 
 @avilla.listen(MessageEdited)
