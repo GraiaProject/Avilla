@@ -36,38 +36,38 @@ SUB_EVENTS: Final[set[str]] = {
     "new_chat_title",
     "new_chat_photo",
     "delete_chat_photo",
-    "group_chat_created",
-    "supergroup_chat_created",
-    "channel_chat_created",
+    "group_chat_created",  # not implemented
+    "supergroup_chat_created",  # not implemented
+    "channel_chat_created",  # not implemented
     "message_auto_delete_timer_changed",
-    "migrate_to_chat_id",
-    "migrate_from_chat_id",
-    "pinned_message",
-    "invoice",
-    "successful_payment",
-    "users_shared",
-    "chat_shared",
-    "connected_website",
-    "write_access_allowed",
-    "passport_data",
+    "migrate_to_chat_id",  # not implemented
+    "migrate_from_chat_id",  # not implemented
+    "pinned_message",  # not implemented
+    "invoice",  # not implemented
+    "successful_payment",  # not implemented
+    "users_shared",  # not implemented
+    "chat_shared",  # not implemented
+    "connected_website",  # not implemented
+    "write_access_allowed",  # not implemented
+    "passport_data",  # not implemented
     "proximity_alert_triggered",
-    "boost_added",
+    "boost_added",  # not implemented
     "forum_topic_created",
     "forum_topic_edited",
     "forum_topic_closed",
     "forum_topic_reopened",
     "general_forum_topic_hidden",
     "general_forum_topic_unhidden",
-    "giveaway_created",
-    "giveaway",
-    "giveaway_winners",
-    "giveaway_completed",
+    "giveaway_created",  # not implemented
+    "giveaway",  # not implemented
+    "giveaway_winners",  # not implemented
+    "giveaway_completed",  # not implemented
     "video_chat_scheduled",
     "video_chat_started",
     "video_chat_ended",
     "video_chat_participants_invited",
-    "web_app_data",
-    "reply_markup",
+    "web_app_data",  # not implemented
+    "reply_markup",  # not implemented
 }
 
 
@@ -100,11 +100,7 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
             chat if event_type == "message.private" else chat.member(message["from"]["id"]),
             chat,
             chat,
-            (
-                Selector().land(account.route["land"]).account(account.route["account"])
-                if event_type == "message.private"
-                else chat.member(account.route["account"])
-            ),
+            (account.route if event_type == "message.private" else chat.member(account.route["account"])),
         )
 
         # TODO: re-implement MediaGroup
@@ -129,13 +125,7 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
         for user in raw_event["message"]["new_chat_members"]:
             chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
             member = chat.member(str(user["id"]))
-            context = Context(
-                account,
-                member,
-                chat,
-                chat,
-                Selector().land(account.route["land"]).member(account.route["account"]),
-            )
+            context = Context(account, member, chat, chat, chat.member(account.route["account"]))
             context._collect_metadatas(
                 member,
                 Nick(username := TelegramChatActionPerform.extract_username(user), username, user.get("title")),
@@ -160,13 +150,7 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
         user = raw_event["message"]["left_chat_member"]
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
         member = chat.member(str(user["id"]))
-        context = Context(
-            account,
-            member,
-            chat,
-            chat,
-            Selector().land(account.route["land"]).member(account.route["account"]),
-        )
+        context = Context(account, member, chat, chat, chat.member(account.route["account"]))
         context._collect_metadatas(
             member,
             Nick(username := TelegramChatActionPerform.extract_username(user), username, user.get("title")),
@@ -177,23 +161,17 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
             Nick(chat_name := raw_event["message"]["chat"]["title"], chat_name, None),
             Summary(chat_name, None),
         )
-        if member.last_value == account.route["account"]:
-            event = SceneDestroyed(context, active=False)
-        else:
-            event = MemberDestroyed(context, active=True)
 
-        return event
+        return (
+            SceneDestroyed(context, active=False)
+            if member.last_value == account.route["account"]
+            else MemberDestroyed(context, active=True)
+        )
 
     @m.entity(TelegramCapability.event_callback, event_type="message.new_chat_title")
     async def new_chat_title(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         context._collect_metadatas(
             chat,
             Nick(chat_name := raw_event["message"]["chat"]["title"], chat_name, None),
@@ -206,37 +184,19 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(TelegramCapability.event_callback, event_type="message.new_chat_photo")
     async def new_chat_photo(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return MetadataModified(context, chat, Avatar, {Avatar.inh().url: ModifyDetail("update")}, scene=chat)
 
     @m.entity(TelegramCapability.event_callback, event_type="message.delete_chat_photo")
     async def delete_chat_photo(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return MetadataModified(context, chat, Avatar, {Avatar.inh().url: ModifyDetail("clear")}, scene=chat)
 
     @m.entity(TelegramCapability.event_callback, event_type="message.message_auto_delete_timer_changed")
     async def message_auto_delete_timer_changed(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return MetadataModified(
             context,
             chat,
@@ -253,13 +213,7 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(TelegramCapability.event_callback, event_type="message.proximity_alert_triggered")
     async def proximity_alert_triggered(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return ProximityAlertTriggered(
             context,
             Selector().land(self.account.route["land"]).member(str(raw_event["message"]["traveler"]["id"])),
@@ -270,13 +224,7 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_scheduled")
     async def video_chat_scheduled(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return VideoChatScheduled(
             context,
             datetime.fromtimestamp(raw_event["message"]["start_date"]),
@@ -285,37 +233,19 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_started")
     async def video_chat_started(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return VideoChatStarted(context)
 
     @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_ended")
     async def video_chat_ended(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return VideoChatEnded(context, duration=raw_event["message"]["video_chat_ended"]["duration"])
 
     @m.entity(TelegramCapability.event_callback, event_type="message.video_chat_participants_invited")
     async def video_chat_participants_invited(self, event_type: str, raw_event: dict):
         chat = Selector().land(self.account.route["land"]).chat(str(raw_event["message"]["chat"]["id"]))
-        context = Context(
-            self.account,
-            chat,
-            chat,
-            chat,
-            Selector().land(self.account.route["land"]).member(self.account.route["account"]),
-        )
+        context = Context(self.account, chat, chat, chat, chat.member(self.account.route["account"]))
         return VideoChatParticipantsInvited(
             context,
             [
