@@ -32,8 +32,8 @@ class TelegramContextPerform((m := AccountCollector["TelegramProtocol", "Telegra
         return Context(
             self.account,
             target,
-            target.into("::group"),
-            target.into("::group"),
+            target.into("::chat"),
+            target.into("::chat"),
             target.into(f"~.member({self.account.route['account']})"),
         )
 

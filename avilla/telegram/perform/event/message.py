@@ -3,6 +3,8 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Final
 
+from graia.amnesia.message import MessageChain
+
 from avilla.core import (
     MemberCreated,
     MemberDestroyed,
@@ -14,7 +16,7 @@ from avilla.core.context import Context
 from avilla.core.event import ModifyDetail
 from avilla.core.message import Message
 from avilla.core.selector import Selector
-from avilla.standard.core.message import MessageReceived
+from avilla.standard.core.message import MessageEdited, MessageReceived
 from avilla.standard.core.profile import Avatar, Nick, Summary
 from avilla.standard.telegram.event import (
     ProximityAlertTriggered,
@@ -117,6 +119,40 @@ class TelegramEventMessagePerform((m := ConnectionCollector())._):
                 time=datetime.fromtimestamp(message["date"]),
                 reply=reply,
             ),
+        )
+
+    @m.entity(TelegramCapability.event_callback, event_type="edited_message.private")
+    @m.entity(TelegramCapability.event_callback, event_type="edited_message.group")
+    @m.entity(TelegramCapability.event_callback, event_type="edited_message.supergroup")
+    async def edited_message(self, event_type: str, raw_event: dict):
+        account = self.account
+        message: dict = raw_event["message"]
+        chat = Selector().land(account.route["land"]).chat(str(message["chat"]["id"]))
+        if event_type == "edited_message.supergroup" and "message_thread_id" in message:
+            chat = chat.thread(str(message["message_thread_id"]))
+        context = Context(
+            account,
+            chat if event_type == "edited_message.private" else chat.member(message["from"]["id"]),
+            chat,
+            chat,
+            (account.route if event_type == "edited_message.private" else chat.member(account.route["account"])),
+        )
+
+        chain = await TelegramCapability(account.staff.ext({"context": context})).deserialize(message)
+        reply = chat.message(message["reply_to_message"]["message_id"]) if "reply_to_message" in message else None
+        return MessageEdited(
+            context=context,
+            message=Message(
+                id=str(message["message_id"]),
+                scene=chat,
+                sender=chat if event_type == "edited_message.private" else chat.member(message["from"]["id"]),
+                content=chain,
+                time=datetime.fromtimestamp(message["date"]),
+                reply=reply,
+            ),
+            operator=chat if event_type == "edited_message.private" else chat.member(message["from"]["id"]),
+            past=MessageChain([]),
+            current=chain,
         )
 
     @m.entity(TelegramCapability.event_callback, event_type="message.new_chat_members")

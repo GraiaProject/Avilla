@@ -39,6 +39,7 @@ def _import_performs():
     from .perform.action.chat import TelegramChatActionPerform  # noqa: F401
     from .perform.action.message import TelegramMessageActionPerform  # noqa: F401
     from .perform.action.preference import TelegramPreferenceActionPerform  # noqa: F401
+    from .perform.action.privilege import TelegramPrivilegeActionPerform  # noqa: F401
     from .perform.action.reaction import TelegramReactionActionPerform  # noqa: F401
     from .perform.action.relation import TelegramRelationActionPerform  # noqa: F401
 
@@ -65,6 +66,7 @@ class TelegramProtocol(BaseProtocol):
             ref("avilla.protocol/telegram::action", "chat"),
             ref("avilla.protocol/telegram::action", "message"),
             ref("avilla.protocol/telegram::action", "preference"),
+            ref("avilla.protocol/telegram::action", "privilege"),
             ref("avilla.protocol/telegram::action", "reaction"),
             ref("avilla.protocol/telegram::action", "relation"),
             ref("avilla.protocol/telegram::event", "message"),

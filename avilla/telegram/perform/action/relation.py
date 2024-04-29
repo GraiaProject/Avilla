@@ -19,11 +19,3 @@ class TelegramRelationActionPerform((m := AccountCollector["TelegramProtocol", "
     @m.entity(SceneCapability.leave, target="land.chat.thread")
     async def leave_chat(self, target: Selector) -> None:
         await self.account.connection.call("leaveChat", chat_id=target.into("::chat").last_value)
-
-    @m.entity(SceneCapability.remove_member, target="land.chat.member")
-    async def ban_member(self, target: Selector, reason: str | None = None, permanent: bool = False) -> None:
-        await self.account.connection.call(
-            "banChatMember",
-            chat_id=target.into("::chat").last_value,
-            user_id=target.last_value,
-        )

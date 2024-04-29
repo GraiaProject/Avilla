@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import MessageChain
 
-from avilla.core import Context, Message, UnsupportedOperation
+from avilla.core import Message, UnsupportedOperation
 from avilla.core.elements import Reference
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
