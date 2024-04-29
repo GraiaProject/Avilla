@@ -18,16 +18,13 @@ class TelegramContextPerform((m := AccountCollector["TelegramProtocol", "Telegra
     @m.entity(CoreCapability.get_context, target="land.chat")
     @m.entity(CoreCapability.get_context, target="land.chat.thread")
     def get_context_from_chat(self, target: Selector, *, via: Selector | None = None):
+        is_group = int(target["chat"]) < 0  # some magic? works for me, but not mentioned in api docs tho.
         return Context(
             self.account,
+            target.into("::chat"),
             target,
             target,
-            target,
-            (
-                target.member(self.account.route["account"])
-                if int(target["chat"]) < 0  # some magic? works for me, but not mentioned in api docs tho.
-                else Selector().land(self.account.route["land"]).account(str(self.account.route["account"]))
-            ),
+            target.member(self.account.route["account"]) if is_group else self.account.route,
         )
 
     @m.entity(CoreCapability.get_context, target="land.chat.member")

@@ -15,6 +15,7 @@ from avilla.standard.core.message import (
     MessageEdit,
     MessageEdited,
     MessageRevoke,
+    MessageRevoked,
     MessageSend,
     MessageSent,
 )
@@ -156,6 +157,8 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
     @m.entity(MessageRevoke.revoke, target="land.chat.message")
     @m.entity(MessageRevoke.revoke, target="land.chat.thread.message")
     async def revoke_message(self, target: Selector):
+        chat = target.modify({k: v for k, v in target.pattern.items() if k != "message"})
+        context = self.account.staff.get_context(chat)
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         if result := await cache.get(
             f"telegram/account({self.account.route['account']}).messages({target['message']})"
@@ -165,10 +168,20 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
                 chat_id=int(target.pattern["chat"]),
                 message_ids=[int(msg["result"]["message_id"]) for msg in result],
             )
+            for msg in result:
+                self.protocol.post_event(
+                    MessageRevoked(
+                        context=context,
+                        message=chat.message(msg["result"]["message_id"]),
+                        operator=self.account.route,
+                        sender=context.self,  # cached messages are always sent by self
+                    )
+                )
             return
         await self.account.connection.call(
             "deleteMessage", chat_id=int(target.pattern["chat"]), message_id=int(target.pattern["message"])
         )
+        self.protocol.post_event(MessageRevoked(context=context, message=target, operator=self.account.route))
 
     @m.entity(MessageEdit.edit, target="land.chat.message")
     @m.entity(MessageEdit.edit, target="land.chat.thread.message")
@@ -194,14 +207,7 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
         chat = target.modify({k: v for k, v in target.pattern.items() if k != "message"})
 
         if "message_id" in resp:
-            is_private = resp["chat"]["type"] == "private"
-            context = Context(
-                self.account,
-                (chat if is_private else chat.member(resp["from"]["id"])),
-                chat,
-                chat,
-                self.account.route if is_private else chat.member(self.account.route["account"]),
-            )
+            context = self.account.staff.get_context(chat)
             self.protocol.post_event(
                 MessageEdited(
                     context=context,
@@ -215,7 +221,11 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
                             chat.message(resp["reply_to_message"]["message_id"]) if "reply_to_message" in resp else None
                         ),
                     ),
-                    operator=self.account.route if is_private else chat.member(self.account.route["account"]),
+                    operator=(
+                        self.account.route
+                        if resp["chat"]["type"] == "private"
+                        else chat.member(self.account.route["account"])
+                    ),
                     past=MessageChain([]),
                     current=content,
                 )

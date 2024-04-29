@@ -8,6 +8,7 @@ from avilla.core import Avilla, Context, MessageReceived
 from avilla.standard.core.message import (
     MessageEdit,
     MessageEdited,
+    MessageRevoke,
     MessageRevoked,
     MessageSent,
 )
@@ -21,7 +22,12 @@ avilla.apply_protocols(TelegramProtocol().configure(config))
 @avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context, event: MessageReceived, message: MessageChain):
     logger.debug(f"MessageChain: {repr(message)}")
-    await ctx.scene.send_message(message, reply=event.message)
+    sent = await ctx.scene.send_message(message, reply=event.message)
+    await asyncio.sleep(1)
+    if str(message) == "!edit":
+        await ctx[MessageEdit.edit](sent, MessageChain("Edited!"))
+    if str(message) == "!revoke":
+        await ctx[MessageRevoke.revoke](sent)
 
 
 @avilla.listen(MessageEdited)
@@ -29,11 +35,14 @@ async def on_message_edited(ctx: Context, event: MessageEdited):
     logger.debug(f"MessageEdited: {repr(event)}")
 
 
+@avilla.listen(MessageRevoked)
+async def on_message_revoked(ctx: Context, event: MessageRevoked):
+    logger.debug(f"MessageRevoked: {repr(event)}")
+
+
 @avilla.listen(MessageSent)
 async def on_message_sent(ctx: Context, event: MessageSent):
     logger.debug(f"MessageSent: {repr(event)}")
-    await asyncio.sleep(1)
-    await ctx[MessageEdit.edit](event.message.to_selector(), MessageChain("Edited!"))
 
 
 avilla.launch()
