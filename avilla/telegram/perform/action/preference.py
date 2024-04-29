@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from avilla.core.ryanvk.collector.account import AccountCollector
@@ -19,13 +20,20 @@ class TelegramPreferenceActionPerform((m := AccountCollector["TelegramProtocol",
         self,
         *,
         url: str,
-        max_connections: int = None,
-        allowed_updates: list[str] = None,
-        drop_pending_updates: bool = None,
-        ip_address: str = None,
-        certificate: ... = None,
-        secret_token: str = None,
+        max_connections: int | None = None,
+        allowed_updates: list[str] | None = None,
+        drop_pending_updates: bool | None = None,
+        ip_address: str | None = None,
+        certificate: Path | None = None,
+        secret_token: str | None = None,
     ):
+        if certificate:
+            filename = certificate.stem
+            file = {filename: (filename, certificate.read_bytes())}
+            cert = f"attach://{filename}"
+        else:
+            file = None
+            cert = None
         await self.account.connection.call(
             "setWebhook",
             url=url,
@@ -33,8 +41,9 @@ class TelegramPreferenceActionPerform((m := AccountCollector["TelegramProtocol",
             allowed_updates=allowed_updates,
             drop_pending_updates=drop_pending_updates,
             ip_address=ip_address,
-            certificate=certificate,
+            certificate=cert,
             secret_token=secret_token,
+            _file=file,
         )
 
     @m.entity(PreferenceCapability.delete_webhook)

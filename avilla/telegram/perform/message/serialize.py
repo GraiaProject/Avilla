@@ -5,13 +5,13 @@ from typing import TYPE_CHECKING
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 from graia.amnesia.message import Element
 
-from avilla.core import Context, LocalFileResource, RawResource, Resource, UrlResource
+from avilla.core import LocalFileResource, RawResource, Resource, UrlResource
 from avilla.core.elements import Audio, Face, File, Notice
 from avilla.core.elements import Picture as CorePicture
 from avilla.core.elements import Text
 from avilla.core.elements import Video as CoreVideo
 from avilla.core.ryanvk.collector.account import AccountCollector
-from avilla.standard.core.profile import Nick, Summary
+from avilla.standard.core.profile import Summary
 from avilla.standard.telegram.elements import (
     Animation,
     Contact,
@@ -32,7 +32,6 @@ from avilla.telegram.resource import (
     TelegramVideoResource,
     TelegramVoiceResource,
 )
-from graia.ryanvk import OptionalAccess
 
 if TYPE_CHECKING:
     from avilla.telegram.account import TelegramAccount  # noqa

@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+from pathlib import Path
+
 from graia.ryanvk import Capability, Fn
 
 
@@ -7,12 +11,12 @@ class PreferenceCapability(Capability):
         self,
         *,
         url: str,
-        max_connections: int = None,
-        allowed_updates: list[str] = None,
-        drop_pending_updates: bool = None,
-        ip_address: str = None,
-        certificate: ... = None,
-        secret_token: str = None,
+        max_connections: int | None = None,
+        allowed_updates: list[str] | None = None,
+        drop_pending_updates: bool | None = None,
+        ip_address: str | None = None,
+        certificate: Path | None = None,
+        secret_token: str | None = None,
     ) -> None:
         pass
 
