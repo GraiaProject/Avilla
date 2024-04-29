@@ -59,7 +59,7 @@ class MessageEdited(AvillaEvent):
     class Dispatcher(AvillaEvent.Dispatcher):
         @classmethod
         async def catch(cls, interface: DispatcherInterface[MessageEdited]):
-            if interface.annotation is Message:
+            if interface.annotation is interface.event.message.__class__:
                 return interface.event.message
             if interface.annotation is MessageChain:
                 return interface.event.current
