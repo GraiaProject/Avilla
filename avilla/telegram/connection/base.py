@@ -97,10 +97,10 @@ class TelegramNetworking:
                 # TODO: re-implement process_media_group
                 pass
 
-            async def event_parse_task():
-                await TelegramCapability(connection.staff).handle_event(list(data.keys())[-1], data)
+            async def event_parse_task(_data):
+                await TelegramCapability(connection.staff).handle_event(list(_data.keys())[-1], _data)
 
-            asyncio.create_task(event_parse_task())  # noqa
+            asyncio.create_task(event_parse_task(data))  # noqa
 
     def register(self):
         account_route = Selector().land("telegram").account(str(self.account_id))

@@ -13,16 +13,13 @@ from graia.ryanvk import Fn, PredicateOverload, SimpleOverload, TypeOverload
 
 class TelegramCapability((m := ApplicationCollector())._):
     @Fn.complex({SimpleOverload(): ["event_type"]})
-    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None:
-        ...
+    async def event_callback(self, event_type: str, raw_event: dict) -> AvillaEvent | AvillaLifecycleEvent | None: ...
 
     @Fn.complex({PredicateOverload(lambda _, raw: list(raw.keys())[-1]): ["raw_element"]})
-    async def deserialize_element(self, raw_element: dict) -> list[Element]:
-        ...
+    async def deserialize_element(self, raw_element: dict) -> list[Element]: ...
 
     @Fn.complex({TypeOverload(): ["element"]})
-    async def serialize_element(self, element: Any) -> dict:
-        ...
+    async def serialize_element(self, element: Any) -> dict: ...
 
     async def deserialize(self, raw: dict):
         ignored_keys: set[str] = {
