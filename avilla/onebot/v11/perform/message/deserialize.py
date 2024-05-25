@@ -145,11 +145,13 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(OneBot11Capability.deserialize_element, raw_element="mface")
     async def mface(self, raw_element: dict) -> MarketFace:
+        # 由于OneBot11并未规定商城表情的格式，此处采用了LLOneBot的格式
+        # https://github.com/LLOneBot/LLOneBot/pull/205
+        _id = "::".join(
+            (str(raw_element["data"]["emoji_package_id"]), raw_element["data"]["emoji_id"], raw_element["data"]["key"]))
         return MarketFace(
-            emoji_package_id=int(raw_element["data"]["emoji_package_id"]),
-            emoji_id=raw_element["data"]["emoji_id"],
-            text=raw_element["data"]["text"],
-            key=raw_element["data"]["key"],
+            id=_id,
+            name=raw_element["data"]["text"],
         )
 
     # TODO
