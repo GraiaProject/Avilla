@@ -111,11 +111,11 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(OneBot11Capability.deserialize_element, raw_element="json")
     async def json(self, raw_element: dict):
-        return Json(raw_element["data"]["content"])
+        return Json(raw_element["data"]["data"])
 
     @m.entity(OneBot11Capability.deserialize_element, raw_element="xml")
     async def xml(self, raw_element: dict):
-        return Xml(raw_element["data"]["content"])
+        return Xml(raw_element["data"]["data"])
 
     @m.entity(OneBot11Capability.deserialize_element, raw_element="share")
     async def share(self, raw_element: dict):
