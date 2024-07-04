@@ -13,8 +13,9 @@ def unescape(s: str) -> str:
 def handle_text(msg: str):
     text_begin = 0
     msg = msg.replace("@everyone", "")
+    msg = re.sub(r"\<qqbot-at-everyone\s/\>", "", msg)
     for embed in re.finditer(
-        r"\<(?P<type>(?:@|#|emoji:))!?(?P<id>\w+?)\>",
+        r"\<(?P<type>(?:@|#|emoji:))!?(?P<id>\w+?)\>|\<(?P<type1>qqbot-at-user) id=\"(?P<id1>\w+)\"\s/\>",
         msg,
     ):
         if content := msg[text_begin : embed.pos + embed.start()]:
@@ -24,8 +25,10 @@ def handle_text(msg: str):
             yield {"type": "mention_user", "user_id": embed.group("id")}
         elif embed["type"] == "#":
             yield {"type": "mention_channel", "channel_id": embed.group("id")}
-        else:
+        elif embed["type"] == "emoji":
             yield {"type": "emoji", "id": embed.group("id")}
+        elif embed["type1"] == "qqbot-at-user":
+            yield {"type": "mention_user", "user_id": embed.group("id1")}
     if content := msg[text_begin:]:
         yield {"type": "text", "text": unescape(content)}
 
@@ -45,3 +48,7 @@ def form_data(message: dict):
         else:
             data_[key] = value
     return "multipart", {"files": files, "data": data_}
+
+
+def remove_empty(d: dict):
+    return {k: (remove_empty(v) if isinstance(v, dict) else v) for k, v in d.items() if v is not None}

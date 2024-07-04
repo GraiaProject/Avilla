@@ -11,7 +11,7 @@ from avilla.core.selector import Selector
 from avilla.standard.core.application.event import AvillaLifecycleEvent
 from graia.ryanvk import Fn, PredicateOverload, SimpleOverload, TypeOverload
 
-from .utils import handle_text
+from .utils import handle_text, remove_empty
 
 
 class QQAPICapability((m := ApplicationCollector())._):
@@ -74,7 +74,8 @@ class QQAPICapability((m := ApplicationCollector())._):
             if isinstance(elem, str):
                 content += elem
             else:
-                res[elem[0]] = elem[1]
+                other = elem[1]
+                res[elem[0]] = remove_empty(other) if isinstance(other, dict) else other
         if content:
             res["content"] = content
         return res

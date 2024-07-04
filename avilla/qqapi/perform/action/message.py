@@ -233,7 +233,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 expire=timedelta(minutes=5),
             )
         # TODO: wait for api upgrade
-        msg["content"] = unescape(msg["content"])
+        # msg["content"] = unescape(msg["content"])
         method, data = form_data(msg)
         try:
             result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)
