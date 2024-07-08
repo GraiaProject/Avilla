@@ -46,32 +46,56 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         return [Text(raw_element["text"])]
 
     @staticmethod
-    async def extract_entities(text: str, entities: list[dict]) -> list[Element]:
+    def extract_entities(text: str, entities: list[dict]) -> list[Element]:
         # See: https://core.telegram.org/api/entities#entity-length
 
         ignored_keys = {"type", "offset", "length"}
+        encoded_text = text.encode("utf-8")
         result = []
-        encoded = text.encode("utf-16be")
-        remaining = encoded
-        offset = 0
+        current_offset = 0
+        current_index = 0
+
         for entity in entities:
-            start = (entity["offset"] - offset) * 2
-            end = (entity["offset"] - offset + entity["length"]) * 2
-            if left := remaining[:start]:
-                result.append(Text(left.decode("utf-16be")))
-            text_entity = Text(remaining[start:end].decode("utf-16be"), style=entity["type"])
+            offset = entity["offset"]
+            length = entity["length"]
+            style = entity["type"]
+
+            if current_index < len(encoded_text) and current_offset < offset:
+                start_index = current_index
+                while current_offset < offset:
+                    byte = encoded_text[current_index]
+                    byte_length = 2 if byte >= 0xF0 else 1
+                    current_offset += byte_length
+                    current_index += 1
+                end_index = current_index
+
+                plain_text = encoded_text[start_index:end_index].decode("utf-8")
+                result.append(Text(plain_text))
+
+            start_index = current_index
+            while current_offset < offset + length:
+                byte = encoded_text[current_index]
+                byte_length = 2 if byte >= 0xF0 else 1
+                current_offset += byte_length
+                current_index += 1
+            end_index = current_index
+
+            styled_text = encoded_text[start_index:end_index].decode("utf-8")
+            text_entity = Text(styled_text, style=style)
             for _k, _v in {k: v for k, v in entity.items() if k not in ignored_keys}.items():
                 setattr(text_entity, _k, _v)
+
             result.append(text_entity)
-            remaining = remaining[end:]
-            offset = entity["offset"] + entity["length"]
-        if remaining:
-            result.append(Text(remaining.decode("utf-16be")))
+
+        if current_index < len(encoded_text):
+            remaining_text = encoded_text[current_index:].decode("utf-8")
+            result.append(Text(remaining_text))
+
         return result
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="entities")
     async def entities(self, raw_element: dict) -> list[Element]:
-        return await self.extract_entities(raw_element["text"], raw_element["entities"])
+        return self.extract_entities(raw_element["text"], raw_element["entities"])
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="caption")
     async def caption(self, raw_element: dict) -> list[Element]:
@@ -87,7 +111,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
         entities: list[dict] = raw_element.popitem()[-1]
         caption: str = raw_element.popitem()[-1]
         result.extend(await TelegramCapability(self.staff).deserialize_element(raw_element))
-        result.extend(await self.extract_entities(caption, entities))
+        result.extend(self.extract_entities(caption, entities))
         return result
 
     @m.entity(TelegramCapability.deserialize_element, raw_element="photo")

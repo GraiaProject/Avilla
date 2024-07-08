@@ -48,7 +48,13 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
     async def text(self, element: Text) -> dict:
         entities = []
         if element.style:
-            entities.append({"type": element.style, "offset": 0, "length": len(element.text.encode("utf-16be"))})
+            entities.append(
+                {
+                    "type": element.style,
+                    "offset": 0,
+                    "length": sum(2 if byte >= 0xF0 else 1 for byte in element.text.encode("utf-8")),
+                }
+            )
         return {"api_name": "sendMessage", "data": {"text": element.text, "entities": entities}}
 
     async def process_resource(self, element: Element, result: dict) -> dict:
