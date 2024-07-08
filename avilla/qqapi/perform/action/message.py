@@ -172,7 +172,9 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         msg = await QQAPICapability(self.account.staff).serialize(message)
         context = self.context
-        if context and (event_id := context.cache.get(target.display_without_land)):
+        if context and (event_id := await cache.get(f"qqapi/account({self.account.route['account']}):{context.scene.display_without_land}")):
+            msg["msg_id"] = event_id
+        elif context and (event_id := context.cache.get(target.display_without_land)):
             msg["msg_id"] = event_id
         if reply:
             msg["msg_id"] = reply.pattern["message"]
@@ -233,7 +235,7 @@ class QQAPIMessageActionPerform((m := AccountCollector["QQAPIProtocol", "QQAPIAc
                 expire=timedelta(minutes=5),
             )
         # TODO: wait for api upgrade
-        msg["content"] = unescape(msg["content"])
+        # msg["content"] = unescape(msg["content"])
         method, data = form_data(msg)
         try:
             result = await self.account.connection.call_http(method, f"v2/groups/{target.pattern['group']}/messages", data)

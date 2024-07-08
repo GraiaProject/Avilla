@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from loguru import logger
 
@@ -13,6 +13,8 @@ from avilla.qqapi.collector.connection import ConnectionCollector
 from avilla.qqapi.element import Reference
 from avilla.standard.core.message import MessageReceived, MessageRevoked
 from avilla.standard.core.profile import Avatar, Nick, Summary
+
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 
 class QQAPIEventMessagePerform((m := ConnectionCollector())._):
@@ -164,6 +166,7 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="c2c_message_create")
     async def c2c_message(self, event_type: ..., raw_event: dict):
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account_route = Selector().land("qq").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
@@ -195,6 +198,11 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
             reply=reply,
         )
         context.cache[context.scene.display_without_land] = raw_event["id"]
+        await cache.set(
+            f"qqapi/account({account_route['account']}):{context.scene.display_without_land}",
+            raw_event["id"],
+            expire=timedelta(minutes=30),
+        )
         context._collect_metadatas(msg.to_selector(), msg)
         return MessageReceived(context, msg)
 

@@ -39,11 +39,11 @@ class QQAPIMessageSerializePerform((m := AccountCollector["QQAPIProtocol", "QQAP
     async def notice(self, element: Notice):
         if element.target.last_key == "channel":
             return f"<#{element.target['channel']}>"
-        return f"<@{element.target['member']}>"
+        return f'<qqbot-at-user id="{element.target["member"]}" />'
 
     @m.entity(QQAPICapability.serialize_element, element=NoticeAll)
     async def notice_all(self, element: NoticeAll):
-        return "@everyone"
+        return "<qqbot-at-everyone />"
 
     @m.entity(QQAPICapability.serialize_element, element=Picture)
     async def picture(self, element: Picture):
