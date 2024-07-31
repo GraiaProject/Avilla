@@ -22,11 +22,18 @@ class FlashImage(Picture):
 
 @dataclass
 class MarketFace(Element):
-    id: str
+    id: str  # "表情集合id::表情id::key"
     name: str | None = None
 
+
+    @property
+    def url(self):
+        md5 = self.id.split("::")[1]
+        return f"https://gxh.vip.qq.com/club/item/parcel/item/{md5[:2]}/{md5}/raw300.gif"
+
+
     def __str__(self) -> str:
-        return f"[$MarketFace:id={self.id};name={self.name}]"
+        return f"[$MarketFace:name={self.name};id={self.id};url={self.url}]"
 
 
 @dataclass
@@ -320,6 +327,5 @@ class Forward(Element):
 
     def __str__(self) -> str:
         return f"[$Forward:id={self.id}]"
-
 
 # TODO: other qq elements
