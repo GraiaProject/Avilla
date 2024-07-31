@@ -6,9 +6,9 @@ from graia.amnesia.builtins.asgi import UvicornASGIService
 avilla = Avilla()
 
 
-config = OneBot11ReverseConfig("/ob", "dfawdfafergergeaar")
+config = OneBot11ReverseConfig(endpoint="ws", access_token="dfawdfafergergeaar")
 avilla.apply_protocols(OneBot11Protocol().configure(config))
-avilla.launch_manager.add_component(UvicornASGIService("127.0.0.1", 9090))
+avilla.launch_manager.add_component(UvicornASGIService("127.0.0.1", 9555))
 
 
 @avilla.listen(MessageReceived)
