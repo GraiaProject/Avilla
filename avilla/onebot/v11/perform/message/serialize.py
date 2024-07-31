@@ -255,22 +255,21 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
     async def poke(self, element: Poke):
         return {"type": "shake", "data": {}}
 
-    # TODO
-
     @m.entity(OneBot11Capability.serialize_element, element=Reference)
     async def reply(self, element: Reference):
         return {"type": "reply", "data": {"id": element.message["message"]}}
 
     @m.entity(OneBot11Capability.serialize_element, element=MarketFace)
     async def market_face(self, element: MarketFace):
-        # 由于OneBot11并未规定商城表情的格式，此处采用了LLOneBot的格式
-        # https://github.com/LLOneBot/LLOneBot/pull/205
-        emoji_package_id, emoji_id, key = element.id.split('::')
+        if not element.tab_id or not element.key:
+            raise NotImplementedError
         return {
             "type": "mface",
             "data": {
-                "emojiPackageId": int(emoji_package_id),
-                "emojiId": emoji_id,
-                "key": key,
+                "emojiPackageId": int(element.tab_id),
+                "emojiId": element.id,
+                "key": element.key,
             }
         }
+
+    # TODO

@@ -64,7 +64,7 @@ class ElizabethMessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="MarketFace")
     async def market_face(self, raw_element: dict) -> MarketFace:
-        return MarketFace(raw_element["id"], raw_element["name"])
+        return MarketFace(raw_element["id"], summary=raw_element["name"])
 
     @m.entity(ElizabethCapability.deserialize_element, raw_element="Xml")
     async def xml(self, raw_element: dict) -> Xml:

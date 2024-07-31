@@ -82,13 +82,14 @@ class RedMessageSerializePerform((m := AccountCollector["RedProtocol", "RedAccou
 
     @m.entity(RedCapability.serialize_element, element=MarketFace)
     async def market_face(self, element: MarketFace) -> dict:
-        emoji_id, key, emoji_package_id = element.id.split("/")
+        if not element.tab_id or not element.key:
+            raise NotImplementedError
         return {
             "elementType": 11,
             "marketFaceElement": {
-                "emojiId": int(emoji_id),
-                "key": key,
-                "emojiPackageId": int(emoji_package_id),
+                "emojiId": element.id,
+                "key": element.key,
+                "emojiPackageId": int(element.tab_id),
             },
         }
 
