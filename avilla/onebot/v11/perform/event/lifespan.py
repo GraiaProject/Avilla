@@ -73,6 +73,5 @@ class OneBot11EventLifespanPerform((m := ConnectionCollector())._):
         self_id: int = raw_event["self_id"]
         account = self.connection.accounts.get(self_id)
         if account is None:
-            logger.warning(f"Unknown account {self_id} received heartbeat event {raw_event}")
-            return
-        logger.debug(f"Heartbeat received from account {self_id}")
+            return await self.connect(raw_event)
+        logger.trace(f"Heartbeat received from account {self_id}")
