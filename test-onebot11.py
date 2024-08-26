@@ -20,7 +20,7 @@ avilla.apply_protocols(OneBot11Protocol().configure(config))
 
 @avilla.listen(MessageReceived)
 async def on_message_received(ctx: Context):
-    nick: Nick = await ctx.pull(Nick, ctx.client)
+    nick: Nick = await ctx.pull(Nick, Selector(ctx.client.pattern))
     summary: Summary = await ctx.pull(Summary, ctx.scene)
     stranger_nick: Nick = await ctx.pull(Nick, Selector().land(ctx.land).stranger("2854196310"))  # Q群管家
     logger.success(f"{nick = }")

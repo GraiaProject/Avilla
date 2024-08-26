@@ -11,6 +11,7 @@ from avilla.core.selector import Selector
 from avilla.onebot.v11.capability import OneBot11Capability
 from avilla.onebot.v11.collector.connection import ConnectionCollector
 from avilla.standard.core.message import MessageReceived, MessageRevoked, MessageSent
+from avilla.standard.core.profile import Nick, Summary
 
 
 class OneBot11EventMessagePerform((m := ConnectionCollector())._):
@@ -32,6 +33,14 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             friend,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
+        if nickname := raw_event["sender"].get("nickname"):
+            # See: https://github.com/botuniverse/onebot-11/blob/master/event/message.md?plain=1#L33
+            # field "nickname" is not always present
+            context._collect_metadatas(
+                friend,
+                Nick(nickname, nickname, None),
+                Summary(nickname, "a friend contact assigned to this account"),
+            )
         message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
             raw_event["message"]
         )
@@ -69,6 +78,14 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             member,
             group.member(str(raw_event["self_id"])),
         )
+        # "group" is not defined for event "message.private.group" in OneBot 11 standard,
+        # and I don't have implementations other than this, thus it's not cached
+        if nickname := raw_event["sender"].get("nickname"):
+            context._collect_metadatas(
+                member,
+                Nick(nickname, nickname, None),  # "card" is not always present
+                Summary(nickname, None),
+            )
         message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
             raw_event["message"]
         )
@@ -105,6 +122,12 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group.member(str(raw_event["self_id"])),
         )
+        if nickname := raw_event["sender"].get("nickname"):
+            context._collect_metadatas(
+                member,
+                Nick(raw_event["sender"].get("card") or nickname, nickname, raw_event["sender"].get("title")),
+                Summary(nickname, None),
+            )
         message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
             raw_event["message"]
         )
@@ -139,6 +162,12 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             stranger,
             Selector().land(account.route["land"]).account(str(raw_event["self_id"])),
         )
+        if nickname := raw_event["sender"].get("nickname"):
+            context._collect_metadatas(
+                stranger,
+                Nick(nickname, nickname, None),
+                Summary(nickname, None),
+            )
         message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
             raw_event["message"]
         )
@@ -173,6 +202,11 @@ class OneBot11EventMessagePerform((m := ConnectionCollector())._):
             group,
             group,
             group.member(str(raw_event["self_id"])),
+        )
+        context._collect_metadatas(
+            people,
+            Nick(raw_event["anonymous"]["name"], raw_event["anonymous"]["name"], None),
+            Summary(raw_event["anonymous"]["name"], None),
         )
         message = await OneBot11Capability(account.staff.ext({"context": context})).deserialize_chain(
             raw_event["message"]
