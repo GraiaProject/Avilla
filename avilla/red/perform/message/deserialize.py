@@ -90,7 +90,9 @@ class RedMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(RedCapability.deserialize_element, element="marketFace")
     async def market_face(self, element: dict) -> MarketFace:
         return MarketFace(
-            f"{element['emojiId']}/{element['key']}/{element['emojiPackageId']}",
+            element["emojiId"],
+            str(element["emojiPackageId"]),
+            element["key"],
         )
 
     @m.entity(RedCapability.deserialize_element, element="ark")

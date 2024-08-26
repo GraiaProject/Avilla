@@ -10,6 +10,7 @@ from launart.utilles import any_completed
 from starlette.applications import Starlette
 from starlette.routing import WebSocketRoute
 from starlette.websockets import WebSocket
+from yarl import URL
 
 from avilla.onebot.v11.net.base import OneBot11Networking
 from avilla.standard.core.account import AccountUnregistered
@@ -76,7 +77,7 @@ class OneBot11WsServerNetworking(Service):
         return f"onebot/v11/connection/websocket/server#{id(self)}"
 
     async def websocket_server_handler(self, ws: WebSocket):
-        if ws.headers["Authorization"][6:] != self.config.access_token:
+        if ws.headers.get("Authorization", "")[7:] != (self.config.access_token or ""):
             return await ws.close()
 
         account_id = ws.headers["X-Self-ID"]
@@ -92,10 +93,11 @@ class OneBot11WsServerNetworking(Service):
             del self.connections[account_id]
 
     async def launch(self, manager: Launart):
+        url = URL("/") / self.config.path / self.config.endpoint
         async with self.stage("preparing"):
             asgi_service = manager.get_component(UvicornASGIService)
-            app = Starlette(routes=[WebSocketRoute("/onebot/v11/ws/universal", self.websocket_server_handler)])
-            asgi_service.middleware.mounts[self.config.endpoint.rstrip("/")] = app  # type: ignore
+            app = Starlette(routes=[WebSocketRoute(str(url), self.websocket_server_handler)])
+            asgi_service.middleware.mounts[self.config.prefix.rstrip("/")] = app  # type: ignore
 
         async with self.stage("blocking"):
             await manager.status.wait_for_sigexit()

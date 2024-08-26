@@ -32,6 +32,7 @@ from avilla.standard.qq.elements import (
     Poke,
     Share,
     Xml,
+    MarketFace,
 )
 from graia.ryanvk import OptionalAccess
 
@@ -165,5 +166,14 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
                 id_ = Selector().land("qq").file(data["name"])
             resource = OneBot11FileResource(id_, data["name"], data["path"], int(data["size"]), data.get("busid", None))
         return File(resource)
+
+    @m.entity(OneBot11Capability.deserialize_element, raw_element="mface")
+    async def mface(self, raw_element: dict) -> MarketFace:
+        return MarketFace(
+            id=raw_element["data"]["emoji_id"],
+            tab_id=str(raw_element["data"]["package_id"]),
+            key=raw_element["data"]["key"],
+            summary=raw_element["data"]["text"],
+        )
 
     # TODO

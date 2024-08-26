@@ -22,11 +22,20 @@ class FlashImage(Picture):
 
 @dataclass
 class MarketFace(Element):
-    id: str
-    name: str | None = None
+    """MarketFace对象, 专门表示 QQ 中的商城表情"""
+
+    id: str  # alias: emoji_id
+    tab_id: str | None = None  # alias: package_id
+    key: str | None = None
+    summary: str | None = None  # alias: face_name
+
+    @property
+    def url(self):
+        return f"https://gxh.vip.qq.com/club/item/parcel/item/{self.id[:2]}/{self.id}/raw300.gif"
 
     def __str__(self) -> str:
-        return f"[$MarketFace:id={self.id};name={self.name}]"
+        return f"[$MarketFace:id={self.id};summary={self.summary}]"
+
 
 
 @dataclass
@@ -320,6 +329,5 @@ class Forward(Element):
 
     def __str__(self) -> str:
         return f"[$Forward:id={self.id}]"
-
 
 # TODO: other qq elements

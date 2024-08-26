@@ -21,7 +21,9 @@ class OneBot11ForwardConfig:
 
 @dataclass
 class OneBot11ReverseConfig:
-    endpoint: str
+    prefix: str = "/"
+    path: str = "onebot/v11"
+    endpoint: str = "ws/universal"
     access_token: str | None = None
 
 
