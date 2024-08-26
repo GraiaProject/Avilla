@@ -97,7 +97,7 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         if raw := await cache.get(f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})"):
             return Nick(raw["nickname"], raw["nickname"], None)
         result = await self.account.connection.call(
-            "get_stranger_info ", {"user_id": int(target["stranger"]), "no_cache": True}
+            "get_stranger_info", {"user_id": int(target["stranger"]), "no_cache": True}
         )
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
@@ -153,7 +153,7 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         if raw := await cache.get(f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})"):
             return Summary(raw["nickname"], None)
         result = await self.account.connection.call(
-            "get_stranger_info ", {"user_id": int(target["stranger"]), "no_cache": True}
+            "get_stranger_info", {"user_id": int(target["stranger"]), "no_cache": True}
         )
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
