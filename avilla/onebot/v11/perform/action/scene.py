@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from graia.amnesia.builtins.memcache import Memcache, MemcacheService
@@ -60,6 +62,11 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         )
         if result is None:
             raise RuntimeError(f"Failed to get member {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).group({target['group']}).member({target['member']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Nick(result.get("card", "") or result["nickname"], result["nickname"], result.get("title"))
 
     @m.pull("land.friend", Nick)
@@ -69,6 +76,17 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
             return Nick(raw["nickname"], raw.get("remark") or raw["nickname"], None)
         if not (results := await self.account.connection.call("get_friend_list")):
             raise RuntimeError(f"Failed to get friend {target}")
+
+        await asyncio.gather(
+            *[
+                cache.set(
+                    f"onebot11/account({self.account.route['account']}).friend({x['user_id']})",
+                    x,
+                    expire=timedelta(seconds=120),
+                )
+                for x in results
+            ]
+        )
         if not (result := next(filter(lambda x: x["user_id"] == int(target["friend"]), results), None)):
             raise RuntimeError(f"Failed to get friend {target}")
         return Nick(result["nickname"], result.get("remark") or result["nickname"], None)
@@ -83,6 +101,11 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         )
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Nick(result["nickname"], result["nickname"], None)
 
     @m.pull("land.group", Summary)
@@ -95,6 +118,11 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         )
         if result is None:
             raise RuntimeError(f"Failed to get group {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).group({target['group']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Summary(result["group_name"], None)
 
     @m.pull("land.friend", Summary)
@@ -106,6 +134,17 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
             raise RuntimeError(f"Failed to get friend {target}")
         if not (result := next(filter(lambda x: x["user_id"] == int(target["friend"]), results), None)):
             raise RuntimeError(f"Failed to get friend {target}")
+
+        await asyncio.gather(
+            *[
+                cache.set(
+                    f"onebot11/account({self.account.route['account']}).friend({x['user_id']})",
+                    x,
+                    expire=timedelta(seconds=120),
+                )
+                for x in results
+            ]
+        )
         return Summary(result["nickname"], "a friend contact assigned to this account")
 
     @m.pull("land.stranger", Summary)
@@ -118,6 +157,11 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         )
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Summary(result["nickname"], None)
 
     @m.pull("land.group.member", Avatar)
