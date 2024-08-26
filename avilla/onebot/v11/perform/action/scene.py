@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import asyncio
 from datetime import timedelta
 from typing import TYPE_CHECKING
+
+from graia.amnesia.builtins.memcache import Memcache, MemcacheService
 
 from avilla.core.ryanvk.collector.account import AccountCollector
 from avilla.core.selector import Selector
@@ -48,34 +51,117 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
 
     @m.pull("land.group.member", Nick)
     async def get_member_nick(self, target: Selector, route: ...) -> Nick:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(
+            f"onebot11/account({self.account.route['account']}).group({target['group']}).member({target['member']})"
+        ):
+            return Nick(raw.get("card", "") or raw["nickname"], raw["nickname"], raw.get("title"))
         result = await self.account.connection.call(
-            "get_group_member_info", {"group_id": int(target["group"]), "user_id": int(target["member"])}
+            "get_group_member_info",
+            {"group_id": int(target["group"]), "user_id": int(target["member"]), "no_cache": True},
         )
         if result is None:
             raise RuntimeError(f"Failed to get member {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).group({target['group']}).member({target['member']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Nick(result.get("card", "") or result["nickname"], result["nickname"], result.get("title"))
 
     @m.pull("land.friend", Nick)
+    async def get_friend_nick(self, target: Selector, route: ...) -> Nick:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"onebot11/account({self.account.route['account']}).friend({target['friend']})"):
+            return Nick(raw["nickname"], raw.get("remark") or raw["nickname"], None)
+        if not (results := await self.account.connection.call("get_friend_list")):
+            raise RuntimeError(f"Failed to get friend {target}")
+
+        await asyncio.gather(
+            *[
+                cache.set(
+                    f"onebot11/account({self.account.route['account']}).friend({x['user_id']})",
+                    x,
+                    expire=timedelta(seconds=120),
+                )
+                for x in results
+            ]
+        )
+        if not (result := next(filter(lambda x: x["user_id"] == int(target["friend"]), results), None)):
+            raise RuntimeError(f"Failed to get friend {target}")
+        return Nick(result["nickname"], result.get("remark") or result["nickname"], None)
+
     @m.pull("land.stranger", Nick)
-    async def get_user_nick(self, target: Selector, route: ...) -> Nick:
-        result = await self.account.connection.call("get_stranger_info ", {"user_id": int(target.last_value)})
+    async def get_stranger_nick(self, target: Selector, route: ...) -> Nick:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})"):
+            return Nick(raw["nickname"], raw["nickname"], None)
+        result = await self.account.connection.call(
+            "get_stranger_info", {"user_id": int(target["stranger"]), "no_cache": True}
+        )
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Nick(result["nickname"], result["nickname"], None)
 
     @m.pull("land.group", Summary)
     async def get_group_summary(self, target: Selector, route: ...) -> Summary:
-        result = await self.account.connection.call("get_group_info", {"group_id": int(target["group"])})
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"onebot11/account({self.account.route['account']}).group({target['group']})"):
+            return Summary(raw["group_name"], None)
+        result = await self.account.connection.call(
+            "get_group_info", {"group_id": int(target["group"]), "no_cache": True}
+        )
         if result is None:
             raise RuntimeError(f"Failed to get group {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).group({target['group']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Summary(result["group_name"], None)
 
     @m.pull("land.friend", Summary)
+    async def get_friend_summary(self, target: Selector, route: ...) -> Summary:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"onebot11/account({self.account.route['account']}).friend({target['friend']})"):
+            return Summary(raw["nickname"], "a friend contact assigned to this account")
+        if not (results := await self.account.connection.call("get_friend_list")):
+            raise RuntimeError(f"Failed to get friend {target}")
+        if not (result := next(filter(lambda x: x["user_id"] == int(target["friend"]), results), None)):
+            raise RuntimeError(f"Failed to get friend {target}")
+
+        await asyncio.gather(
+            *[
+                cache.set(
+                    f"onebot11/account({self.account.route['account']}).friend({x['user_id']})",
+                    x,
+                    expire=timedelta(seconds=120),
+                )
+                for x in results
+            ]
+        )
+        return Summary(result["nickname"], "a friend contact assigned to this account")
+
     @m.pull("land.stranger", Summary)
-    async def get_user_summary(self, target: Selector, route: ...) -> Summary:
-        result = await self.account.connection.call("get_stranger_info ", {"user_id": int(target.last_value)})
+    async def get_stranger_summary(self, target: Selector, route: ...) -> Summary:
+        cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
+        if raw := await cache.get(f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})"):
+            return Summary(raw["nickname"], None)
+        result = await self.account.connection.call(
+            "get_stranger_info", {"user_id": int(target["stranger"]), "no_cache": True}
+        )
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
+        await cache.set(
+            f"onebot11/account({self.account.route['account']}).stranger({target['stranger']})",
+            result,
+            expire=timedelta(seconds=120),
+        )
         return Summary(result["nickname"], None)
 
     @m.pull("land.group.member", Avatar)
@@ -86,4 +172,4 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
 
     @m.pull("land.group", Avatar)
     async def get_group_avatar(self, target: Selector, route: ...) -> Avatar:
-        return Avatar(f"https://p.qlogo.cn/gh/{target.pattern['group']}/{target.pattern['group']}/")
+        return Avatar(f"https://p.qlogo.cn/gh/{target['group']}/{target['group']}/")
