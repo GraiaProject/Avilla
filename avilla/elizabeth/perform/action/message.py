@@ -139,7 +139,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         if result is None:
             raise RuntimeError(f"Failed to get message from {message.pattern['group']}: {message}")
         event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(
-            ElizabethCapability.event_callback, result["data"]
+            ElizabethCapability.event_callback, result
         )
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)  # noqa
@@ -158,7 +158,7 @@ class ElizabethMessageActionPerform((m := AccountCollector["ElizabethProtocol", 
         if result is None:
             raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
         event = await self.account.staff.ext({"connection": self.account.connection}).call_fn(
-            ElizabethCapability.event_callback, result["data"]
+            ElizabethCapability.event_callback, result
         )
         if TYPE_CHECKING:
             assert isinstance(event, MessageReceived)  # noqa

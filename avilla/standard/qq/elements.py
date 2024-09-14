@@ -37,7 +37,6 @@ class MarketFace(Element):
         return f"[$MarketFace:id={self.id};summary={self.summary}]"
 
 
-
 @dataclass
 class Xml(Element):
     content: str
