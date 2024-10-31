@@ -131,7 +131,9 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
     @staticmethod
     def compose_text(last: dict, this: dict) -> dict:
         text = last["data"]["text"] + this["data"]["text"]
-        entity_offset = sum(2 if byte >= 0xF0 else 1 for byte in last["data"]["text"].encode("utf-8"))
+        entity_offset = sum(
+            (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0 for byte in last["data"]["text"].encode("utf-8")
+        )
         for entity in this["data"]["entities"]:
             entity["offset"] += entity_offset
         last["data"]["entities"].extend(this["data"]["entities"])
@@ -141,7 +143,10 @@ class TelegramMessageActionPerform((m := AccountCollector["TelegramProtocol", "T
     @staticmethod
     def compose_caption(last: dict, this: dict) -> dict:
         caption = last["data"].get("caption", "") + this["data"]["text"]
-        entity_offset = sum(2 if byte >= 0xF0 else 1 for byte in last["data"].get("caption", "").encode("utf-8"))
+        entity_offset = sum(
+            (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0
+            for byte in last["data"].get("caption", "").encode("utf-8")
+        )
         for entity in this["data"]["entities"]:
             entity["offset"] += entity_offset
         last["data"].setdefault("caption_entities", []).extend(this["data"]["entities"])

@@ -52,7 +52,10 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
                 {
                     "type": element.style,
                     "offset": 0,
-                    "length": sum(2 if byte >= 0xF0 else 1 for byte in element.text.encode("utf-8")),
+                    "length": sum(
+                        (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0
+                        for byte in element.text.encode("utf-8")
+                    ),
                 }
             )
         return {"api_name": "sendMessage", "data": {"text": element.text, "entities": entities}}

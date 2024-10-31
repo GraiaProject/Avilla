@@ -64,7 +64,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
                 start_index = current_index
                 while current_offset < offset:
                     byte = encoded_text[current_index]
-                    byte_length = 2 if byte >= 0xF0 else 1
+                    byte_length = (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0
                     current_offset += byte_length
                     current_index += 1
                 end_index = current_index
@@ -75,7 +75,7 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
             start_index = current_index
             while current_offset < offset + length:
                 byte = encoded_text[current_index]
-                byte_length = 2 if byte >= 0xF0 else 1
+                byte_length = (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0
                 current_offset += byte_length
                 current_index += 1
             end_index = current_index
