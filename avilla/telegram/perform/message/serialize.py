@@ -54,7 +54,7 @@ class TelegramMessageSerializePerform((m := AccountCollector["TelegramProtocol",
                     "offset": 0,
                     "length": sum(
                         (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0
-                        for byte in element.text.encode("utf-8")
+                        for byte in element.text.rstrip().encode("utf-8")
                     ),
                 }
             )

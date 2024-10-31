@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from typing import TYPE_CHECKING, AsyncIterator, cast
 
 import aiohttp
@@ -128,7 +129,7 @@ class TelegramNetworking:
                 del avilla.accounts[n]
 
     async def call(self, _action: str, _file: dict[str, tuple[str, bytes]] | None = None, **data) -> dict:
-        data = {k: v for k, v in data.items() if v is not None}
+        data = {k: json.dumps(v) if isinstance(v, (dict, list)) else v for k, v in data.items() if v is not None}
 
         logger.debug(f"calling {_action!r}")
 

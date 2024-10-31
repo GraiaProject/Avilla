@@ -62,23 +62,29 @@ class TelegramMessageDeserializePerform((m := ApplicationCollector())._):
 
             if current_index < len(encoded_text) and current_offset < offset:
                 start_index = current_index
-                while current_offset < offset:
+                while current_offset <= offset:
+                    if current_index >= len(encoded_text):
+                        current_index += 1
+                        break
                     byte = encoded_text[current_index]
                     byte_length = (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0
                     current_offset += byte_length
                     current_index += 1
-                end_index = current_index
+                end_index = current_index - 1
 
                 plain_text = encoded_text[start_index:end_index].decode("utf-8")
                 result.append(Text(plain_text))
 
             start_index = current_index
-            while current_offset < offset + length:
+            while current_offset <= offset + length:
+                if current_index >= len(encoded_text):
+                    current_index += 1
+                    break
                 byte = encoded_text[current_index]
                 byte_length = (2 if byte >= 0xF0 else 1) if (byte & 0xC0) != 0x80 else 0
                 current_offset += byte_length
                 current_index += 1
-            end_index = current_index
+            end_index = current_index - 1
 
             styled_text = encoded_text[start_index:end_index].decode("utf-8")
             text_entity = Text(styled_text, style=style)
