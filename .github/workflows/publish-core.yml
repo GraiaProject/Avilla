@@ -16,10 +16,10 @@ jobs:
           architecture: 'x64'
       - name: Ensure PDM & twine
         run: |
-          python3 -m pip install pdm twine pdm-mina "mina-build<0.6"
+          python3 -m pip install pdm=="2.13.2" twine pdm-mina "mina-build<0.6"
       - name: Build Package
         run: |
-          export MINA_BUILD_TARGET=core && pdm mina build core
+          export MINA_BUILD_TARGET=core && pdm mina build core --no-isolation
       - name: Publish to PyPI
         run: |
           twine upload dist/* --non-interactive -u __token__ -p ${{ secrets.PYPI_TOKEN }}
