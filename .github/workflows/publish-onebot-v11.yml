@@ -19,7 +19,7 @@ jobs:
           python3 -m pip install pdm twine pdm-mina "mina-build<0.6"
       - name: Build Package
         run: |
-          export MINA_BUILD_TARGET=onebot-v11 && pdm mina build onebot-v11 --no-isolation
+          export MINA_BUILD_TARGET=onebot-v11 && pdm mina build onebot-v11
       - name: Publish to PyPI
         run: |
           twine upload dist/* --non-interactive -u __token__ -p ${{ secrets.PYPI_TOKEN }}

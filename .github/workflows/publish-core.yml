@@ -19,7 +19,7 @@ jobs:
           python3 -m pip install pdm twine pdm-mina "mina-build<0.6"
       - name: Build Package
         run: |
-          export MINA_BUILD_TARGET=core && pdm mina build core --no-isolation
+          export MINA_BUILD_TARGET=core && pdm mina build core
       - name: Publish to PyPI
         run: |
           twine upload dist/* --non-interactive -u __token__ -p ${{ secrets.PYPI_TOKEN }}
