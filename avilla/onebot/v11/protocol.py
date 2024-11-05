@@ -43,6 +43,7 @@ def _import_performs():
     from avilla.onebot.v11.perform.message import serialize  # noqa: F401
     from avilla.onebot.v11.perform.query import group  # noqa: F401
     from avilla.onebot.v11.perform.query import file  # noqa: F401
+    from avilla.onebot.v11.perform.query import friend  # noqa: F401
 
 
 _import_performs()
@@ -69,6 +70,7 @@ class OneBot11Protocol(BaseProtocol):
             ref("avilla.protocol/onebot11::message", "serialize"),
             ref("avilla.protocol/onebot11::query", "file"),
             ref("avilla.protocol/onebot11::query", "group"),
+            ref("avilla.protocol/onebot11::query", "friend"),
         ),
     }
 
