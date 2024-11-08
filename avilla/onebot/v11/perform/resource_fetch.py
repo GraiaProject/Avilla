@@ -13,6 +13,7 @@ from avilla.onebot.v11.resource import (
     OneBot11Resource,
     OneBot11VideoResource,
 )
+from avilla.standard.qq.util import ssl_ctx
 
 if TYPE_CHECKING:
     from avilla.onebot.v11.protocol import OneBot11Protocol  # noqa
@@ -28,5 +29,5 @@ class OneBot11ResourceFetchPerform((m := ProtocolCollector["OneBot11Protocol"]()
     @m.entity(CoreCapability.fetch, resource=OneBot11VideoResource)
     async def fetch_resource(self, resource: OneBot11Resource) -> bytes:
         async with ClientSession() as session:
-            async with session.get(resource.url) as resp:
+            async with session.get(resource.url, ssl=ssl_ctx) as resp:
                 return await resp.read()
