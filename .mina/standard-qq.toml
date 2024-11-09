@@ -5,7 +5,7 @@ raw_dependencies = [
 
 [project]
 name = "avilla-standard-qq"
-version = "1.0.0a21"
+version = "1.0.0a22"
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
   {name = "BlueGlassBlock", email = "blueglassblock@outlook.com"},
