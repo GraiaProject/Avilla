@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import TYPE_CHECKING
 
+from avilla.core.exceptions import ActionFailed
 from avilla.core.elements import (
     Audio,
     Face,
@@ -132,12 +133,15 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
         elem = Forward(raw_element["data"]["id"])
         if not self.account:
             return elem
-        result = await self.account.connection.call(
-            "get_forward_msg",
-            {
-                "message_id": raw_element["data"]["id"],
-            },
-        )
+        try:
+            result = await self.account.connection.call(
+                "get_forward_msg",
+                {
+                    "message_id": raw_element["data"]["id"],
+                },
+            )
+        except ActionFailed:
+            return elem
         if result is None:
             return elem
         for msg in result["messages"]:

@@ -92,6 +92,9 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         if account is None:
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
+        if raw_event["user_id"] == 0:
+            logger.warning(f"Received invalid user_id 0 in event {raw_event}")
+            return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
@@ -106,6 +109,9 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
+        if raw_event["user_id"] == 0:
+            logger.warning(f"Received invalid user_id 0 in event {raw_event}")
+            return
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
@@ -117,6 +123,9 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         account = self.connection.accounts.get(self_id)
         if account is None:
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
+            return
+        if raw_event["user_id"] == 0:
+            logger.warning(f"Received invalid user_id 0 in event {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
         endpoint = group.member(str(raw_event["user_id"]))
