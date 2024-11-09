@@ -171,9 +171,9 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
     async def mface(self, raw_element: dict) -> MarketFace:
         return MarketFace(
             id=raw_element["data"]["emoji_id"],
-            tab_id=str(raw_element["data"]["package_id"]),
+            tab_id=str(raw_element["data"]["emoji_package_id"]),
             key=raw_element["data"]["key"],
-            summary=raw_element["data"]["text"],
+            summary=raw_element["data"]["summary"],
         )
 
     # TODO
