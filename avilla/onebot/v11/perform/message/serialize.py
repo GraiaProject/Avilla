@@ -208,7 +208,7 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
         raw = {
             "type": "music",
             "data": {
-                "type": "custom",
+                "type": element.kind.platform(),
                 "url": element.url,
                 "audio": element.audio,
                 "title": element.title,
@@ -216,6 +216,9 @@ class OneBot11MessageSerializePerform((m := AccountCollector["OneBot11Protocol",
         }
         if element.content:
             raw["data"]["content"] = element.content
+            raw["data"]["singer"] = element.content
+        if element.brief:
+            raw["data"]["brief"] = element.brief
         if element.thumbnail:
             raw["data"]["image"] = element.thumbnail
         return raw

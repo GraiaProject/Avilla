@@ -173,6 +173,15 @@ class MusicShareKind(str, Enum):
     KuwoMusic = "KuwoMusic"
     """酷我音乐"""
 
+    def platform(self) -> str:
+        return {
+            MusicShareKind.NeteaseCloudMusic: "163",
+            MusicShareKind.QQMusic: "qq",
+            MusicShareKind.MiguMusic: "migu",
+            MusicShareKind.KugouMusic: "kugou",
+            MusicShareKind.KuwoMusic: "kuwo",
+        }.get(self, "qq")
+
 
 @dataclass
 class MusicShare(Element):
