@@ -141,6 +141,16 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
+        if raw_event["user_id"] == self_id:
+            # Self join ==> SceneCreated
+            context = Context(
+                account,
+                group.member(str(self_id)),
+                group,
+                group,
+                group.member(str(self_id)),
+            )
+            return SceneCreated(context)
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(
@@ -160,8 +170,19 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
-        endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
+        if raw_event["user_id"] == self_id:
+            # Self join ==> SceneCreated
+            context = Context(
+                account,
+                group.member(str(self_id)),
+                group,
+                group,
+                group.member(str(self_id)),
+                mediums=[operator],
+            )
+            return SceneCreated(context)
+        endpoint = group.member(str(raw_event["user_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)), mediums=[group])
         return MemberCreated(context)
 

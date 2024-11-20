@@ -239,7 +239,7 @@ class OneBot11MessageActionPerform((m := AccountCollector["OneBot11Protocol", "O
             raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
         if result["message_type"] != "private":
             raise RuntimeError(f"Failed to get message from {message.pattern['friend']}: {message}")
-        friend = Selector().land(self.account.route["land"]).friend(str(result["user_id"]))
+        friend = Selector().land(self.account.route["land"]).friend(message.pattern["friend"])
         content = await OneBot11Capability(self.account.staff).deserialize_chain(result["message"])
         return Message(
             str(result["message_id"]),
