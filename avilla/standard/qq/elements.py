@@ -37,7 +37,6 @@ class MarketFace(Element):
         return f"[$MarketFace:id={self.id};summary={self.summary}]"
 
 
-
 @dataclass
 class Xml(Element):
     content: str
@@ -173,6 +172,15 @@ class MusicShareKind(str, Enum):
 
     KuwoMusic = "KuwoMusic"
     """酷我音乐"""
+
+    def platform(self) -> str:
+        return {
+            MusicShareKind.NeteaseCloudMusic: "163",
+            MusicShareKind.QQMusic: "qq",
+            MusicShareKind.MiguMusic: "migu",
+            MusicShareKind.KugouMusic: "kugou",
+            MusicShareKind.KuwoMusic: "kuwo",
+        }.get(self, "qq")
 
 
 @dataclass

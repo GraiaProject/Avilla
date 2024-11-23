@@ -107,7 +107,7 @@ class Filter(BaseDispatcher, Generic[T]):
         return self.assert_true(lambda result: all(func(result) for func in funcs))
 
     def follows(self: Filter[Selectable], *patterns: str) -> Filter[Selectable]:
-        return self.any(lambda result: result.to_selector().follows(pattern) for pattern in patterns)
+        return self.assert_true(lambda result: any(result.to_selector().follows(pattern) for pattern in patterns))
 
     @classproperty
     @classmethod

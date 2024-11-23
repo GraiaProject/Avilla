@@ -12,6 +12,8 @@ from avilla.core.event import (
     ModifyDetail,
     SceneCreated,
     SceneDestroyed,
+    MemberCreated,
+    MemberDestroyed,
 )
 from avilla.core.selector import Selector
 from avilla.onebot.v11.capability import OneBot11Capability
@@ -90,11 +92,14 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         if account is None:
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
+        if raw_event["user_id"] == 0:
+            logger.warning(f"Received invalid user_id 0 in event {raw_event}")
+            return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
-        return SceneDestroyed(context, True, True)
+        return MemberDestroyed(context, True, True)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_decrease.kick")
     async def member_kick(self, raw_event: dict):
@@ -104,10 +109,13 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
+        if raw_event["user_id"] == 0:
+            logger.warning(f"Received invalid user_id 0 in event {raw_event}")
+            return
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)))
-        return SceneDestroyed(context, False, True)
+        return MemberDestroyed(context, False, True)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_decrease.kick_me")
     async def member_kick_me(self, raw_event: dict):
@@ -115,6 +123,9 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
         account = self.connection.accounts.get(self_id)
         if account is None:
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
+            return
+        if raw_event["user_id"] == 0:
+            logger.warning(f"Received invalid user_id 0 in event {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
         endpoint = group.member(str(raw_event["user_id"]))
@@ -130,6 +141,16 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
+        if raw_event["user_id"] == self_id:
+            # Self join ==> SceneCreated
+            context = Context(
+                account,
+                group.member(str(self_id)),
+                group,
+                group,
+                group.member(str(self_id)),
+            )
+            return SceneCreated(context)
         endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
         context = Context(
@@ -139,7 +160,7 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             group,
             group.member(str(self_id)),
         )
-        return SceneCreated(context)
+        return MemberCreated(context)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_increase.invite")
     async def member_increase_invite(self, raw_event: dict):
@@ -149,10 +170,21 @@ class OneBot11EventNoticePerform((m := ConnectionCollector())._):
             logger.warning(f"Unknown account {self_id} received message {raw_event}")
             return
         group = Selector().land("qq").group(str(raw_event["group_id"]))
-        endpoint = group.member(str(raw_event["user_id"]))
         operator = group.member(str(raw_event["operator_id"]))
+        if raw_event["user_id"] == self_id:
+            # Self join ==> SceneCreated
+            context = Context(
+                account,
+                group.member(str(self_id)),
+                group,
+                group,
+                group.member(str(self_id)),
+                mediums=[operator],
+            )
+            return SceneCreated(context)
+        endpoint = group.member(str(raw_event["user_id"]))
         context = Context(account, operator, endpoint, group, group.member(str(self_id)), mediums=[group])
-        return SceneCreated(context)
+        return MemberCreated(context)
 
     @m.entity(OneBot11Capability.event_callback, raw_event="notice.group_ban.ban")
     async def member_muted(self, raw_event: dict):

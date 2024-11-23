@@ -229,11 +229,11 @@ class Avilla:
         ...
 
     @overload
-    def get_accounts(self, *, protocol_type: type[BaseProtocol]) -> list[AccountInfo]:
+    def get_accounts(self, *, protocol_type: type[BaseProtocol] | tuple[type[BaseProtocol], ...]) -> list[AccountInfo]:
         ...
 
     @overload
-    def get_accounts(self, *, account_type: type[BaseAccount]) -> list[AccountInfo]:
+    def get_accounts(self, *, account_type: type[BaseAccount] | tuple[type[BaseAccount], ...]) -> list[AccountInfo]:
         ...
 
     def get_accounts(
@@ -241,8 +241,8 @@ class Avilla:
         *,
         land: str | None = None,
         pattern: str | None = None,
-        protocol_type: type[BaseProtocol] | None = None,
-        account_type: type[BaseAccount] | None = None,
+        protocol_type: type[BaseProtocol] | tuple[type[BaseProtocol], ...] | None = None,
+        account_type: type[BaseAccount] | tuple[type[BaseAccount], ...] | None = None,
     ) -> list[AccountInfo]:
         if land:
             return [account for account in self.accounts.values() if account.platform.land.name == land]

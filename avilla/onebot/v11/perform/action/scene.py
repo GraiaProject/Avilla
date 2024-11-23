@@ -46,6 +46,13 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         if result is not None:
             raise RuntimeError(f"Failed to ban {target}: {result}")
 
+    @m.pull("land.group", Nick)
+    async def get_group_nick(self, target: Selector, route: ...) -> Nick:
+        result = await self.account.connection.call("get_group_info", {"group_id": int(target["group"])})
+        if result is None:
+            raise RuntimeError(f"Failed to get group {target}")
+        return Nick(result["group_name"], result["group_name"], None)
+
     @m.pull("land.group.member", Nick)
     async def get_member_nick(self, target: Selector, route: ...) -> Nick:
         result = await self.account.connection.call(
@@ -69,6 +76,15 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
         if result is None:
             raise RuntimeError(f"Failed to get group {target}")
         return Summary(result["group_name"], None)
+    
+    @m.pull("land.group.member", Summary)
+    async def get_member_summary(self, target: Selector, route: ...) -> Summary:
+        result = await self.account.connection.call(
+            "get_group_member_info", {"group_id": int(target["group"]), "user_id": int(target["member"])}
+        )
+        if result is None:
+            raise RuntimeError(f"Failed to get member {target}")
+        return Summary(result["nickname"], None)
 
     @m.pull("land.friend", Summary)
     @m.pull("land.stranger", Summary)

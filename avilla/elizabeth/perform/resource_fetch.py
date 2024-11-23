@@ -12,6 +12,7 @@ from avilla.elizabeth.resource import (
     ElizabethResource,
     ElizabethVoiceResource,
 )
+from avilla.standard.qq.util import ssl_ctx
 
 if TYPE_CHECKING:
     from avilla.elizabeth.protocol import ElizabethProtocol  # noqa
@@ -28,5 +29,5 @@ class ElizabethResourceFetchPerform((m := ProtocolCollector["ElizabethProtocol"]
         if resource.url is None:
             raise UnknownTarget
         async with ClientSession() as session:
-            async with session.get(resource.url) as resp:
+            async with session.get(resource.url, ssl=ssl_ctx) as resp:
                 return await resp.read()
