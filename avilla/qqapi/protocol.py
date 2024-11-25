@@ -100,11 +100,11 @@ class QQAPIWebsocketConfig(ProtocolConfig, QQAPIConfig):
 class QQAPIWebhookConfig(ProtocolConfig, QQAPIConfig):
     secrets: dict[str, str]
     """app_id -> secret"""
-    certfile: str | os.PathLike[str]
-    keyfile: str | os.PathLike[str]
     host: str = "0.0.0.0"
     port: int = 8080
     path: str = ""
+    certfile: str | os.PathLike[str] | None = None
+    keyfile: str | os.PathLike[str] | None = None
     is_sandbox: bool = False
     api_base: URL = URL("https://api.sgroup.qq.com/")
     sandbox_api_base: URL = URL("https://sandbox.api.sgroup.qq.com")
@@ -119,8 +119,12 @@ class QQAPIWebhookConfig(ProtocolConfig, QQAPIConfig):
     def __post_init__(self):
         if self.port not in (80, 443, 8080, 8443):
             raise ValueError("Port must be 80, 443, 8080 or 8443.")
-        self.ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
-        self.ssl_context.load_cert_chain(self.certfile, self.keyfile)
+        if self.certfile and self.keyfile:
+            self.ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+            self.ssl_context.load_cert_chain(self.certfile, self.keyfile)
+        else:
+            logger.warning("SSL is not enabled. You may need to use a reverse proxy to apply SSL.")
+            self.ssl_context = None
 
 
 def _import_performs():  # noqa: F401
