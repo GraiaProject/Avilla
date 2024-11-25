@@ -65,7 +65,7 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
     @m.pull("land.friend", Nick)
     @m.pull("land.stranger", Nick)
     async def get_user_nick(self, target: Selector, route: ...) -> Nick:
-        result = await self.account.connection.call("get_stranger_info ", {"user_id": int(target.last_value)})
+        result = await self.account.connection.call("get_stranger_info", {"user_id": int(target.last_value)})
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
         return Nick(result["nickname"], result["nickname"], None)
@@ -89,7 +89,7 @@ class OneBot11BanActionPerform((m := AccountCollector["OneBot11Protocol", "OneBo
     @m.pull("land.friend", Summary)
     @m.pull("land.stranger", Summary)
     async def get_user_summary(self, target: Selector, route: ...) -> Summary:
-        result = await self.account.connection.call("get_stranger_info ", {"user_id": int(target.last_value)})
+        result = await self.account.connection.call("get_stranger_info", {"user_id": int(target.last_value)})
         if result is None:
             raise RuntimeError(f"Failed to get stranger {target}")
         return Summary(result["nickname"], None)
