@@ -6,7 +6,7 @@ from avilla.core.ryanvk.collector.base import AvillaBaseCollector
 from graia.ryanvk import Access, BasePerform
 
 if TYPE_CHECKING:
-    from avilla.qqapi.connection.ws_client import QQAPIWsClientNetworking
+    from avilla.qqapi.connection.base import QQAPINetworking
     from avilla.qqapi.protocol import QQAPIProtocol
 
 
@@ -18,7 +18,7 @@ class ConnectionBasedPerformTemplate(BasePerform, native=True):
     __collector__: ClassVar[ConnectionCollector]
 
     protocol: Access[QQAPIProtocol] = Access()
-    connection: Access[QQAPIWsClientNetworking] = Access()
+    connection: Access[QQAPINetworking] = Access()
 
 
 class ConnectionCollector(AvillaBaseCollector):

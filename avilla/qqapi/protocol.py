@@ -99,12 +99,14 @@ class QQAPIWebsocketConfig(ProtocolConfig, QQAPIConfig):
 @dataclass
 class QQAPIWebhookConfig(ProtocolConfig, QQAPIConfig):
     secrets: dict[str, str]
-    """app_id -> secret"""
+    """app_id 对应的 secret"""
     host: str = "0.0.0.0"
     port: int = 8080
     path: str = ""
     certfile: str | os.PathLike[str] | None = None
     keyfile: str | os.PathLike[str] | None = None
+    verify_payload: bool = True
+    """是否验证 payload"""
     is_sandbox: bool = False
     api_base: URL = URL("https://api.sgroup.qq.com/")
     sandbox_api_base: URL = URL("https://sandbox.api.sgroup.qq.com")

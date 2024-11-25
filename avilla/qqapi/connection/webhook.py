@@ -11,6 +11,7 @@ from launart import Service
 from launart.manager import Launart
 from launart.utilles import any_completed
 from loguru import logger
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 from avilla.core.account import AccountInfo
@@ -104,10 +105,40 @@ class QQAPIWebhookNetworking(Service):
                 logger.exception(f"Failed to sign message: {e}")
                 return web.Response(status=500)
             return web.json_response({"plain_token": plain_token, "signature": signature_hex})
-        ed25519 = header["X-Signature-Ed25519"]
-        timestamp = header["X-Signature-Timestamp"]
 
-        # TODO: verify the payload (configurable)
+        if self.config.verify_payload:
+            ed25519 = header["X-Signature-Ed25519"]
+            timestamp = header["X-Signature-Timestamp"]
+
+            seed = secret.encode()
+            while len(seed) < 32:
+                seed *= 2
+            seed = seed[:32]
+            try:
+                private_key = Ed25519PrivateKey.from_private_bytes(seed)
+                public_key = private_key.public_key()
+            except Exception as e:
+                logger.exception(f"Failed to generate ed25519 public key: {e}")
+                return web.Response(status=500)
+            if not ed25519:
+                logger.warning(f"Missing ed25519 signature")
+                return web.Response(status=401)
+            sig = binascii.unhexlify(ed25519)
+            if len(sig) != 64 or sig[63] & 224 != 0:
+                logger.warning(f"Invalid ed25519 signature")
+                return web.Response(status=401)
+            if not timestamp:
+                logger.warning(f"Missing timestamp")
+                return web.Response(status=401)
+            msg = timestamp.encode() + await req.read()
+            try:
+                public_key.verify(sig, msg)
+            except InvalidSignature:
+                logger.warning(f"Invalid payload: {payload}")
+                return web.Response(status=401)
+            except Exception as e:
+                logger.exception(f"Failed to verify ed25519 signature: {e}")
+                return web.Response(status=401)
 
         account_route = Selector().land("qqapi").account(bot_id)
         if account_route in self.protocol.avilla.accounts:
@@ -120,19 +151,19 @@ class QQAPIWebhookNetworking(Service):
                 self.protocol,
                 PLATFORM,
             )
+            connection = QQAPIWebhookConnection(self.protocol, self.config, bot_id, secret, self)
+            self.protocol.service.accounts[bot_id] = account
+            account.connection = connection
+            self.connection[bot_id] = connection
             self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
-        connection = QQAPIWebhookConnection(self.protocol, self.config, bot_id, secret, self)
-        self.protocol.service.accounts[bot_id] = account
-        account.connection = connection
-        self.connection[bot_id] = connection
-        self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
+            self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
 
         async def event_parse_task(_data: Payload):
             event_type = _data.type
             if not event_type:
                 raise ValueError("event type is None")
             with suppress(NotImplementedError):
-                event = await QQAPICapability(connection.staff).event_callback(event_type.lower(), _data.data)
+                event = await QQAPICapability(account.connection.staff).event_callback(event_type.lower(), _data.data)
                 if event is not None:
                     if isinstance(event, MessageAudited):
                         audit_result.add_result(event)

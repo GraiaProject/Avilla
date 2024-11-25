@@ -18,10 +18,10 @@ class QQAPIEventActivityPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="interaction_create")
     async def button_interaction(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qqapi").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.app_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
-            logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
+            logger.warning(f"Unknown account {self.connection.app_id} received message {raw_event}")
             return
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
         account = info.account
