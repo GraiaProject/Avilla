@@ -25,13 +25,13 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(QQAPICapability.event_callback, event_type="message_create")
     async def at_message(self, event_type: str, raw_event: dict):
         # TODO: put the author.bot metadata
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["guild_id"])
+        guild = Selector().land("qqapi").guild(raw_event["guild_id"])
         channel = guild.channel(raw_event["channel_id"])
         author = channel.member(raw_event["author"]["id"])
         context = Context(
@@ -74,16 +74,16 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="group_at_message_create")
     async def group_at_message(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
         if "group_openid" in raw_event:
-            group = Selector().land("qq").group(raw_event["group_openid"])
+            group = Selector().land("qqapi").group(raw_event["group_openid"])
         else:
-            group = Selector().land("qq").group(raw_event["group_id"])
+            group = Selector().land("qqapi").group(raw_event["group_id"])
         if "member_openid" in raw_event["author"]:
             author = group.member(raw_event["author"]["member_openid"])
         else:
@@ -122,13 +122,13 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="direct_message_create")
     async def direct_message(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["src_guild_id"])
+        guild = Selector().land("qqapi").guild(raw_event["src_guild_id"])
         author = guild.user(raw_event["author"]["id"])
         context = Context(
             account,
@@ -167,16 +167,16 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(QQAPICapability.event_callback, event_type="c2c_message_create")
     async def c2c_message(self, event_type: ..., raw_event: dict):
         cache: Memcache = self.protocol.avilla.launch_manager.get_component(MemcacheService).cache
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
         if "user_openid" in raw_event["author"]:
-            friend = Selector().land("qq").friend(raw_event["author"]["user_openid"])
+            friend = Selector().land("qqapi").friend(raw_event["author"]["user_openid"])
         else:
-            friend = Selector().land("qq").friend(raw_event["author"]["id"])
+            friend = Selector().land("qqapi").friend(raw_event["author"]["id"])
         context = Context(
             account,
             friend,
@@ -209,13 +209,13 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(QQAPICapability.event_callback, event_type="self_message_create")
     async def self_at_message(self, event_type: ..., raw_event: dict):
         # TODO: put the author.bot metadata
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["guild_id"])
+        guild = Selector().land("qqapi").guild(raw_event["guild_id"])
         channel = guild.channel(raw_event["channel_id"])
         author = channel.member(raw_event["author"]["id"])
         context = Context(
@@ -243,13 +243,13 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="self_direct_message_create")
     async def self_direct_message(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["guild_id"])
+        guild = Selector().land("qqapi").guild(raw_event["guild_id"])
         author = guild.user(raw_event["author"]["id"])
         context = Context(
             account,
@@ -278,13 +278,13 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
     @m.entity(QQAPICapability.event_callback, event_type="message_delete")
     @m.entity(QQAPICapability.event_callback, event_type="public_message_delete")
     async def public_message_delete(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["message"]["guild_id"])
+        guild = Selector().land("qqapi").guild(raw_event["message"]["guild_id"])
         channel = guild.channel(raw_event["message"]["channel_id"])
         author = channel.member(raw_event["message"]["author"]["id"])
         operator = channel.member(raw_event["op_user"]["id"])
@@ -305,13 +305,13 @@ class QQAPIEventMessagePerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="direct_message_delete")
     async def direct_message_delete(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(self.connection.account_id)
+        account_route = Selector().land("qqapi").account(self.connection.account_id)
         info = self.protocol.avilla.accounts.get(account_route)
         if info is None:
             logger.warning(f"Unknown account {self.connection.account_id} received message {raw_event}")
             return
         account = info.account
-        guild = Selector().land("qq").guild(raw_event["message"]["guild_id"])
+        guild = Selector().land("qqapi").guild(raw_event["message"]["guild_id"])
         author = guild.user(raw_event["message"]["author"]["id"])
         operator = guild.user(raw_event["op_user"]["id"])
         context = Context(

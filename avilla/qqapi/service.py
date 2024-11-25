@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Set
 from launart import Launart, Service, any_completed
 
 from avilla.qqapi.connection.base import QQAPINetworking
+from avilla.qqapi.connection.webhook import QQAPIWebhookNetworking
 from avilla.qqapi.connection.ws_client import QQAPIWsClientNetworking
 
 if TYPE_CHECKING:
@@ -17,7 +18,7 @@ class QQAPIService(Service):
     id = "qqapi.service"
 
     protocol: QQAPIProtocol
-    connections: list[QQAPIWsClientNetworking]
+    connections: list[QQAPIWsClientNetworking | QQAPIWebhookNetworking]
     accounts: dict[str, QQAPIAccount]
 
     def __init__(self, protocol: QQAPIProtocol):

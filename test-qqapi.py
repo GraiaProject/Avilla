@@ -3,10 +3,10 @@ import os
 from avilla.core import Avilla, Context, MessageReceived
 from avilla.core.elements import Text
 from avilla.qqapi.element import Reference
-from avilla.qqapi.protocol import QQAPIProtocol, QQAPIConfig, Intents
+from avilla.qqapi.protocol import QQAPIProtocol, QQAPIWebsocketConfig, Intents
 
 
-config = QQAPIConfig(
+config = QQAPIWebsocketConfig(
     os.getenv("QQGUILD_ID"),
     os.getenv("QQGUILD_TOKEN"),
     os.getenv("QQGUILD_SECRET"),

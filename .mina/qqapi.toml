@@ -10,7 +10,8 @@ authors = [
   {name = "RF-Tar-Railt", email = "rf_tar_railt@qq.com"}
 ]
 dependencies = [
-  "aiohttp"
+  "aiohttp",
+  "cryptography"
 ]
 description = ""
 license = {text = "MIT"}

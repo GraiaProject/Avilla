@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import os
+import ssl
 from dataclasses import dataclass, field
 
 from loguru import logger
@@ -10,6 +12,7 @@ from avilla.core.protocol import BaseProtocol, ProtocolConfig
 from graia.ryanvk import merge, ref
 
 from .connection.ws_client import QQAPIWsClientNetworking
+from .connection.webhook import QQAPIWebhookNetworking
 from .service import QQAPIService
 
 
@@ -59,11 +62,21 @@ class Intents:
         return self.c2c_group_at_messages is True
 
 
+class QQAPIConfig:
+    def get_api_base(self) -> URL:
+        raise NotImplementedError
+
+    def get_auth_base(self) -> URL:
+        raise NotImplementedError
+
+
 @dataclass
-class QQAPIConfig(ProtocolConfig):
+class QQAPIWebsocketConfig(ProtocolConfig, QQAPIConfig):
     id: str
+    """app_id"""
     token: str
     secret: str
+    """client secret"""
     shard: tuple[int, int] | None = None
     intent: Intents = field(default_factory=Intents)
     is_sandbox: bool = False
@@ -74,10 +87,40 @@ class QQAPIConfig(ProtocolConfig):
     def get_api_base(self) -> URL:
         return URL(self.sandbox_api_base) if self.is_sandbox else URL(self.api_base)
 
+    def get_auth_base(self) -> URL:
+        return self.auth_base
+
     @property
     def is_group_bot(self) -> bool:
         """是否为群机器人"""
         return self.intent.is_group_enabled
+
+
+@dataclass
+class QQAPIWebhookConfig(ProtocolConfig, QQAPIConfig):
+    secrets: dict[str, str]
+    """app_id -> secret"""
+    certfile: str | os.PathLike[str]
+    keyfile: str | os.PathLike[str]
+    host: str = "0.0.0.0"
+    port: int = 8080
+    path: str = ""
+    is_sandbox: bool = False
+    api_base: URL = URL("https://api.sgroup.qq.com/")
+    sandbox_api_base: URL = URL("https://sandbox.api.sgroup.qq.com")
+    auth_base: URL = URL("https://bots.qq.com/app/getAppAccessToken")
+
+    def get_api_base(self) -> URL:
+        return URL(self.sandbox_api_base) if self.is_sandbox else URL(self.api_base)
+
+    def get_auth_base(self) -> URL:
+        return self.auth_base
+
+    def __post_init__(self):
+        if self.port not in (80, 443, 8080, 8443):
+            raise ValueError("Port must be 80, 443, 8080 or 8443.")
+        self.ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+        self.ssl_context.load_cert_chain(self.certfile, self.keyfile)
 
 
 def _import_performs():  # noqa: F401
@@ -145,6 +188,11 @@ class QQAPIProtocol(BaseProtocol):
 
         avilla.launch_manager.add_component(self.service)
 
-    def configure(self, config: QQAPIConfig):
-        self.service.connections.append(QQAPIWsClientNetworking(self, config))
+    def configure(self, config: QQAPIWebhookConfig | QQAPIWebsocketConfig):
+        if isinstance(config, QQAPIWebsocketConfig):
+            self.service.connections.append(QQAPIWsClientNetworking(self, config))
+        elif isinstance(config, QQAPIWebhookConfig):
+            self.service.connections.append(QQAPIWebhookNetworking(self, config))
+        else:
+            raise ValueError(f"Invalid config type: {config!r}")
         return self

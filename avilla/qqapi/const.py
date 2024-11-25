@@ -24,7 +24,7 @@ PRIVILEGE_TRANS = defaultdict(
 )
 PLATFORM = Platform(
     Land(
-        "qq",
+        "qqapi",
         [{"name": "Tencent"}],
         humanized_name="QQ API",
     ),

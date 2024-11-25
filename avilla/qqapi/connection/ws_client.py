@@ -5,7 +5,6 @@ import json
 import sys
 from contextlib import suppress
 from dataclasses import asdict
-from datetime import datetime, timedelta, timezone
 from typing import TYPE_CHECKING, cast
 
 import aiohttp
@@ -18,7 +17,6 @@ from avilla.core.account import AccountInfo
 from avilla.core.selector import Selector
 from avilla.qqapi.account import QQAPIAccount
 from avilla.qqapi.const import PLATFORM
-from avilla.qqapi.exception import NetworkError, UnauthorizedException
 from avilla.standard.core.account import (
     AccountAvailable,
     AccountRegistered,
@@ -26,57 +24,38 @@ from avilla.standard.core.account import (
     AccountUnregistered,
 )
 
-from .base import CallMethod, QQAPINetworking
-from .util import Opcode, Payload, validate_response
+from .base import QQAPINetworking
+from .util import Opcode, Payload
 
 if TYPE_CHECKING:
-    from avilla.qqapi.protocol import QQAPIConfig, QQAPIProtocol
+    from avilla.qqapi.protocol import QQAPIWebsocketConfig, QQAPIProtocol
 
 
 class QQAPIWsClientNetworking(QQAPINetworking, Service):
     required: set[str] = set()
     stages: set[str] = {"preparing", "blocking", "cleanup"}
 
-    config: QQAPIConfig
+    config: QQAPIWebsocketConfig
     connections: dict[tuple[int, int], aiohttp.ClientWebSocketResponse]
-    session: aiohttp.ClientSession
+    response_waiters: dict[str, asyncio.Future]
+    # account_id: str
+    self_info: dict
+    sequence: int | None
+    session_id: str | None
 
     @property
     def id(self):
         return f"qqapi/connection/client#{self.config.id}"
 
-    def __init__(self, protocol: QQAPIProtocol, config: QQAPIConfig) -> None:
-        super().__init__(protocol)
-        self.config = config
+    def __init__(self, protocol: QQAPIProtocol, config: QQAPIWebsocketConfig) -> None:
+        super().__init__(protocol, config, config.id, config.secret)
+        self.response_waiters = {}
+        self.close_signal = asyncio.Event()
+        self.session_id = None
+        self.sequence = None
         if any([not config.id, not config.token, not config.secret]):
             raise ValueError("config is not complete")
         self.connections = {}
-
-    async def get_access_token(self) -> str:
-        if self._access_token is None or (
-            self._expires_in and datetime.now(timezone.utc) > self._expires_in - timedelta(seconds=30)
-        ):
-            async with self.session.post(
-                self.config.auth_base,
-                json={
-                    "appId": self.config.id,
-                    "clientSecret": self.config.secret,
-                },
-            ) as resp:
-                if resp.status != 200 or not resp.content:
-                    raise NetworkError(
-                        f"Get authorization failed with status code {resp.status}." " Please check your config."
-                    )
-                data = await resp.json()
-            self._access_token = cast(str, data["access_token"])
-            self._expires_in = datetime.now(timezone.utc) + timedelta(seconds=int(data["expires_in"]))
-        return self._access_token
-
-    async def _get_authorization_header(self) -> str:
-        """获取当前 Bot 的鉴权信息"""
-        if self.config.is_group_bot:
-            return f"QQBot {await self.get_access_token()}"
-        return f"Bot {self.config.id}.{self.config.token}"
 
     async def get_authorization_header(self) -> dict[str, str]:
         """获取当前 Bot 的鉴权信息"""
@@ -121,85 +100,6 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
             raise RuntimeError("connection is not established")
 
         await connection.send_json(payload)
-
-    async def _call_http(
-        self, method: CallMethod, action: str, headers: dict[str, str] | None = None, params: dict | None = None
-    ) -> dict:
-        params = params or {}
-        params = {k: v for k, v in params.items() if v is not None}
-        if method in {"get", "fetch"}:
-            async with self.session.get(
-                (self.config.get_api_base() / action).with_query(params),
-                headers=headers,
-            ) as resp:
-                return await validate_response(resp)
-
-        if method == "patch":
-            async with self.session.patch(
-                (self.config.get_api_base() / action),
-                json=params,
-                headers=headers,
-            ) as resp:
-                return await validate_response(resp)
-
-        if method == "put":
-            async with self.session.put(
-                (self.config.get_api_base() / action),
-                json=params,
-                headers=headers,
-            ) as resp:
-                return await validate_response(resp)
-
-        if method == "delete":
-            async with self.session.delete(
-                (self.config.get_api_base() / action).with_query(params),
-                headers=headers,
-            ) as resp:
-                return await validate_response(resp)
-
-        if method in {"post", "update"}:
-            async with self.session.post(
-                (self.config.get_api_base() / action),
-                json=params,
-                headers=headers,
-            ) as resp:
-                return await validate_response(resp)
-
-        if method == "multipart":
-            if params is None:
-                raise TypeError("multipart requires params")
-            data = aiohttp.FormData(params["data"], quote_fields=False)
-            for k, v in params["files"].items():
-                if isinstance(v, dict):
-                    data.add_field(k, v["value"], filename=v.get("filename"), content_type=v.get("content_type"))
-                else:
-                    data.add_field(k, v)
-
-            async with self.session.post(
-                (self.config.get_api_base() / action),
-                data=data,
-                headers=headers,
-            ) as resp:
-                return await validate_response(resp)
-
-        raise ValueError(f"unknown method {method}")
-
-    async def call_http(self, method: CallMethod, action: str, params: dict | None = None) -> dict:
-        headers = await self.get_authorization_header()
-        try:
-            return await self._call_http(method, action, headers, params)
-        except UnauthorizedException as e:
-            if not self.config.is_group_bot:
-                raise
-            self._access_token = None
-            try:
-                headers = await self.get_authorization_header()
-            except Exception:
-                raise e from None
-            try:
-                return await self._call_http(method, action, headers, params)
-            except Exception as e1:
-                raise e1 from None
 
     async def wait_for_available(self):
         await self.status.wait_for_available()
@@ -278,8 +178,8 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
             self.sequence = payload.sequence
             self.session_id = payload.data["session_id"]
             self.self_info = payload.data["user"]
-            self.account_id = payload.data["user"]["id"]
-            account_route = Selector().land("qq").account(self.account_id)
+            # self.account_id = payload.data["user"]["id"]
+            account_route = Selector().land("qqapi").account(self.config.id)
             if account_route in self.protocol.avilla.accounts:
                 account = cast(QQAPIAccount, self.protocol.avilla.accounts[account_route].account)
             else:
@@ -290,11 +190,11 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                     self.protocol,
                     PLATFORM,
                 )
-            self.protocol.service.accounts[self.account_id] = account
+            self.protocol.service.accounts[self.config.id] = account
             account.connection = self
             self.protocol.avilla.broadcast.postEvent(AccountRegistered(self.protocol.avilla, account))
         else:
-            account = self.protocol.service.accounts[self.account_id]
+            account = self.protocol.service.accounts[self.config.id]
             account.connection = self
         self.protocol.avilla.broadcast.postEvent(AccountAvailable(self.protocol.avilla, account))
         return True
@@ -323,7 +223,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                     if not result:
                         await asyncio.sleep(3)
                         continue
-                    account_route = Selector().land("qq").account(self.account_id)
+                    account_route = Selector().land("qqapi").account(self.config.id)
                     self.close_signal.clear()
                     close_task = asyncio.create_task(self.close_signal.wait())
                     receiver_task = asyncio.create_task(self.message_handle(shard))
@@ -348,7 +248,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                                     self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
                                 )
                             )
-                            del self.protocol.service.accounts[self.account_id]
+                            del self.protocol.service.accounts[self.config.id]
                             del self.protocol.avilla.accounts[account_route]
                         return
                     if close_task in done:
@@ -362,7 +262,7 @@ class QQAPIWsClientNetworking(QQAPINetworking, Service):
                                     self.protocol.avilla, self.protocol.avilla.accounts[account_route].account
                                 )
                             )
-                            del self.protocol.service.accounts[self.account_id]
+                            del self.protocol.service.accounts[self.config.id]
                             # del self.protocol.avilla.accounts[account_route]
                         await asyncio.sleep(5)
                         logger.info(f"{self} Reconnecting...")

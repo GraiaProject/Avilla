@@ -20,9 +20,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="guild_create")
     async def guild_create(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["id"]))
         inviter = guild.member(str(raw_event["op_user_id"]))
         context = Context(
@@ -36,9 +36,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="guild_delete")
     async def guild_delete(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
         context = Context(
@@ -52,9 +52,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="channel_create")
     async def channel_create(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["guild_id"]))
         channel = guild.channel(str(raw_event["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
@@ -69,9 +69,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="channel_delete")
     async def channel_delete(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["guild_id"]))
         channel = guild.channel(str(raw_event["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
@@ -86,9 +86,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="guild_member_add")
     async def guild_member_add(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["guild_id"]))
         member = guild.member(str(raw_event["user"]["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
@@ -103,9 +103,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="guild_member_remove")
     async def guild_member_remove(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["guild_id"]))
         member = guild.member(str(raw_event["user"]["id"]))
         operator = guild.member(str(raw_event["op_user_id"]))
@@ -130,9 +130,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="group_add_robot")
     async def group_add_robot(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         group = land.group(str(raw_event["group_openid"]))
         operator = group.member(str(raw_event["op_member_openid"]))
         context = Context(
@@ -146,9 +146,9 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="group_del_robot")
     async def group_del_robot(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         group = land.group(str(raw_event["group_openid"]))
         operator = group.member(str(raw_event["op_member_openid"]))
         context = Context(
@@ -162,10 +162,10 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="friend_add")
     async def friend_add(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
 
-        user = Selector().land("qq").friend(str(raw_event["openid"]))
+        user = Selector().land("qqapi").friend(str(raw_event["openid"]))
         context = Context(
             account,
             user,
@@ -177,10 +177,10 @@ class QQAPIEventRelationshipPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="friend_del")
     async def friend_del(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
 
-        user = Selector().land("qq").friend(str(raw_event["openid"]))
+        user = Selector().land("qqapi").friend(str(raw_event["openid"]))
         context = Context(
             account,
             user,

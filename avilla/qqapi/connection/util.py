@@ -42,13 +42,25 @@ CallMethod = Literal["get", "post", "fetch", "update", "multipart"]
 
 class Opcode(int, Enum):
     DISPATCH = 0
+    """[Receive] 服务端进行消息推送"""
     HEARTBEAT = 1
+    """[Send/Receive] 客户端或服务端发送心跳"""
     IDENTIFY = 2
+    """[Send] 客户端发送鉴权"""
     RESUME = 6
+    """[Send] 客户端恢复连接"""
     RECONNECT = 7
+    """[Receive] 服务端通知客户端重新连接"""
     INVALID_SESSION = 9
+    """[Receive] 当 identify 或 resume 的时候，如果参数有错，服务端会返回该消息"""
     HELLO = 10
+    """[Receive] 当客户端与网关建立 ws 连接之后，网关下发的第一条消息"""
     HEARTBEAT_ACK = 11
+    """[Receive/Reply] 服务端回应心跳"""
+    HTTP_CALLBACK_ACK = 12
+    """[Reply] 仅用于 http 回调模式的回包，代表机器人收到了平台推送的数据"""
+    SERVER_VERIFY = 13
+    """[Receive] 开放平台对机器人服务端进行验证"""
 
 
 @dataclass

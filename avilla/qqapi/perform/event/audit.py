@@ -15,9 +15,9 @@ class QQAPIEventAuditPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="message_audit_pass")
     async def on_message_audit_pass(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["guild_id"]))
         channel = guild.channel(str(raw_event["channel_id"]))
         message = channel.message(str(raw_event["message_id"]))
@@ -40,9 +40,9 @@ class QQAPIEventAuditPerform((m := ConnectionCollector())._):
 
     @m.entity(QQAPICapability.event_callback, event_type="message_audit_reject")
     async def on_message_audit_reject(self, event_type: ..., raw_event: dict):
-        account_route = Selector().land("qq").account(str(self.connection.account_id))
+        account_route = Selector().land("qqapi").account(str(self.connection.account_id))
         account = self.protocol.avilla.accounts[account_route].account
-        land = Selector().land("qq")
+        land = Selector().land("qqapi")
         guild = land.guild(str(raw_event["guild_id"]))
         channel = guild.channel(str(raw_event["channel_id"]))
         audit = Audit(

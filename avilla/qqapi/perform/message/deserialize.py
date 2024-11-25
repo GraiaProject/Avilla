@@ -46,12 +46,12 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
     @m.entity(QQAPICapability.deserialize_element, raw_element="attachment")
     async def attachment(self, raw_element: dict):
         if "content_type" not in raw_element:
-            resource = QQAPIImageResource(Selector().land("qqguild").picture(url := raw_element["url"]), "image", url)
+            resource = QQAPIImageResource(Selector().land("qqapi").picture(url := raw_element["url"]), "image", url)
             return Picture(resource)
         content_type = raw_element["content_type"].split("/")[0]
         if content_type == "file":
             resource = QQAPIFileResource(
-                Selector().land("qqguild").file(url := raw_element["url"]),
+                Selector().land("qqapi").file(url := raw_element["url"]),
                 raw_element["content_type"],
                 url,
                 raw_element.get("filename"),
@@ -62,7 +62,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
             return File(resource)
         if content_type == "audio":
             resource = QQAPIAudioResource(
-                Selector().land("qqguild").audio(url := raw_element["url"]),
+                Selector().land("qqapi").audio(url := raw_element["url"]),
                 raw_element["content_type"],
                 url,
                 raw_element.get("filename"),
@@ -73,7 +73,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
             return Audio(resource)
         if content_type == "video":
             resource = QQAPIVideoResource(
-                Selector().land("qqguild").video(url := raw_element["url"]),
+                Selector().land("qqapi").video(url := raw_element["url"]),
                 raw_element["content_type"],
                 url,
                 raw_element.get("filename"),
@@ -83,7 +83,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
             )
             return Video(resource)
         resource = QQAPIImageResource(
-            Selector().land("qqguild").picture(url := raw_element["url"]),
+            Selector().land("qqapi").picture(url := raw_element["url"]),
             raw_element["content_type"],
             url,
             raw_element.get("filename"),
@@ -97,15 +97,15 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
     async def mention(self, raw_element: dict) -> Notice:
         if self.context:
             return Notice(self.context.scene.member(raw_element["user_id"]))
-        return Notice(Selector().land("qqguild").member(raw_element["user_id"]))
+        return Notice(Selector().land("qqapi").member(raw_element["user_id"]))
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="mention_channel")
     async def mention_channel(self, raw_element: dict) -> Notice:
         if self.context:
             return Notice(
-                Selector().land("qqguild").guild(self.context.scene["guild"]).channel(raw_element["channel_id"])
+                Selector().land("qqapi").guild(self.context.scene["guild"]).channel(raw_element["channel_id"])
             )
-        return Notice(Selector().land("qqguild").channel(raw_element["channel_id"]))
+        return Notice(Selector().land("qqapi").channel(raw_element["channel_id"]))
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="mention_everyone")
     async def mention_everyone(self, raw_element: dict) -> NoticeAll:
@@ -115,7 +115,7 @@ class QQAPIMessageDeserializePerform((m := ApplicationCollector())._):
     async def message_reference(self, raw_element: dict) -> Reference:
         if self.context:
             return Reference(self.context.scene.message(raw_element["message_id"]))
-        return Reference(Selector().land("qqguild").message(raw_element["message_id"]))
+        return Reference(Selector().land("qqapi").message(raw_element["message_id"]))
 
     @m.entity(QQAPICapability.deserialize_element, raw_element="embed")
     async def embed(self, raw_element: dict) -> Embed:
