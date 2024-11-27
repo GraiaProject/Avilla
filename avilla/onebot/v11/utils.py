@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import defaultdict
 from datetime import datetime
 from avilla.standard.core.file.metadata import DownloadInfo, FileData
 
@@ -36,3 +37,7 @@ def folder_parse(raw: dict, parent: FileData | None = None):
         modify_time=None,
         download_info=None,
     )
+
+
+PRIVILEGE_TRANS = defaultdict(lambda: "group_member", {"owner": "group_owner", "admin": "group_admin"})
+PRIVILEGE_LEVEL = defaultdict(lambda: 0, {"owner": 2, "admin": 1})
