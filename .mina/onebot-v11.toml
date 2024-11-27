@@ -7,7 +7,7 @@ raw-dependencies = [
 
 [project]
 name = "avilla-onebot-v11"
-version = "1.0.0a31" # WIP for release.
+version = "1.0.0a32" # WIP for release.
 authors = [
   {name = "GreyElaina", email = "GreyElaina@outlook.com"},
 ]
