@@ -38,13 +38,13 @@ class OneBot11PrivilegeActionPerform((m := AccountCollector["OneBot11Protocol", 
         if target.pattern["member"] == self.account.route["account"]:
             return Privilege(True, True)
         self_info = await self.account.connection.call(
-            "get_group_member_info ",
+            "get_group_member_info",
             {"group_id": int(target["group"]), "user_id": int(self.account.route["account"])},
         )
         if self_info is None:
             raise RuntimeError(f"Failed to get self info in {target}")
         target_info = await self.account.connection.call(
-            "get_group_member_info ",
+            "get_group_member_info",
             {"group_id": int(target["group"]), "user_id": int(target.pattern["member"])},
         )
         if target_info is None:
