@@ -130,7 +130,10 @@ class OneBot11MessageDeserializePerform((m := ApplicationCollector())._):
 
     @m.entity(OneBot11Capability.deserialize_element, raw_element="forward")
     async def forward(self, raw_element: dict):
-        elem = Forward(raw_element["data"]["id"])
+        if self.context:
+            elem = Forward(self.context.scene.forward(raw_element["data"]["id"]))
+        else:
+            elem = Forward(Selector().land("qq").forward(raw_element["data"]["id"]))
         if not self.account:
             return elem
         try:
