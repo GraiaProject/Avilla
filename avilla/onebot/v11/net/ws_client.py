@@ -107,11 +107,11 @@ class OneBot11WsClientNetworking(OneBot11Networking, Service):
                 logger.warning(f"{self} Connection closed by server, will reconnect in 5 seconds...")
                 accounts = {str(i) for i in self.accounts.keys()}
                 for n in list(avilla.accounts.keys()):
-                    logger.debug(f"Unregistering onebot(v11) account {n}...")
-                    account = cast("OneBot11Account", avilla.accounts[n].account)
-                    account.status.enabled = False
-                    await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
                     if n.follows("land(qq).account") and n["account"] in accounts:
+                        logger.debug(f"Unregistering onebot(v11) account {n}...")
+                        account = cast("OneBot11Account", avilla.accounts[n].account)
+                        account.status.enabled = False
+                        await avilla.broadcast.postEvent(AccountUnregistered(avilla, avilla.accounts[n].account))
                         del avilla.accounts[n]
                 self.accounts.clear()
                 await asyncio.sleep(5)
